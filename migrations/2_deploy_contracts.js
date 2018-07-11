@@ -1,5 +1,5 @@
-var AOToken = artifacts.require("./AOToken.sol");
+var AONFT = artifacts.require("./AONFT.sol");
 
 module.exports = function(deployer) {
-	deployer.deploy(AOToken, "AO NFT", "AONFT");
+	deployer.deploy(AONFT, "AO NFT", "AONFT");
 };
