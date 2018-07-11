@@ -1,6 +1,5 @@
 pragma solidity ^0.4.24;
 
-
 /**
  * Utility library of inline functions on addresses
  */
@@ -25,5 +24,4 @@ library AddressUtils {
 		assembly { size := extcodesize(addr) }
 		return size > 0;
 	}
-
 }
