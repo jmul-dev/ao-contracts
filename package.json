@@ -9,9 +9,13 @@
 		"pretty-quick": "^1.6.0"
 	},
 	"scripts": {
-		"precommit": "pretty-quick --stage"
+		"precommit": "pretty-quick --stage",
+		"chain": "ganache-cli -p 8545 -l 4700000",
+		"compile": "truffle compile"
 	},
 	"devDependencies": {
-		"prettier": "1.13.7"
+		"ganache-cli": "^6.1.6",
+		"prettier": "1.13.7",
+		"truffle": "^4.1.13"
 	}
 }
