@@ -19,3 +19,9 @@ Compile smart contracts:
 ```
 yarn compile
 ```
+
+Run test:
+
+```
+yarn test
+```
