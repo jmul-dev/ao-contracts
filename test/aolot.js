@@ -1,9 +1,9 @@
-var AOTokenICO = artifacts.require("./AOTokenICO.sol");
+var AOLot = artifacts.require("./AOLot.sol");
 var AOToken = artifacts.require("./AOToken.sol");
 
-contract("AOTokenICO", function(accounts) {
+contract("AOLot", function(accounts) {
 	it("should set AO Token Address", function() {
-		return AOTokenICO.deployed()
+		return AOLot.deployed()
 			.then(function(instance) {
 				return instance.AOTokenAddress.call();
 			})
@@ -12,7 +12,7 @@ contract("AOTokenICO", function(accounts) {
 			});
 	});
 	it("should have buy price at 10000 Wei/AO", function() {
-		return AOTokenICO.deployed()
+		return AOLot.deployed()
 			.then(function(instance) {
 				return instance.buyPrice.call();
 			})
@@ -22,7 +22,7 @@ contract("AOTokenICO", function(accounts) {
 	});
 	it("can pause contract", function() {
 		var meta;
-		return AOTokenICO.deployed()
+		return AOLot.deployed()
 			.then(function(instance) {
 				meta = instance;
 				return instance.setPaused(true, { from: accounts[0] });
@@ -36,7 +36,7 @@ contract("AOTokenICO", function(accounts) {
 	});
 	it("can unpause contract", function() {
 		var meta;
-		return AOTokenICO.deployed()
+		return AOLot.deployed()
 			.then(function(instance) {
 				meta = instance;
 				return instance.setPaused(false, { from: accounts[0] });
@@ -50,7 +50,7 @@ contract("AOTokenICO", function(accounts) {
 	});
 	it("can set buy price", function() {
 		var meta;
-		return AOTokenICO.deployed()
+		return AOLot.deployed()
 			.then(function(instance) {
 				meta = instance;
 				return instance.setBuyPrice(10000, { from: accounts[0] });
@@ -67,7 +67,7 @@ contract("AOTokenICO", function(accounts) {
 		return AOToken.deployed()
 			.then(function(instance) {
 				tokenMeta = instance;
-				return AOTokenICO.deployed();
+				return AOLot.deployed();
 			})
 			.then(function(instance) {
 				icoMeta = instance;
@@ -86,7 +86,7 @@ contract("AOTokenICO", function(accounts) {
 		return AOToken.deployed()
 			.then(function(instance) {
 				tokenMeta = instance;
-				return AOTokenICO.deployed();
+				return AOLot.deployed();
 			})
 			.then(function(instance) {
 				icoMeta = instance;

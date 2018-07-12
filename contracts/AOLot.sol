@@ -5,9 +5,9 @@ import './owned.sol';
 import './AOToken.sol';
 
 /**
- * @title AOTokenICO
+ * @title AOLot
  */
-contract AOTokenICO is owned {
+contract AOLot is owned {
 	using SafeMath for uint256;
 
 	address public AOTokenAddress;
