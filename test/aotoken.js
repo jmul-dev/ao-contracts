@@ -43,7 +43,7 @@ contract("AOToken", function(accounts) {
 				return instance.balanceOf.call(accounts[0]);
 			})
 			.then(function(balance) {
-				assert.equal(balance.toNumber(), web3.toWei(125899906842620, 'ether'), "Owner does not have the correct amount of tokens");
+				assert.equal(balance.toNumber(), web3.toWei(125899906842620, "ether"), "Owner does not have the correct amount of tokens");
 			});
 	});
 });

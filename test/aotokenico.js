@@ -71,13 +71,13 @@ contract("AOTokenICO", function(accounts) {
 			})
 			.then(function(instance) {
 				icoMeta = instance;
-				return tokenMeta.mintToken(icoMeta.address, web3.toWei(10 ** 15, 'ether'));
+				return tokenMeta.mintToken(icoMeta.address, web3.toWei(10 ** 15, "ether"));
 			})
 			.then(function() {
 				return tokenMeta.balanceOf.call(icoMeta.address);
 			})
 			.then(function(balance) {
-				assert.equal(balance.toNumber(), web3.toWei(10 ** 15, 'ether'), "Contract does not have the correct AO balance");
+				assert.equal(balance.toNumber(), web3.toWei(10 ** 15, "ether"), "Contract does not have the correct AO balance");
 			});
 	});
 	it("should send 20 AO to investor", function() {
@@ -90,15 +90,18 @@ contract("AOTokenICO", function(accounts) {
 			})
 			.then(function(instance) {
 				icoMeta = instance;
-				return icoMeta.buy({from: accounts[1], value: 200000});
-			}).then(function() {
+				return icoMeta.buy({ from: accounts[1], value: 200000 });
+			})
+			.then(function() {
 				return icoMeta.totalTokenBought.call();
-			}).then(function(totalBought) {
+			})
+			.then(function(totalBought) {
 				totalTokenBought = totalBought;
 				return tokenMeta.balanceOf.call(accounts[1]);
-			}).then(function(balance) {
-				assert.equal(totalTokenBought.toNumber(), web3.toWei(20, 'ether'), "Contract does not have the correct totalTokenBought");
-				assert.equal(balance.toNumber(), web3.toWei(20, 'ether'), "Investor has wrong balance after purchase");
+			})
+			.then(function(balance) {
+				assert.equal(totalTokenBought.toNumber(), web3.toWei(20, "ether"), "Contract does not have the correct totalTokenBought");
+				assert.equal(balance.toNumber(), web3.toWei(20, "ether"), "Investor has wrong balance after purchase");
 			});
 	});
 });
