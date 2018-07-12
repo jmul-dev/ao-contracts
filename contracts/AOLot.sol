@@ -21,7 +21,7 @@ contract AOLot is owned {
 	uint256 public totalTokenBought;
 
 	struct Lot {
-		address investor;
+		address lotOwner;
 		uint256 tokenAmount;
 	}
 	uint256 public numLots;
@@ -35,7 +35,7 @@ contract AOLot is owned {
 	// Mapping from lot ID to index of the owner lots list
 	mapping (address => mapping(uint256 => uint256)) private ownedLotsIndex;
 
-	event BuyToken(address indexed investor, uint256 indexed lotId, uint256 tokenAmount, bool success);
+	event BuyToken(address indexed lotOwner, uint256 indexed lotId, uint256 tokenAmount, bool success);
 
 	constructor(address tokenAddress) public {
 		AOTokenAddress = tokenAddress;
@@ -70,7 +70,7 @@ contract AOLot is owned {
 	}
 
 	/**
-	 * @dev Investor buy tokens from contract by sending ether
+	 * @dev buy lot of tokens from contract by sending ether
 	 */
 	function buy() payable public isActive {
 		require(msg.value > 0 && buyPrice > 0 && totalTokenBought < MAX_SUPPLY);
@@ -90,7 +90,7 @@ contract AOLot is owned {
 		numLots++;
 		totalTokenBought = totalTokenBought.add(tokenAmount);
 		Lot storage lot = lots[numLots];
-		lot.investor = msg.sender;
+		lot.lotOwner = msg.sender;
 		lot.tokenAmount = tokenAmount;
 		uint256 length = ownedLots[msg.sender].length;
 		ownedLots[msg.sender].push(numLots);
@@ -101,4 +101,43 @@ contract AOLot is owned {
 			emit BuyToken(msg.sender, numLots, tokenAmount, false);
 		}
 	}
+
+	/**
+	 * @dev Gets the num of lots owned by an address
+	 * @param _owner address owning the lots list
+	 * @return uint256 num of lots
+	 */
+	function numLotsByAddress(address _owner) public view returns (uint256) {
+		return ownedLots[_owner].length;
+	}
+
+	/**
+	 * @dev Gets the lot ID at a given index of the lots list of the requested owner
+	 * @param _owner address owning the lots list to be accessed
+	 * @param _index uint256 representing the index to be access of the requested lots list
+	 * @return uint256 lot ID at the given index of the lots list owned by the requested address
+	 */
+	function lotOfOwnerByIndex(address _owner, uint256 _index) public view returns (uint256) {
+		require (_index < ownedLots[_owner].length);
+		return ownedLots[_owner][_index];
+	}
+
+	/**
+	 * @dev Gets the lot at a given ID of all lots in this contract
+	 * @param _lotId uint256 representing the ID to be accessed of the lots list
+	 * @return address of the lot owner
+	 * @return uint256 representing the amount of AO tokens in the lot
+	 */
+	function lotById(uint256 _lotId) public view returns (address, uint256) {
+		require (_lotId > 0 && _lotId <= numLots);
+		Lot memory lot = lots[_lotId];
+		return (lot.lotOwner, lot.tokenAmount);
+	}
+
+	/**
+	 * @dev Transfer lot ownership
+	 * @param _to address representing the new owner of the given lot ID
+	 * @param _lotId uint256 ID of the lot to be transferred
+	 * function transferOwnership(address _to, uint256 _lotId) public isActive;
+	 */
 }
