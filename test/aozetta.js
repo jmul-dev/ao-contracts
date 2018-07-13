@@ -1,9 +1,9 @@
-var AOToken = artifacts.require("./AOToken.sol");
+var AOZetta = artifacts.require("./AOZetta.sol");
 
-contract("AOToken", function(accounts) {
+contract("AOZetta", function(accounts) {
 	var tokenMeta;
 	before(function() {
-		return AOToken.deployed()
+		return AOZetta.deployed()
 			.then(function(instance) {
 				tokenMeta = instance;
 			});
@@ -12,25 +12,25 @@ contract("AOToken", function(accounts) {
 	it("should return correct name", function() {
 		return tokenMeta.name.call()
 			.then(function(name) {
-				assert.equal(name, "AO Token", "Contract has the wrong name");
+				assert.equal(name, "AO Zetta", "Contract has the wrong name");
 			});
 	});
 	it("should return correct symbol", function() {
 		return tokenMeta.symbol.call()
 			.then(function(symbol) {
-				assert.equal(symbol, "AOTKN", "Contract has the wrong symbol");
+				assert.equal(symbol, "AOZETTA", "Contract has the wrong symbol");
 			});
 	});
 	it("should have the correct power of ten", function() {
 		return tokenMeta.powerOfTen.call()
 			.then(function(powerOfTen) {
-				assert.equal(powerOfTen, 1, "Contract has the wrong power of ten");
+				assert.equal(powerOfTen, 21, "Contract has the wrong power of ten");
 			});
 	});
-	it("should have 0 decimals", function() {
+	it("should have 3 decimals", function() {
 		return tokenMeta.decimals.call()
 			.then(function(decimals) {
-				assert.equal(decimals, 0, "Contract has the wrong decimals");
+				assert.equal(decimals, 21, "Contract has the wrong decimals");
 			});
 	});
 	it("should have 0 initial supply", function() {
