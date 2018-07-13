@@ -23,7 +23,7 @@ contract("AOZetta", function(accounts) {
 			assert.equal(powerOfTen, 21, "Contract has the wrong power of ten");
 		});
 	});
-	it("should have 3 decimals", function() {
+	it("should have 21 decimals", function() {
 		return tokenMeta.decimals.call().then(function(decimals) {
 			assert.equal(decimals, 21, "Contract has the wrong decimals");
 		});

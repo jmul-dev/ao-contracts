@@ -145,38 +145,39 @@ contract("AOBank", function(accounts) {
 	});
 	it("toBase should return correct amount", function() {
 		var kiloAmount, megaAmount, gigaAmount, teraAmount, petaAmount, exaAmount, zettaAmount, yottaAmount, xonaAmount;
-		return bankMeta.toBase(10, 'kilo')
+		return bankMeta
+			.toBase(10, "kilo")
 			.then(function(amount) {
 				kiloAmount = amount;
-				return bankMeta.toBase(10, 'mega');
+				return bankMeta.toBase(10, "mega");
 			})
 			.then(function(amount) {
 				megaAmount = amount;
-				return bankMeta.toBase(10, 'giga');
+				return bankMeta.toBase(10, "giga");
 			})
 			.then(function(amount) {
 				gigaAmount = amount;
-				return bankMeta.toBase(10, 'tera');
+				return bankMeta.toBase(10, "tera");
 			})
 			.then(function(amount) {
 				teraAmount = amount;
-				return bankMeta.toBase(10, 'peta');
+				return bankMeta.toBase(10, "peta");
 			})
 			.then(function(amount) {
 				petaAmount = amount;
-				return bankMeta.toBase(10, 'exa');
+				return bankMeta.toBase(10, "exa");
 			})
 			.then(function(amount) {
 				exaAmount = amount;
-				return bankMeta.toBase(10, 'zetta');
+				return bankMeta.toBase(10, "zetta");
 			})
 			.then(function(amount) {
 				zettaAmount = amount;
-				return bankMeta.toBase(10, 'yotta');
+				return bankMeta.toBase(10, "yotta");
 			})
 			.then(function(amount) {
 				yottaAmount = amount;
-				return bankMeta.toBase(10, 'xona');
+				return bankMeta.toBase(10, "xona");
 			})
 			.then(function(amount) {
 				xonaAmount = amount;
