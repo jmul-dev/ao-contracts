@@ -46,4 +46,15 @@ contract AOBank is owned {
 		return true;
 	}
 
+	/**
+	 * @dev convert token to the base denomination, in this case is ao
+	 *		similar to web3.toWei() functionality
+	 * @param amount uint256 of the amount to be converted
+	 * @param denomination bytes8 of the target denomination
+	 * @return uint256 converted amount in the target denomination
+	 */
+	function toBase(uint256 amount, bytes8 denomination) public view returns (uint256) {
+		require (denominationAddresses[denomination] != address(0));
+		return amount.mul(10 ** AOToken(denominationAddresses[denomination]).powerOfTen());
+	}
 }
