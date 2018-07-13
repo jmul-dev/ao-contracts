@@ -54,30 +54,38 @@ contract("AOLot", function(accounts) {
 				assert.equal(buyPrice.toNumber(), 10000, "Can't set buy price");
 			});
 	});
-	it("should have 1 Peta AO", function() {
+	it("should have 1125899906842620 AO", function() {
 		return tokenMeta
-			.mintToken(lotMeta.address, web3.toWei(10 ** 15, "ether"))
+			.mintToken(lotMeta.address, 1125899906842620)
 			.then(function() {
 				return tokenMeta.balanceOf.call(lotMeta.address);
 			})
 			.then(function(balance) {
-				assert.equal(balance.toNumber(), web3.toWei(10 ** 15, "ether"), "Contract does not have the correct AO balance");
+				assert.equal(balance.toNumber(), 1125899906842620, "Contract does not have the correct AO balance");
+			});
+	});
+	it("should reserve lot 1 to foundation with amount of 125899906842620 AO Tokens", function() {
+		return lotMeta.reserveForFoundation({from: accounts[0]})
+			.then(function() {
+				return tokenMeta.balanceOf.call(accounts[0])
+			}).then(function(balance) {
+				assert.equal(balance, 125899906842620, "Foundation does not have the correct amount of lot tokens reservation");
 			});
 	});
 	it("should send 20 AO to investor", function() {
-		var totalTokenBought;
 		return lotMeta
 			.buy({ from: accounts[1], value: 200000 })
 			.then(function() {
-				return lotMeta.totalTokenBought.call();
-			})
-			.then(function(totalBought) {
-				totalTokenBought = totalBought;
 				return tokenMeta.balanceOf.call(accounts[1]);
 			})
 			.then(function(balance) {
-				assert.equal(totalTokenBought.toNumber(), web3.toWei(20, "ether"), "Contract does not have the correct totalTokenBought");
-				assert.equal(balance.toNumber(), web3.toWei(20, "ether"), "Investor has wrong balance after purchase");
+				assert.equal(balance.toNumber(), 20, "Investor has wrong balance after purchase");
+			});
+	});
+	it("should return the correct overall number of lots", function() {
+		return lotMeta.numLots.call()
+			.then(function(numLots) {
+				assert.equal(numLots.toNumber(), 2, "Returns wrong number of lots");
 			});
 	});
 	it("should return the correct number of lots owned by an address", function() {
@@ -86,14 +94,20 @@ contract("AOLot", function(accounts) {
 		});
 	});
 	it("should return the correct lot ID at a given index of owner's lots list", function() {
-		return lotMeta.lotOfOwnerByIndex(accounts[1], 0).then(function(numLots) {
-			assert.equal(numLots.toNumber(), 1, "Returns wrong lot ID at a given index");
+		var ownerLotId, accountOneLotId;
+		return lotMeta.lotOfOwnerByIndex(accounts[0], 0).then(function(lotId) {
+			ownerLotId = lotId;
+			return lotMeta.lotOfOwnerByIndex(accounts[1], 0);
+		}).then(function(lotId) {
+			accountOneLotId = lotId;
+			assert.equal(ownerLotId.toNumber(), 1, "Returns wrong lot ID at a given index");
+			assert.equal(accountOneLotId.toNumber(), 2, "Returns wrong lot ID at a given index");
 		});
 	});
 	it("should return the correct lot at a given lot ID", function() {
 		return lotMeta.lotById(1).then(function(lot) {
-			assert.equal(lot[0], accounts[1], "Returns wrong address of the lot");
-			assert.equal(lot[1].toNumber(), web3.toWei(20, "ether"), "Returns wrong tokenAmount of the lot");
+			assert.equal(lot[0], accounts[0], "Returns wrong address of the lot");
+			assert.equal(lot[1].toNumber(), 125899906842620, "Returns wrong tokenAmount of the lot");
 		});
 	});
 });

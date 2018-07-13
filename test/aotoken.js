@@ -28,22 +28,22 @@ contract("AOToken", function(accounts) {
 				assert.equal(power, 1, "Contract has the wrong power of ten");
 			});
 	});
-	it("should have 18 decimals", function() {
+	it("should have 0 decimals", function() {
 		return AOToken.deployed()
 			.then(function(instance) {
 				return instance.decimals.call();
 			})
 			.then(function(decimals) {
-				assert.equal(decimals, 18, "Contract has the wrong decimals");
+				assert.equal(decimals, 0, "Contract has the wrong decimals");
 			});
 	});
-	it("should have correct initial supply", function() {
+	it("should have 0 initial supply", function() {
 		return AOToken.deployed()
 			.then(function(instance) {
 				return instance.balanceOf.call(accounts[0]);
 			})
 			.then(function(balance) {
-				assert.equal(balance.toNumber(), web3.toWei(125899906842620, "ether"), "Owner does not have the correct amount of tokens");
+				assert.equal(balance.toNumber(), 0, "Contract has wrong initial supply");
 			});
 	});
 });

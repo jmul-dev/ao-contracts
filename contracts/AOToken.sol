@@ -11,5 +11,6 @@ contract AOToken is MyAdvancedToken {
 	constructor(uint256 initialSupply, string tokenName, string tokenSymbol)
 		MyAdvancedToken(initialSupply, tokenName, tokenSymbol) public {
 		power = 1;
+		decimals = 0;
 	}
 }

@@ -11,14 +11,16 @@ contract AOLot is owned {
 	using SafeMath for uint256;
 
 	address public AOTokenAddress;
-	AOToken internal aotoken;
+	AOToken private aotoken;
 
 	bool public paused;
-	// 1 Peta = 10^15 but since AO has 18 decimals
-	// 1 Peta = 10^15 * 10^18 = 10^33
-	uint256 constant public MAX_SUPPLY = 10 ** 33;
+
+	// Max supply of 1,125,899,906,842,620 AO Tokens
+	uint256 constant public MAX_SUPPLY = 1125899906842620;
+	uint256 constant public RESERVED_SUPPLY = 125899906842620;
 	uint256 public buyPrice;
 	uint256 public totalTokenBought;
+	bool private foundationLotReserved;
 
 	struct Lot {
 		address lotOwner;
@@ -70,13 +72,23 @@ contract AOLot is owned {
 	}
 
 	/**
+	 * @dev Owner reserve 1 lot of 126 Tera AO Tokens for the foundation/DAO
+	 */
+	function reserveForFoundation() public onlyOwner returns (bool) {
+		require (foundationLotReserved == false);
+		foundationLotReserved = true;
+		_storeLot(owner, RESERVED_SUPPLY);
+		return true;
+	}
+
+	/**
 	 * @dev buy lot of tokens from contract by sending ether
 	 */
 	function buy() payable public isActive {
 		require(msg.value > 0 && buyPrice > 0 && totalTokenBought < MAX_SUPPLY);
 
 		// Calculate the amount of tokens
-		uint256 tokenAmount = msg.value.div(buyPrice).mul(10 ** uint256(aotoken.decimals()));
+		uint256 tokenAmount = msg.value.div(buyPrice);
 
 		// Make sure we don't buy more than MAX_SUPPLY
 		if (tokenAmount.add(totalTokenBought) > MAX_SUPPLY) {
@@ -87,19 +99,7 @@ contract AOLot is owned {
 		require(tokenAmount > 0 && aotoken.balanceOf(this) > tokenAmount);
 
 		// Store this purchase lot
-		numLots++;
-		totalTokenBought = totalTokenBought.add(tokenAmount);
-		Lot storage lot = lots[numLots];
-		lot.lotOwner = msg.sender;
-		lot.tokenAmount = tokenAmount;
-		uint256 length = ownedLots[msg.sender].length;
-		ownedLots[msg.sender].push(numLots);
-		ownedLotsIndex[msg.sender][numLots] = length;
-		if (aotoken.transfer(msg.sender, tokenAmount)) {
-			emit BuyToken(msg.sender, numLots, tokenAmount, true);
-		} else {
-			emit BuyToken(msg.sender, numLots, tokenAmount, false);
-		}
+		_storeLot(msg.sender, tokenAmount);
 	}
 
 	/**
@@ -134,10 +134,21 @@ contract AOLot is owned {
 		return (lot.lotOwner, lot.tokenAmount);
 	}
 
-	/**
-	 * @dev Transfer lot ownership
-	 * @param _to address representing the new owner of the given lot ID
-	 * @param _lotId uint256 ID of the lot to be transferred
-	 * function transferOwnership(address _to, uint256 _lotId) public isActive;
-	 */
+	/* Private functions */
+	function _storeLot(address lotOwner, uint256 tokenAmount) private {
+		// Store this purchase lot
+		numLots++;
+		totalTokenBought = totalTokenBought.add(tokenAmount);
+		Lot storage lot = lots[numLots];
+		lot.lotOwner = lotOwner;
+		lot.tokenAmount = tokenAmount;
+		uint256 length = ownedLots[lotOwner].length;
+		ownedLots[lotOwner].push(numLots);
+		ownedLotsIndex[lotOwner][numLots] = length;
+		if (aotoken.transfer(lotOwner, tokenAmount)) {
+			emit BuyToken(lotOwner, numLots, tokenAmount, true);
+		} else {
+			emit BuyToken(lotOwner, numLots, tokenAmount, false);
+		}
+	}
 }
