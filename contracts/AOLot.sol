@@ -14,6 +14,7 @@ contract AOLot is owned {
 	AOToken private aotoken;
 
 	bool public paused;
+	bool public icoEnded;
 
 	// Max supply of 1,125,899,906,842,620 AO Tokens
 	uint256 constant public MAX_SUPPLY = 1125899906842620;
@@ -25,7 +26,12 @@ contract AOLot is owned {
 	struct Lot {
 		address lotOwner;
 		uint256 tokenAmount;
+		uint256 remainingTokenAmount;
 	}
+
+	// numLots serves 2 purposes:
+	// 1. To tell how many lots there are in the contract
+	// 2. As incremental ID
 	uint256 public numLots;
 
 	// Mapping from lot ID to the actual Lot
@@ -85,7 +91,7 @@ contract AOLot is owned {
 	 * @dev buy lot of tokens from contract by sending ether
 	 */
 	function buy() payable public isActive {
-		require(msg.value > 0 && buyPrice > 0 && totalTokenBought < MAX_SUPPLY);
+		require(msg.value > 0 && buyPrice > 0 && totalTokenBought < MAX_SUPPLY && icoEnded == false);
 
 		// Calculate the amount of tokens
 		uint256 tokenAmount = msg.value.div(buyPrice);
@@ -139,6 +145,9 @@ contract AOLot is owned {
 		// Store this purchase lot
 		numLots++;
 		totalTokenBought = totalTokenBought.add(tokenAmount);
+		if (totalTokenBought >= MAX_SUPPLY) {
+			icoEnded = true;
+		}
 		Lot storage lot = lots[numLots];
 		lot.lotOwner = lotOwner;
 		lot.tokenAmount = tokenAmount;
