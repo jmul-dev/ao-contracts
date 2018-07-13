@@ -60,8 +60,9 @@ contract AOLot is owned {
 	}
 
 	/**
-	 * @dev Owner paused contract
+	 * @dev Owner pauses contract
 	 * @param _paused The value to be set
+	 * @return bool true when success
 	 */
 	function setPaused(bool _paused) public onlyOwner returns (bool) {
 		paused = _paused;
@@ -71,6 +72,7 @@ contract AOLot is owned {
 	/**
 	 * @dev Owner set token buy price
 	 * @param newBuyPrice The new value to be set
+	 * @return bool true when success
 	 */
 	function setBuyPrice(uint256 newBuyPrice) public onlyOwner returns (bool) {
 		buyPrice = newBuyPrice;
@@ -79,6 +81,7 @@ contract AOLot is owned {
 
 	/**
 	 * @dev Owner reserve 1 lot of 126 Tera AO Tokens for the foundation/DAO
+	 * @return bool true when success
 	 */
 	function reserveForFoundation() public onlyOwner returns (bool) {
 		require (foundationLotReserved == false);
