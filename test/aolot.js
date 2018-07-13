@@ -65,10 +65,12 @@ contract("AOLot", function(accounts) {
 			});
 	});
 	it("should reserve lot 1 to foundation with amount of 125899906842620 AO Tokens", function() {
-		return lotMeta.reserveForFoundation({from: accounts[0]})
+		return lotMeta
+			.reserveForFoundation({ from: accounts[0] })
 			.then(function() {
-				return tokenMeta.balanceOf.call(accounts[0])
-			}).then(function(balance) {
+				return tokenMeta.balanceOf.call(accounts[0]);
+			})
+			.then(function(balance) {
 				assert.equal(balance, 125899906842620, "Foundation does not have the correct amount of lot tokens reservation");
 			});
 	});
@@ -83,10 +85,9 @@ contract("AOLot", function(accounts) {
 			});
 	});
 	it("should return the correct overall number of lots", function() {
-		return lotMeta.numLots.call()
-			.then(function(numLots) {
-				assert.equal(numLots.toNumber(), 2, "Returns wrong number of lots");
-			});
+		return lotMeta.numLots.call().then(function(numLots) {
+			assert.equal(numLots.toNumber(), 2, "Returns wrong number of lots");
+		});
 	});
 	it("should return the correct number of lots owned by an address", function() {
 		return lotMeta.numLotsByAddress(accounts[1]).then(function(numLots) {
@@ -95,14 +96,17 @@ contract("AOLot", function(accounts) {
 	});
 	it("should return the correct lot ID at a given index of owner's lots list", function() {
 		var ownerLotId, accountOneLotId;
-		return lotMeta.lotOfOwnerByIndex(accounts[0], 0).then(function(lotId) {
-			ownerLotId = lotId;
-			return lotMeta.lotOfOwnerByIndex(accounts[1], 0);
-		}).then(function(lotId) {
-			accountOneLotId = lotId;
-			assert.equal(ownerLotId.toNumber(), 1, "Returns wrong lot ID at a given index");
-			assert.equal(accountOneLotId.toNumber(), 2, "Returns wrong lot ID at a given index");
-		});
+		return lotMeta
+			.lotOfOwnerByIndex(accounts[0], 0)
+			.then(function(lotId) {
+				ownerLotId = lotId;
+				return lotMeta.lotOfOwnerByIndex(accounts[1], 0);
+			})
+			.then(function(lotId) {
+				accountOneLotId = lotId;
+				assert.equal(ownerLotId.toNumber(), 1, "Returns wrong lot ID at a given index");
+				assert.equal(accountOneLotId.toNumber(), 2, "Returns wrong lot ID at a given index");
+			});
 	});
 	it("should return the correct lot at a given lot ID", function() {
 		return lotMeta.lotById(1).then(function(lot) {
