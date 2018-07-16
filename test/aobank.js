@@ -146,50 +146,50 @@ contract("AOBank", function(accounts) {
 	it("toBase should return correct amount", function() {
 		var kiloAmount, megaAmount, gigaAmount, teraAmount, petaAmount, exaAmount, zettaAmount, yottaAmount, xonaAmount;
 		return bankMeta
-			.toBase(10, "kilo")
+			.toBase(9, 123456789123456789123456789, "kilo")
 			.then(function(amount) {
 				kiloAmount = amount;
-				return bankMeta.toBase(10, "mega");
+				return bankMeta.toBase(9, 123456789123456789123456789, "mega");
 			})
 			.then(function(amount) {
 				megaAmount = amount;
-				return bankMeta.toBase(10, "giga");
+				return bankMeta.toBase(9, 123456789123456789123456789, "giga");
 			})
 			.then(function(amount) {
 				gigaAmount = amount;
-				return bankMeta.toBase(10, "tera");
+				return bankMeta.toBase(9, 123456789123456789123456789, "tera");
 			})
 			.then(function(amount) {
 				teraAmount = amount;
-				return bankMeta.toBase(10, "peta");
+				return bankMeta.toBase(9, 123456789123456789123456789, "peta");
 			})
 			.then(function(amount) {
 				petaAmount = amount;
-				return bankMeta.toBase(10, "exa");
+				return bankMeta.toBase(9, 123456789123456789123456789, "exa");
 			})
 			.then(function(amount) {
 				exaAmount = amount;
-				return bankMeta.toBase(10, "zetta");
+				return bankMeta.toBase(9, 123456789123456789123456789, "zetta");
 			})
 			.then(function(amount) {
 				zettaAmount = amount;
-				return bankMeta.toBase(10, "yotta");
+				return bankMeta.toBase(9, 123456789123456789123456789, "yotta");
 			})
 			.then(function(amount) {
 				yottaAmount = amount;
-				return bankMeta.toBase(10, "xona");
+				return bankMeta.toBase(9, 123456789123456789123456789, "xona");
 			})
 			.then(function(amount) {
 				xonaAmount = amount;
-				assert.equal(kiloAmount.toNumber(), Math.pow(10, 4), "toBase kilo return wrong amount of token");
-				assert.equal(megaAmount.toNumber(), Math.pow(10, 7), "toBase mega return wrong amount of token");
-				assert.equal(gigaAmount.toNumber(), Math.pow(10, 10), "toBase giga return wrong amount of token");
-				assert.equal(teraAmount.toNumber(), Math.pow(10, 13), "toBase tera return wrong amount of token");
-				assert.equal(petaAmount.toNumber(), Math.pow(10, 16), "toBase peta return wrong amount of token");
-				assert.equal(exaAmount.toNumber(), Math.pow(10, 19), "toBase exa return wrong amount of token");
-				assert.equal(zettaAmount.toNumber(), Math.pow(10, 22), "toBase zetta return wrong amount of token");
-				assert.equal(yottaAmount.toNumber(), Math.pow(10, 25), "toBase yotta return wrong amount of token");
-				assert.equal(xonaAmount.toNumber(), Math.pow(10, 28), "toBase xona return wrong amount of token");
+				assert.equal(kiloAmount.toNumber(), 9123, "toBase kilo return wrong amount of token");
+				assert.equal(megaAmount.toNumber(), 9123456, "toBase mega return wrong amount of token");
+				assert.equal(gigaAmount.toNumber(), 9123456789, "toBase giga return wrong amount of token");
+				assert.equal(teraAmount.toNumber(), 9123456789123, "toBase tera return wrong amount of token");
+				assert.equal(petaAmount.toNumber(), 9123456789123456, "toBase peta return wrong amount of token");
+				assert.equal(exaAmount.toNumber(), 9123456789123456789, "toBase exa return wrong amount of token");
+				assert.equal(zettaAmount.toNumber(), 9123456789123456789123, "toBase zetta return wrong amount of token");
+				assert.equal(yottaAmount.toNumber(), 9123456789123456789123456, "toBase yotta return wrong amount of token");
+				assert.equal(xonaAmount.toNumber(), 9123456789123456789123456789, "toBase xona return wrong amount of token");
 			});
 	});
 });

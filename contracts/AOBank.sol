@@ -49,12 +49,32 @@ contract AOBank is owned {
 	/**
 	 * @dev convert token to the base denomination, in this case is ao
 	 *		similar to web3.toWei() functionality
-	 * @param amount uint256 of the amount to be converted
+	 * @param integerAmount uint256 of the integer amount to be converted
+	 * @param fractionAmount uint256 of the frational amount to be converted
 	 * @param denomination bytes8 of the target denomination
 	 * @return uint256 converted amount in the target denomination
 	 */
-	function toBase(uint256 amount, bytes8 denomination) public view returns (uint256) {
+	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denomination) public view returns (uint256) {
 		require (denominationAddresses[denomination] != address(0));
-		return amount.mul(10 ** AOToken(denominationAddresses[denomination]).powerOfTen());
+		uint8 fractionNumDigits = numDigits(fractionAmount);
+		uint256 baseFraction = AOToken(denominationAddresses[denomination]).decimals() > 0 && fractionAmount > 0 ? fractionAmount.mul(10 ** uint256(AOToken(denominationAddresses[denomination]).decimals())).div(10 ** uint256(fractionNumDigits)) : 0;
+		uint256 baseInteger = integerAmount.mul(10 ** AOToken(denominationAddresses[denomination]).powerOfTen());
+		return baseInteger.add(baseFraction);
+	}
+
+	/* Private functions */
+
+	/**
+	 * @dev count num of digits
+	 * @param number uint256 of the nuumber to be checked
+	 * @return uint8 num of digits
+	 */
+	function numDigits(uint256 number) private pure returns (uint8) {
+		uint8 digits = 0;
+		while(number != 0) {
+			number = number.div(10);
+			digits++;
+		}
+		return digits;
 	}
 }
