@@ -47,8 +47,8 @@ contract AOBank is owned {
 	}
 
 	/**
-	 * @dev convert token to the base denomination, in this case is ao
-	 *		similar to web3.toWei() functionality
+	 * @dev convert token to the base denomination,
+	 *		in this case it's similar to web3.toWei() functionality
 	 * @param integerAmount uint256 of the integer amount to be converted
 	 * @param fractionAmount uint256 of the frational amount to be converted
 	 * @param denomination bytes8 of the target denomination
@@ -60,6 +60,21 @@ contract AOBank is owned {
 		uint256 baseFraction = AOToken(denominationAddresses[denomination]).decimals() > 0 && fractionAmount > 0 ? fractionAmount.mul(10 ** uint256(AOToken(denominationAddresses[denomination]).decimals())).div(10 ** uint256(fractionNumDigits)) : 0;
 		uint256 baseInteger = integerAmount.mul(10 ** AOToken(denominationAddresses[denomination]).powerOfTen());
 		return baseInteger.add(baseFraction);
+	}
+
+	/**
+	 * @dev convert token from base to the target denomination,
+	 *		in this case it's similar to web3.fromWei() functionality
+	 * @param integerAmount uint256 of the base amount to be converted
+	 * @return uint256 of the converted integer amount in target denomination
+	 * @return uint256 of the converted fraction amount in target denomination
+	 */
+	function fromBase(uint256 integerAmount, bytes8 denomination) public view returns (uint256, uint256) {
+		require (denominationAddresses[denomination] != address(0));
+		uint256 denominationInteger = integerAmount.div(10 ** AOToken(denominationAddresses[denomination]).powerOfTen());
+
+		uint256 denominationFraction = integerAmount.sub(denominationInteger.mul(10 ** AOToken(denominationAddresses[denomination]).powerOfTen()));
+		return (denominationInteger, denominationFraction);
 	}
 
 	/* Private functions */
