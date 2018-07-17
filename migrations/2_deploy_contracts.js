@@ -13,6 +13,8 @@ var AOLot = artifacts.require("./AOLot.sol");
 
 var AOBank = artifacts.require("./AOBank.sol");
 
+var AOContentToken = artifacts.require("./AOContentToken.sol");
+
 module.exports = function(deployer) {
 	deployer.deploy(AOToken, 0, "AO Token", "AOTKN").then(function() {
 		return deployer.deploy(AOLot, AOToken.address);
@@ -27,4 +29,6 @@ module.exports = function(deployer) {
 	deployer.deploy(AOYotta, 0, "AO Yotta", "AOYOTTA");
 	deployer.deploy(AOXona, 0, "AO Xona", "AOXONA");
 	deployer.deploy(AOBank);
+
+	deployer.deploy(AOContentToken);
 };
