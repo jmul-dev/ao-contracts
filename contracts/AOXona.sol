@@ -10,5 +10,6 @@ contract AOXona is AOToken {
 		AOToken(initialSupply, tokenName, tokenSymbol) public {
 		powerOfTen = 27;
 		decimals = 27;
+		icoContract = false;
 	}
 }

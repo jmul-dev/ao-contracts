@@ -10,5 +10,6 @@ contract AOGiga is AOToken {
 		AOToken(initialSupply, tokenName, tokenSymbol) public {
 		powerOfTen = 9;
 		decimals = 9;
+		icoContract = false;
 	}
 }

@@ -10,5 +10,6 @@ contract AOMega is AOToken {
 		AOToken(initialSupply, tokenName, tokenSymbol) public {
 		powerOfTen = 6;
 		decimals = 6;
+		icoContract = false;
 	}
 }

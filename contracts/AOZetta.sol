@@ -10,5 +10,6 @@ contract AOZetta is AOToken {
 		AOToken(initialSupply, tokenName, tokenSymbol) public {
 		powerOfTen = 21;
 		decimals = 21;
+		icoContract = false;
 	}
 }
