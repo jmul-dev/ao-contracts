@@ -46,8 +46,8 @@ contract AOToken is owned, TokenERC20 {
 	// Account for 6 decimal points for weighted index
 	uint256 constant public WEIGHTED_INDEX_DIVISOR = 10 ** 6; // 1000000 = 1
 
-	bool private foundationReserved;
-	bool private icoEnded;
+	bool public foundationReserved;
+	bool public icoEnded;
 
 	struct Lot {
 		bytes32 lotId;
@@ -297,6 +297,29 @@ contract AOToken is owned, TokenERC20 {
 		icoTotalSupply = icoTotalSupply.sub(_value);
 		emit IcoBurn(_from, _value);
 		return true;
+	}
+
+	/**
+	 * @dev Return the total lots owned by an address
+	 * @param _lotOwner The address of the lot owner
+	 * @return total lots owner by the address
+	 */
+	function totalLotsByAddress(address _lotOwner) public isIco view returns (uint256) {
+		return ownedLots[_lotOwner].length;
+	}
+
+	/**
+	 * @dev Return the lot information at a given index of the lots list of the requested owner
+	 * @param _lotOwner The address owning the lots list to be accessed
+	 * @param _index uint256 representing the index to be accessed of the requested lots list
+	 * @return id of the lot
+	 * @return index of the lot in (10 ** 6)
+	 * @return ICO token amount in the lot
+	 */
+	function lotOfOwnerByIndex(address _lotOwner, uint256 _index) public isIco view returns (bytes32, uint256, uint256) {
+		require (_index < ownedLots[_lotOwner].length);
+		Lot memory _lot = lots[ownedLots[_lotOwner][_index]];
+		return (_lot.lotId, _lot.index, _lot.tokenAmount);
 	}
 
 	/***** INTERNAL METHODS *****/
