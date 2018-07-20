@@ -186,17 +186,24 @@ contract AOToken is owned, TokenERC20 {
 		require (icoEnded == false);
 		require (icoTotalSupply < MAX_ICO_SUPPLY);
 		require (icoBuyPrice > 0);
+		require (msg.value > 0);
 
 		// Calculate the amount of tokens
 		uint256 tokenAmount = msg.value.div(icoBuyPrice);
+
+		uint256 remainderEth = 0;
 
 		// Make sure icoTotalSupply is not overflowing
 		if (icoTotalSupply.add(tokenAmount) >= MAX_ICO_SUPPLY) {
 			tokenAmount = MAX_ICO_SUPPLY.sub(icoTotalSupply);
 			icoEnded = true;
+			remainderEth = msg.value.sub(tokenAmount.mul(icoBuyPrice));
 		}
 
 		_createIcoLot(msg.sender, tokenAmount);
+		if (remainderEth > 0) {
+			msg.sender.transfer(remainderEth);
+		}
 	}
 
 	/**
