@@ -9,6 +9,8 @@ var AOZetta = artifacts.require("./AOZetta.sol");
 var AOYotta = artifacts.require("./AOYotta.sol");
 var AOXona = artifacts.require("./AOXona.sol");
 
+var AOLibrary = artifacts.require("./AOLibrary.sol");
+
 module.exports = function(deployer) {
 	deployer.deploy(AOToken, 0, "AO Token", "AOTKN");
 	deployer.deploy(AOKilo, 0, "AO Kilo", "AOKILO");
@@ -20,4 +22,6 @@ module.exports = function(deployer) {
 	deployer.deploy(AOZetta, 0, "AO Zetta", "AOZETTA");
 	deployer.deploy(AOYotta, 0, "AO Yotta", "AOYOTTA");
 	deployer.deploy(AOXona, 0, "AO Xona", "AOXONA");
+
+	deployer.deploy(AOLibrary);
 };
