@@ -57,16 +57,16 @@ contract AOToken is owned, TokenERC20 {
 	}
 
 	// Mapping from lot ID to the lot object
-	mapping (bytes32 => Lot) private lots;
+	mapping (bytes32 => Lot) internal lots;
 
 	// Mapping from owner to list of owned lot IDs
-	mapping (address => bytes32[]) private ownedLots;
+	mapping (address => bytes32[]) internal ownedLots;
 
 	// Mapping from owner's lot ID to index of the owner lots list
-	mapping (address => mapping (bytes32 => uint256)) private ownedLotsIndex;
+	mapping (address => mapping (bytes32 => uint256)) internal ownedLotsIndex;
 
 	// Mapping from owner to his/her current weighted index
-	mapping (address => uint256) public ownerWeightedIndex;
+	mapping (address => uint256) internal ownerWeightedIndex;
 
 	// Event to be broadcasted to public when a lot is created
 	// index value is in 10^6 to account for decimal points
@@ -307,6 +307,15 @@ contract AOToken is owned, TokenERC20 {
 	}
 
 	/**
+	 * @dev Return all lot IDs owned by an address
+	 * @param _lotOwner The address of the lot owner
+	 * @return array of lot IDs
+	 */
+	function lotsByAddress(address _lotOwner) public isIco view returns (bytes32[]) {
+		return ownedLots[_lotOwner];
+	}
+
+	/**
 	 * @dev Return the total lots owned by an address
 	 * @param _lotOwner The address of the lot owner
 	 * @return total lots owner by the address
@@ -327,6 +336,107 @@ contract AOToken is owned, TokenERC20 {
 		require (_index < ownedLots[_lotOwner].length);
 		Lot memory _lot = lots[ownedLots[_lotOwner][_index]];
 		return (_lot.lotId, _lot.index, _lot.tokenAmount);
+	}
+
+	/**
+	 * @dev Return the lot information at a given ID
+	 * @param _lotId The lot ID in question
+	 * @return id of the lot
+	 * @return index of the lot in (10 ** 6)
+	 * @return ICO token amount in the lot
+	 */
+	function lotById(bytes32 _lotId) public isIco view returns (bytes32, uint256, uint256) {
+		Lot memory _lot = lots[_lotId];
+		return (_lot.lotId, _lot.index, _lot.tokenAmount);
+	}
+
+	/**
+	 * @dev Return the average weighted index of all lots owned by an address
+	 * @param _lotOwner The address of the lot owner
+	 * @return the weighted index of the address (in 10 ** 6)
+	 */
+	function weightedIndexByAddress(address _lotOwner) public isIco view returns (uint256) {
+		return ownerWeightedIndex[_lotOwner];
+	}
+
+	/***** NORMAL ERC20 & ICO TOKEN METHODS *****/
+	/**
+	 * @dev Send `_value` normal ERC20 and `_icoValue` ICO tokens to `_to` from your account
+	 * @param _to The address of the recipient
+	 * @param _value The amount of normal ERC20 tokens to send
+	 * @param _icoValue The amount of ICO tokens to send
+	 * @return true on success
+	 */
+	function transferTokens(address _to, uint256 _value, uint256 _icoValue) public isIco returns (bool success) {
+		require (super.transfer(_to, _value));
+		require (transferIcoToken(_to, _icoValue));
+		return true;
+	}
+
+	/**
+	 * @dev Send `_value` normal ERC20 and `_icoValue` ICO tokens to `_to` from `_from`
+	 * @param _from The address of the sender
+	 * @param _to The address of the recipient
+	 * @param _value The amount of normal ERC20 tokens to send
+	 * @param _icoValue The amount of ICO tokens to send
+	 * @return true on success
+	 */
+	function transferTokensFrom(address _from, address _to, uint256 _value, uint256 _icoValue) public isIco returns (bool success) {
+		require (super.transferFrom(_from, _to, _value));
+		require (transferIcoTokenFrom(_from, _to, _icoValue));
+		return true;
+	}
+
+	/**
+	 * @dev Allows `_spender` to spend no more than `_value` normal ERC20 and `_icoValue` ICO tokens in your behalf
+	 * @param _spender The address authorized to spend
+	 * @param _value The max amount of normal ERC20 they can spend
+	 * @param _icoValue The max amount of normal ERC20 they can spend
+	 * @return true on success
+	 */
+	function approveTokens(address _spender, uint256 _value, uint256 _icoValue) public isIco returns (bool success) {
+		require (super.approve(_spender, _value));
+		require (approveIcoToken(_spender, _icoValue));
+		return true;
+	}
+
+	/**
+	 * @dev Allows `_spender` to spend no more than `_value` normal ERC20 and `_icoValue` ICO tokens in your behalf, and then ping the contract about it
+	 * @param _spender The address authorized to spend
+	 * @param _value The max amount of normal ERC20 they can spend
+	 * @param _icoValue The max amount of ICO Tokens they can spend
+	 * @param _extraData some extra information to send to the approved contract
+	 * @return true on success
+	 */
+	function approveTokensAndCall(address _spender, uint256 _value, uint256 _icoValue, bytes _extraData) public isIco returns (bool success) {
+		require (super.approveAndCall(_spender, _value, _extraData));
+		require (approveIcoTokenAndCall(_spender, _icoValue, _extraData));
+		return true;
+	}
+
+	/**
+	 * @dev Remove `_value` normal ERC20 and `_icoValue` ICO tokens from the system irreversibly
+	 * @param _value The amount of normal ERC20 to burn
+	 * @param _icoValue The amount of ICO tokens to burn
+	 * @return true on success
+	 */
+	function burnTokens(uint256 _value, uint256 _icoValue) public isIco returns (bool success) {
+		require (super.burn(_value));
+		require (burnIcoToken(_icoValue));
+		return true;
+	}
+
+	/**
+	 * @dev Remove `_value` normal ERC20 and `_icoValue` ICO tokens from the system irreversibly on behsalf of `_from`
+	 * @param _from The address of sender
+	 * @param _value The amount of normal ERC20 to burn
+	 * @param _icoValue The amount of ICO tokens to burn
+	 * @return true on success
+	 */
+	function burnTokensFrom(address _from, uint256 _value, uint256 _icoValue) public isIco returns (bool success) {
+		require (super.burnFrom(_from, _value));
+		require (burnIcoTokenFrom(_from, _icoValue));
+		return true;
 	}
 
 	/***** INTERNAL METHODS *****/

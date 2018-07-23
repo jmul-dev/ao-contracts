@@ -9,9 +9,10 @@ contract("AOToken", function(accounts) {
 	var maxIcoSupply;
 	var icoReservedForFoundation;
 	var weightedIndexDivisor;
-	var _account1TotalLots = 0;
-	var _account2TotalLots = 0;
-	var _account3TotalLots = 0;
+	var account1Lots = [];
+	var account2Lots = [];
+	var account3Lots = [];
+	var lot1;
 	before(function() {
 		return AOToken.deployed().then(function(instance) {
 			tokenMeta = instance;
@@ -291,7 +292,7 @@ contract("AOToken", function(accounts) {
 			var lotIndex = await tokenMeta.lotIndex();
 			var ownerIcoBalance = await tokenMeta.icoBalanceOf(owner);
 			var ownerTotalLots = await tokenMeta.totalLotsByAddress(owner);
-			var ownerWeightedIndex = await tokenMeta.ownerWeightedIndex(owner);
+			var weightedIndexByAddress = await tokenMeta.weightedIndexByAddress(owner);
 			var icoTotalSupply = await tokenMeta.icoTotalSupply();
 			assert.equal(
 				foundationReserved,
@@ -302,7 +303,11 @@ contract("AOToken", function(accounts) {
 			assert.equal(lotIndex.toNumber(), 0, "Lot index is incorrect before reserve for Foundation transaction");
 			assert.equal(ownerIcoBalance.toNumber(), 0, "Owner has incorrect ICO balance before reserve for Foundation transaction");
 			assert.equal(ownerTotalLots.toNumber(), 0, "Owner has incorrect total lots amount before reserve for Foundation transaction");
-			assert.equal(ownerWeightedIndex.toNumber(), 0, "Owner has incorrect weighted index before reserve for Foundation transaction");
+			assert.equal(
+				weightedIndexByAddress.toNumber(),
+				0,
+				"Owner has incorrect weighted index before reserve for Foundation transaction"
+			);
 			assert.equal(icoTotalSupply.toNumber(), 0, "Contract has incorrect ICO total supply before reserve for Foundation transaction");
 			try {
 				await tokenMeta.reserveForFoundation({ from: account1 });
@@ -323,7 +328,7 @@ contract("AOToken", function(accounts) {
 			lotIndex = await tokenMeta.lotIndex();
 			ownerIcoBalance = await tokenMeta.icoBalanceOf(owner);
 			ownerTotalLots = await tokenMeta.totalLotsByAddress(owner);
-			ownerWeightedIndex = await tokenMeta.ownerWeightedIndex(owner);
+			weightedIndexByAddress = await tokenMeta.weightedIndexByAddress(owner);
 			icoTotalSupply = await tokenMeta.icoTotalSupply();
 			assert.equal(
 				foundationReserved,
@@ -339,7 +344,7 @@ contract("AOToken", function(accounts) {
 			);
 			assert.equal(ownerTotalLots.toNumber(), 1, "Owner has incorrect total lots amount after reserve for Foundation transaction");
 			assert.equal(
-				ownerWeightedIndex.toNumber(),
+				weightedIndexByAddress.toNumber(),
 				1 * weightedIndexDivisor.toNumber(),
 				"Owner has incorrect weighted index after reserve for Foundation transaction"
 			);
@@ -370,7 +375,7 @@ contract("AOToken", function(accounts) {
 			var lotIndex = await tokenMeta.lotIndex();
 			var account1IcoBalance = await tokenMeta.icoBalanceOf(account1);
 			var account1TotalLots = await tokenMeta.totalLotsByAddress(account1);
-			var account1WeightedIndex = await tokenMeta.ownerWeightedIndex(account1);
+			var account1WeightedIndex = await tokenMeta.weightedIndexByAddress(account1);
 			var icoTotalSupply = await tokenMeta.icoTotalSupply();
 			assert.equal(totalLots.toNumber(), 1, "Total lots is incorrect before user buy ICO transaction");
 			assert.equal(lotIndex.toNumber(), 1, "Lot index is incorrect before user buy ICO transaction");
@@ -394,7 +399,6 @@ contract("AOToken", function(accounts) {
 			try {
 				await tokenMeta.buyIcoToken({ from: account1, value: 10000 });
 				buySuccess = true;
-				_account1TotalLots++;
 			} catch (e) {
 				buySuccess = false;
 			}
@@ -404,7 +408,7 @@ contract("AOToken", function(accounts) {
 			lotIndex = await tokenMeta.lotIndex();
 			account1IcoBalance = await tokenMeta.icoBalanceOf(account1);
 			account1TotalLots = await tokenMeta.totalLotsByAddress(account1);
-			account1WeightedIndex = await tokenMeta.ownerWeightedIndex(account1);
+			account1WeightedIndex = await tokenMeta.weightedIndexByAddress(account1);
 			icoTotalSupply = await tokenMeta.icoTotalSupply();
 			assert.equal(totalLots.toNumber(), 2, "Total lots is incorrect after user buy ICO transaction");
 			assert.equal(lotIndex.toNumber(), 2, "Lot index is incorrect after user buy ICO transaction");
@@ -420,9 +424,11 @@ contract("AOToken", function(accounts) {
 				icoReservedForFoundation.toNumber() + account1IcoBalance.toNumber(),
 				"Contract has incorrect ICO total supply after user buy ICO transaction"
 			);
-			var account1Lot = await tokenMeta.lotOfOwnerByIndex(account1, 0);
-			assert.equal(account1Lot[1].toNumber(), 2 * weightedIndexDivisor.toNumber(), "Account1 lot has incorrect global lot index");
-			assert.equal(account1Lot[2].toNumber(), 100, "Account1 lot has incorrect ICO token amount");
+			var account1Lot1 = await tokenMeta.lotOfOwnerByIndex(account1, 0);
+			lot1 = account1Lot1;
+			account1Lots.push(account1Lot1[0]);
+			assert.equal(account1Lot1[1].toNumber(), 2 * weightedIndexDivisor.toNumber(), "Account1 lot has incorrect global lot index");
+			assert.equal(account1Lot1[2].toNumber(), 100, "Account1 lot has incorrect ICO token amount");
 		});
 		it("_updateWeightedIndex() - Should re-calculate existing `account` lots' indexes and update his/her overall weighted index", async function() {
 			var account1Lot1 = await tokenMeta.lotOfOwnerByIndex(account1, 0);
@@ -433,28 +439,28 @@ contract("AOToken", function(accounts) {
 			try {
 				await tokenMeta.buyIcoToken({ from: account1, value: 1000000 });
 				buySuccess = true;
-				_account1TotalLots++;
 			} catch (e) {
 				buySuccess = false;
 			}
 			assert.equal(buySuccess, true, "Unable to buy ICO token even though user sent some ETH");
 			var account1Lot2 = await tokenMeta.lotOfOwnerByIndex(account1, 1);
+			account1Lots.push(account1Lot2[0]);
 			assert.equal(account1Lot2[1].toNumber(), 3 * weightedIndexDivisor.toNumber(), "Account1 lot #2 has incorrect global lot index");
 			assert.equal(account1Lot2[2].toNumber(), 10000, "Account1 lot #2 has incorrect ICO token amount");
 
 			try {
 				await tokenMeta.buyIcoToken({ from: account1, value: 800000 });
 				buySuccess = true;
-				_account1TotalLots++;
 			} catch (e) {
 				buySuccess = false;
 			}
 			assert.equal(buySuccess, true, "Unable to buy ICO token even though user sent some ETH");
 			var account1Lot3 = await tokenMeta.lotOfOwnerByIndex(account1, 2);
+			account1Lots.push(account1Lot3[0]);
 			assert.equal(account1Lot3[1].toNumber(), 4 * weightedIndexDivisor.toNumber(), "Account1 lot #3 has incorrect global lot index");
 			assert.equal(account1Lot3[2].toNumber(), 8000, "Account1 lot #3 has incorrect ICO token amount");
 
-			var account1WeightedIndex = await tokenMeta.ownerWeightedIndex(account1);
+			var account1WeightedIndex = await tokenMeta.weightedIndexByAddress(account1);
 
 			// Calculate weighted index
 			var totalWeightedTokens =
@@ -482,11 +488,14 @@ contract("AOToken", function(accounts) {
 				// Sending more ETH than we should to check whether or not the user receives the remainder ETH
 				await tokenMeta.buyIcoToken({ from: account2, value: web3.toWei(900, "ether") });
 				buySuccess = true;
-				_account2TotalLots++;
 			} catch (e) {
 				buySuccess = false;
 			}
 			assert.equal(buySuccess, true, "Unable to buy ICO token even though user sent some ETH");
+
+			var account2Lot1 = await tokenMeta.lotOfOwnerByIndex(account2, 0);
+			account2Lots.push(account2Lot1[0]);
+
 			var account2IcoBalance = await tokenMeta.icoBalanceOf(account2);
 			assert.equal(
 				account2IcoBalance.toNumber(),
@@ -516,8 +525,8 @@ contract("AOToken", function(accounts) {
 		it("transferIcoToken() - should send correct `_value` to `_to` from your account", async function() {
 			var account1IcoBalanceBefore = await tokenMeta.icoBalanceOf(account1);
 			var account3IcoBalance = await tokenMeta.icoBalanceOf(account3);
-			var account1WeightedIndexBefore = await tokenMeta.ownerWeightedIndex(account1);
-			var account3WeightedIndex = await tokenMeta.ownerWeightedIndex(account3);
+			var account1WeightedIndexBefore = await tokenMeta.weightedIndexByAddress(account1);
+			var account3WeightedIndex = await tokenMeta.weightedIndexByAddress(account3);
 			assert.equal(account3IcoBalance.toNumber(), 0, "Account3 has incorrect ICO balance before transfer");
 			assert.equal(account3WeightedIndex.toNumber(), 0, "Account3 has incorrect weighted index before transfer");
 
@@ -526,12 +535,14 @@ contract("AOToken", function(accounts) {
 			var icoTotalSupplyBefore = await tokenMeta.icoTotalSupply();
 
 			await tokenMeta.transferIcoToken(account3, 100, { from: account1 });
-			_account3TotalLots++;
+
+			var account3Lot1 = await tokenMeta.lotOfOwnerByIndex(account3, 0);
+			account3Lots.push(account3Lot1[0]);
 
 			var account1IcoBalanceAfter = await tokenMeta.icoBalanceOf(account1);
 			account3IcoBalance = await tokenMeta.icoBalanceOf(account3);
-			var account1WeightedIndexAfter = await tokenMeta.ownerWeightedIndex(account1);
-			account3WeightedIndex = await tokenMeta.ownerWeightedIndex(account3);
+			var account1WeightedIndexAfter = await tokenMeta.weightedIndexByAddress(account1);
+			account3WeightedIndex = await tokenMeta.weightedIndexByAddress(account3);
 			assert.equal(
 				account1IcoBalanceAfter.toNumber(),
 				account1IcoBalanceBefore.toNumber() - 100,
@@ -563,14 +574,14 @@ contract("AOToken", function(accounts) {
 		it("burnIcoToken() - should remove `_value` tokens from the system irreversibly", async function() {
 			var icoTotalSupplyBefore = await tokenMeta.icoTotalSupply();
 			var account1IcoBalanceBefore = await tokenMeta.icoBalanceOf(account1);
-			var account1WeightedIndexBefore = await tokenMeta.ownerWeightedIndex(account1);
+			var account1WeightedIndexBefore = await tokenMeta.weightedIndexByAddress(account1);
 			var account1TotalLotsBefore = await tokenMeta.totalLotsByAddress(account1);
 
 			await tokenMeta.burnIcoToken(10, { from: account1 });
 
 			var account1IcoBalanceAfter = await tokenMeta.icoBalanceOf(account1);
 			var icoTotalSupplyAfter = await tokenMeta.icoTotalSupply();
-			var account1WeightedIndexAfter = await tokenMeta.ownerWeightedIndex(account1);
+			var account1WeightedIndexAfter = await tokenMeta.weightedIndexByAddress(account1);
 			var account1TotalLotsAfter = await tokenMeta.totalLotsByAddress(account1);
 
 			assert.equal(
@@ -598,7 +609,7 @@ contract("AOToken", function(accounts) {
 			assert.equal(account3IcoAllowance.toNumber(), 10, "Account3 has incorrect ICO allowance after approve");
 		});
 		it("transferIcoTokenFrom() - should send `_value` ICO tokens to `_to` in behalf of `_from`", async function() {
-			var account1WeightedIndexBefore = await tokenMeta.ownerWeightedIndex(account1);
+			var account1WeightedIndexBefore = await tokenMeta.weightedIndexByAddress(account1);
 			var account1IcoBalanceBefore = await tokenMeta.icoBalanceOf(account1);
 			var account3IcoBalanceBefore = await tokenMeta.icoBalanceOf(account3);
 			var account3IcoAllowanceBefore = await tokenMeta.icoAllowance(account1, account3);
@@ -617,13 +628,12 @@ contract("AOToken", function(accounts) {
 			try {
 				await tokenMeta.transferIcoTokenFrom(account1, account3, 5, { from: account3 });
 				canTransferIcoFrom = true;
-				_account3TotalLots++;
 			} catch (e) {
 				canTransferIcoFrom = false;
 			}
 			assert.equal(canTransferIcoFrom, true, "Account that was approved is not able to transfer ICO on behalf of other");
 
-			var account1WeightedIndexAfter = await tokenMeta.ownerWeightedIndex(account1);
+			var account1WeightedIndexAfter = await tokenMeta.weightedIndexByAddress(account1);
 			var account1IcoBalanceAfter = await tokenMeta.icoBalanceOf(account1);
 			var account3IcoBalanceAfter = await tokenMeta.icoBalanceOf(account3);
 			var account3IcoAllowanceAfter = await tokenMeta.icoAllowance(account1, account3);
@@ -657,6 +667,8 @@ contract("AOToken", function(accounts) {
 
 			var account3Lot1 = await tokenMeta.lotOfOwnerByIndex(account3, 0);
 			var account3Lot2 = await tokenMeta.lotOfOwnerByIndex(account3, 1);
+			account3Lots.push(account3Lot2[0]);
+
 			assert.equal(
 				account3Lot2[1].toNumber(),
 				account1WeightedIndexAfter.toNumber(),
@@ -664,7 +676,7 @@ contract("AOToken", function(accounts) {
 			);
 			assert.equal(account3Lot2[2].toNumber(), 5, "Account3 lot #2 has incorrect ICO token amount");
 
-			var account3WeightedIndex = await tokenMeta.ownerWeightedIndex(account3);
+			var account3WeightedIndex = await tokenMeta.weightedIndexByAddress(account3);
 
 			// Calculate weighted index
 			var totalWeightedTokens =
@@ -730,17 +742,17 @@ contract("AOToken", function(accounts) {
 			var account3TotalLots = await tokenMeta.totalLotsByAddress(account3);
 			assert.equal(
 				account1TotalLots.toNumber(),
-				_account1TotalLots,
+				account1Lots.length,
 				"totalLotsByAddress() returns incorrect total lots for Account1"
 			);
 			assert.equal(
 				account2TotalLots.toNumber(),
-				_account2TotalLots,
+				account2Lots.length,
 				"totalLotsByAddress() returns incorrect total lots for Account2"
 			);
 			assert.equal(
 				account3TotalLots.toNumber(),
-				_account3TotalLots,
+				account3Lots.length,
 				"totalLotsByAddress() returns incorrect total lots for Account3"
 			);
 		});
@@ -756,6 +768,289 @@ contract("AOToken", function(accounts) {
 			assert.notEqual(canTransferIco, true, "Frozen account can transfer ICO");
 			// Unfreeze account1
 			await tokenMeta.freezeAccount(account1, false, { from: owner });
+		});
+		it("should return all lots owned by an address", async function() {
+			var _lots = await tokenMeta.lotsByAddress(account1);
+			var isEqual =
+				_lots.length === account1Lots.length &&
+				_lots.every(function(value, index) {
+					return value === account1Lots[index];
+				});
+			assert.equal(isEqual, true, "lotsByAddress() return incorrect lots for Account1");
+
+			_lots = await tokenMeta.lotsByAddress(account2);
+			isEqual =
+				_lots.length === account2Lots.length &&
+				_lots.every(function(value, index) {
+					return value === account2Lots[index];
+				});
+			assert.equal(isEqual, true, "lotsByAddress() return incorrect lots for Account2");
+
+			_lots = await tokenMeta.lotsByAddress(account3);
+			isEqual =
+				_lots.length === account3Lots.length &&
+				_lots.every(function(value, index) {
+					return value === account3Lots[index];
+				});
+			assert.equal(isEqual, true, "lotsByAddress() return incorrect lots for Account3");
+		});
+		it("should return correct lot information at a given ID", async function() {
+			var _lot = await tokenMeta.lotById(lot1[0]);
+			assert.equal(_lot[0], lot1[0], "lotById() return incorrect lot ID");
+			assert.equal(_lot[1].toNumber(), lot1[1].toNumber(), "lotById() return incorrect lot index");
+			assert.equal(_lot[2].toNumber(), lot1[2].toNumber(), "lotById() return incorrect token amount");
+		});
+	});
+	contract("Token Combination Function Tests", function() {
+		before(async function() {
+			await tokenMeta.mintToken(account1, 1000, { from: owner });
+			await tokenMeta.buyIcoToken({ from: account1, value: 10000000 });
+		});
+
+		it("transferTokens() - should send correct `_value` normal ERC20 and `_icoValue` ICO tokens to `_to` from your account", async function() {
+			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
+			var account2BalanceBefore = await tokenMeta.balanceOf(account2);
+
+			var account1IcoBalanceBefore = await tokenMeta.icoBalanceOf(account1);
+			var account2IcoBalanceBefore = await tokenMeta.icoBalanceOf(account2);
+
+			var account1WeightedIndex = await tokenMeta.weightedIndexByAddress(account1);
+
+			await tokenMeta.transferTokens(account2, 10, 10, { from: account1 });
+
+			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
+			var account2BalanceAfter = await tokenMeta.balanceOf(account2);
+
+			var account1IcoBalanceAfter = await tokenMeta.icoBalanceOf(account1);
+			var account2IcoBalanceAfter = await tokenMeta.icoBalanceOf(account2);
+
+			var account2WeightedIndex = await tokenMeta.weightedIndexByAddress(account2);
+
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.toNumber() - 10,
+				"Account1 has incorrect normal ERC20 balance after transfer"
+			);
+			assert.equal(
+				account2BalanceAfter.toNumber(),
+				account2BalanceBefore.toNumber() + 10,
+				"Account2 has incorrect normal ERC20 balance after transfer"
+			);
+			assert.equal(
+				account1IcoBalanceAfter.toNumber(),
+				account1IcoBalanceBefore.toNumber() - 10,
+				"Account1 has incorrect ICO Tokens balance after transfer"
+			);
+			assert.equal(
+				account2IcoBalanceAfter.toNumber(),
+				account2IcoBalanceBefore.toNumber() + 10,
+				"Account2 has incorrect ICO Tokens balance after transfer"
+			);
+			assert.equal(
+				account2WeightedIndex.toNumber(),
+				account1WeightedIndex.toNumber(),
+				"Account2 has incorrect weighted index after transfer"
+			);
+		});
+		it("burnTokens() - should remove `_value` normal ERC20 and `_icoValue` ICO tokens from the system irreversibly", async function() {
+			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
+			var account1IcoBalanceBefore = await tokenMeta.icoBalanceOf(account1);
+			var totalSupplyBefore = await tokenMeta.totalSupply();
+			var icoTotalSupplyBefore = await tokenMeta.icoTotalSupply();
+
+			await tokenMeta.burnTokens(5, 5, { from: account1 });
+
+			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
+			var account1IcoBalanceAfter = await tokenMeta.icoBalanceOf(account1);
+			var totalSupplyAfter = await tokenMeta.totalSupply();
+			var icoTotalSupplyAfter = await tokenMeta.icoTotalSupply();
+
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.toNumber() - 5,
+				"Account1 has incorrect normal ERC20 balance after burn"
+			);
+			assert.equal(
+				account1IcoBalanceAfter.toNumber(),
+				account1IcoBalanceBefore.toNumber() - 5,
+				"Account1 has incorrect ICO Tokens balance after burn"
+			);
+			assert.equal(
+				totalSupplyAfter.toNumber(),
+				totalSupplyBefore.toNumber() - 5,
+				"Contract has incorrect normal ERC20 total supply after burn"
+			);
+			assert.equal(
+				icoTotalSupplyAfter.toNumber(),
+				icoTotalSupplyBefore.toNumber() - 5,
+				"Contract has incorrect ICO Tokens total supply after burn"
+			);
+		});
+		it("approveTokens() - should allow `_spender` to spend no more than `_value` normal ERC20 and `_icoValue` ICO tokens in your behalf", async function() {
+			var account2AllowanceBefore = await tokenMeta.allowance(account1, account2);
+			var account2IcoAllowanceBefore = await tokenMeta.icoAllowance(account1, account2);
+
+			await tokenMeta.approveTokens(account2, 40, 40, { from: account1 });
+
+			var account2AllowanceAfter = await tokenMeta.allowance(account1, account2);
+			var account2IcoAllowanceAfter = await tokenMeta.icoAllowance(account1, account2);
+
+			assert.equal(
+				account2AllowanceAfter.toNumber(),
+				account2AllowanceBefore.toNumber() + 40,
+				"Account2 has incorrect normal ERC20 allowance after approve"
+			);
+			assert.equal(
+				account2IcoAllowanceAfter.toNumber(),
+				account2IcoAllowanceBefore.toNumber() + 40,
+				"Account2 has incorrect ICO Tokens allowance after approve"
+			);
+		});
+		it("transferTokensFrom() - should send `_value` normal ERC20 tokens and `_icoValue` ICO Tokens to `_to` in behalf of `_from`", async function() {
+			var canTransferTokensFrom;
+			try {
+				await tokenMeta.transferTokensFrom(account1, account3, 5, 5, { from: owner });
+				canTransferTokensFrom = true;
+			} catch (e) {
+				canTransferTokensFrom = false;
+			}
+			assert.notEqual(canTransferTokensFrom, true, "Account that was not approved is able to transfer tokens on behalf of other");
+
+			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
+			var account3BalanceBefore = await tokenMeta.balanceOf(account3);
+			var account2AllowanceBefore = await tokenMeta.allowance(account1, account2);
+
+			var account1IcoBalanceBefore = await tokenMeta.icoBalanceOf(account1);
+			var account3IcoBalanceBefore = await tokenMeta.icoBalanceOf(account3);
+			var account2IcoAllowanceBefore = await tokenMeta.icoAllowance(account1, account2);
+
+			try {
+				await tokenMeta.transferTokensFrom(account1, account3, 5, 5, { from: account2 });
+				canTransferTokensFrom = true;
+			} catch (e) {
+				canTransferTokensFrom = false;
+			}
+			assert.equal(canTransferTokensFrom, true, "Account that was approved is not able to transfer on behalf of other");
+
+			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
+			var account3BalanceAfter = await tokenMeta.balanceOf(account3);
+			var account2AllowanceAfter = await tokenMeta.allowance(account1, account2);
+
+			var account1IcoBalanceAfter = await tokenMeta.icoBalanceOf(account1);
+			var account3IcoBalanceAfter = await tokenMeta.icoBalanceOf(account3);
+			var account2IcoAllowanceAfter = await tokenMeta.icoAllowance(account1, account2);
+
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.toNumber() - 5,
+				"Account1 has incorrect normal ERC20 balance after transferTokensFrom"
+			);
+			assert.equal(
+				account3BalanceAfter.toNumber(),
+				account3BalanceBefore.toNumber() + 5,
+				"Account3 has incorrect normal ERC20 balance after transferTokensFrom"
+			);
+			assert.equal(
+				account2AllowanceAfter.toNumber(),
+				account2AllowanceBefore.toNumber() - 5,
+				"Account2 has incorrect normal ERC20 allowance after transferTokensFrom"
+			);
+
+			assert.equal(
+				account1IcoBalanceAfter.toNumber(),
+				account1IcoBalanceBefore.toNumber() - 5,
+				"Account1 has incorrect ICO Tokens balance after transferTokensFrom"
+			);
+			assert.equal(
+				account3IcoBalanceAfter.toNumber(),
+				account3IcoBalanceBefore.toNumber() + 5,
+				"Account3 has incorrect ICO Tokens balance after transferTokensFrom"
+			);
+			assert.equal(
+				account2IcoAllowanceAfter.toNumber(),
+				account2IcoAllowanceBefore.toNumber() - 5,
+				"Account2 has incorrect ICO Tokens allowance after transferTokensFrom"
+			);
+		});
+		it("burnTokensFrom() - should remove `_value` normal ERC20 and `_icoValue` ICO Tokens from the system irreversibly on behalf of `_from`", async function() {
+			var canBurnTokensFrom;
+			try {
+				await tokenMeta.burnTokensFrom(account1, 5, 5, { from: owner });
+				canBurnTokensFrom = true;
+			} catch (e) {
+				canBurnTokensFrom = false;
+			}
+			assert.notEqual(canBurnTokensFrom, true, "Account that was not approved is able to burn tokens on behalf of other");
+			try {
+				await tokenMeta.burnTokensFrom(account1, 1000, 1000, { from: account2 });
+				canBurnTokensFrom = true;
+			} catch (e) {
+				canBurnTokensFrom = false;
+			}
+			assert.notEqual(
+				canBurnTokensFrom,
+				true,
+				"Account that was approved is able to burn more than it's allowance on behalf of other"
+			);
+
+			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
+			var account2AllowanceBefore = await tokenMeta.allowance(account1, account2);
+
+			var account1IcoBalanceBefore = await tokenMeta.icoBalanceOf(account1);
+			var account2IcoAllowanceBefore = await tokenMeta.icoAllowance(account1, account2);
+
+			var totalSupplyBefore = await tokenMeta.totalSupply();
+			var icoTotalSupplyBefore = await tokenMeta.icoTotalSupply();
+
+			try {
+				await tokenMeta.burnTokensFrom(account1, 10, 10, { from: account2 });
+				canBurnTokensFrom = true;
+			} catch (e) {
+				canBurnTokensFrom = false;
+			}
+			assert.equal(canBurnTokensFrom, true, "Account that was approved is not able to burn on behalf of other");
+
+			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
+			var account2AllowanceAfter = await tokenMeta.allowance(account1, account2);
+
+			var account1IcoBalanceAfter = await tokenMeta.icoBalanceOf(account1);
+			var account2IcoAllowanceAfter = await tokenMeta.icoAllowance(account1, account2);
+
+			var totalSupplyAfter = await tokenMeta.totalSupply();
+			var icoTotalSupplyAfter = await tokenMeta.icoTotalSupply();
+
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.toNumber() - 10,
+				"Account1 has incorrect normal ERC20 balance after burnTokensFrom"
+			);
+			assert.equal(
+				account2AllowanceAfter.toNumber(),
+				account2AllowanceBefore.toNumber() - 10,
+				"Account2 has incorrect normal ERC20 allowance after burnTokensFrom"
+			);
+
+			assert.equal(
+				account1IcoBalanceAfter.toNumber(),
+				account1IcoBalanceBefore.toNumber() - 10,
+				"Account1 has incorrect ICO Tokens balance after burnTokensFrom"
+			);
+			assert.equal(
+				account2IcoAllowanceAfter.toNumber(),
+				account2IcoAllowanceBefore.toNumber() - 10,
+				"Account2 has incorrect ICO Tokens allowance after burnTokensFrom"
+			);
+
+			assert.equal(
+				totalSupplyAfter.toNumber(),
+				totalSupplyBefore.toNumber() - 10,
+				"Contract has incorrect normal ERC20 total suppy after burnTokensFrom"
+			);
+			assert.equal(
+				icoTotalSupplyAfter.toNumber(),
+				icoTotalSupplyBefore.toNumber() - 10,
+				"Contract has incorrect ICO Tokens total suppy after burnTokensFrom"
+			);
 		});
 	});
 });
