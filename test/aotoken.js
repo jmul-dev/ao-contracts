@@ -186,7 +186,7 @@ contract("AOToken", function(accounts) {
 			var account1Frozen = await tokenMeta.frozenAccount(account1);
 			assert.equal(account1Frozen, true, "Account1 is not frozen after owner froze his account");
 		});
-		it("frozen account should not be able to transfer", async function() {
+		it("frozen account should NOT be able to transfer", async function() {
 			var canTransfer;
 			try {
 				await tokenMeta.transfer(account2, 10, { from: account1 });
@@ -475,7 +475,7 @@ contract("AOToken", function(accounts) {
 				"Account1 has incorrect weighted index after multiple buy transactions"
 			);
 		});
-		it("should not allow buy ICO if max ICO cap is reached (ICO has ended)", async function() {
+		it("should NOT allow buy ICO if max ICO cap is reached (ICO has ended)", async function() {
 			var icoTotalSupply = await tokenMeta.icoTotalSupply();
 			var remainingAvailableIcoTokens = maxIcoSupply.toNumber() - icoTotalSupply.toNumber();
 			assert.isAbove(remainingAvailableIcoTokens, 0, "Contract has incorrect ICO total supply amount");
@@ -756,7 +756,7 @@ contract("AOToken", function(accounts) {
 				"totalLotsByAddress() returns incorrect total lots for Account3"
 			);
 		});
-		it("frozen account should not be able to transfer ICO", async function() {
+		it("frozen account should NOT be able to transfer ICO", async function() {
 			var canTransferIco;
 			await tokenMeta.freezeAccount(account1, true, { from: owner });
 			try {
