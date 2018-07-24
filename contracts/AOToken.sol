@@ -77,7 +77,7 @@ contract AOToken is owned, TokenERC20 {
 	 */
 	constructor(uint256 initialSupply, string tokenName, string tokenSymbol)
 		TokenERC20(initialSupply, tokenName, tokenSymbol) public {
-		powerOfTen = 1;
+		powerOfTen = 0;
 		decimals = 0;
 		icoContract = true;
 		setIcoPrices(0, 10000); // Set ICO buy price to 10000 Wei/token

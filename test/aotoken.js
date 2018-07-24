@@ -31,7 +31,7 @@ contract("AOToken", function(accounts) {
 		});
 		it("should have the correct power of ten", function() {
 			return tokenMeta.powerOfTen.call().then(function(powerOfTen) {
-				assert.equal(powerOfTen, 1, "Contract has the incorrect power of ten");
+				assert.equal(powerOfTen, 0, "Contract has the incorrect power of ten");
 			});
 		});
 		it("should have 0 decimal", function() {
