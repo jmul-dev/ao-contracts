@@ -105,21 +105,21 @@ contract("AOTreasury", function(accounts) {
 		it("only owner can add denomination", async function() {
 			var canAdd;
 			try {
-				await aotreasury.addDenomination("deno", someAddress, {from: account1});
+				await aotreasury.addDenomination("deno", someAddress, { from: account1 });
 				canAdd = true;
 			} catch (e) {
 				canAdd = false;
 			}
 			assert.notEqual(canAdd, true, "Others can add denomination");
 			try {
-				await aotreasury.addDenomination("kilo", someAddress, {from: owner});
+				await aotreasury.addDenomination("kilo", someAddress, { from: owner });
 				canAdd = true;
 			} catch (e) {
 				canAdd = false;
 			}
 			assert.notEqual(canAdd, true, "Owner can re-add existing denomination");
 			try {
-				await aotreasury.addDenomination("deno", someAddress, {from: owner});
+				await aotreasury.addDenomination("deno", someAddress, { from: owner });
 				canAdd = true;
 			} catch (e) {
 				canAdd = false;
@@ -131,21 +131,21 @@ contract("AOTreasury", function(accounts) {
 		it("only owner can update denomination", async function() {
 			var canUpdate;
 			try {
-				await aotreasury.updateDenomination("kilo", aokilo.address, {from: account1});
+				await aotreasury.updateDenomination("kilo", aokilo.address, { from: account1 });
 				canUpdate = true;
 			} catch (e) {
 				canUpdate = false;
 			}
 			assert.notEqual(canUpdate, true, "Others can update denomination");
 			try {
-				await aotreasury.updateDenomination("deca", someAddress, {from: owner});
+				await aotreasury.updateDenomination("deca", someAddress, { from: owner });
 				canUpdate = true;
 			} catch (e) {
 				canUpdate = false;
 			}
 			assert.notEqual(canUpdate, true, "Owner can update non-existing denomination");
 			try {
-				await aotreasury.updateDenomination("kilo", someAddress, {from: owner});
+				await aotreasury.updateDenomination("kilo", someAddress, { from: owner });
 				canUpdate = true;
 			} catch (e) {
 				canUpdate = false;
@@ -157,21 +157,21 @@ contract("AOTreasury", function(accounts) {
 		it("only owner can delete denomination", async function() {
 			var canDelete;
 			try {
-				await aotreasury.deleteDenomination("kilo", {from: account1});
+				await aotreasury.deleteDenomination("kilo", { from: account1 });
 				canDelete = true;
 			} catch (e) {
 				canDelete = false;
 			}
 			assert.notEqual(canDelete, true, "Others can delete denomination");
 			try {
-				await aotreasury.deleteDenomination("deno", {from: account1});
+				await aotreasury.deleteDenomination("deno", { from: account1 });
 				canDelete = true;
 			} catch (e) {
 				canDelete = false;
 			}
 			assert.notEqual(canDelete, true, "Owner can delete non-existing denomination");
 			try {
-				await aotreasury.deleteDenomination("kilo", {from: owner});
+				await aotreasury.deleteDenomination("kilo", { from: owner });
 				canDelete = true;
 			} catch (e) {
 				canDelete = false;

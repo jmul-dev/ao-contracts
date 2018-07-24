@@ -43,14 +43,14 @@ module.exports = function(deployer, network, accounts) {
 		aotreasury = await AOTreasury.deployed();
 
 		// Store AO denominations in the treasury contract
-		await aotreasury.addDenomination("kilo", aokilo.address, {from: accounts[0]});
-		await aotreasury.addDenomination("mega", aomega.address, {from: accounts[0]});
-		await aotreasury.addDenomination("giga", aogiga.address, {from: accounts[0]});
-		await aotreasury.addDenomination("tera", aotera.address, {from: accounts[0]});
-		await aotreasury.addDenomination("peta", aopeta.address, {from: accounts[0]});
-		await aotreasury.addDenomination("exa", aoexa.address, {from: accounts[0]});
-		await aotreasury.addDenomination("zetta", aozetta.address, {from: accounts[0]});
-		await aotreasury.addDenomination("yotta", aoyotta.address, {from: accounts[0]});
-		await aotreasury.addDenomination("xona", aoxona.address, {from: accounts[0]});
+		await aotreasury.addDenomination("kilo", aokilo.address, { from: accounts[0] });
+		await aotreasury.addDenomination("mega", aomega.address, { from: accounts[0] });
+		await aotreasury.addDenomination("giga", aogiga.address, { from: accounts[0] });
+		await aotreasury.addDenomination("tera", aotera.address, { from: accounts[0] });
+		await aotreasury.addDenomination("peta", aopeta.address, { from: accounts[0] });
+		await aotreasury.addDenomination("exa", aoexa.address, { from: accounts[0] });
+		await aotreasury.addDenomination("zetta", aozetta.address, { from: accounts[0] });
+		await aotreasury.addDenomination("yotta", aoyotta.address, { from: accounts[0] });
+		await aotreasury.addDenomination("xona", aoxona.address, { from: accounts[0] });
 	});
 };
