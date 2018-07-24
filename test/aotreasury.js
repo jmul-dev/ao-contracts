@@ -30,6 +30,7 @@ contract("AOTreasury", function(accounts) {
 		aoxona = await AOXona.deployed();
 	});
 	it("should have all of AO denominations", async function() {
+		var ao = await aotreasury.denominations("ao");
 		var kilo = await aotreasury.denominations("kilo");
 		var mega = await aotreasury.denominations("mega");
 		var giga = await aotreasury.denominations("giga");
@@ -40,7 +41,8 @@ contract("AOTreasury", function(accounts) {
 		var yotta = await aotreasury.denominations("yotta");
 		var xona = await aotreasury.denominations("xona");
 
-		assert.equal(kilo, aokilo.address, "Contract is missing kilo from list of denominations");
+		assert.equal(ao, aotoken.address, "contract is missing ao from list of denominations");
+		assert.equal(kilo, aokilo.address, "contract is missing kilo from list of denominations");
 		assert.equal(mega, aomega.address, "Contract is missing mega from list of denominations");
 		assert.equal(giga, aogiga.address, "Contract is missing giga from list of denominations");
 		assert.equal(tera, aotera.address, "Contract is missing tera from list of denominations");
@@ -72,6 +74,7 @@ contract("AOTreasury", function(accounts) {
 		assert.equal(xonaToBase.toNumber(), "9123456789123456789123456789", "toBase xona return wrong amount of token");
 	});
 	it("fromBase() should return correct amount", async function() {
+		var baseToAo = await aotreasury.fromBase(9123, "ao");
 		var baseToKilo = await aotreasury.fromBase(9123, "kilo");
 		var baseToMega = await aotreasury.fromBase(9123456, "mega");
 		var baseToGiga = await aotreasury.fromBase(9123456789, "giga");
@@ -82,8 +85,8 @@ contract("AOTreasury", function(accounts) {
 		var baseToYotta = await aotreasury.fromBase("9123456789123456789123456", "yotta");
 		var baseToXona = await aotreasury.fromBase("9123456789123456789123456789", "xona");
 
-		assert.equal(baseToKilo[0].toNumber(), 9, "fromBase kilo return wrong integer");
-		assert.equal(baseToKilo[1].toNumber(), 123, "fromBase kilo return wrong fraction");
+		assert.equal(baseToAo[0].toNumber(), 9123, "fromBase ao return wrong integer");
+		assert.equal(baseToAo[1].toNumber(), 0, "fromBase ao return wrong fraction");
 		assert.equal(baseToMega[0].toNumber(), 9, "fromBase mega return wrong integer");
 		assert.equal(baseToMega[1].toNumber(), 123456, "fromBase mega return wrong fraction");
 		assert.equal(baseToGiga[0].toNumber(), 9, "fromBase giga return wrong integer");

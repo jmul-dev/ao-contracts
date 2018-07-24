@@ -43,6 +43,7 @@ module.exports = function(deployer, network, accounts) {
 		aotreasury = await AOTreasury.deployed();
 
 		// Store AO denominations in the treasury contract
+		await aotreasury.addDenomination("ao", aotoken.address, { from: accounts[0] });
 		await aotreasury.addDenomination("kilo", aokilo.address, { from: accounts[0] });
 		await aotreasury.addDenomination("mega", aomega.address, { from: accounts[0] });
 		await aotreasury.addDenomination("giga", aogiga.address, { from: accounts[0] });
