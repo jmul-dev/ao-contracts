@@ -14,6 +14,7 @@ contract AOTreasury is owned {
 
 	// Mapping from denomination type to the token address
 	mapping (bytes8 => address) public denominations;
+	bytes8 constant public BASE_DENOMINATION = 'ao';
 
 	/**
 	 * @dev Constructor function
@@ -23,7 +24,7 @@ contract AOTreasury is owned {
 	/***** OWNER ONLY METHODS *****/
 	/**
 	 * @dev Owner adds denomination and the contract address associated with it
-	 * @param denominationName The name of the denomination, i.e kilo, mega, etc.
+	 * @param denominationName The name of the denomination, i.e ao, kilo, mega, etc.
 	 * @param denominationAddress The address of the denomination token
 	 * @return true on success
 	 */
@@ -37,7 +38,7 @@ contract AOTreasury is owned {
 
 	/**
 	 * @dev Owner updates denomination and the contract address associated with it
-	 * @param denominationName The name of the denomination, i.e kilo, mega, etc.
+	 * @param denominationName The name of the denomination, i.e ao, kilo, mega, etc.
 	 * @param denominationAddress The address of the denomination token
 	 * @return true on success
 	 */
@@ -51,7 +52,7 @@ contract AOTreasury is owned {
 
 	/**
 	 * @dev Owner deletes denomination from the list
-	 * @param denominationName The name of the denomination, i.e kilo, mega, etc.
+	 * @param denominationName The name of the denomination, i.e ao, kilo, mega, etc.
 	 * @return true on success
 	 */
 	function deleteDenomination(bytes8 denominationName) public onlyOwner returns (bool) {
