@@ -14,14 +14,20 @@ contract AOToken is owned, TokenERC20 {
 	// To differentiate denomination of AO
 	uint256 public powerOfTen;
 
+	mapping (address => bool) public allowStake;
+	mapping (address => bool) public allowUnstake;
+
 	/***** NORMAL ERC20 TOKEN VARIABLES *****/
 	uint256 public sellPrice;
 	uint256 public buyPrice;
 
 	mapping (address => bool) public frozenAccount;
+	mapping (address => uint256) public stakedBalance;
 
 	// This generates a public event on the blockchain that will notify clients
 	event FrozenFunds(address target, bool frozen);
+	event Stake(address indexed from, uint256 value);
+	event Unstake(address indexed from, uint256 value);
 
 	/***** ICO TOKEN VARIABLES *****/
 	uint256 public icoTotalSupply;
@@ -32,9 +38,14 @@ contract AOToken is owned, TokenERC20 {
 	mapping (address => uint256) public icoBalanceOf;
 	mapping (address => mapping (address => uint256)) public icoAllowance;
 
+	// Mapping from owner's lot weighted index to the amount of staked tokens
+	mapping (address => mapping (uint256 => uint256)) public icoStakedBalance;
+
 	event IcoTransfer(address indexed from, address indexed to, uint256 value);
 	event IcoApproval(address indexed _owner, address indexed _spender, uint256 _value);
 	event IcoBurn(address indexed from, uint256 value);
+	event IcoStake(address indexed from, uint256 value, uint256 weightedIndex);
+	event IcoUnstake(address indexed from, uint256 value, uint256 weightedIndex);
 
 	uint256 public totalLots;
 	uint256 public lotIndex;
@@ -91,6 +102,22 @@ contract AOToken is owned, TokenERC20 {
 		_;
 	}
 
+	/**
+	 * @dev Checks if `_account` is allowed to stake on behalf of others
+	 */
+	modifier onlyStakeBy(address _account) {
+		require (allowStake[_account] == true || _account == owner);
+		_;
+	}
+
+	/**
+	 * @dev Checks if `_account` is allowed to unstake on behalf of others
+	 */
+	modifier onlyUnstakeBy(address _account) {
+		require (allowUnstake[_account] == true || _account == owner);
+		_;
+	}
+
 	/***** OWNER ONLY METHODS *****/
 	/***** NORMAL ERC20 OWNER ONLY METHODS *****/
 	/**
@@ -101,6 +128,24 @@ contract AOToken is owned, TokenERC20 {
 	function freezeAccount(address target, bool freeze) public onlyOwner {
 		frozenAccount[target] = freeze;
 		emit FrozenFunds(target, freeze);
+	}
+
+	/**
+	 * @dev Allow `_account` address to stake on behalf of others
+	 * @param _account The address to allow
+	 * @param _allow Either to allow or not
+	 */
+	function setAllowStake(address _account, bool _allow) public onlyOwner {
+		allowStake[_account] = _allow;
+	}
+
+	/**
+	 * @dev Allow `_account` address to unstake on behalf of others
+	 * @param _account The address to allow
+	 * @param _allow Either to allow or not
+	 */
+	function setAllowUnstake(address _account, bool _allow) public onlyOwner {
+		allowUnstake[_account] = _allow;
 	}
 
 	/**
@@ -123,6 +168,34 @@ contract AOToken is owned, TokenERC20 {
 		totalSupply = totalSupply.add(mintedAmount);
 		emit Transfer(0, this, mintedAmount);
 		emit Transfer(this, target, mintedAmount);
+	}
+
+	/**
+	 * @dev Stake `_value` tokens on behalf of `_from`
+	 * @param _from The address of the target
+	 * @param _value The amount to stake
+	 * @return true on success
+	 */
+	function stakeFrom(address _from, uint256 _value) public onlyStakeBy(msg.sender) returns (bool) {
+		require(balanceOf[_from] >= _value);						// Check if the targeted balance is enough
+		balanceOf[_from] = balanceOf[_from].sub(_value);			// Subtract from the targeted balance
+		stakedBalance[_from] = stakedBalance[_from].add(_value);	// Add to the targeted staked balance
+		emit Stake(_from, _value);
+		return true;
+	}
+
+	/**
+	 * @dev Unstake `_value` tokens on behalf of `_from`
+	 * @param _from The address of the target
+	 * @param _value The amount to unstake
+	 * @return true on success
+	 */
+	function unstakeFrom(address _from, uint256 _value) public onlyUnstakeBy(msg.sender) returns (bool) {
+		require(stakedBalance[_from] >= _value);					// Check if the targeted staked balance is enough
+		stakedBalance[_from] = stakedBalance[_from].sub(_value);	// Subtract from the targeted staked balance
+		balanceOf[_from] = balanceOf[_from].add(_value);			// Add to the targeted balance
+		emit Unstake(_from, _value);
+		return true;
 	}
 
 	/***** ICO TOKEN OWNER ONLY METHODS *****/
@@ -153,6 +226,52 @@ contract AOToken is owned, TokenERC20 {
 		}
 
 		_createIcoLot(msg.sender, tokenAmount);
+	}
+
+	/**
+	 * @dev Stake `_value` ICO tokens at `_weightedIndex ` index on behalf of `_from`
+	 * @param _from The address of the target
+	 * @param _value The amount of ICO tokens to stake
+	 * @param _weightedIndex The weighted index of the ICO tokens
+	 * @return true on success
+	 */
+	function stakeIcoTokenFrom(address _from, uint256 _value, uint256 _weightedIndex) public onlyStakeBy(msg.sender) isIco returns (bool) {
+		// Check if the targeted balance is enough
+		require (icoBalanceOf[_from] >= _value);
+		// Make sure the weighted index is the same as account's current weighted index
+		require (_weightedIndex == ownerWeightedIndex[_from]);
+		// Subtract from the targeted balance
+		icoBalanceOf[_from] = icoBalanceOf[_from].sub(_value);
+		// Add to the targeted staked balance
+		icoStakedBalance[_from][_weightedIndex] = icoStakedBalance[_from][_weightedIndex].add(_value);
+		emit IcoStake(_from, _value, _weightedIndex);
+		return true;
+	}
+
+	/**
+	 * @dev Unstake `_value` ICO tokens at `_weightedIndex` on behalf of `_from`
+	 * @param _from The address of the target
+	 * @param _value The amount to unstake
+	 * @param _weightedIndex The weighted index of the ICO tokens
+	 * @return true on success
+	 */
+	function unstakeIcoTokenFrom(address _from, uint256 _value, uint256 _weightedIndex) public onlyUnstakeBy(msg.sender) isIco returns (bool) {
+		// Check if the targeted staked balance is enough
+		require (icoStakedBalance[_from][_weightedIndex] >= _value);
+
+		// Subtract from the targeted staked balance
+		icoStakedBalance[_from][_weightedIndex] = icoStakedBalance[_from][_weightedIndex].sub(_value);
+
+		// Recalculate owner weighted index
+		uint256 totalWeightedTokens = (ownerWeightedIndex[_from].mul(icoBalanceOf[_from])).add(_weightedIndex.mul(_value));
+		uint256 totalTokens = icoBalanceOf[_from].add(_value);
+		ownerWeightedIndex[_from] = totalWeightedTokens.div(totalTokens);
+
+		// Add to the targeted balance
+		icoBalanceOf[_from] = icoBalanceOf[_from].add(_value);
+
+		emit IcoUnstake(_from, _value, _weightedIndex);
+		return true;
 	}
 
 	/***** PUBLIC METHODS *****/

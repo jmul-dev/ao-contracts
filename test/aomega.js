@@ -6,6 +6,7 @@ contract("AOMega", function(accounts) {
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var account3 = accounts[3];
+	var stakingAccount = accounts[4];
 
 	before(function() {
 		return AOMega.deployed().then(function(instance) {
@@ -354,6 +355,145 @@ contract("AOMega", function(accounts) {
 				approveTokensSuccess = false;
 			}
 			assert.equal(approveTokensSuccess, false, "Account1 can set both normal ERC20 and ICO tokens allowances for other address");
+		});
+	});
+	contract("Staking Functionality Tests", function() {
+		var stakedIcoWeightedIndex;
+		before(async function() {
+			await tokenMeta.mintToken(account1, 100, { from: owner });
+		});
+
+		it("only owner can whitelist account that can stake on behalf of others", async function() {
+			var canSetAllowStake;
+			try {
+				await tokenMeta.setAllowStake(stakingAccount, true, { from: account1 });
+				canSetAllowStake = true;
+			} catch (e) {
+				canSetAllowStake = false;
+			}
+			assert.notEqual(canSetAllowStake, true, "Others can set allow stake");
+			try {
+				await tokenMeta.setAllowStake(stakingAccount, true, { from: owner });
+				canSetAllowStake = true;
+			} catch (e) {
+				canSetAllowStake = false;
+			}
+			assert.equal(canSetAllowStake, true, "Owner can't whitelist account to stake on behalf of others");
+			var stakingAccountCanStake = await tokenMeta.allowStake(stakingAccount);
+			assert.equal(stakingAccountCanStake, true, "Staking account doesn't have permission to stake after owner gave permission");
+		});
+		it("only owner can whitelist account that can unstake on behalf of others", async function() {
+			var canSetAllowUnstake;
+			try {
+				await tokenMeta.setAllowUnstake(stakingAccount, true, { from: account1 });
+				canSetAllowUnstake = true;
+			} catch (e) {
+				canSetAllowUnstake = false;
+			}
+			assert.notEqual(canSetAllowUnstake, true, "Others can set allow unstake");
+			try {
+				await tokenMeta.setAllowUnstake(stakingAccount, true, { from: owner });
+				canSetAllowUnstake = true;
+			} catch (e) {
+				canSetAllowUnstake = false;
+			}
+			assert.equal(canSetAllowUnstake, true, "Owner can't whitelist account to unstake on behalf of others");
+			var stakingAccountCanUnstake = await tokenMeta.allowUnstake(stakingAccount);
+			assert.equal(stakingAccountCanUnstake, true, "Staking account doesn't have permission to unstake after owner gave permission");
+		});
+		it("should be able to stake tokens on behalf of others", async function() {
+			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
+			var account1StakedBalanceBefore = await tokenMeta.stakedBalance(account1);
+			var totalSupplyBefore = await tokenMeta.totalSupply();
+
+			var canStake;
+			try {
+				await tokenMeta.stakeFrom(account1, 10, { from: account2 });
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+			}
+			assert.notEqual(canStake, true, "Account that do not have permission can stake on behalf of others");
+			try {
+				await tokenMeta.stakeFrom(account1, 10, { from: stakingAccount });
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+			}
+			assert.equal(canStake, true, "Account that has permission can't stake on behalf of thers");
+
+			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
+			var account1StakedBalanceAfter = await tokenMeta.stakedBalance(account1);
+			var totalSupplyAfter = await tokenMeta.totalSupply();
+
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.toNumber() - 10,
+				"Account1 has incorrect balance after staking"
+			);
+			assert.equal(
+				account1StakedBalanceAfter.toNumber(),
+				account1StakedBalanceBefore.toNumber() + 10,
+				"Account1 has incorrect staked balance after staking"
+			);
+			assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.toNumber(), "Contract has incorrect total supply after staking");
+		});
+		it("should be able to unstake tokens on behalf of others", async function() {
+			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
+			var account1StakedBalanceBefore = await tokenMeta.stakedBalance(account1);
+			var totalSupplyBefore = await tokenMeta.totalSupply();
+
+			var canUnstake;
+			try {
+				await tokenMeta.unstakeFrom(account1, 10, { from: account2 });
+				canUnstake = true;
+			} catch (e) {
+				canUnstake = false;
+			}
+			assert.notEqual(canUnstake, true, "Account that do not have permission can unstake on behalf of others");
+			try {
+				await tokenMeta.unstakeFrom(account1, 10, { from: stakingAccount });
+				canUnstake = true;
+			} catch (e) {
+				canUnstake = false;
+			}
+			assert.equal(canUnstake, true, "Account that has permission can't unstake on behalf of thers");
+
+			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
+			var account1StakedBalanceAfter = await tokenMeta.stakedBalance(account1);
+			var totalSupplyAfter = await tokenMeta.totalSupply();
+
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.toNumber() + 10,
+				"Account1 has incorrect balance after unstaking"
+			);
+			assert.equal(
+				account1StakedBalanceAfter.toNumber(),
+				account1StakedBalanceBefore.toNumber() - 10,
+				"Account1 has incorrect staked balance after unstaking"
+			);
+			assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.toNumber(), "Contract has incorrect total supply after unstaking");
+		});
+		it("should not be able to stake ICO tokens on behalf of others", async function() {
+			var canStakeIco;
+			try {
+				await tokenMeta.stakeIcoTokenFrom(account1, 10, 0, { from: stakingAccount });
+				canStakeIco = true;
+			} catch (e) {
+				canStakeIco = false;
+			}
+			assert.equal(canStakeIco, false, "Contract allows account to stake ICO tokens on behalf of thers");
+		});
+		it("should not be able to unstake ICO tokens on behalf of others", async function() {
+			var canUnstakeIco;
+			try {
+				await tokenMeta.unstakeIcoTokenFrom(account1, 10, 0, { from: stakingAccount });
+				canUnstakeIco = true;
+			} catch (e) {
+				canUnstakeIco = false;
+			}
+			assert.equal(canUnstakeIco, false, "Contract allows account to unstake ICO tokens on behalf of thers");
 		});
 	});
 });
