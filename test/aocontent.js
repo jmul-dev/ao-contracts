@@ -13,14 +13,14 @@ contract("AOContent", function(accounts) {
 		it("only owner can pause/unpause contract", async function() {
 			var canPause;
 			try {
-				await contentMeta.setPaused(true, {from: account1});
+				await contentMeta.setPaused(true, { from: account1 });
 				canPause = true;
 			} catch (e) {
 				canPause = false;
 			}
 			assert.notEqual(canPause, true, "Non-owner can pause contract");
 			try {
-				await contentMeta.setPaused(true, {from: owner});
+				await contentMeta.setPaused(true, { from: owner });
 				canPause = true;
 			} catch (e) {
 				canPause = false;
@@ -32,14 +32,14 @@ contract("AOContent", function(accounts) {
 		it("only owner can call escape hatch", async function() {
 			var canEscapeHatch;
 			try {
-				await contentMeta.escapeHatch({from: account1});
+				await contentMeta.escapeHatch({ from: account1 });
 				canEscapeHatch = true;
 			} catch (e) {
 				canEscapeHatch = false;
 			}
 			assert.notEqual(canEscapeHatch, true, "Non-owner can call escape hatch");
 			try {
-				await contentMeta.escapeHatch({from: owner});
+				await contentMeta.escapeHatch({ from: owner });
 				canEscapeHatch = true;
 			} catch (e) {
 				canEscapeHatch = false;
@@ -47,7 +47,6 @@ contract("AOContent", function(accounts) {
 			assert.equal(canEscapeHatch, true, "Owner can't call escape hatch");
 			var killed = await contentMeta.killed();
 			assert.equal(killed, true, "Contract has incorrect killed value after owner call escape hatch");
-
 		});
 	});
 });
