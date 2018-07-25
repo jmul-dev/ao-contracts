@@ -87,7 +87,8 @@ contract AOContent is owned {
 	 *
 	 * Allow stake owners to withdraw all existing active staked funds
 	 */
-	function escapeHatch() public onlyOwner isActive {
+	function escapeHatch() public onlyOwner {
+		require (killed == false);
 		killed = true;
 		emit EscapeHatch();
 	}
