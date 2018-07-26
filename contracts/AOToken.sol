@@ -177,7 +177,7 @@ contract AOToken is owned, TokenERC20 {
 	 * @return true on success
 	 */
 	function stakeFrom(address _from, uint256 _value) public onlyStakeBy(msg.sender) returns (bool) {
-		require(balanceOf[_from] >= _value);						// Check if the targeted balance is enough
+		require (balanceOf[_from] >= _value);						// Check if the targeted balance is enough
 		balanceOf[_from] = balanceOf[_from].sub(_value);			// Subtract from the targeted balance
 		stakedBalance[_from] = stakedBalance[_from].add(_value);	// Add to the targeted staked balance
 		emit Stake(_from, _value);
@@ -191,7 +191,7 @@ contract AOToken is owned, TokenERC20 {
 	 * @return true on success
 	 */
 	function unstakeFrom(address _from, uint256 _value) public onlyUnstakeBy(msg.sender) returns (bool) {
-		require(stakedBalance[_from] >= _value);					// Check if the targeted staked balance is enough
+		require (stakedBalance[_from] >= _value);					// Check if the targeted staked balance is enough
 		stakedBalance[_from] = stakedBalance[_from].sub(_value);	// Subtract from the targeted staked balance
 		balanceOf[_from] = balanceOf[_from].add(_value);			// Add to the targeted balance
 		emit Unstake(_from, _value);
