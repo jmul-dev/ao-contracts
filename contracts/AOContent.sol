@@ -148,7 +148,7 @@ contract AOContent is owned {
 	}
 
 	/**
-	 * @dev Unstake existing staked content and refund the staked amount to the stake owner
+	 * @dev Unstake existing staked content and refund the total staked amount to the stake owner
 	 * @param _stakeId The ID of the staked content
 	 */
 	function unstakeContent(bytes32 _stakeId) public isActive {
@@ -166,11 +166,13 @@ contract AOContent is owned {
 		// Refund the staked normal ERC20 tokens to the stake owner
 		if (_stakedContent.denominationAmount > 0) {
 			uint256 _denominationAmount = _stakedContent.denominationAmount;
+			bytes8 _denomination = _stakedContent.denomination;
+
 			// Clear the denomination amount
 			_stakedContent.denominationAmount = 0;
 			_stakedContent.denomination = '';
 
-			AOToken _denominationToken = AOToken(_treasury.denominations(_stakedContent.denomination));
+			AOToken _denominationToken = AOToken(_treasury.denominations(_denomination));
 			require (_denominationToken.unstakeFrom(msg.sender, _denominationAmount));
 		}
 
