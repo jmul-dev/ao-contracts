@@ -48,11 +48,14 @@ contract AOContent is owned {
 	// Event to be broadcasted to public when `stakeOwner` stakes a new content
 	event StakeContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 denominationAmount, bytes8 denomination, uint256 icoTokenAmount, uint256 icoTokenWeightedIndex, string datKey, uint256 fileSize, uint256 createdOnTimestamp);
 
-	// Event to be broadcasted to public when `stakeOwner` unstakes an existing content
+	// Event to be broadcasted to public when `stakeOwner` unstakes all token amount on an existing content
 	event UnstakeContent(address indexed stakeOwner, bytes32 indexed stakeId);
 
+	// Event to be broadcasted to public when `stakeOwner` unstakes partial token amount on an existing content
+	event UnstakePartialContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 remainingDenominationAmount, bytes8 denomination, uint256 remainingIcoTokenAmount, uint256 icoTokenWeightedIndex);
+
 	// Event to be broadcasted to public when `stakeOwner` re-stakes an existing content
-	event RestakeContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 denominationAmount, bytes8 denomination, uint256 icoTokenAmount, uint256 icoTokenWeightedIndex);
+	event StakeExistingContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 currentDenominationAmount, bytes8 currentDenomination, uint256 currentIcoTokenAmount, uint256 currentIcoTokenWeightedIndex);
 
 	// Event to be broadcasted to public when emergency mode is triggered
 	event EscapeHatch();
@@ -193,44 +196,101 @@ contract AOContent is owned {
 	}
 
 	/**
-	 * @dev Restake existing staked content
+	 * @dev Unstake existing staked content and refund partial staked amount to the stake owner
+	 *		Use unstakeContent() to unstake all staked token amount. unstakePartialContent() can unstake only up to
+	 *		the mininum required to cover the fileSize
+	 * @param _stakeId The ID of the staked content
+	 * @param _denominationAmount The amount of normal ERC20 AO token to unstake
+	 * @param _icoTokenAmount The amount of ICO AO token to unstake
+	 */
+	function unstakePartialContent(bytes32 _stakeId, uint256 _denominationAmount, uint256 _icoTokenAmount) public isActive {
+		// Make sure the staked content exist
+		require (stakedContentIndex[_stakeId] > 0);
+		require (_denominationAmount > 0 || _icoTokenAmount > 0);
+
+		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+		// Make sure the staked content owner is the same as the sender
+		require (_stakedContent.stakeOwner == msg.sender);
+		// Make sure the staked content is currently active (staked) with some amounts
+		require (_stakedContent.active == true && (_stakedContent.denominationAmount > 0 || _stakedContent.icoTokenAmount > 0));
+		// Make sure the staked content has enough balance to unstake
+		require (_stakedContent.denominationAmount >= _denominationAmount && _stakedContent.icoTokenAmount >= _icoTokenAmount);
+		// Make sure the minimum required staked amount can cover the content file size
+		require ((_stakedContent.denominationAmount.sub(_denominationAmount)).add(_stakedContent.icoTokenAmount.sub(_icoTokenAmount)) >= _stakedContent.fileSize);
+
+		// Refund `_denominationAmount` of normal ERC20 tokens to the stake owner
+		if (_denominationAmount > 0) {
+			_stakedContent.denominationAmount = _stakedContent.denominationAmount.sub(_denominationAmount);
+
+			AOToken _denominationToken = AOToken(_treasury.denominations(_stakedContent.denomination));
+			require (_denominationToken.unstakeFrom(msg.sender, _denominationAmount));
+		}
+
+		// Refund `_icoTokenAmount` of staked ICO tokens to the stake owner
+		if (_icoTokenAmount > 0) {
+			_stakedContent.icoTokenAmount = _stakedContent.icoTokenAmount.sub(_icoTokenAmount);
+			AOToken _icoToken = AOToken(_treasury.denominations(_treasury.BASE_DENOMINATION()));
+			require (_icoToken.unstakeIcoTokenFrom(msg.sender, _icoTokenAmount, _stakedContent.icoTokenWeightedIndex));
+		}
+
+		emit UnstakePartialContent(msg.sender, _stakeId, _stakedContent.denominationAmount, _stakedContent.denomination, _stakedContent.icoTokenAmount, _stakedContent.icoTokenWeightedIndex);
+	}
+
+	/**
+	 * @dev Stake existing content
+	 *		If the existing staked content's denomination is not set, then we are going to use the `_denomination` passed in the params.
+	 *		Otherwise, we use the denomination from existing existing staked content.
+	 *
 	 * @param _stakeId The ID of the staked content
 	 * @param _denominationAmount The amount of normal ERC20 token to stake
 	 * @param _denomination The denomination of the normal ERC20 token, i.e ao, kilo, mega, etc.
 	 * @param _icoTokenAmount The amount of ICO Token to stake
 	 */
-	function restakeContent(bytes32 _stakeId, uint256 _denominationAmount, bytes8 _denomination, uint256 _icoTokenAmount) public isActive {
+	function stakeExistingContent(bytes32 _stakeId, uint256 _denominationAmount, bytes8 _denomination, uint256 _icoTokenAmount) public isActive {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakeId] > 0);
+		require (_denominationAmount > 0 || _icoTokenAmount > 0);
 
 		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
-		// Make sure the staked content is currently inactive (unstaked) with 0 staked amount
-		require (_stakedContent.active == false && _stakedContent.denominationAmount == 0 && _stakedContent.icoTokenAmount == 0 && _stakedContent.icoTokenWeightedIndex == 0);
-		// Make sure the staked token amount can cover the fileSize
-		require (_denominationAmount.add(_icoTokenAmount) >= _stakedContent.fileSize);
 
-		_stakedContent.active = true;
+		// Make sure the `_denomination` is valid
+		// If we are currently staking an active staked content, then the `_denomination` has to match `_stakedContent.denomination`
+		// i.e, can't replace existing denomination with a new one
+		if (_denominationAmount > 0 && _denomination.length > 0 && _stakedContent.active && _stakedContent.denominationAmount > 0 && _stakedContent.denomination.length > 0) {
+			require (_denomination == _stakedContent.denomination);
+		}
+
+		// Make sure we can stake ICO token
+		// If we are currently staking an active staked content, then the stake owner's weighted index has to match `stakedContent.icoTokenWeightedIndex`
+		// i.e, can't use a combination of different weighted index. Stake owner has to call unstakeContent() to unstake all tokens first
+		// ICO Token is the base AO Token
+		AOToken _icoToken = AOToken(_treasury.denominations(_treasury.BASE_DENOMINATION()));
+		if (_icoTokenAmount > 0 && _stakedContent.active && _stakedContent.icoTokenAmount > 0) {
+			require (_icoToken.weightedIndexByAddress(msg.sender) == _stakedContent.icoTokenWeightedIndex);
+		}
+
+		// Make sure the staked token amount can cover the fileSize
+		require (_stakedContent.denominationAmount.add(_denominationAmount).add(_stakedContent.icoTokenAmount).add(_icoTokenAmount) >= _stakedContent.fileSize);
+
 		if (_denominationAmount > 0) {
 			// Make sure the _denomination is in the available list
 			require (_treasury.denominations(_denomination) != address(0));
 
-			_stakedContent.denominationAmount = _denominationAmount;
+			_stakedContent.denominationAmount = _stakedContent.denominationAmount.add(_denominationAmount);
 			_stakedContent.denomination = _denomination;
 
 			AOToken _denominationToken = AOToken(_treasury.denominations(_denomination));
 			require (_denominationToken.stakeFrom(msg.sender, _denominationAmount));
 		}
 		if (_icoTokenAmount > 0) {
-			_stakedContent.icoTokenAmount = _icoTokenAmount;
-
-			// ICO Token is the base AO Token
-			AOToken _icoToken = AOToken(_treasury.denominations(_treasury.BASE_DENOMINATION()));
+			_stakedContent.icoTokenAmount = _stakedContent.icoTokenAmount.add(_icoTokenAmount);
 			_stakedContent.icoTokenWeightedIndex = _icoToken.weightedIndexByAddress(msg.sender);
 			require (_icoToken.stakeIcoTokenFrom(msg.sender, _icoTokenAmount, _stakedContent.icoTokenWeightedIndex));
 		}
-		emit RestakeContent(msg.sender, _stakeId, _denominationAmount, _denomination, _icoTokenAmount, _stakedContent.icoTokenWeightedIndex);
+		_stakedContent.active = true;
+		emit StakeExistingContent(msg.sender, _stakeId, _stakedContent.denominationAmount, _stakedContent.denomination, _stakedContent.icoTokenAmount, _stakedContent.icoTokenWeightedIndex);
 	}
 
 	/**
