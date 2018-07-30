@@ -14,8 +14,7 @@ contract AOToken is owned, TokenERC20 {
 	// To differentiate denomination of AO
 	uint256 public powerOfTen;
 
-	mapping (address => bool) public allowStake;
-	mapping (address => bool) public allowUnstake;
+	mapping (address => bool) public whitelist;
 
 	/***** NORMAL ERC20 TOKEN VARIABLES *****/
 	uint256 public sellPrice;
@@ -103,18 +102,11 @@ contract AOToken is owned, TokenERC20 {
 	}
 
 	/**
-	 * @dev Checks if `_account` is allowed to stake on behalf of others
+	 * @dev Checks if `_account` is in whitelist.
+	 *		i.e, `_account` is granted access to transact on behalf of others
 	 */
-	modifier onlyStakeBy(address _account) {
-		require (allowStake[_account] == true || _account == owner);
-		_;
-	}
-
-	/**
-	 * @dev Checks if `_account` is allowed to unstake on behalf of others
-	 */
-	modifier onlyUnstakeBy(address _account) {
-		require (allowUnstake[_account] == true || _account == owner);
+	modifier inWhitelist(address _account) {
+		require (whitelist[_account] == true || _account == owner);
 		_;
 	}
 
@@ -131,21 +123,12 @@ contract AOToken is owned, TokenERC20 {
 	}
 
 	/**
-	 * @dev Allow `_account` address to stake on behalf of others
-	 * @param _account The address to allow
-	 * @param _allow Either to allow or not
+	 * @dev Whitelist `_account` address to transact on behalf of others
+	 * @param _account The address to whitelist
+	 * @param _whitelist Either to whitelist or not
 	 */
-	function setAllowStake(address _account, bool _allow) public onlyOwner {
-		allowStake[_account] = _allow;
-	}
-
-	/**
-	 * @dev Allow `_account` address to unstake on behalf of others
-	 * @param _account The address to allow
-	 * @param _allow Either to allow or not
-	 */
-	function setAllowUnstake(address _account, bool _allow) public onlyOwner {
-		allowUnstake[_account] = _allow;
+	function setWhitelist(address _account, bool _whitelist) public onlyOwner {
+		whitelist[_account] = _whitelist;
 	}
 
 	/**
@@ -163,11 +146,12 @@ contract AOToken is owned, TokenERC20 {
 	 * @param target Address to receive the tokens
 	 * @param mintedAmount The amount of tokens it will receive
 	 */
-	function mintToken(address target, uint256 mintedAmount) public onlyOwner {
+	function mintToken(address target, uint256 mintedAmount) public inWhitelist(msg.sender) returns (bool) {
 		balanceOf[target] = balanceOf[target].add(mintedAmount);
 		totalSupply = totalSupply.add(mintedAmount);
 		emit Transfer(0, this, mintedAmount);
 		emit Transfer(this, target, mintedAmount);
+		return true;
 	}
 
 	/**
@@ -176,7 +160,7 @@ contract AOToken is owned, TokenERC20 {
 	 * @param _value The amount to stake
 	 * @return true on success
 	 */
-	function stakeFrom(address _from, uint256 _value) public onlyStakeBy(msg.sender) returns (bool) {
+	function stakeFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
 		require (balanceOf[_from] >= _value);						// Check if the targeted balance is enough
 		balanceOf[_from] = balanceOf[_from].sub(_value);			// Subtract from the targeted balance
 		stakedBalance[_from] = stakedBalance[_from].add(_value);	// Add to the targeted staked balance
@@ -190,11 +174,26 @@ contract AOToken is owned, TokenERC20 {
 	 * @param _value The amount to unstake
 	 * @return true on success
 	 */
-	function unstakeFrom(address _from, uint256 _value) public onlyUnstakeBy(msg.sender) returns (bool) {
+	function unstakeFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
 		require (stakedBalance[_from] >= _value);					// Check if the targeted staked balance is enough
 		stakedBalance[_from] = stakedBalance[_from].sub(_value);	// Subtract from the targeted staked balance
 		balanceOf[_from] = balanceOf[_from].add(_value);			// Add to the targeted balance
 		emit Unstake(_from, _value);
+		return true;
+	}
+
+	/**
+	 *
+	 * @dev Whitelisted address remove `_value` tokens from the system irreversibly on behalf of `_from`.
+	 *
+	 * @param _from the address of the sender
+	 * @param _value the amount of money to burn
+	 */
+	function whitelistBurnFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool success) {
+		require(balanceOf[_from] >= _value);                // Check if the targeted balance is enough
+		balanceOf[_from] = balanceOf[_from].sub(_value);    // Subtract from the targeted balance
+		totalSupply = totalSupply.sub(_value);              // Update totalSupply
+		emit Burn(_from, _value);
 		return true;
 	}
 
@@ -235,7 +234,7 @@ contract AOToken is owned, TokenERC20 {
 	 * @param _weightedIndex The weighted index of the ICO tokens
 	 * @return true on success
 	 */
-	function stakeIcoTokenFrom(address _from, uint256 _value, uint256 _weightedIndex) public onlyStakeBy(msg.sender) isIco returns (bool) {
+	function stakeIcoTokenFrom(address _from, uint256 _value, uint256 _weightedIndex) public inWhitelist(msg.sender) isIco returns (bool) {
 		// Check if the targeted balance is enough
 		require (icoBalanceOf[_from] >= _value);
 		// Make sure the weighted index is the same as account's current weighted index
@@ -255,7 +254,7 @@ contract AOToken is owned, TokenERC20 {
 	 * @param _weightedIndex The weighted index of the ICO tokens
 	 * @return true on success
 	 */
-	function unstakeIcoTokenFrom(address _from, uint256 _value, uint256 _weightedIndex) public onlyUnstakeBy(msg.sender) isIco returns (bool) {
+	function unstakeIcoTokenFrom(address _from, uint256 _value, uint256 _weightedIndex) public inWhitelist(msg.sender) isIco returns (bool) {
 		// Check if the targeted staked balance is enough
 		require (icoStakedBalance[_from][_weightedIndex] >= _value);
 

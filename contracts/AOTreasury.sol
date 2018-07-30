@@ -16,6 +16,9 @@ contract AOTreasury is owned {
 	mapping (bytes8 => address) public denominations;
 	bytes8 constant public BASE_DENOMINATION = 'ao';
 
+	// Event to be broadcasted to public when a token exchange happens
+	event Exchange(address indexed account, uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName);
+
 	/**
 	 * @dev Constructor function
 	 */
@@ -94,6 +97,23 @@ contract AOTreasury is owned {
 		uint256 denominationInteger = integerAmount.div(10 ** _denominationToken.powerOfTen());
 		uint256 denominationFraction = integerAmount.sub(denominationInteger.mul(10 ** _denominationToken.powerOfTen()));
 		return (denominationInteger, denominationFraction);
+	}
+
+	/**
+	 * @dev exchange `amount` token from `fromDenominationName` denomination to token in `toDenominationName` denomination
+	 * @param amount The amount of token to exchange
+	 * @param fromDenominationName The origin denomination
+	 * @param toDenominationName The target denomination
+	 */
+	function exchange(uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName) public {
+		require (amount > 0);
+		require (denominations[fromDenominationName] != address(0));
+		require (denominations[toDenominationName] != address(0));
+		AOToken _fromDenominationToken = AOToken(denominations[fromDenominationName]);
+		AOToken _toDenominationToken = AOToken(denominations[toDenominationName]);
+		require (_fromDenominationToken.whitelistBurnFrom(msg.sender, amount));
+		require (_toDenominationToken.mintToken(msg.sender, amount));
+		emit Exchange(msg.sender, amount, fromDenominationName, toDenominationName);
 	}
 
 	/***** Private functions *****/

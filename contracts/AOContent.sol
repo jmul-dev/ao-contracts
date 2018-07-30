@@ -16,7 +16,10 @@ contract AOContent is owned {
 
 	bool public paused;
 	bool public killed;
+	uint256 public inflationRate; // supports 4 decimals, 10000 = 1;
+	uint256 constant public INFLATION_RATE_DIVISOR = 10 ** 4;
 	uint256 public totalStakedContents;
+	uint256 public totalBoughtContents;
 	AOTreasury private _treasury;
 
 	struct StakedContent {
@@ -39,11 +42,40 @@ contract AOContent is owned {
 		uint256 createdOnTimestamp;
 	}
 
+	struct BoughtContent {
+		bytes32 buyId;
+		bytes32 stakeId;
+		address buyer;
+		address stakeOwner;
+		/**
+		 * denominationAmount is the amount of the normal ERC20 token to spend
+		 * For example:
+		 * denominationAmount = 1123
+		 * denomination = kilo
+		 * this actually means 1.123 AOKILO since kilo has 3 decimals
+		 */
+		uint256 denominationAmount;
+		bytes8 denomination; // i.e ao, kilo, mega, etc.
+		uint256 icoTokenAmount;	// icoTokenAmount is the amount of ICO AO Token to stake (always in base denomination)
+		uint256 icoTokenWeightedIndex;
+		uint256 createdOnTimestamp;
+	}
+
 	// Mapping from StakedContent index to the StakedContent object
 	mapping (uint256 => StakedContent) private stakedContents;
 
 	// Mapping from stake ID to index of the stakedContents list
 	mapping (bytes32 => uint256) private stakedContentIndex;
+
+	// Mapping from BoughtContent index to the BoughtContent object
+	mapping (uint256 => BoughtContent) private boughtContents;
+
+	// Mapping from buy ID to index of the boughtContents list
+	mapping (bytes32 => uint256) private boughtContentIndex;
+
+	// Mapping from buyer's bought stake ID to the buy ID
+	// To check whether or not a stakedContent has been bought by buyer
+	mapping (address => mapping (bytes32 => bytes32)) internal buyerOwnedStakeId;
 
 	// Event to be broadcasted to public when `stakeOwner` stakes a new content
 	event StakeContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 denominationAmount, bytes8 denomination, uint256 icoTokenAmount, uint256 icoTokenWeightedIndex, string datKey, uint256 fileSize, uint256 createdOnTimestamp);
@@ -56,6 +88,9 @@ contract AOContent is owned {
 
 	// Event to be broadcasted to public when `stakeOwner` re-stakes an existing content
 	event StakeExistingContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 currentDenominationAmount, bytes8 currentDenomination, uint256 currentIcoTokenAmount, uint256 currentIcoTokenWeightedIndex);
+
+	// Event to be broadcasted to public when `buyer` buys an existing content
+	event BuyContent(address indexed buyer, bytes32 indexed buyId, bytes32 indexed stakeId, address stakeOwner, uint256 denominationAmountSpent, bytes8 denomination, uint256 icoTokenAmountSpent, uint256 icoTokenWeightedIndex);
 
 	// Event to be broadcasted to public when emergency mode is triggered
 	event EscapeHatch();
@@ -83,6 +118,14 @@ contract AOContent is owned {
 	 */
 	function setPaused(bool _paused) public onlyOwner {
 		paused = _paused;
+	}
+
+	/**
+	 * @dev Owner sets inflation rate
+	 * @param _inflationRate The new inflation rate value to be set
+	 */
+	function setInflationRate(uint256 _inflationRate) public onlyOwner {
+		inflationRate = _inflationRate;
 	}
 
 	/**
@@ -322,5 +365,62 @@ contract AOContent is owned {
 			_stakedContent.active,
 			_stakedContent.createdOnTimestamp
 		);
+	}
+
+	/**
+	 * @dev Buy existing content
+	 * @param _stakeId The ID of the staked content
+	 * @param _denominationAmount The amount of normal ERC20 token to spend
+	 * @param _denomination The denomination of the normal ERC20 token, i.e ao, kilo, mega, etc.
+	 * @param _icoTokenAmount The amount of ICO Token to spend
+	 */
+	function buyContent(bytes32 _stakeId, uint256 _denominationAmount, bytes8 _denomination, uint256 _icoTokenAmount) public isActive {
+		// Make sure the staked content exist
+		require (stakedContentIndex[_stakeId] > 0);
+		// Make sure buyer has not bought this content previously
+		require (buyerOwnedStakeId[msg.sender][_stakeId].length > 0);
+		require (_denominationAmount > 0 || _icoTokenAmount > 0);
+
+		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+
+		// Make sure the token amount can pay for the content price
+		require (_denominationAmount.add(_icoTokenAmount) >= _stakedContent.denominationAmount.add(_stakedContent.icoTokenAmount));
+
+		// Increment totalBoughtContents;
+		totalBoughtContents++;
+
+		// Generate buyId
+		bytes32 _buyId = keccak256(abi.encodePacked(this, msg.sender, totalBoughtContents, _stakeId));
+
+		BoughtContent storage _boughtContent = boughtContents[totalBoughtContents];
+		_boughtContent.buyId = _buyId;
+		_boughtContent.stakeId = _stakeId;
+		_boughtContent.buyer = msg.sender;
+		_boughtContent.stakeOwner = _stakedContent.stakeOwner;
+		_boughtContent.createdOnTimestamp = now;
+
+		boughtContentIndex[_buyId] = totalBoughtContents;
+		buyerOwnedStakeId[msg.sender][_stakeId] = _buyId;
+
+		if (_denominationAmount > 0) {
+			// Make sure the _denomination is in the available list
+			require (_treasury.denominations(_denomination) != address(0));
+
+			_boughtContent.denominationAmount = _denominationAmount;
+			_boughtContent.denomination = _denomination;
+
+			AOToken _denominationToken = AOToken(_treasury.denominations(_denomination));
+			// require (_denominationToken.stakeFrom(msg.sender, _denominationAmount));
+		}
+		if (_icoTokenAmount > 0) {
+			_boughtContent.icoTokenAmount = _icoTokenAmount;
+
+			// ICO Token is the base AO Token
+			AOToken _icoToken = AOToken(_treasury.denominations(_treasury.BASE_DENOMINATION()));
+			_boughtContent.icoTokenWeightedIndex = _icoToken.weightedIndexByAddress(msg.sender);
+			// require (_icoToken.stakeIcoTokenFrom(msg.sender, _icoTokenAmount, _stakedContent.icoTokenWeightedIndex));
+		}
+
+		emit BuyContent(msg.sender, _buyId, _stakeId, _boughtContent.stakeOwner, _denominationAmount, _denomination, _icoTokenAmount, _boughtContent.icoTokenWeightedIndex);
 	}
 }

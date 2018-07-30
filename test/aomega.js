@@ -6,7 +6,7 @@ contract("AOMega", function(accounts) {
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var account3 = accounts[3];
-	var stakingAccount = accounts[4];
+	var whitelistedAccount = accounts[4];
 
 	before(function() {
 		return AOMega.deployed().then(function(instance) {
@@ -357,49 +357,34 @@ contract("AOMega", function(accounts) {
 			assert.equal(approveTokensSuccess, false, "Account1 can set both normal ERC20 and ICO tokens allowances for other address");
 		});
 	});
-	contract("Staking Functionality Tests", function() {
+	contract("Whitelisted Address Function Tests", function() {
 		var stakedIcoWeightedIndex;
 		before(async function() {
 			await tokenMeta.mintToken(account1, 100, { from: owner });
 		});
 
-		it("only owner can whitelist account that can stake on behalf of others", async function() {
-			var canSetAllowStake;
+		it("only owner can whitelist account that can transact on behalf of others", async function() {
+			var canSetWhitelist;
 			try {
-				await tokenMeta.setAllowStake(stakingAccount, true, { from: account1 });
-				canSetAllowStake = true;
+				await tokenMeta.setWhitelist(whitelistedAccount, true, { from: account1 });
+				canSetWhitelist = true;
 			} catch (e) {
-				canSetAllowStake = false;
+				canSetWhitelist = false;
 			}
-			assert.notEqual(canSetAllowStake, true, "Others can set allow stake");
+			assert.notEqual(canSetWhitelist, true, "Others can set whitelist");
 			try {
-				await tokenMeta.setAllowStake(stakingAccount, true, { from: owner });
-				canSetAllowStake = true;
+				await tokenMeta.setWhitelist(whitelistedAccount, true, { from: owner });
+				canSetWhitelist = true;
 			} catch (e) {
-				canSetAllowStake = false;
+				canSetWhitelist = false;
 			}
-			assert.equal(canSetAllowStake, true, "Owner can't whitelist account to stake on behalf of others");
-			var stakingAccountCanStake = await tokenMeta.allowStake(stakingAccount);
-			assert.equal(stakingAccountCanStake, true, "Staking account doesn't have permission to stake after owner gave permission");
-		});
-		it("only owner can whitelist account that can unstake on behalf of others", async function() {
-			var canSetAllowUnstake;
-			try {
-				await tokenMeta.setAllowUnstake(stakingAccount, true, { from: account1 });
-				canSetAllowUnstake = true;
-			} catch (e) {
-				canSetAllowUnstake = false;
-			}
-			assert.notEqual(canSetAllowUnstake, true, "Others can set allow unstake");
-			try {
-				await tokenMeta.setAllowUnstake(stakingAccount, true, { from: owner });
-				canSetAllowUnstake = true;
-			} catch (e) {
-				canSetAllowUnstake = false;
-			}
-			assert.equal(canSetAllowUnstake, true, "Owner can't whitelist account to unstake on behalf of others");
-			var stakingAccountCanUnstake = await tokenMeta.allowUnstake(stakingAccount);
-			assert.equal(stakingAccountCanUnstake, true, "Staking account doesn't have permission to unstake after owner gave permission");
+			assert.equal(canSetWhitelist, true, "Owner can't whitelist account to transact on behalf of others");
+			var whitelistedAccountCanTransact = await tokenMeta.whitelist(whitelistedAccount);
+			assert.equal(
+				whitelistedAccountCanTransact,
+				true,
+				"Staking account doesn't have permission to transact after owner gave permission"
+			);
 		});
 		it("should be able to stake tokens on behalf of others", async function() {
 			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
@@ -415,7 +400,7 @@ contract("AOMega", function(accounts) {
 			}
 			assert.notEqual(canStake, true, "Account that do not have permission can stake on behalf of others");
 			try {
-				await tokenMeta.stakeFrom(account1, 10, { from: stakingAccount });
+				await tokenMeta.stakeFrom(account1, 10, { from: whitelistedAccount });
 				canStake = true;
 			} catch (e) {
 				canStake = false;
@@ -452,7 +437,7 @@ contract("AOMega", function(accounts) {
 			}
 			assert.notEqual(canUnstake, true, "Account that do not have permission can unstake on behalf of others");
 			try {
-				await tokenMeta.unstakeFrom(account1, 10, { from: stakingAccount });
+				await tokenMeta.unstakeFrom(account1, 10, { from: whitelistedAccount });
 				canUnstake = true;
 			} catch (e) {
 				canUnstake = false;
@@ -478,7 +463,7 @@ contract("AOMega", function(accounts) {
 		it("should not be able to stake ICO tokens on behalf of others", async function() {
 			var canStakeIco;
 			try {
-				await tokenMeta.stakeIcoTokenFrom(account1, 10, 0, { from: stakingAccount });
+				await tokenMeta.stakeIcoTokenFrom(account1, 10, 0, { from: whitelistedAccount });
 				canStakeIco = true;
 			} catch (e) {
 				canStakeIco = false;
@@ -488,12 +473,46 @@ contract("AOMega", function(accounts) {
 		it("should not be able to unstake ICO tokens on behalf of others", async function() {
 			var canUnstakeIco;
 			try {
-				await tokenMeta.unstakeIcoTokenFrom(account1, 10, 0, { from: stakingAccount });
+				await tokenMeta.unstakeIcoTokenFrom(account1, 10, 0, { from: whitelistedAccount });
 				canUnstakeIco = true;
 			} catch (e) {
 				canUnstakeIco = false;
 			}
 			assert.equal(canUnstakeIco, false, "Contract allows account to unstake ICO tokens on behalf of thers");
+		});
+		it("should be able to burn tokens on behalf of others", async function() {
+			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
+			var totalSupplyBefore = await tokenMeta.totalSupply();
+
+			var canBurn;
+			try {
+				await tokenMeta.whitelistBurnFrom(account1, 10, { from: account2 });
+				canBurn = true;
+			} catch (e) {
+				canBurn = false;
+			}
+			assert.notEqual(canBurn, true, "Account that do not have permission can burn on behalf of others");
+			try {
+				await tokenMeta.whitelistBurnFrom(account1, 10, { from: whitelistedAccount });
+				canBurn = true;
+			} catch (e) {
+				canBurn = false;
+			}
+			assert.equal(canBurn, true, "Account that has permission can't burn on behalf of thers");
+
+			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
+			var totalSupplyAfter = await tokenMeta.totalSupply();
+
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.minus(10).toNumber(),
+				"Account1 has incorrect balance after burning"
+			);
+			assert.equal(
+				totalSupplyAfter.toNumber(),
+				totalSupplyBefore.minus(10).toNumber(),
+				"Contract has incorrect total supply after burning"
+			);
 		});
 	});
 });

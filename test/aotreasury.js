@@ -184,4 +184,103 @@ contract("AOTreasury", function(accounts) {
 			assert.equal(kilo, "0x0000000000000000000000000000000000000000", "Denomination still exist after delete");
 		});
 	});
+	contract("exchange()", function() {
+		before(async function() {
+			var aokilodecimals = await aokilo.decimals();
+			var aomegadecimals = await aomega.decimals();
+			var aogigadecimals = await aogiga.decimals();
+			var aoteradecimals = await aotera.decimals();
+			var aopetadecimals = await aopeta.decimals();
+			var aoexadecimals = await aoexa.decimals();
+			var aozettadecimals = await aozetta.decimals();
+			var aoyottadecimals = await aoyotta.decimals();
+			var aoxonadecimals = await aoxona.decimals();
+
+			await aotoken.mintToken(account1, 100, { from: owner });
+			await aokilo.mintToken(account1, 100 * 10 ** aokilodecimals.toNumber(), { from: owner });
+			await aomega.mintToken(account1, 100 * 10 ** aomegadecimals.toNumber(), { from: owner });
+			await aogiga.mintToken(account1, 100 * 10 ** aogigadecimals.toNumber(), { from: owner });
+			await aotera.mintToken(account1, 100 * 10 ** aoteradecimals.toNumber(), { from: owner });
+			await aopeta.mintToken(account1, 100 * 10 ** aopetadecimals.toNumber(), { from: owner });
+			await aoexa.mintToken(account1, 100 * 10 ** aoexadecimals.toNumber(), { from: owner });
+			await aozetta.mintToken(account1, 100 * 10 ** aozettadecimals.toNumber(), { from: owner });
+			await aoyotta.mintToken(account1, 100 * 10 ** aoyottadecimals.toNumber(), { from: owner });
+			await aoxona.mintToken(account1, 100 * 10 ** aoxonadecimals.toNumber(), { from: owner });
+		});
+		it("should exchange token from `fromDenominationName` to `toDenominationName` correctly", async function() {
+			var canExchange;
+			try {
+				await aotreasury.exchange(50, "deca", "ao", { from: account1 });
+				canExchange = true;
+			} catch (e) {
+				canExchange = false;
+			}
+			assert.notEqual(canExchange, true, "Contract can exchange token from invalid origin denomination");
+
+			try {
+				await aotreasury.exchange(50, "ao", "deca", { from: account1 });
+				canExchange = true;
+			} catch (e) {
+				canExchange = false;
+			}
+			assert.notEqual(canExchange, true, "Contract can exchange token to invalid target denomination");
+
+			try {
+				await aotreasury.exchange(1000, "ao", "kilo", { from: account1 });
+				canExchange = true;
+			} catch (e) {
+				canExchange = false;
+			}
+			assert.notEqual(canExchange, true, "Account1 can exchange token more than he/she has");
+
+			var account1AoBalanceBefore = await aotoken.balanceOf(account1);
+			var account1KiloBalanceBefore = await aokilo.balanceOf(account1);
+
+			try {
+				await aotreasury.exchange(50, "ao", "kilo", { from: account1 });
+				canExchange = true;
+			} catch (e) {
+				canExchange = false;
+			}
+			assert.equal(canExchange, true, "Contract can't complete exchange on valid denominations");
+			var account1AoBalanceAfter = await aotoken.balanceOf(account1);
+			var account1KiloBalanceAfter = await aokilo.balanceOf(account1);
+
+			assert.equal(
+				account1AoBalanceAfter.toNumber(),
+				account1AoBalanceBefore.minus(50).toNumber(),
+				"Account1 has incorrect AO Token balance after exchanging"
+			);
+			assert.equal(
+				account1KiloBalanceAfter.toNumber(),
+				account1KiloBalanceBefore.plus(50).toNumber(),
+				"Account1 has incorrect AO Kilo Token balance after exchanging"
+			);
+
+			var account1TeraBalanceBefore = await aotera.balanceOf(account1);
+			var account1GigaBalanceBefore = await aogiga.balanceOf(account1);
+
+			try {
+				await aotreasury.exchange(50, "tera", "giga", { from: account1 });
+				canExchange = true;
+			} catch (e) {
+				canExchange = false;
+			}
+			assert.equal(canExchange, true, "Contract can't complete exchange on valid denominations");
+
+			var account1GigaBalanceAfter = await aogiga.balanceOf(account1);
+			var account1TeraBalanceAfter = await aotera.balanceOf(account1);
+
+			assert.equal(
+				account1TeraBalanceAfter.toNumber(),
+				account1TeraBalanceBefore.minus(50).toNumber(),
+				"Account1 has incorrect AO Tera Token balance after exchanging"
+			);
+			assert.equal(
+				account1GigaBalanceAfter.toNumber(),
+				account1GigaBalanceBefore.plus(50).toNumber(),
+				"Account1 has incorrect AO Giga Token balance after exchanging"
+			);
+		});
+	});
 });
