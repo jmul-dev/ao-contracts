@@ -96,6 +96,13 @@ contract AOContent is owned {
 	// Event to be broadcasted to public when `buyer` buys an existing content
 	event BuyContent(address indexed buyer, bytes32 indexed buyId, bytes32 indexed stakeId, address host, uint256 denominationAmountSpent, bytes8 denomination, uint256 icoTokenAmountSpent, uint256 icoTokenWeightedIndex);
 
+	// Event to be broadcasted to public when stake owner (content creator) or host receives profit when someone buys the content
+	// recipientType:
+	// 0 => Stake Owner (Content Creator)
+	// 1 => Node Host
+	event BuyContentNetworkTokenEarning(address indexed recipient, address indexed sender, bytes32 indexed buyId, bytes32 stakeId, uint256 denominationAmount, bytes8 denomination, uint256 profitPercentage, uint8 recipientType);
+	event BuyContentPrimordialTokenEarning(address indexed recipient, address indexed sender, bytes32 indexed buyId, bytes32 stakeId, uint256 icoTokenAmount, uint256 icoTokenWeightedIndex, uint256 profitPercentage, uint8 recipientType);
+
 	// Event to be broadcasted to public when emergency mode is triggered
 	event EscapeHatch();
 
@@ -404,18 +411,20 @@ contract AOContent is owned {
 	 * @param _denomination The denomination of the normal ERC20 token, i.e ao, kilo, mega, etc.
 	 * @param _icoTokenAmount The amount of ICO Token to spend
 	 */
-	/*
 	function buyContent(bytes32 _stakeId, address _host, uint256 _denominationAmount, bytes8 _denomination, uint256 _icoTokenAmount) public isActive {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakeId] > 0);
 		// Make sure buyer has not bought this content previously
-		require (buyerOwnedStakeId[msg.sender][_stakeId].length > 0);
+		require (buyerOwnedStakeId[msg.sender][_stakeId].length == 0);
 		require (_denominationAmount > 0 || _icoTokenAmount > 0);
 
 		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
 
 		// Make sure the token amount can pay for the content price
 		require (_denominationAmount.add(_icoTokenAmount) >= _stakedContent.denominationAmount.add(_stakedContent.icoTokenAmount));
+
+		// _host has to be either the stake owner (content creator) or someone who has purchased the content previously
+		require (_host == _stakedContent.stakeOwner || buyerOwnedStakeId[_host][_stakeId].length > 0);
 
 		// Increment totalBoughtContents;
 		totalBoughtContents++;
@@ -434,25 +443,56 @@ contract AOContent is owned {
 		buyerOwnedStakeId[msg.sender][_stakeId] = _buyId;
 
 		if (_denominationAmount > 0) {
-			// Make sure the _denomination is in the available list
-			require (_treasury.denominations(_denomination) != address(0));
-
-			_boughtContent.denominationAmount = _denominationAmount;
-			_boughtContent.denomination = _denomination;
-
-			AOToken _denominationToken = AOToken(_treasury.denominations(_denomination));
-			// require (_denominationToken.stakeFrom(msg.sender, _denominationAmount));
+			_rewardBuyContentNetworkEarning(msg.sender, _stakedContent.stakeOwner, _host, _buyId, _stakeId, _denominationAmount, _denomination, _stakedContent.profitPercentage);
 		}
 		if (_icoTokenAmount > 0) {
-			_boughtContent.icoTokenAmount = _icoTokenAmount;
-
-			// ICO Token is the base AO Token
-			AOToken _icoToken = AOToken(_treasury.denominations(_treasury.BASE_DENOMINATION()));
-			_boughtContent.icoTokenWeightedIndex = _icoToken.weightedIndexByAddress(msg.sender);
-			// require (_icoToken.stakeIcoTokenFrom(msg.sender, _icoTokenAmount, _stakedContent.icoTokenWeightedIndex));
+			_rewardBuyContentPrimordialEarning(msg.sender, _stakedContent.stakeOwner, _host, _buyId, _stakeId, _icoTokenAmount, _stakedContent.profitPercentage);
 		}
+
+		// TODO:
+		// Mint network token and reward Foundation, stake owner and host accordingly
 
 		emit BuyContent(msg.sender, _buyId, _stakeId, _host, _denominationAmount, _denomination, _icoTokenAmount, _boughtContent.icoTokenWeightedIndex);
 	}
-	*/
+
+	/***** INTERNAL METHODS *****/
+	function _rewardBuyContentNetworkEarning(address _sender, address _stakeOwner, address _host, bytes32 _buyId, bytes32 _stakeId, uint256 _denominationAmount, bytes8 _denomination, uint256 _profitPercentage) internal {
+		// Make sure the _denomination is in the available list
+		require (_treasury.denominations(_denomination) != address(0));
+
+		BoughtContent storage _boughtContent = boughtContents[boughtContentIndex[_buyId]];
+
+		_boughtContent.denominationAmount = _denominationAmount;
+		_boughtContent.denomination = _denomination;
+
+		AOToken _denominationToken = AOToken(_treasury.denominations(_denomination));
+
+		// Transfer the profit percentage to stake owner
+		uint256 _contentCreatorProfit = (_denominationAmount.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
+		require (_denominationToken.whitelistTransferFrom(_sender, _stakeOwner, _contentCreatorProfit));
+		emit BuyContentNetworkTokenEarning(_stakeOwner, _sender, _buyId, _stakeId, _contentCreatorProfit, _denomination, _profitPercentage, 0);
+
+		// Transfer the profit difference to _host
+		require (_denominationToken.whitelistTransferFrom(_sender, _host, _denominationAmount.sub(_contentCreatorProfit)));
+		emit BuyContentNetworkTokenEarning(_host, _sender, _buyId, _stakeId, _denominationAmount.sub(_contentCreatorProfit), _denomination, PERCENTAGE_DIVISOR.sub(_profitPercentage), 1);
+	}
+
+	function _rewardBuyContentPrimordialEarning(address _sender, address _stakeOwner, address _host, bytes32 _buyId, bytes32 _stakeId, uint256 _icoTokenAmount, uint256 _profitPercentage) internal {
+		BoughtContent storage _boughtContent = boughtContents[boughtContentIndex[_buyId]];
+
+		_boughtContent.icoTokenAmount = _icoTokenAmount;
+
+		// ICO Token is the base AO Token
+		AOToken _icoToken = AOToken(_treasury.denominations(_treasury.BASE_DENOMINATION()));
+		_boughtContent.icoTokenWeightedIndex = _icoToken.weightedIndexByAddress(_sender);
+
+		// Transfer the profit percentage to stake owner
+		uint256 _contentCreatorIcoProfit = (_icoTokenAmount.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
+		require (_icoToken.whitelistTransferIcoTokenFrom(_sender, _stakeOwner, _contentCreatorIcoProfit));
+		emit BuyContentPrimordialTokenEarning(_stakeOwner, _sender, _buyId, _stakeId, _contentCreatorIcoProfit, _boughtContent.icoTokenWeightedIndex, _profitPercentage, 0);
+
+		// Transfer the profit difference to _host
+		require (_icoToken.whitelistTransferIcoTokenFrom(_sender, _host, _icoTokenAmount.sub(_contentCreatorIcoProfit)));
+		emit BuyContentPrimordialTokenEarning(_host, _sender, _buyId, _stakeId, _icoTokenAmount.sub(_contentCreatorIcoProfit), _boughtContent.icoTokenWeightedIndex, PERCENTAGE_DIVISOR.sub(_profitPercentage), 1);
+	}
 }

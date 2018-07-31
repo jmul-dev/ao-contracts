@@ -177,6 +177,18 @@ contract AOToken is owned, TokenERC20 {
 		return true;
 	}
 
+	/**
+	 * @dev Whitelisted address sends `_value` normal ERC20 tokens to `_to` from `_from`
+	 * @param _from The address of the sender
+	 * @param _to The address of the recipient
+	 * @param _value The amount of normal ERC20 tokens to send
+	 * @return true on success
+	 */
+	function whitelistTransferFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool success) {
+		_transfer(_from, _to, _value);
+		return true;
+	}
+
 	/***** ICO TOKEN OWNER ONLY METHODS *****/
 	/**
 	 * @dev Allow users to buy ICO tokens for `newBuyPrice` eth and sell ICO tokens for `newSellPrice` eth
@@ -250,6 +262,27 @@ contract AOToken is owned, TokenERC20 {
 		icoBalanceOf[_from] = icoBalanceOf[_from].add(_value);
 
 		emit IcoUnstake(_from, _value, _weightedIndex);
+		return true;
+	}
+
+	/**
+	 * @dev Whitelisted address sends `_value` ICO tokens to `_to` from `_from`
+	 * @param _from The address of the sender
+	 * @param _to The address of the recipient
+	 * @param _value The amount to send
+	 * @return true on success
+	 */
+	function whitelistTransferIcoTokenFrom(address _from, address _to, uint256 _value) public isIco returns (bool success) {
+		bytes32 _createdLotId = _createWeightedIndexLot(_to, _value, ownerWeightedIndex[_from]);
+		Lot memory _lot = lots[_createdLotId];
+
+		// Make sure the new lot is created successfully
+		require (_lot.lotOwner == _to);
+		// Transfer the ICO tokens
+		require (_transferIcoToken(_from, _to, _value));
+		// Update the weighted index of the recipient
+		require (_updateWeightedIndex(_to));
+		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.index, _lot.tokenAmount);
 		return true;
 	}
 
