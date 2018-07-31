@@ -14,8 +14,6 @@ contract AOToken is owned, TokenERC20 {
 	// To differentiate denomination of AO
 	uint256 public powerOfTen;
 
-	mapping (address => bool) public whitelist;
-
 	/***** NORMAL ERC20 TOKEN VARIABLES *****/
 	uint256 public sellPrice;
 	uint256 public buyPrice;
@@ -101,15 +99,6 @@ contract AOToken is owned, TokenERC20 {
 		_;
 	}
 
-	/**
-	 * @dev Checks if `_account` is in whitelist.
-	 *		i.e, `_account` is granted access to transact on behalf of others
-	 */
-	modifier inWhitelist(address _account) {
-		require (whitelist[_account] == true || _account == owner);
-		_;
-	}
-
 	/***** OWNER ONLY METHODS *****/
 	/***** NORMAL ERC20 OWNER ONLY METHODS *****/
 	/**
@@ -120,15 +109,6 @@ contract AOToken is owned, TokenERC20 {
 	function freezeAccount(address target, bool freeze) public onlyOwner {
 		frozenAccount[target] = freeze;
 		emit FrozenFunds(target, freeze);
-	}
-
-	/**
-	 * @dev Whitelist `_account` address to transact on behalf of others
-	 * @param _account The address to whitelist
-	 * @param _whitelist Either to whitelist or not
-	 */
-	function setWhitelist(address _account, bool _whitelist) public onlyOwner {
-		whitelist[_account] = _whitelist;
 	}
 
 	/**
