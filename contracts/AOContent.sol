@@ -16,8 +16,8 @@ contract AOContent is owned {
 
 	bool public paused;
 	bool public killed;
-	uint256 public inflationRate; // supports 4 decimals, 10000 = 1;
-	uint256 constant public INFLATION_RATE_DIVISOR = 10 ** 4;
+	uint256 public inflationRate; // support up to 4 decimals, i.e 12.3456% = 123456
+	uint256 constant public PERCENTAGE_DIVISOR = 10 ** 6; // 100% = 1000000
 	uint256 public totalStakedContents;
 	uint256 public totalBoughtContents;
 	AOTreasury private _treasury;
@@ -38,6 +38,7 @@ contract AOContent is owned {
 		uint256 icoTokenWeightedIndex;
 		string datKey;
 		uint256 fileSize;
+		uint256 profitPercentage; // support up to 4 decimals, 100% = 1000000
 		bool active; // true if currently staked, false when unstaked
 		uint256 createdOnTimestamp;
 	}
@@ -46,7 +47,7 @@ contract AOContent is owned {
 		bytes32 buyId;
 		bytes32 stakeId;
 		address buyer;
-		address stakeOwner;
+		address host; // The host address that holds the data
 		/**
 		 * denominationAmount is the amount of the normal ERC20 token to spend
 		 * For example:
@@ -78,7 +79,10 @@ contract AOContent is owned {
 	mapping (address => mapping (bytes32 => bytes32)) internal buyerOwnedStakeId;
 
 	// Event to be broadcasted to public when `stakeOwner` stakes a new content
-	event StakeContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 denominationAmount, bytes8 denomination, uint256 icoTokenAmount, uint256 icoTokenWeightedIndex, string datKey, uint256 fileSize, uint256 createdOnTimestamp);
+	event StakeContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 denominationAmount, bytes8 denomination, uint256 icoTokenAmount, uint256 icoTokenWeightedIndex, string datKey, uint256 fileSize, uint256 profitPercentage, uint256 createdOnTimestamp);
+
+	// Event to be broadcasted to public when `stakeOwner` updates the staked content's profit percentage
+	event SetProfitPercentage(address indexed stakeOwner, bytes32 indexed stakeId, uint256 newProfitPercentage);
 
 	// Event to be broadcasted to public when `stakeOwner` unstakes all token amount on an existing content
 	event UnstakeContent(address indexed stakeOwner, bytes32 indexed stakeId);
@@ -90,7 +94,7 @@ contract AOContent is owned {
 	event StakeExistingContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 currentDenominationAmount, bytes8 currentDenomination, uint256 currentIcoTokenAmount, uint256 currentIcoTokenWeightedIndex);
 
 	// Event to be broadcasted to public when `buyer` buys an existing content
-	event BuyContent(address indexed buyer, bytes32 indexed buyId, bytes32 indexed stakeId, address stakeOwner, uint256 denominationAmountSpent, bytes8 denomination, uint256 icoTokenAmountSpent, uint256 icoTokenWeightedIndex);
+	event BuyContent(address indexed buyer, bytes32 indexed buyId, bytes32 indexed stakeId, address host, uint256 denominationAmountSpent, bytes8 denomination, uint256 icoTokenAmountSpent, uint256 icoTokenWeightedIndex);
 
 	// Event to be broadcasted to public when emergency mode is triggered
 	event EscapeHatch();
@@ -121,14 +125,6 @@ contract AOContent is owned {
 	}
 
 	/**
-	 * @dev Owner sets inflation rate
-	 * @param _inflationRate The new inflation rate value to be set
-	 */
-	function setInflationRate(uint256 _inflationRate) public onlyOwner {
-		inflationRate = _inflationRate;
-	}
-
-	/**
 	 * @dev Owner triggers emergency mode.
 	 *
 	 * Allow stake owners to withdraw all existing active staked funds
@@ -139,6 +135,14 @@ contract AOContent is owned {
 		emit EscapeHatch();
 	}
 
+	/**
+	 * @dev Whitelisted address sets inflation rate
+	 * @param _inflationRate The new inflation rate value to be set
+	 */
+	function setInflationRate(uint256 _inflationRate) public inWhitelist(msg.sender) {
+		inflationRate = _inflationRate;
+	}
+
 	/***** PUBLIC METHODS *****/
 	/**
 	 * @dev Stake `_denominationAmount` of normal ERC20 and/or `_icoTokenAmount` ICO Tokens for a content
@@ -147,11 +151,13 @@ contract AOContent is owned {
 	 * @param _icoTokenAmount The amount of ICO Token to stake
 	 * @param _datKey The dat key of the file
 	 * @param _fileSize The size of the file
+	 * @param _profitPercentage The percentage of profit the stake owner's media will charge
 	 */
-	function stakeContent(uint256 _denominationAmount, bytes8 _denomination, uint256 _icoTokenAmount, string _datKey, uint256 _fileSize) public isActive {
+	function stakeContent(uint256 _denominationAmount, bytes8 _denomination, uint256 _icoTokenAmount, string _datKey, uint256 _fileSize, uint256 _profitPercentage) public isActive {
 		require (bytes(_datKey).length > 0);
 		require (_fileSize > 0);
 		require (_denominationAmount > 0 || _icoTokenAmount > 0);
+		require (_profitPercentage <= PERCENTAGE_DIVISOR);
 
 		// Make sure the staked token amount can cover the fileSize
 		require (_denominationAmount.add(_icoTokenAmount) >= _fileSize);
@@ -166,6 +172,7 @@ contract AOContent is owned {
 		_stakedContent.stakeOwner = msg.sender;
 		_stakedContent.datKey = _datKey;
 		_stakedContent.fileSize = _fileSize;
+		_stakedContent.profitPercentage = _profitPercentage;
 		_stakedContent.active = true;
 		_stakedContent.createdOnTimestamp = now;
 
@@ -190,7 +197,27 @@ contract AOContent is owned {
 			require (_icoToken.stakeIcoTokenFrom(msg.sender, _icoTokenAmount, _stakedContent.icoTokenWeightedIndex));
 		}
 
-		emit StakeContent(msg.sender, _stakeId, _denominationAmount, _denomination, _icoTokenAmount, _stakedContent.icoTokenWeightedIndex, _datKey, _fileSize, _stakedContent.createdOnTimestamp);
+		emit StakeContent(msg.sender, _stakeId, _denominationAmount, _denomination, _icoTokenAmount, _stakedContent.icoTokenWeightedIndex, _datKey, _fileSize, _profitPercentage, _stakedContent.createdOnTimestamp);
+	}
+
+	/**
+	 * @dev Set profit percentage on existing staked content
+	 * @param _stakeId The ID of the staked content
+	 * @param _profitPercentage The new value to be set
+	 */
+	function setProfitPercentage(bytes32 _stakeId, uint256 _profitPercentage) public isActive {
+		require (_profitPercentage <= PERCENTAGE_DIVISOR);
+
+		// Make sure the staked content exist
+		require (stakedContentIndex[_stakeId] > 0);
+
+		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+		// Make sure the staked content owner is the same as the sender
+		require (_stakedContent.stakeOwner == msg.sender);
+
+		_stakedContent.profitPercentage = _profitPercentage;
+
+		emit SetProfitPercentage(msg.sender, _stakeId, _profitPercentage);
 	}
 
 	/**
@@ -346,10 +373,11 @@ contract AOContent is owned {
 	 * @return the ICO token weighted index of the staked content
 	 * @return the dat key of the content
 	 * @return the file size of the content
+	 * @return the profit percentage of the content
 	 * @return status of the staked content
 	 * @return the timestamp when the staked content was created
 	 */
-	function stakedContentById(bytes32 _stakeId) public view returns (address, uint256, bytes8, uint256, uint256, string, uint256, bool, uint256) {
+	function stakedContentById(bytes32 _stakeId) public view returns (address, uint256, bytes8, uint256, uint256, string, uint256, uint256, bool, uint256) {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakeId] > 0);
 
@@ -362,6 +390,7 @@ contract AOContent is owned {
 			_stakedContent.icoTokenWeightedIndex,
 			_stakedContent.datKey,
 			_stakedContent.fileSize,
+			_stakedContent.profitPercentage,
 			_stakedContent.active,
 			_stakedContent.createdOnTimestamp
 		);
@@ -370,11 +399,13 @@ contract AOContent is owned {
 	/**
 	 * @dev Buy existing content
 	 * @param _stakeId The ID of the staked content
+	 * @param _host The host address of the content
 	 * @param _denominationAmount The amount of normal ERC20 token to spend
 	 * @param _denomination The denomination of the normal ERC20 token, i.e ao, kilo, mega, etc.
 	 * @param _icoTokenAmount The amount of ICO Token to spend
 	 */
-	function buyContent(bytes32 _stakeId, uint256 _denominationAmount, bytes8 _denomination, uint256 _icoTokenAmount) public isActive {
+	/*
+	function buyContent(bytes32 _stakeId, address _host, uint256 _denominationAmount, bytes8 _denomination, uint256 _icoTokenAmount) public isActive {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakeId] > 0);
 		// Make sure buyer has not bought this content previously
@@ -396,7 +427,7 @@ contract AOContent is owned {
 		_boughtContent.buyId = _buyId;
 		_boughtContent.stakeId = _stakeId;
 		_boughtContent.buyer = msg.sender;
-		_boughtContent.stakeOwner = _stakedContent.stakeOwner;
+		_boughtContent.host = _host;
 		_boughtContent.createdOnTimestamp = now;
 
 		boughtContentIndex[_buyId] = totalBoughtContents;
@@ -421,6 +452,7 @@ contract AOContent is owned {
 			// require (_icoToken.stakeIcoTokenFrom(msg.sender, _icoTokenAmount, _stakedContent.icoTokenWeightedIndex));
 		}
 
-		emit BuyContent(msg.sender, _buyId, _stakeId, _boughtContent.stakeOwner, _denominationAmount, _denomination, _icoTokenAmount, _boughtContent.icoTokenWeightedIndex);
+		emit BuyContent(msg.sender, _buyId, _stakeId, _host, _denominationAmount, _denomination, _icoTokenAmount, _boughtContent.icoTokenWeightedIndex);
 	}
+	*/
 }
