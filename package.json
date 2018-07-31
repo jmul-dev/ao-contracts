@@ -1,28 +1,29 @@
 {
-	"name": "ao-contracts",
-	"version": "1.0.0",
-	"main": "index.js",
-	"author": "Johan <johan@paramation.com>",
-	"license": "MIT",
-    "publishConfig": {
-        "registry": "https://npm.y-designs.com"
-    },
-    "files": [
-        "build"
-    ],
-	"dependencies": {
-		"husky": "^0.14.3",
-		"pretty-quick": "^1.6.0"
-	},
-	"scripts": {
-		"precommit": "pretty-quick --stage",
-		"chain": "ganache-cli -p 8545 -m 'stomach six rural battle middle jazz chalk camera grain render feed job' -g 10000000000 -e 1000 -l 4700000",
-		"compile": "truffle compile",
-		"test": "truffle test"
-	},
-	"devDependencies": {
-		"ganache-cli": "^6.1.6",
-		"prettier": "1.13.7",
-		"truffle": "^4.1.13"
-	}
+  "name": "ao-contracts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Johan <johan@paramation.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.y-designs.com"
+  },
+  "files": [
+    "build"
+  ],
+  "dependencies": {
+    "gitlab-ci-releaser": "^1.5.0",
+    "husky": "^0.14.3",
+    "pretty-quick": "^1.6.0"
+  },
+  "scripts": {
+    "precommit": "pretty-quick --stage",
+    "chain": "ganache-cli -p 8545 -m 'stomach six rural battle middle jazz chalk camera grain render feed job' -g 10000000000 -e 1000 -l 4700000",
+    "compile": "truffle compile",
+    "test": "truffle test"
+  },
+  "devDependencies": {
+    "ganache-cli": "^6.1.6",
+    "prettier": "1.13.7",
+    "truffle": "^4.1.13"
+  }
 }
