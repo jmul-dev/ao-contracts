@@ -20,6 +20,18 @@ Compile smart contracts:
 yarn compile
 ```
 
+Migrate smart contracts:
+
+```
+yarn migrate
+```
+
+Compile and migrate smart contracts:
+
+```
+yarn deploy
+```
+
 Run test:
 
 ```
