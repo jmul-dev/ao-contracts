@@ -15,6 +15,13 @@ var AOTreasury = artifacts.require("./AOTreasury.sol");
 var AOContent = artifacts.require("./AOContent.sol");
 
 module.exports = function(deployer, network, accounts) {
+	var deployerAccount;
+	if (network === "rinkeby") {
+		deployerAccount = "0xcccf4699bbdcf30c8f310d19f5e07c8098665f18";
+	} else {
+		deployerAccount = accounts[0];
+	}
+
 	var aotoken, aokilo, aomega, aogiga, aotera, aopeta, aoexa, aozetta, aoyotta, aoxona, aotreasury, aocontent;
 	deployer.deploy([
 		[AOToken, 0, "AO Token", "AOTKN"],
@@ -45,43 +52,43 @@ module.exports = function(deployer, network, accounts) {
 			aoxona = await AOXona.deployed();
 			return deployer.deploy(AOContent, aotreasury.address);
 		})
-		.then(async function(instance) {
-			aocontent = instance;
+		.then(async function() {
+			aocontent = await AOContent.deployed();
 
 			// Store AO denominations in the treasury contract
-			await aotreasury.addDenomination("ao", aotoken.address, { from: accounts[0] });
-			await aotreasury.addDenomination("kilo", aokilo.address, { from: accounts[0] });
-			await aotreasury.addDenomination("mega", aomega.address, { from: accounts[0] });
-			await aotreasury.addDenomination("giga", aogiga.address, { from: accounts[0] });
-			await aotreasury.addDenomination("tera", aotera.address, { from: accounts[0] });
-			await aotreasury.addDenomination("peta", aopeta.address, { from: accounts[0] });
-			await aotreasury.addDenomination("exa", aoexa.address, { from: accounts[0] });
-			await aotreasury.addDenomination("zetta", aozetta.address, { from: accounts[0] });
-			await aotreasury.addDenomination("yotta", aoyotta.address, { from: accounts[0] });
-			await aotreasury.addDenomination("xona", aoxona.address, { from: accounts[0] });
+			await aotreasury.addDenomination("ao", aotoken.address, { from: deployerAccount });
+			await aotreasury.addDenomination("kilo", aokilo.address, { from: deployerAccount });
+			await aotreasury.addDenomination("mega", aomega.address, { from: deployerAccount });
+			await aotreasury.addDenomination("giga", aogiga.address, { from: deployerAccount });
+			await aotreasury.addDenomination("tera", aotera.address, { from: deployerAccount });
+			await aotreasury.addDenomination("peta", aopeta.address, { from: deployerAccount });
+			await aotreasury.addDenomination("exa", aoexa.address, { from: deployerAccount });
+			await aotreasury.addDenomination("zetta", aozetta.address, { from: deployerAccount });
+			await aotreasury.addDenomination("yotta", aoyotta.address, { from: deployerAccount });
+			await aotreasury.addDenomination("xona", aoxona.address, { from: deployerAccount });
 
 			// Grant access to aocontent to transact on behalf of others on all AO Tokens denominations
-			await aotoken.setWhitelist(aocontent.address, true, { from: accounts[0] });
-			await aokilo.setWhitelist(aocontent.address, true, { from: accounts[0] });
-			await aomega.setWhitelist(aocontent.address, true, { from: accounts[0] });
-			await aogiga.setWhitelist(aocontent.address, true, { from: accounts[0] });
-			await aotera.setWhitelist(aocontent.address, true, { from: accounts[0] });
-			await aopeta.setWhitelist(aocontent.address, true, { from: accounts[0] });
-			await aoexa.setWhitelist(aocontent.address, true, { from: accounts[0] });
-			await aozetta.setWhitelist(aocontent.address, true, { from: accounts[0] });
-			await aoyotta.setWhitelist(aocontent.address, true, { from: accounts[0] });
-			await aoxona.setWhitelist(aocontent.address, true, { from: accounts[0] });
+			await aotoken.setWhitelist(aocontent.address, true, { from: deployerAccount });
+			await aokilo.setWhitelist(aocontent.address, true, { from: deployerAccount });
+			await aomega.setWhitelist(aocontent.address, true, { from: deployerAccount });
+			await aogiga.setWhitelist(aocontent.address, true, { from: deployerAccount });
+			await aotera.setWhitelist(aocontent.address, true, { from: deployerAccount });
+			await aopeta.setWhitelist(aocontent.address, true, { from: deployerAccount });
+			await aoexa.setWhitelist(aocontent.address, true, { from: deployerAccount });
+			await aozetta.setWhitelist(aocontent.address, true, { from: deployerAccount });
+			await aoyotta.setWhitelist(aocontent.address, true, { from: deployerAccount });
+			await aoxona.setWhitelist(aocontent.address, true, { from: deployerAccount });
 
 			// Grant access to aotreasury to transact on behalf of others on all AO Tokens denominations
-			await aotoken.setWhitelist(aotreasury.address, true, { from: accounts[0] });
-			await aokilo.setWhitelist(aotreasury.address, true, { from: accounts[0] });
-			await aomega.setWhitelist(aotreasury.address, true, { from: accounts[0] });
-			await aogiga.setWhitelist(aotreasury.address, true, { from: accounts[0] });
-			await aotera.setWhitelist(aotreasury.address, true, { from: accounts[0] });
-			await aopeta.setWhitelist(aotreasury.address, true, { from: accounts[0] });
-			await aoexa.setWhitelist(aotreasury.address, true, { from: accounts[0] });
-			await aozetta.setWhitelist(aotreasury.address, true, { from: accounts[0] });
-			await aoyotta.setWhitelist(aotreasury.address, true, { from: accounts[0] });
-			await aoxona.setWhitelist(aotreasury.address, true, { from: accounts[0] });
+			await aotoken.setWhitelist(aotreasury.address, true, { from: deployerAccount });
+			await aokilo.setWhitelist(aotreasury.address, true, { from: deployerAccount });
+			await aomega.setWhitelist(aotreasury.address, true, { from: deployerAccount });
+			await aogiga.setWhitelist(aotreasury.address, true, { from: deployerAccount });
+			await aotera.setWhitelist(aotreasury.address, true, { from: deployerAccount });
+			await aopeta.setWhitelist(aotreasury.address, true, { from: deployerAccount });
+			await aoexa.setWhitelist(aotreasury.address, true, { from: deployerAccount });
+			await aozetta.setWhitelist(aotreasury.address, true, { from: deployerAccount });
+			await aoyotta.setWhitelist(aotreasury.address, true, { from: deployerAccount });
+			await aoxona.setWhitelist(aotreasury.address, true, { from: deployerAccount });
 		});
 };
