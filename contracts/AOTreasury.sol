@@ -110,26 +110,61 @@ contract AOTreasury is owned {
 
 	/**
 	 * @dev Get base denomination info
+	 * @return name of the denomination
 	 * @return address of the denomination
 	 * @return current status of the denomination (active/inactive)
 	 */
-	function getBaseDenomination() public view returns (address, bool) {
+	function getBaseDenomination() public view returns (bytes8, address, bool) {
 		require (totalDenominations > 1);
 		Denomination memory _denomination = denominations[1];
-		return (_denomination.denominationAddress, _denomination.active);
+		return (_denomination.name, _denomination.denominationAddress, _denomination.active);
 	}
 
 	/**
-	 * @dev Return sum of total account balance from every denominations in base denomination
+	 * @dev Return sum of account's total network balance from every denominations in base denomination
 	 * @param _account The address to be check
 	 * @return The total balance in base denomination
 	 */
-	function totalBalanceOf(address _account) public view returns (uint256) {
+	function totalNetworkBalanceOf(address _account) public view returns (uint256) {
 		uint256 totalBalance = 0;
 		for (uint256 i=1; i <= totalDenominations; i++) {
 			totalBalance = totalBalance.add(AOToken(denominations[i].denominationAddress).balanceOf(_account));
 		}
 		return totalBalance;
+	}
+
+	/**
+	 * @dev Return sum of account's total staked network balance from every denominations in base denomination
+	 * @param _account The address to be check
+	 * @return The total staked balance in base denomination
+	 */
+	function totalNetworkStakedBalanceOf(address _account) public view returns (uint256) {
+		uint256 totalStakedBalance = 0;
+		for (uint256 i=1; i <= totalDenominations; i++) {
+			totalStakedBalance = totalStakedBalance.add(AOToken(denominations[i].denominationAddress).stakedBalance(_account));
+		}
+		return totalStakedBalance;
+	}
+
+	/**
+	 * @dev Return account's total primordial token balance
+	 * @param _account The address to be check
+	 * @return The total primordial balance
+	 */
+	function totalPrimordialBalanceOf(address _account) public view returns (uint256) {
+		(, address baseDenominationAddress, ) = getBaseDenomination();
+		return AOToken(baseDenominationAddress).icoBalanceOf(_account);
+	}
+
+	/**
+	 * @dev Return account's total primordial staked token balance at weighted index
+	 * @param _account The address to be check
+	 * @param _weightedIndex The weighted index of the primordial token
+	 * @return The total primordial staked balance
+	 */
+	function totalPrimordialStakedBalanceOf(address _account, uint256 _weightedIndex) public view returns (uint256) {
+		(, address baseDenominationAddress, ) = getBaseDenomination();
+		return AOToken(baseDenominationAddress).icoStakedBalance(_account, _weightedIndex);
 	}
 
 	/**
@@ -144,7 +179,7 @@ contract AOTreasury is owned {
 	function determinePayment(address sender, uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) public isValidDenomination(denominationName) view returns (address[], uint256[]) {
 		uint256 totalPrice = toBase(integerAmount, fractionAmount, denominationName);
 		uint256 totalPayment;
-		require (totalBalanceOf(sender) >= totalPrice);
+		require (totalNetworkBalanceOf(sender) >= totalPrice);
 		address[] memory denominationAddress = new address[](totalDenominations);
 		uint256[] memory paymentAmount = new uint256[](totalDenominations);
 
@@ -180,6 +215,53 @@ contract AOTreasury is owned {
 	}
 
 	/**
+	 * @dev Given `integerAmount` and `fractionAmount` price at `denominationName`, return list of denominations and the amount to unstake the price with
+	 * @param sender The sender address
+	 * @param integerAmount The integer amount of the price
+	 * @param fractionAmount The fraction amount of the price
+	 * @param denominationName The denomination name of the price
+	 * @return A list of denomination addresses to unstake
+	 * @return A list of denomination amounts for each denomination address
+	 */
+	function determineUnstake(address sender, uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) public isValidDenomination(denominationName) view returns (address[], uint256[]) {
+		uint256 totalPrice = toBase(integerAmount, fractionAmount, denominationName);
+		uint256 totalUnstake;
+		require (totalNetworkStakedBalanceOf(sender) >= totalPrice);
+		address[] memory denominationAddress = new address[](totalDenominations);
+		uint256[] memory unstakeAmount = new uint256[](totalDenominations);
+
+		if (totalPrice > 0) {
+			for (uint256 i=totalDenominations; i>0; i--) {
+				Denomination memory _denomination = denominations[i];
+				if (_denomination.active == true) {
+					uint256 tokenStakedBalance = AOToken(_denomination.denominationAddress).stakedBalance(sender);
+					if (tokenStakedBalance > 0) {
+						if (tokenStakedBalance >= totalPrice) {
+							totalUnstake = totalPrice;
+							totalPrice = 0;
+							// Since array index starts at 0, we need to subtract i with 1
+							denominationAddress[i-1] = _denomination.denominationAddress;
+							unstakeAmount[i-1] = totalUnstake;
+							break;
+						} else {
+							totalUnstake = totalUnstake.add(tokenStakedBalance);
+							totalPrice = totalPrice.sub(tokenStakedBalance);
+							// Since array index starts at 0, we need to subtract i with 1
+							denominationAddress[i-1] = _denomination.denominationAddress;
+							unstakeAmount[i-1] = tokenStakedBalance;
+						}
+					}
+				}
+				if (totalPrice == 0) {
+					break;
+				}
+			}
+		}
+		assert (totalPrice == 0);
+		return (denominationAddress, unstakeAmount);
+	}
+
+	/**
 	 * @dev convert token from `denominationName` denomination to base denomination,
 	 *		in this case it's similar to web3.toWei() functionality
 	 *
@@ -199,6 +281,9 @@ contract AOTreasury is owned {
 		uint8 fractionNumDigits = _numDigits(fractionAmount);
 		require (fractionNumDigits <= _denominationToken.decimals());
 		uint256 baseInteger = integerAmount.mul(10 ** _denominationToken.powerOfTen());
+		if (_denominationToken.decimals() == 0) {
+			fractionAmount = 0;
+		}
 		return baseInteger.add(fractionAmount);
 	}
 

@@ -65,8 +65,9 @@ contract("AOTreasury", function(accounts) {
 	});
 	it("should have ao as the base denomination", async function() {
 		var baseDenomination = await aotreasury.getBaseDenomination();
-		assert.equal(baseDenomination[0], ao[0], "Base denomination address does not match ao denomination address");
-		assert.equal(baseDenomination[1], ao[1], "Base denomination status does not match ao denomination status");
+		assert.equal(web3.toAscii(baseDenomination[0]).replace(/\0/g, ""), "ao", "Base denomination name does not match ao name");
+		assert.equal(baseDenomination[1], ao[0], "Base denomination address does not match ao denomination address");
+		assert.equal(baseDenomination[2], ao[1], "Base denomination status does not match ao denomination status");
 	});
 	it("toBase() should return correct amount", async function() {
 		var kiloToBase = await aotreasury.toBase(9, 1, "kilo");
@@ -127,7 +128,7 @@ contract("AOTreasury", function(accounts) {
 		assert.equal(baseToXona[0].toNumber(), 9, "fromBase xona return wrong integer");
 		assert.equal(baseToXona[1].toNumber(), "123456789123456789", "fromBase xona return wrong fraction");
 	});
-	contract("totalBalanceOf()", function() {
+	contract("totalNetworkBalanceOf()", function() {
 		before(async function() {
 			var aokilodecimals = await aokilo.decimals();
 			var aomegadecimals = await aomega.decimals();
@@ -152,7 +153,7 @@ contract("AOTreasury", function(accounts) {
 			await aoxona.mintToken(account1, 1 * 10 ** aoxonadecimals.toNumber(), { from: owner });
 		});
 		it("should return the correct sum of total balance from all denominations in base denomination", async function() {
-			var totalBalance = await aotreasury.totalBalanceOf(account1);
+			var totalNetworkBalance = await aotreasury.totalNetworkBalanceOf(account1);
 			var aotokenBalance = await aotoken.balanceOf(account1);
 			var aokiloBalance = await aokilo.balanceOf(account1);
 			var aomegaBalance = await aomega.balanceOf(account1);
@@ -165,7 +166,7 @@ contract("AOTreasury", function(accounts) {
 			var aoxonaBalance = await aoxona.balanceOf(account1);
 
 			assert.equal(
-				totalBalance.toString(),
+				totalNetworkBalance.toString(),
 				aotokenBalance
 					.add(aokiloBalance)
 					.add(aomegaBalance)

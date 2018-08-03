@@ -9,6 +9,7 @@ var AOExa = artifacts.require("./AOExa.sol");
 var AOZetta = artifacts.require("./AOZetta.sol");
 var AOYotta = artifacts.require("./AOYotta.sol");
 var AOXona = artifacts.require("./AOXona.sol");
+var AOTreasury = artifacts.require("./AOTreasury.sol");
 
 contract("AOContent", function(accounts) {
 	var aocontent,
@@ -31,13 +32,14 @@ contract("AOContent", function(accounts) {
 		aoexadecimals,
 		aozettadecimals,
 		aoyottadecimals,
-		aoxonadecimals;
+		aoxonadecimals,
+		aotreasury;
 	var owner = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var account3 = accounts[3];
 	var datKey = "7bde24fb38d6e316ec48874c937f4582f3a494df1ecf387e6edb2e25bff700f7";
-	var fileSize = 1000; // 1000 bytes = min 1000 AO
+	var fileSize = 1000000; // 1000000 bytes = min 1000000 AO
 	var profitPercentage = 600000; // 60%
 
 	before(async function() {
@@ -52,6 +54,7 @@ contract("AOContent", function(accounts) {
 		aozetta = await AOZetta.deployed();
 		aoyotta = await AOYotta.deployed();
 		aoxona = await AOXona.deployed();
+		aotreasury = await AOTreasury.deployed();
 
 		// Get the decimals
 		aotokendecimals = await aotoken.decimals();
@@ -107,128 +110,81 @@ contract("AOContent", function(accounts) {
 		});
 	});
 	contract("Staking Function Tests", function() {
-		var aotokenStakeId,
-			aokiloStakeId,
-			aomegaStakeId,
-			aogigaStakeId,
-			aoteraStakeId,
-			aopetaStakeId,
-			aoexaStakeId,
-			aozettaStakeId,
-			aoyottaStakeId,
-			aoxonaStakeId;
+		var stakeId1, stakeId2, stakeId3;
 
 		before(async function() {
 			// Let's give account1 some tokens
-			await aotoken.mintToken(account1, 100000, { from: owner });
+			await aotoken.mintToken(account1, 100000, { from: owner }); // 100,000 AO Token
 			// Buy 2 lots so that we can test avg weighted index
-			await aotoken.buyIcoToken({ from: account1, value: 500000000 });
-			await aotoken.buyIcoToken({ from: account1, value: 500000000 });
-			await aokilo.mintToken(account1, 100000 * 10 ** aokilodecimals.toNumber(), { from: owner });
-			await aomega.mintToken(account1, 100000 * 10 ** aomegadecimals.toNumber(), { from: owner });
-			await aogiga.mintToken(account1, 100000 * 10 ** aogigadecimals.toNumber(), { from: owner });
-			await aotera.mintToken(account1, 100000 * 10 ** aoteradecimals.toNumber(), { from: owner });
-			await aopeta.mintToken(account1, 100000 * 10 ** aopetadecimals.toNumber(), { from: owner });
-			await aoexa.mintToken(account1, 100000 * 10 ** aoexadecimals.toNumber(), { from: owner });
-			await aozetta.mintToken(account1, 100000 * 10 ** aozettadecimals.toNumber(), { from: owner });
-			await aoyotta.mintToken(account1, 100000 * 10 ** aoyottadecimals.toNumber(), { from: owner });
-			await aoxona.mintToken(account1, 100000 * 10 ** aoxonadecimals.toNumber(), { from: owner });
+			await aotoken.buyIcoToken({ from: account1, value: 50000000000 });
+			await aotoken.buyIcoToken({ from: account1, value: 50000000000 });
+			await aokilo.mintToken(account1, 2 * 10 ** aokilodecimals.toNumber(), { from: owner }); // 2 AO Kilo
+			await aomega.mintToken(account1, 5 * 10 ** aomegadecimals.toNumber(), { from: owner }); // 5 AO Mega
 		});
 
 		it("stakeContent() - should NOT stake content if datKey is not provided", async function() {
-			var stakeContent = async function(denomination) {
-				var canStake;
-				try {
-					await aocontent.stakeContent(1000, denomination, 0, "", fileSize, profitPercentage, { from: account1 });
-					canStake = true;
-				} catch (e) {
-					canStake = false;
-				}
-				assert.notEqual(canStake, true, "account1 can stake content even though it's missing datKey");
-			};
-
-			await stakeContent("ao");
-			await stakeContent("kilo");
-			await stakeContent("mega");
-			await stakeContent("giga");
-			await stakeContent("tera");
-			await stakeContent("peta");
-			await stakeContent("exa");
-			await stakeContent("zetta");
-			await stakeContent("yotta");
-			await stakeContent("xona");
-		});
-
-		it("stakeContent() - should NOT stake content if fileSize is 0", async function() {
-			var stakeContent = async function(denomination) {
-				var canStake;
-				try {
-					await aocontent.stakeContent(1000, denomination, 0, datKey, 0, profitPercentage, { from: account1 });
-					canStake = true;
-				} catch (e) {
-					canStake = false;
-				}
-				assert.notEqual(canStake, true, "account1 can stake content even though it's missing fileSize");
-			};
-
-			await stakeContent("ao");
-			await stakeContent("kilo");
-			await stakeContent("mega");
-			await stakeContent("giga");
-			await stakeContent("tera");
-			await stakeContent("peta");
-			await stakeContent("exa");
-			await stakeContent("zetta");
-			await stakeContent("yotta");
-			await stakeContent("xona");
-		});
-
-		it("stakeContent() - should NOT stake content if token amount is less than fileSize", async function() {
-			var stakeContent = async function(denomination) {
-				var canStake;
-				try {
-					await aocontent.stakeContent(10, denomination, 0, datKey, fileSize, profitPercentage, { from: account1 });
-					canStake = true;
-				} catch (e) {
-					canStake = false;
-				}
-				assert.notEqual(canStake, true, "account1 can stake content even though token amount is less than fileSize");
-				try {
-					await aocontent.stakeContent(10, denomination, 100, datKey, fileSize, { from: account1 });
-					canStake = true;
-				} catch (e) {
-					canStake = false;
-				}
-				assert.notEqual(canStake, true, "account1 can stake content even though token amount is less than fileSize");
-			};
-
-			await stakeContent("ao");
-			await stakeContent("kilo");
-			await stakeContent("mega");
-			await stakeContent("giga");
-			await stakeContent("tera");
-			await stakeContent("peta");
-			await stakeContent("exa");
-			await stakeContent("zetta");
-			await stakeContent("yotta");
-			await stakeContent("xona");
-
-			// Test staking only AO ICO tokens
 			var canStake;
 			try {
-				await aocontent.stakeContent(0, "", 50, datKey, fileSize, { from: account1 });
+				await aocontent.stakeContent(1, 0, "kilo", 0, "", fileSize, profitPercentage, { from: account1 });
 				canStake = true;
 			} catch (e) {
 				canStake = false;
 			}
-			assert.notEqual(canStake, true, "account1 can stake content even though token amount is less than fileSize");
+			assert.notEqual(canStake, true, "account1 can stake content even though it's missing datKey");
+		});
+
+		it("stakeContent() - should NOT stake content if fileSize is 0", async function() {
+			var canStake;
+			try {
+				await aocontent.stakeContent(1, 0, "kilo", 0, datKey, 0, profitPercentage, { from: account1 });
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+			}
+			assert.notEqual(canStake, true, "account1 can stake content even though it's missing fileSize");
+		});
+
+		it("stakeContent() - should NOT stake content if token amount is less than fileSize", async function() {
+			var stakeContent = async function(networkIntegerAmount, networkFractionAmount, denomination, primordialAmount) {
+				var canStake;
+				try {
+					await aocontent.stakeContent(
+						networkIntegerAmount,
+						networkFractionAmount,
+						denomination,
+						primordialAmount,
+						datKey,
+						fileSize,
+						profitPercentage,
+						{ from: account1 }
+					);
+					canStake = true;
+				} catch (e) {
+					canStake = false;
+				}
+				assert.notEqual(canStake, true, "account1 can stake content even though token amount is less than fileSize");
+			};
+
+			await stakeContent(100, 0, "ao", 0);
+			await stakeContent(10, 0, "ao", 50);
+			await stakeContent(1, 5, "kilo", 50);
+			await stakeContent(0, 0, "", 150);
 		});
 
 		it("stakeContent() - should NOT stake content if account does not have enough balance", async function() {
-			var stakeContent = async function(denomination) {
+			var stakeContent = async function(networkIntegerAmount, networkFractionAmount, denomination, primordialAmount) {
 				var canStake;
 				try {
-					await aocontent.stakeContent(10 ** 50, denomination, 0, datKey, fileSize, profitPercentage, { from: account1 });
+					await aocontent.stakeContent(
+						networkIntegerAmount,
+						networkFractionAmount,
+						denomination,
+						primordialAmount,
+						datKey,
+						fileSize,
+						profitPercentage,
+						{ from: account1 }
+					);
 					canStake = true;
 				} catch (e) {
 					canStake = false;
@@ -236,246 +192,246 @@ contract("AOContent", function(accounts) {
 				assert.notEqual(canStake, true, "account1 can stake content even though account1 does not have enough balance");
 			};
 
-			await stakeContent("ao");
-			await stakeContent("kilo");
-			await stakeContent("mega");
-			await stakeContent("giga");
-			await stakeContent("tera");
-			await stakeContent("peta");
-			await stakeContent("exa");
-			await stakeContent("zetta");
-			await stakeContent("yotta");
-			await stakeContent("xona");
-
-			// Test staking only AO ICO tokens
-			var canStake;
-			try {
-				await aocontent.stakeContent(0, "", 1000000, datKey, fileSize, { from: account1 });
-				canStake = true;
-			} catch (e) {
-				canStake = false;
-			}
-			assert.notEqual(canStake, true, "account1 can stake content even though account1 does not have enough AO ICO token balance");
+			await stakeContent(100000000, 0, "ao", 0);
+			await stakeContent(10, 5, "kilo", 0);
+			await stakeContent(10, 0, "mega", 500);
+			await stakeContent(0, 0, "", 5000000000000);
 		});
 
 		it("stakeContent() - should NOT stake content if profit percentage is more than 100%", async function() {
-			var stakeContent = async function(denomination) {
+			var stakeContent = async function(networkIntegerAmount, networkFractionAmount, denomination, primordialAmount) {
 				var canStake;
 				try {
-					await aocontent.stakeContent(100, denomination, 0, datKey, fileSize, 1100000, { from: account1 });
+					await aocontent.stakeContent(
+						networkIntegerAmount,
+						networkFractionAmount,
+						denomination,
+						primordialAmount,
+						datKey,
+						fileSize,
+						1100000,
+						{ from: account1 }
+					);
 					canStake = true;
 				} catch (e) {
 					canStake = false;
 				}
 				assert.notEqual(canStake, true, "account1 can stake content even though profit percentage is more than 100%");
 			};
+			await stakeContent(1000000, 0, "ao", 0);
+			await stakeContent(2, 0, "kilo", 100);
+			await stakeContent(1, 5, "mega", 100);
+			await stakeContent(0, 0, "", 2000000);
+		});
 
-			await stakeContent("ao");
-			await stakeContent("kilo");
-			await stakeContent("mega");
-			await stakeContent("giga");
-			await stakeContent("tera");
-			await stakeContent("peta");
-			await stakeContent("exa");
-			await stakeContent("zetta");
-			await stakeContent("yotta");
-			await stakeContent("xona");
+		it("stakeContent() - should be able to stake content with only network tokens", async function() {
+			var account1TotalNetworkBalanceBefore = await aotreasury.totalNetworkBalanceOf(account1);
+			var account1TotalNetworkStakedBalanceBefore = await aotreasury.totalNetworkStakedBalanceOf(account1);
+			var account1MegaBalanceBefore = await aomega.balanceOf(account1);
+			var account1KiloBalanceBefore = await aokilo.balanceOf(account1);
 
-			// Test staking only AO ICO tokens
-			var canStake;
+			var canStake, stakedContent;
 			try {
-				await aocontent.stakeContent(0, "", 1000000, datKey, fileSize, { from: account1 });
+				var result = await aocontent.stakeContent(5, 1000, "mega", 0, datKey, fileSize, profitPercentage, { from: account1 });
+				stakeId1 = result.logs[0].args.stakeId;
+				stakedContent = await aocontent.stakedContentById(stakeId1);
 				canStake = true;
 			} catch (e) {
 				canStake = false;
+				stakeId1 = null;
+				stakedContent = null;
 			}
-			assert.notEqual(canStake, true, "account1 can stake content even though account1 does not have enough AO ICO token balance");
+			var networkAmount = await aotreasury.toBase(5, 1000, "mega");
+			assert.equal(canStake, true, "account1 can't stake content even though enough network tokens were sent");
+			assert.notEqual(stakeId1, null, "Unable to determine the stakeID from the log after staking content");
+			assert.equal(stakedContent[0], account1, "stakedContentById returns incorrect stakeOwner");
+			assert.equal(stakedContent[1].toString(), networkAmount.toString(), "stakedContentById returns incorrect networkAmount");
+			assert.equal(stakedContent[2].toString(), 0, "stakedContentById returns incorrect primordialAmount");
+			assert.equal(stakedContent[3].toString(), 0, "stakedContentById returns incorrect primordialWeightedIndex");
+			assert.equal(stakedContent[4], datKey, "stakedContentById returns incorrect datKey");
+			assert.equal(stakedContent[5].toString(), fileSize, "stakedContentById returns incorrect fileSize");
+			assert.equal(stakedContent[6].toString(), profitPercentage, "stakedContentById returns incorrect profitPercentage");
+			assert.equal(stakedContent[7], true, "stakedContentById returns incorrect status");
+
+			var account1TotalNetworkBalanceAfter = await aotreasury.totalNetworkBalanceOf(account1);
+			var account1TotalNetworkStakedBalanceAfter = await aotreasury.totalNetworkStakedBalanceOf(account1);
+			var account1MegaBalanceAfter = await aomega.balanceOf(account1);
+			var account1KiloBalanceAfter = await aokilo.balanceOf(account1);
+
+			assert.equal(
+				account1TotalNetworkBalanceAfter.toString(),
+				account1TotalNetworkBalanceBefore.minus(networkAmount).toString(),
+				"account1 has incorrect balance after staking"
+			);
+			assert.equal(
+				account1TotalNetworkStakedBalanceAfter.toString(),
+				account1TotalNetworkStakedBalanceBefore.plus(networkAmount).toString(),
+				"account1 has incorrect staked balance after staking"
+			);
+			assert.equal(
+				account1MegaBalanceAfter.toString(),
+				account1MegaBalanceBefore.minus(5 * 10 ** aomegadecimals.toNumber()).toString(),
+				"account1 has incorrect AO Mega balance after staking"
+			);
+			assert.equal(
+				account1KiloBalanceAfter.toString(),
+				account1KiloBalanceBefore.minus(1 * 10 ** aokilodecimals.toNumber()).toString(),
+				"account1 has incorrect AO Kilo balance after staking"
+			);
 		});
 
-		it("stakeContent() - should be able to stake content with only normal ERC20 AO tokens", async function() {
-			var denominationAmount = 1000;
-			var stakeContent = async function(denomination, tokenMeta) {
-				var account1BalanceBefore = await tokenMeta.balanceOf(account1);
-				var account1StakedBalanceBefore = await tokenMeta.stakedBalance(account1);
+		it("stakeContent() - should be able to stake content with only primordial tokens", async function() {
+			var primordialAmount = 1000000;
+			var account1WeightedIndexBefore = await aotoken.weightedIndexByAddress(account1);
+			var account1PrimordialBalanceBefore = await aotoken.icoBalanceOf(account1);
+			var account1PrimordialStakedBalanceBefore = await aotoken.icoStakedBalance(account1, account1WeightedIndexBefore.toNumber());
 
-				var canStake, stakeId, stakedContent;
-				try {
-					var result = await aocontent.stakeContent(denominationAmount, denomination, 0, datKey, fileSize, profitPercentage, {
-						from: account1
-					});
-					stakeId = result.logs[0].args.stakeId;
-					stakedContent = await aocontent.stakedContentById(stakeId);
-					canStake = true;
-				} catch (e) {
-					canStake = false;
-					stakeId = null;
-					stakedContent = null;
-				}
-				assert.equal(canStake, true, "account1 can't stake content even though enough AO Tokens were sent");
-				assert.notEqual(stakeId, null, "Unable to determine the stakeID from the log after staking content");
-				assert.equal(stakedContent[0], account1, "stakedContentById returns incorrect stakeOwner");
-				assert.equal(stakedContent[1].toString(), denominationAmount, "stakedContentById returns incorrect denominationAmount");
-				assert.equal(
-					web3.toAscii(stakedContent[2]).replace(/\0/g, ""),
-					denomination,
-					"stakedContentById returns incorrect denomination"
-				);
-				assert.equal(stakedContent[3].toString(), 0, "stakedContentById returns incorrect icoTokenAmount");
-				assert.equal(stakedContent[4].toString(), 0, "stakedContentById returns incorrect icoTokenWeightedIndex");
-				assert.equal(stakedContent[5], datKey, "stakedContentById returns incorrect datKey");
-				assert.equal(stakedContent[6].toString(), fileSize, "stakedContentById returns incorrect fileSize");
-				assert.equal(stakedContent[7].toString(), profitPercentage, "stakedContentById returns incorrect profitPercentage");
-				assert.equal(stakedContent[8], true, "stakedContentById returns incorrect status");
-
-				var account1BalanceAfter = await tokenMeta.balanceOf(account1);
-				var account1StakedBalanceAfter = await tokenMeta.stakedBalance(account1);
-				assert.equal(
-					account1BalanceAfter.toString(),
-					account1BalanceBefore.minus(denominationAmount).toString(),
-					"account1 has incorrect balance after staking"
-				);
-				assert.equal(
-					account1StakedBalanceAfter.toString(),
-					account1StakedBalanceBefore.plus(denominationAmount).toString(),
-					"account1 has incorrect staked balance after staking"
-				);
-
-				return stakeId;
-			};
-
-			aotokenStakeId = await stakeContent("ao", aotoken);
-			aokiloStakeId = await stakeContent("kilo", aokilo);
-			aomegaStakeId = await stakeContent("mega", aomega);
-			aogigaStakeId = await stakeContent("giga", aogiga);
-			aoteraStakeId = await stakeContent("tera", aotera);
-			aopetaStakeId = await stakeContent("peta", aopeta);
-			aoexaStakeId = await stakeContent("exa", aoexa);
-			aozettaStakeId = await stakeContent("zetta", aozetta);
-			aoyottaStakeId = await stakeContent("yotta", aoyotta);
-			aoxonaStakeId = await stakeContent("xona", aoxona);
-		});
-
-		it("stakeContent() - should be able to stake content with only AO ICO tokens", async function() {
-			var account1WeightedIndex = await aotoken.weightedIndexByAddress(account1);
-
-			var canStake, stakeId, stakedContent;
+			var canStake, stakedContent;
 			try {
-				var result = await aocontent.stakeContent(0, "", 1000, datKey, fileSize, profitPercentage, { from: account1 });
-				stakeId = result.logs[0].args.stakeId;
-				stakedContent = await aocontent.stakedContentById(stakeId);
+				var result = await aocontent.stakeContent(0, 0, "", primordialAmount, datKey, fileSize, profitPercentage, {
+					from: account1
+				});
+				stakeId2 = result.logs[0].args.stakeId;
+				stakedContent = await aocontent.stakedContentById(stakeId2);
 				canStake = true;
 			} catch (e) {
 				canStake = false;
-				stakeId = null;
+				stakeId2 = null;
 				stakedContent = null;
 			}
 			assert.equal(canStake, true, "account1 can't stake content even though enough AO Tokens were sent");
-			assert.notEqual(stakeId, null, "Unable to determine the stakeID from the log after staking content");
+			assert.notEqual(stakeId2, null, "Unable to determine the stakeID from the log after staking content");
 			assert.equal(stakedContent[0], account1, "stakedContentById returns incorrect stakeOwner");
-			assert.equal(stakedContent[1].toString(), 0, "stakedContentById returns incorrect denominationAmount");
-			assert.equal(web3.toAscii(stakedContent[2]).replace(/\0/g, ""), "", "stakedContentById returns incorrect denomination");
-			assert.equal(stakedContent[3].toString(), 1000, "stakedContentById returns incorrect icoTokenAmount");
+			assert.equal(stakedContent[1].toString(), 0, "stakedContentById returns incorrect networkAmount");
+			assert.equal(stakedContent[2].toString(), primordialAmount, "stakedContentById returns incorrect primordialAmount");
 			assert.equal(
-				stakedContent[4].toString(),
-				account1WeightedIndex.toString(),
-				"stakedContentById returns incorrect icoTokenWeightedIndex"
+				stakedContent[3].toString(),
+				account1WeightedIndexBefore.toString(),
+				"stakedContentById returns incorrect primordialWeightedIndex"
 			);
-			assert.equal(stakedContent[5], datKey, "stakedContentById returns incorrect datKey");
-			assert.equal(stakedContent[6].toString(), fileSize, "stakedContentById returns incorrect fileSize");
-			assert.equal(stakedContent[7].toString(), profitPercentage, "stakedContentById returns incorrect profitPercentage");
-			assert.equal(stakedContent[8], true, "stakedContentById returns incorrect status");
+			assert.equal(stakedContent[4], datKey, "stakedContentById returns incorrect datKey");
+			assert.equal(stakedContent[5].toString(), fileSize, "stakedContentById returns incorrect fileSize");
+			assert.equal(stakedContent[6].toString(), profitPercentage, "stakedContentById returns incorrect profitPercentage");
+			assert.equal(stakedContent[7], true, "stakedContentById returns incorrect status");
+
+			var account1WeightedIndexAfter = await aotoken.weightedIndexByAddress(account1);
+			var account1PrimordialBalanceAfter = await aotoken.icoBalanceOf(account1);
+			var account1PrimordialStakedBalanceAfter = await aotoken.icoStakedBalance(account1, stakedContent[3].toString());
+
+			assert.equal(
+				account1WeightedIndexAfter.toNumber(),
+				account1WeightedIndexBefore.toNumber(),
+				"account1 has incorrect weighted index after staking"
+			);
+			assert.equal(
+				account1PrimordialBalanceAfter.toString(),
+				account1PrimordialBalanceBefore.minus(primordialAmount).toString(),
+				"account1 has incorrect primordial balance after staking"
+			);
+			assert.equal(
+				account1PrimordialStakedBalanceAfter.toString(),
+				account1PrimordialStakedBalanceBefore.plus(primordialAmount).toString(),
+				"account1 has incorrect primordial staked balance after staking"
+			);
 		});
 
-		it("stakeContent() - should be able to stake content with both normal ERC20 AO Tokens and AO ICO tokens", async function() {
-			var account1WeightedIndex = await aotoken.weightedIndexByAddress(account1);
-			var denominationAmount = 2000;
-			var icoTokenAmount = 100;
+		it("stakeContent() - should be able to stake content with both network Tokens and primordial tokens", async function() {
+			await aokilo.mintToken(account1, 2 * 10 ** aokilodecimals.toNumber(), { from: owner }); // 2 AO Kilo
+			await aomega.mintToken(account1, 5 * 10 ** aomegadecimals.toNumber(), { from: owner }); // 5 AO Mega
 
-			var stakeContent = async function(denomination, tokenMeta) {
-				var account1BalanceBefore = await tokenMeta.balanceOf(account1);
-				var account1StakedBalanceBefore = await tokenMeta.stakedBalance(account1);
-				var account1IcoBalanceBefore = await aotoken.icoBalanceOf(account1);
-				var account1IcoStakedBalanceBefore = await aotoken.icoStakedBalance(account1, account1WeightedIndex.toString());
+			// Stake 5.002 AO Mega and 1,000,000 Primordial
+			var networkIntegerAmount = 5;
+			var networkFractionAmount = 2000;
+			var denomination = "mega";
+			var primordialAmount = 1000000;
+			var account1TotalNetworkBalanceBefore = await aotreasury.totalNetworkBalanceOf(account1);
+			var account1TotalNetworkStakedBalanceBefore = await aotreasury.totalNetworkStakedBalanceOf(account1);
+			var account1MegaBalanceBefore = await aomega.balanceOf(account1);
+			var account1KiloBalanceBefore = await aokilo.balanceOf(account1);
+			var account1WeightedIndexBefore = await aotoken.weightedIndexByAddress(account1);
+			var account1PrimordialBalanceBefore = await aotoken.icoBalanceOf(account1);
+			var account1PrimordialStakedBalanceBefore = await aotoken.icoStakedBalance(account1, account1WeightedIndexBefore.toNumber());
 
-				var canStake, stakeId, stakedContent;
-				try {
-					var result = await aocontent.stakeContent(
-						denominationAmount,
-						denomination,
-						icoTokenAmount,
-						datKey,
-						fileSize,
-						profitPercentage,
-						{
-							from: account1
-						}
-					);
-					stakeId = result.logs[0].args.stakeId;
-					stakedContent = await aocontent.stakedContentById(stakeId);
-					canStake = true;
-				} catch (e) {
-					canStake = false;
-					stakeId = null;
-					stakedContent = null;
-				}
-				assert.equal(canStake, true, "account1 can't stake content even though enough AO Tokens were sent");
-				assert.notEqual(stakeId, null, "Unable to determine the stakeID from the log after staking content");
-				assert.equal(stakedContent[0], account1, "stakedContentById returns incorrect stakeOwner");
-				assert.equal(stakedContent[1].toString(), denominationAmount, "stakedContentById returns incorrect denominationAmount");
-				assert.equal(
-					web3.toAscii(stakedContent[2]).replace(/\0/g, ""),
+			var canStake, stakedContent;
+			try {
+				var result = await aocontent.stakeContent(
+					networkIntegerAmount,
+					networkFractionAmount,
 					denomination,
-					"stakedContentById returns incorrect denomination"
+					primordialAmount,
+					datKey,
+					fileSize,
+					profitPercentage,
+					{ from: account1 }
 				);
-				assert.equal(stakedContent[3].toString(), icoTokenAmount, "stakedContentById returns incorrect icoTokenAmount");
-				assert.equal(
-					stakedContent[4].toString(),
-					account1WeightedIndex.toString(),
-					"stakedContentById returns incorrect icoTokenWeightedIndex"
-				);
-				assert.equal(stakedContent[5], datKey, "stakedContentById returns incorrect datKey");
-				assert.equal(stakedContent[6].toString(), fileSize, "stakedContentById returns incorrect fileSize");
-				assert.equal(stakedContent[7].toString(), profitPercentage, "stakedContentById returns incorrect profitPercentage");
-				assert.equal(stakedContent[8], true, "stakedContentById returns incorrect status");
+				stakeId3 = result.logs[0].args.stakeId;
+				stakedContent = await aocontent.stakedContentById(stakeId3);
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+				stakeId3 = null;
+				stakedContent = null;
+			}
+			var networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
+			assert.equal(canStake, true, "account1 can't stake content even though enough network tokens were sent");
+			assert.notEqual(stakeId3, null, "Unable to determine the stakeID from the log after staking content");
+			assert.equal(stakedContent[0], account1, "stakedContentById returns incorrect stakeOwner");
+			assert.equal(stakedContent[1].toString(), networkAmount.toString(), "stakedContentById returns incorrect networkAmount");
+			assert.equal(stakedContent[2].toString(), primordialAmount, "stakedContentById returns incorrect primordialAmount");
+			assert.equal(
+				stakedContent[3].toString(),
+				account1WeightedIndexBefore.toString(),
+				"stakedContentById returns incorrect primordialWeightedIndex"
+			);
+			assert.equal(stakedContent[4], datKey, "stakedContentById returns incorrect datKey");
+			assert.equal(stakedContent[5].toString(), fileSize, "stakedContentById returns incorrect fileSize");
+			assert.equal(stakedContent[6].toString(), profitPercentage, "stakedContentById returns incorrect profitPercentage");
+			assert.equal(stakedContent[7], true, "stakedContentById returns incorrect status");
 
-				var account1BalanceAfter = await tokenMeta.balanceOf(account1);
-				var account1StakedBalanceAfter = await tokenMeta.stakedBalance(account1);
-				var account1IcoBalanceAfter = await aotoken.icoBalanceOf(account1);
-				var account1IcoStakedBalanceAfter = await aotoken.icoStakedBalance(account1, account1WeightedIndex.toString());
-				assert.equal(
-					account1BalanceAfter.toString(),
-					account1BalanceBefore.minus(denominationAmount).toString(),
-					"account1 has incorrect balance after staking"
-				);
-				assert.equal(
-					account1StakedBalanceAfter.toString(),
-					account1StakedBalanceBefore.plus(denominationAmount).toString(),
-					"account1 has incorrect staked balance after staking"
-				);
-				assert.equal(
-					account1IcoBalanceAfter.toString(),
-					account1IcoBalanceBefore.minus(icoTokenAmount).toString(),
-					"account1 has incorrect ICO balance after staking"
-				);
-				assert.equal(
-					account1IcoStakedBalanceAfter.toString(),
-					account1IcoStakedBalanceBefore.plus(icoTokenAmount).toString(),
-					"account1 has incorrect ICO staked balance after staking"
-				);
+			var account1TotalNetworkBalanceAfter = await aotreasury.totalNetworkBalanceOf(account1);
+			var account1TotalNetworkStakedBalanceAfter = await aotreasury.totalNetworkStakedBalanceOf(account1);
+			var account1MegaBalanceAfter = await aomega.balanceOf(account1);
+			var account1KiloBalanceAfter = await aokilo.balanceOf(account1);
 
-				return stakeId;
-			};
+			assert.equal(
+				account1TotalNetworkBalanceAfter.toString(),
+				account1TotalNetworkBalanceBefore.minus(networkAmount).toString(),
+				"account1 has incorrect balance after staking"
+			);
+			assert.equal(
+				account1TotalNetworkStakedBalanceAfter.toString(),
+				account1TotalNetworkStakedBalanceBefore.plus(networkAmount).toString(),
+				"account1 has incorrect staked balance after staking"
+			);
+			assert.equal(
+				account1MegaBalanceAfter.toString(),
+				account1MegaBalanceBefore.minus(5 * 10 ** aomegadecimals.toNumber()).toString(),
+				"account1 has incorrect AO Mega balance after staking"
+			);
+			assert.equal(
+				account1KiloBalanceAfter.toString(),
+				account1KiloBalanceBefore.minus(2 * 10 ** aokilodecimals.toNumber()).toString(),
+				"account1 has incorrect AO Kilo balance after staking"
+			);
+			var account1WeightedIndexAfter = await aotoken.weightedIndexByAddress(account1);
+			var account1PrimordialBalanceAfter = await aotoken.icoBalanceOf(account1);
+			var account1PrimordialStakedBalanceAfter = await aotoken.icoStakedBalance(account1, stakedContent[3].toString());
 
-			aotokenStakeId = await stakeContent("ao", aotoken);
-			aokiloStakeId = await stakeContent("kilo", aokilo);
-			aomegaStakeId = await stakeContent("mega", aomega);
-			aogigaStakeId = await stakeContent("giga", aogiga);
-			aoteraStakeId = await stakeContent("tera", aotera);
-			aopetaStakeId = await stakeContent("peta", aopeta);
-			aoexaStakeId = await stakeContent("exa", aoexa);
-			aozettaStakeId = await stakeContent("zetta", aozetta);
-			aoyottaStakeId = await stakeContent("yotta", aoyotta);
-			aoxonaStakeId = await stakeContent("xona", aoxona);
+			assert.equal(
+				account1WeightedIndexAfter.toNumber(),
+				account1WeightedIndexBefore.toNumber(),
+				"account1 has incorrect weighted index after staking"
+			);
+			assert.equal(
+				account1PrimordialBalanceAfter.toString(),
+				account1PrimordialBalanceBefore.minus(primordialAmount).toString(),
+				"account1 has incorrect primordial balance after staking"
+			);
+			assert.equal(
+				account1PrimordialStakedBalanceAfter.toString(),
+				account1PrimordialStakedBalanceBefore.plus(primordialAmount).toString(),
+				"account1 has incorrect primordial staked balance after staking"
+			);
 		});
 
 		it("setProfitPercentage() - should NOT be able to set profit percentage on non-existing staked content", async function() {
@@ -501,16 +457,9 @@ contract("AOContent", function(accounts) {
 				assert.notEqual(canSetProfitPercentage, true, "Non-stake owner address can set profit percentage");
 			};
 
-			await setProfitPercentage(aotokenStakeId);
-			await setProfitPercentage(aokiloStakeId);
-			await setProfitPercentage(aomegaStakeId);
-			await setProfitPercentage(aogigaStakeId);
-			await setProfitPercentage(aoteraStakeId);
-			await setProfitPercentage(aopetaStakeId);
-			await setProfitPercentage(aoexaStakeId);
-			await setProfitPercentage(aozettaStakeId);
-			await setProfitPercentage(aoyottaStakeId);
-			await setProfitPercentage(aoxonaStakeId);
+			await setProfitPercentage(stakeId1);
+			await setProfitPercentage(stakeId2);
+			await setProfitPercentage(stakeId3);
 		});
 
 		it("setProfitPercentage() - should NOT be able to set profit percentage if profit percentage is more than 100%", async function() {
@@ -525,16 +474,9 @@ contract("AOContent", function(accounts) {
 				assert.notEqual(canSetProfitPercentage, true, "account1 can set profit percentage more than its allowed value");
 			};
 
-			await setProfitPercentage(aotokenStakeId);
-			await setProfitPercentage(aokiloStakeId);
-			await setProfitPercentage(aomegaStakeId);
-			await setProfitPercentage(aogigaStakeId);
-			await setProfitPercentage(aoteraStakeId);
-			await setProfitPercentage(aopetaStakeId);
-			await setProfitPercentage(aoexaStakeId);
-			await setProfitPercentage(aozettaStakeId);
-			await setProfitPercentage(aoyottaStakeId);
-			await setProfitPercentage(aoxonaStakeId);
+			await setProfitPercentage(stakeId1);
+			await setProfitPercentage(stakeId2);
+			await setProfitPercentage(stakeId3);
 		});
 
 		it("setProfitPercentage() - should be able to set profit percentage", async function() {
@@ -549,17 +491,16 @@ contract("AOContent", function(accounts) {
 				assert.equal(canSetProfitPercentage, true, "account1 is unable to set profit percentage");
 			};
 
-			await setProfitPercentage(aotokenStakeId);
-			await setProfitPercentage(aokiloStakeId);
-			await setProfitPercentage(aomegaStakeId);
-			await setProfitPercentage(aogigaStakeId);
-			await setProfitPercentage(aoteraStakeId);
-			await setProfitPercentage(aopetaStakeId);
-			await setProfitPercentage(aoexaStakeId);
-			await setProfitPercentage(aozettaStakeId);
-			await setProfitPercentage(aoyottaStakeId);
-			await setProfitPercentage(aoxonaStakeId);
+			await setProfitPercentage(stakeId1);
+			await setProfitPercentage(stakeId2);
+			await setProfitPercentage(stakeId3);
 		});
+
+		/*
+
+
+
+
 
 		it("unstakePartialContent() - should NOT be able to partially unstake non-existing staked content", async function() {
 			var canUnstakePartial;
@@ -1418,5 +1359,6 @@ contract("AOContent", function(accounts) {
 			await stakeExistingContent(aoyottaStakeId, "ao");
 			await stakeExistingContent(aoxonaStakeId, "ao");
 		});
+		*/
 	});
 });

@@ -8,7 +8,7 @@ import './AOTreasury.sol';
 /**
  * @title AOContent
  *
- * The purpose of this contract is to allow content creator to stake normal ERC20 AO tokens and/or ICO AO Tokens
+ * The purpose of this contract is to allow content creator to stake network ERC20 AO tokens and/or primordial AO Tokens
  * on his/her content
  */
 contract AOContent is owned {
@@ -25,17 +25,9 @@ contract AOContent is owned {
 	struct StakedContent {
 		bytes32 stakeId;
 		address stakeOwner;
-		/**
-		 * denominationAmount is the amount of the normal ERC20 token to stake
-		 * For example:
-		 * denominationAmount = 1123
-		 * denomination = kilo
-		 * this actually means 1.123 AOKILO since kilo has 3 decimals
-		 */
-		uint256 denominationAmount;
-		bytes8 denomination; // i.e ao, kilo, mega, etc.
-		uint256 icoTokenAmount;	// icoTokenAmount is the amount of ICO AO Token to stake (always in base denomination)
-		uint256 icoTokenWeightedIndex;
+		uint256 networkAmount; // total network token staked in base denomination
+		uint256 primordialAmount;	// the amount of primordial AO Token to stake (always in base denomination)
+		uint256 primordialWeightedIndex;
 		string datKey;
 		uint256 fileSize;
 		uint256 profitPercentage; // support up to 4 decimals, 100% = 1000000
@@ -48,17 +40,9 @@ contract AOContent is owned {
 		bytes32 stakeId;
 		address buyer;
 		address host; // The host address that holds the data
-		/**
-		 * denominationAmount is the amount of the normal ERC20 token to spend
-		 * For example:
-		 * denominationAmount = 1123
-		 * denomination = kilo
-		 * this actually means 1.123 AOKILO since kilo has 3 decimals
-		 */
-		uint256 denominationAmount;
-		bytes8 denomination; // i.e ao, kilo, mega, etc.
-		uint256 icoTokenAmount;	// icoTokenAmount is the amount of ICO AO Token to stake (always in base denomination)
-		uint256 icoTokenWeightedIndex;
+		uint256 networkAmount; // total network token staked in base denomination
+		uint256 primordialAmount;	// the amount of primordial AO Token to stake (always in base denomination)
+		uint256 primordialWeightedIndex;
 		uint256 createdOnTimestamp;
 	}
 
@@ -79,17 +63,34 @@ contract AOContent is owned {
 	mapping (address => mapping (bytes32 => bytes32)) internal buyerOwnedStakeId;
 
 	// Event to be broadcasted to public when `stakeOwner` stakes a new content
-	event StakeContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 denominationAmount, bytes8 denomination, uint256 icoTokenAmount, uint256 icoTokenWeightedIndex, string datKey, uint256 fileSize, uint256 profitPercentage, uint256 createdOnTimestamp);
+	event StakeContent(
+		address indexed stakeOwner,
+		bytes32 indexed stakeId,
+		uint256 networkIntegerAmount,
+		uint256 networkFractionAmount,
+		bytes8 denomination,
+		uint256 totalNetworkBaseAmount,
+		uint256 primordialAmount,
+		uint256 primordialWeightedIndex,
+		string datKey,
+		uint256 fileSize,
+		uint256 profitPercentage,
+		uint256 createdOnTimestamp
+	);
 
 	// Event to be broadcasted to public when `stakeOwner` updates the staked content's profit percentage
 	event SetProfitPercentage(address indexed stakeOwner, bytes32 indexed stakeId, uint256 newProfitPercentage);
 
+	// Event to be broadcasted to public when `stakeOwner` unstakes some network/primordial token from an existing content
+	event UnstakePartialContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 remainingNetworkAmount, uint256 remainingPrimordialAmount, uint256 primordialWeightedIndex);
+
 	// Event to be broadcasted to public when `stakeOwner` unstakes all token amount on an existing content
 	event UnstakeContent(address indexed stakeOwner, bytes32 indexed stakeId);
 
-	// Event to be broadcasted to public when `stakeOwner` unstakes partial token amount on an existing content
-	event UnstakePartialContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 remainingDenominationAmount, bytes8 denomination, uint256 remainingIcoTokenAmount, uint256 icoTokenWeightedIndex);
+	// Event to be broadcasted to public when emergency mode is triggered
+	event EscapeHatch();
 
+	/*
 	// Event to be broadcasted to public when `stakeOwner` re-stakes an existing content
 	event StakeExistingContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 currentDenominationAmount, bytes8 currentDenomination, uint256 currentIcoTokenAmount, uint256 currentIcoTokenWeightedIndex);
 
@@ -102,9 +103,7 @@ contract AOContent is owned {
 	// 1 => Node Host
 	event BuyContentNetworkTokenEarning(address indexed recipient, address indexed sender, bytes32 indexed buyId, bytes32 stakeId, uint256 denominationAmount, bytes8 denomination, uint256 profitPercentage, uint8 recipientType);
 	event BuyContentPrimordialTokenEarning(address indexed recipient, address indexed sender, bytes32 indexed buyId, bytes32 stakeId, uint256 icoTokenAmount, uint256 icoTokenWeightedIndex, uint256 profitPercentage, uint8 recipientType);
-
-	// Event to be broadcasted to public when emergency mode is triggered
-	event EscapeHatch();
+	 */
 
 	/**
 	 * @dev Constructor function
@@ -119,6 +118,16 @@ contract AOContent is owned {
 	 */
 	modifier isActive {
 		require (paused == false && killed == false);
+		_;
+	}
+
+	/**
+	 * @dev Checks if the denomination is valid
+	 */
+	modifier isValidDenomination(bytes8 _denomination) {
+		// Make sure the _denomination is in the available list
+		(address _networkTokenAddress, bool _networkTokenActive) = _treasury.getDenomination(_denomination);
+		require (_networkTokenAddress != address(0) && _networkTokenActive == true);
 		_;
 	}
 
@@ -152,22 +161,30 @@ contract AOContent is owned {
 
 	/***** PUBLIC METHODS *****/
 	/**
-	 * @dev Stake `_denominationAmount` of normal ERC20 and/or `_icoTokenAmount` ICO Tokens for a content
-	 * @param _denominationAmount The amount of normal ERC20 token to stake
-	 * @param _denomination The denomination of the normal ERC20 token, i.e ao, kilo, mega, etc.
-	 * @param _icoTokenAmount The amount of ICO Token to stake
+	 * @dev Stake `_networkIntegerAmount` + `_networkFractionAmount` of network token in `_denomination` and/or `_primordialAmount` primordial Tokens for a content
+	 * @param _networkIntegerAmount The integer amount of network token to stake
+	 * @param _networkFractionAmount The fraction amount of network token to stake
+	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
+	 * @param _primordialAmount The amount of primordial Token to stake
 	 * @param _datKey The dat key of the file
 	 * @param _fileSize The size of the file
 	 * @param _profitPercentage The percentage of profit the stake owner's media will charge
 	 */
-	function stakeContent(uint256 _denominationAmount, bytes8 _denomination, uint256 _icoTokenAmount, string _datKey, uint256 _fileSize, uint256 _profitPercentage) public isActive {
+	function stakeContent(
+		uint256 _networkIntegerAmount,
+		uint256 _networkFractionAmount,
+		bytes8 _denomination,
+		uint256 _primordialAmount,
+		string _datKey,
+		uint256 _fileSize,
+		uint256 _profitPercentage)
+		public
+		isActive {
 		require (bytes(_datKey).length > 0);
 		require (_fileSize > 0);
-		require (_denominationAmount > 0 || _icoTokenAmount > 0);
+		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
 		require (_profitPercentage <= PERCENTAGE_DIVISOR);
-
-		// Make sure the staked token amount can cover the fileSize
-		require (_denominationAmount.add(_icoTokenAmount) >= _fileSize);
+		require (_isAdequate(_networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _fileSize) == true);
 
 		// Increment totalStakedContents
 		totalStakedContents++;
@@ -185,26 +202,26 @@ contract AOContent is owned {
 
 		stakedContentIndex[_stakeId] = totalStakedContents;
 
-		if (_denominationAmount > 0) {
-			// Make sure the _denomination is in the available list
-			require (_treasury.denominations(_denomination) != address(0));
-
-			_stakedContent.denominationAmount = _denominationAmount;
-			_stakedContent.denomination = _denomination;
-
-			AOToken _denominationToken = AOToken(_treasury.denominations(_denomination));
-			require (_denominationToken.stakeFrom(msg.sender, _denominationAmount));
+		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
+			require (_stakeNetworkToken(_stakeId, _networkIntegerAmount, _networkFractionAmount, _denomination));
 		}
-		if (_icoTokenAmount > 0) {
-			_stakedContent.icoTokenAmount = _icoTokenAmount;
-
-			// ICO Token is the base AO Token
-			AOToken _icoToken = AOToken(_treasury.denominations(_treasury.BASE_DENOMINATION()));
-			_stakedContent.icoTokenWeightedIndex = _icoToken.weightedIndexByAddress(msg.sender);
-			require (_icoToken.stakeIcoTokenFrom(msg.sender, _icoTokenAmount, _stakedContent.icoTokenWeightedIndex));
+		if (_primordialAmount > 0) {
+			require (_stakePrimordialToken(_stakeId, _primordialAmount));
 		}
-
-		emit StakeContent(msg.sender, _stakeId, _denominationAmount, _denomination, _icoTokenAmount, _stakedContent.icoTokenWeightedIndex, _datKey, _fileSize, _profitPercentage, _stakedContent.createdOnTimestamp);
+		emit StakeContent(
+			msg.sender,
+			_stakeId,
+			_networkIntegerAmount,
+			_networkFractionAmount,
+			_denomination,
+			_stakedContent.networkAmount,
+			_stakedContent.primordialAmount,
+			_stakedContent.primordialWeightedIndex,
+			_stakedContent.datKey,
+			_stakedContent.fileSize,
+			_stakedContent.profitPercentage,
+			_stakedContent.createdOnTimestamp
+		);
 	}
 
 	/**
@@ -228,6 +245,69 @@ contract AOContent is owned {
 	}
 
 	/**
+	 * @dev Return staked content information at a given ID
+	 * @param _stakeId The ID of the staked content
+	 * @return address of the staked content's owner
+	 * @return the network base token amount staked for this content
+	 * @return the primordial token amount staked for this content
+	 * @return the primordial weighted index of the staked content
+	 * @return the dat key of the content
+	 * @return the file size of the content
+	 * @return the profit percentage of the content
+	 * @return status of the staked content
+	 * @return the timestamp when the staked content was created
+	 */
+	function stakedContentById(bytes32 _stakeId) public view returns (address, uint256, uint256, uint256, string, uint256, uint256, bool, uint256) {
+		// Make sure the staked content exist
+		require (stakedContentIndex[_stakeId] > 0);
+
+		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+		return (
+			_stakedContent.stakeOwner,
+			_stakedContent.networkAmount,
+			_stakedContent.primordialAmount,
+			_stakedContent.primordialWeightedIndex,
+			_stakedContent.datKey,
+			_stakedContent.fileSize,
+			_stakedContent.profitPercentage,
+			_stakedContent.active,
+			_stakedContent.createdOnTimestamp
+		);
+	}
+
+	/**
+	 * @dev Unstake existing staked content and refund partial staked amount to the stake owner
+	 *		Use unstakeContent() to unstake all staked token amount. unstakePartialContent() can unstake only up to
+	 *		the mininum required to pay the fileSize
+	 * @param _stakeId The ID of the staked content
+	 * @param _networkIntegerAmount The integer amount of network token to unstake
+	 * @param _networkFractionAmount The fraction amount of network token to unstake
+	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
+	 * @param _primordialAmount The amount of primordial Token to unstake
+	 */
+	function unstakePartialContent(bytes32 _stakeId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount) public isActive {
+		// Make sure the staked content exist
+		require (stakedContentIndex[_stakeId] > 0);
+		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
+
+		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+		// Make sure the staked content owner is the same as the sender
+		require (_stakedContent.stakeOwner == msg.sender);
+		// Make sure the staked content is currently active (staked) with some amounts
+		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || _stakedContent.primordialAmount > 0));
+		// Make sure the staked content has enough balance to unstake
+		require (_canUnstakePartial(_networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.fileSize));
+
+		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
+			require (_unstakePartialNetworkToken(_stakeId, _networkIntegerAmount, _networkFractionAmount, _denomination));
+		}
+		if (_primordialAmount > 0) {
+			require (_unstakePartialPrimordialToken(_stakeId, _primordialAmount));
+		}
+		emit UnstakePartialContent(_stakedContent.stakeOwner, _stakedContent.stakeId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedIndex);
+	}
+
+	/**
 	 * @dev Unstake existing staked content and refund the total staked amount to the stake owner
 	 * @param _stakeId The ID of the staked content
 	 */
@@ -239,78 +319,19 @@ contract AOContent is owned {
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 		// Make sure the staked content is currently active (staked) with some amounts
-		require (_stakedContent.active == true && (_stakedContent.denominationAmount > 0 || _stakedContent.icoTokenAmount > 0));
+		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || _stakedContent.primordialAmount > 0));
 
 		_stakedContent.active = false;
 
-		// Refund the staked normal ERC20 tokens to the stake owner
-		if (_stakedContent.denominationAmount > 0) {
-			uint256 _denominationAmount = _stakedContent.denominationAmount;
-			bytes8 _denomination = _stakedContent.denomination;
-
-			// Clear the denomination amount
-			_stakedContent.denominationAmount = 0;
-			_stakedContent.denomination = '';
-
-			AOToken _denominationToken = AOToken(_treasury.denominations(_denomination));
-			require (_denominationToken.unstakeFrom(msg.sender, _denominationAmount));
+		if (_stakedContent.networkAmount > 0) {
+			(bytes8 _baseDenominationName,,) = _treasury.getBaseDenomination();
+			require (_unstakePartialNetworkToken(_stakeId, _stakedContent.networkAmount, 0, _baseDenominationName));
 		}
-
-		// Refund the staked ICO tokens to the stake owner
-		if (_stakedContent.icoTokenAmount > 0) {
-			uint256 _icoTokenAmount = _stakedContent.icoTokenAmount;
-			uint256 _icoTokenWeightedIndex = _stakedContent.icoTokenWeightedIndex;
-
-			// Clear the ico token amount and the weighted index
-			_stakedContent.icoTokenAmount = 0;
-			_stakedContent.icoTokenWeightedIndex = 0;
-
-			AOToken _icoToken = AOToken(_treasury.denominations(_treasury.BASE_DENOMINATION()));
-			require (_icoToken.unstakeIcoTokenFrom(msg.sender, _icoTokenAmount, _icoTokenWeightedIndex));
+		if (_stakedContent.primordialAmount > 0) {
+			_stakedContent.primordialWeightedIndex = 0;
+			require (_unstakePartialPrimordialToken(_stakeId, _stakedContent.primordialAmount));
 		}
-
-		emit UnstakeContent(msg.sender, _stakeId);
-	}
-
-	/**
-	 * @dev Unstake existing staked content and refund partial staked amount to the stake owner
-	 *		Use unstakeContent() to unstake all staked token amount. unstakePartialContent() can unstake only up to
-	 *		the mininum required to cover the fileSize
-	 * @param _stakeId The ID of the staked content
-	 * @param _denominationAmount The amount of normal ERC20 AO token to unstake
-	 * @param _icoTokenAmount The amount of ICO AO token to unstake
-	 */
-	function unstakePartialContent(bytes32 _stakeId, uint256 _denominationAmount, uint256 _icoTokenAmount) public isActive {
-		// Make sure the staked content exist
-		require (stakedContentIndex[_stakeId] > 0);
-		require (_denominationAmount > 0 || _icoTokenAmount > 0);
-
-		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
-		// Make sure the staked content owner is the same as the sender
-		require (_stakedContent.stakeOwner == msg.sender);
-		// Make sure the staked content is currently active (staked) with some amounts
-		require (_stakedContent.active == true && (_stakedContent.denominationAmount > 0 || _stakedContent.icoTokenAmount > 0));
-		// Make sure the staked content has enough balance to unstake
-		require (_stakedContent.denominationAmount >= _denominationAmount && _stakedContent.icoTokenAmount >= _icoTokenAmount);
-		// Make sure the minimum required staked amount can cover the content file size
-		require ((_stakedContent.denominationAmount.sub(_denominationAmount)).add(_stakedContent.icoTokenAmount.sub(_icoTokenAmount)) >= _stakedContent.fileSize);
-
-		// Refund `_denominationAmount` of normal ERC20 tokens to the stake owner
-		if (_denominationAmount > 0) {
-			_stakedContent.denominationAmount = _stakedContent.denominationAmount.sub(_denominationAmount);
-
-			AOToken _denominationToken = AOToken(_treasury.denominations(_stakedContent.denomination));
-			require (_denominationToken.unstakeFrom(msg.sender, _denominationAmount));
-		}
-
-		// Refund `_icoTokenAmount` of staked ICO tokens to the stake owner
-		if (_icoTokenAmount > 0) {
-			_stakedContent.icoTokenAmount = _stakedContent.icoTokenAmount.sub(_icoTokenAmount);
-			AOToken _icoToken = AOToken(_treasury.denominations(_treasury.BASE_DENOMINATION()));
-			require (_icoToken.unstakeIcoTokenFrom(msg.sender, _icoTokenAmount, _stakedContent.icoTokenWeightedIndex));
-		}
-
-		emit UnstakePartialContent(msg.sender, _stakeId, _stakedContent.denominationAmount, _stakedContent.denomination, _stakedContent.icoTokenAmount, _stakedContent.icoTokenWeightedIndex);
+		emit UnstakeContent(_stakedContent.stakeOwner, _stakeId);
 	}
 
 	/**
@@ -322,7 +343,6 @@ contract AOContent is owned {
 	 * @param _denominationAmount The amount of normal ERC20 token to stake
 	 * @param _denomination The denomination of the normal ERC20 token, i.e ao, kilo, mega, etc.
 	 * @param _icoTokenAmount The amount of ICO Token to stake
-	 */
 	function stakeExistingContent(bytes32 _stakeId, uint256 _denominationAmount, bytes8 _denomination, uint256 _icoTokenAmount) public isActive {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakeId] > 0);
@@ -343,8 +363,12 @@ contract AOContent is owned {
 		// If we are currently staking an active staked content, then the stake owner's weighted index has to match `stakedContent.icoTokenWeightedIndex`
 		// i.e, can't use a combination of different weighted index. Stake owner has to call unstakeContent() to unstake all tokens first
 		// ICO Token is the base AO Token
-		AOToken _icoToken = AOToken(_treasury.denominations(_treasury.BASE_DENOMINATION()));
+		AOToken _icoToken;
 		if (_icoTokenAmount > 0 && _stakedContent.active && _stakedContent.icoTokenAmount > 0) {
+			(, address _baseDenominationAddress, bool _baseDenominationActive) = _treasury.getBaseDenomination();
+			require (_baseDenominationAddress != address(0));
+			require (_baseDenominationActive == true);
+			_icoToken = AOToken(_baseDenominationAddress);
 			require (_icoToken.weightedIndexByAddress(msg.sender) == _stakedContent.icoTokenWeightedIndex);
 		}
 
@@ -353,12 +377,14 @@ contract AOContent is owned {
 
 		if (_denominationAmount > 0) {
 			// Make sure the _denomination is in the available list
-			require (_treasury.denominations(_denomination) != address(0));
+			(address _denominationAddress, bool _denominationActive) = _treasury.getDenomination(_denomination);
+			require (_denominationAddress != address(0));
+			require (_denominationActive == true);
 
 			_stakedContent.denominationAmount = _stakedContent.denominationAmount.add(_denominationAmount);
 			_stakedContent.denomination = _denomination;
 
-			AOToken _denominationToken = AOToken(_treasury.denominations(_denomination));
+			AOToken _denominationToken = AOToken(_denominationAddress);
 			require (_denominationToken.stakeFrom(msg.sender, _denominationAmount));
 		}
 		if (_icoTokenAmount > 0) {
@@ -369,39 +395,7 @@ contract AOContent is owned {
 		_stakedContent.active = true;
 		emit StakeExistingContent(msg.sender, _stakeId, _stakedContent.denominationAmount, _stakedContent.denomination, _stakedContent.icoTokenAmount, _stakedContent.icoTokenWeightedIndex);
 	}
-
-	/**
-	 * @dev Return staked content information at a given ID
-	 * @param _stakeId The ID of the staked content
-	 * @return address of the staked content's owner
-	 * @return the denomination amount staked for this content
-	 * @return the token denomination of the staked content
-	 * @return the ICO token amount staked for this content
-	 * @return the ICO token weighted index of the staked content
-	 * @return the dat key of the content
-	 * @return the file size of the content
-	 * @return the profit percentage of the content
-	 * @return status of the staked content
-	 * @return the timestamp when the staked content was created
 	 */
-	function stakedContentById(bytes32 _stakeId) public view returns (address, uint256, bytes8, uint256, uint256, string, uint256, uint256, bool, uint256) {
-		// Make sure the staked content exist
-		require (stakedContentIndex[_stakeId] > 0);
-
-		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
-		return (
-			_stakedContent.stakeOwner,
-			_stakedContent.denominationAmount,
-			_stakedContent.denomination,
-			_stakedContent.icoTokenAmount,
-			_stakedContent.icoTokenWeightedIndex,
-			_stakedContent.datKey,
-			_stakedContent.fileSize,
-			_stakedContent.profitPercentage,
-			_stakedContent.active,
-			_stakedContent.createdOnTimestamp
-		);
-	}
 
 	/**
 	 * @dev Buy existing content
@@ -410,7 +404,6 @@ contract AOContent is owned {
 	 * @param _denominationAmount The amount of normal ERC20 token to spend
 	 * @param _denomination The denomination of the normal ERC20 token, i.e ao, kilo, mega, etc.
 	 * @param _icoTokenAmount The amount of ICO Token to spend
-	 */
 	function buyContent(bytes32 _stakeId, address _host, uint256 _denominationAmount, bytes8 _denomination, uint256 _icoTokenAmount) public isActive {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakeId] > 0);
@@ -454,18 +447,169 @@ contract AOContent is owned {
 
 		emit BuyContent(msg.sender, _buyId, _stakeId, _host, _denominationAmount, _denomination, _icoTokenAmount, _boughtContent.icoTokenWeightedIndex);
 	}
+	 */
 
 	/***** INTERNAL METHODS *****/
+	/**
+	 * @dev Check whether the network token and/or primordial token is adequate to pay for the filesize
+	 * @param _networkIntegerAmount The integer amount of the network token
+	 * @param _networkFractionAmount The fraction amount of the network token
+	 * @param _denomination The denomination of the the network token
+	 * @param _primordialAmount The amount of primordial token
+	 * @param _fileSize The file size of the content
+	 * @return true when the amount is sufficient, false otherwise
+	 */
+	function _isAdequate(uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount, uint256 _fileSize) internal view returns (bool) {
+		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
+			if (_treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) >= _fileSize) {
+				return true;
+			} else {
+				return false;
+			}
+		} else if (_primordialAmount >= _fileSize) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * @dev Check whether or the requested unstake amount is valid
+	 * @param _networkIntegerAmount The integer amount of the network token
+	 * @param _networkFractionAmount The fraction amount of the network token
+	 * @param _denomination The denomination of the the network token
+	 * @param _primordialAmount The amount of primordial token
+	 * @param _stakedNetworkAmount The current staked network token amount
+	 * @param _stakedPrimordialAmount The current staked primordial token amount
+	 * @param _stakedFileSize The file size of the staked content
+	 * @return true if can unstake, false otherwise
+	 */
+	function _canUnstakePartial(
+		uint256 _networkIntegerAmount,
+		uint256 _networkFractionAmount,
+		bytes8 _denomination,
+		uint256 _primordialAmount,
+		uint256 _stakedNetworkAmount,
+		uint256 _stakedPrimordialAmount,
+		uint256 _stakedFileSize) internal view returns (bool) {
+		if (
+			(_denomination.length > 0 &&
+				(_networkIntegerAmount > 0 || _networkFractionAmount > 0) &&
+				_stakedNetworkAmount < _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination)
+			) ||
+			_stakedPrimordialAmount < _primordialAmount ||
+			(_stakedNetworkAmount.sub(_treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination)).add(_stakedPrimordialAmount.sub(_primordialAmount)) < _stakedFileSize)
+		) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	/**
+	 * @dev Stake network token on existing staked content
+	 * @param _stakeId The ID of the staked content
+	 * @param _networkIntegerAmount The integer amount of the network token to stake
+	 * @param _networkFractionAmount The fraction amount of the network token to stake
+	 * @param _denomination The denomination of the the network token to stake
+	 * @return true on success
+	 */
+	function _stakeNetworkToken(bytes32 _stakeId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination) internal isValidDenomination(_denomination) returns (bool) {
+		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+		(address[] memory _paymentAddress, uint256[] memory _paymentAmount) = _treasury.determinePayment(_stakedContent.stakeOwner, _networkIntegerAmount, _networkFractionAmount, _denomination);
+
+		_stakedContent.networkAmount = _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
+
+		// Stake tokens from each denomination in payment address
+		for (uint256 i=0; i < _paymentAddress.length; i++) {
+			if (_paymentAddress[i] != address(0) && _paymentAmount[i] > 0) {
+				require (AOToken(_paymentAddress[i]).stakeFrom(_stakedContent.stakeOwner, _paymentAmount[i]));
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * @dev Stake primordial token on existing staked content
+	 * @param _stakeId The ID of the staked content
+	 * @param _primordialAmount The amount of the primordial token to stake
+	 * @return true on success
+	 */
+	function _stakePrimordialToken(bytes32 _stakeId, uint256 _primordialAmount) internal returns (bool) {
+		// Make sure base denomination is active
+		(, address _baseDenominationAddress, bool _baseDenominationActive) = _treasury.getBaseDenomination();
+		require (_baseDenominationAddress != address(0));
+		require (_baseDenominationActive == true);
+
+		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+
+		_stakedContent.primordialAmount = _primordialAmount;
+
+		// Primordial Token is the base AO Token
+		AOToken _primordialToken = AOToken(_baseDenominationAddress);
+		_stakedContent.primordialWeightedIndex = _primordialToken.weightedIndexByAddress(_stakedContent.stakeOwner);
+		require (_primordialToken.stakeIcoTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedIndex));
+		return true;
+	}
+
+	/**
+	 * @dev Unstake some network token on existing staked content
+	 * @param _stakeId The ID of the staked content
+	 * @param _networkIntegerAmount The integer amount of the network token to unstake
+	 * @param _networkFractionAmount The fraction amount of the network token to unstake
+	 * @param _denomination The denomination of the the network token to unstake
+	 * @return true on success
+	 */
+	function _unstakePartialNetworkToken(bytes32 _stakeId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination) internal isValidDenomination(_denomination) returns (bool) {
+		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+		(address[] memory _unstakeAddress, uint256[] memory _unstakeAmount) = _treasury.determineUnstake(_stakedContent.stakeOwner, _networkIntegerAmount, _networkFractionAmount, _denomination);
+
+		_stakedContent.networkAmount = _stakedContent.networkAmount.sub(_treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination));
+
+		// Unstake tokens from each denomination in unstake address
+		for (uint256 i=0; i < _unstakeAddress.length; i++) {
+			if (_unstakeAddress[i] != address(0) && _unstakeAmount[i] > 0) {
+				require (AOToken(_unstakeAddress[i]).unstakeFrom(_stakedContent.stakeOwner, _unstakeAmount[i]));
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * @dev Unstake some primordial token on existing staked content
+	 * @param _stakeId The ID of the staked content
+	 * @param _primordialAmount The amount of the primordial token to unstake
+	 * @return true on success
+	 */
+	function _unstakePartialPrimordialToken(bytes32 _stakeId, uint256 _primordialAmount) internal returns (bool) {
+		// Make sure base denomination is active
+		(, address _baseDenominationAddress, bool _baseDenominationActive) = _treasury.getBaseDenomination();
+		require (_baseDenominationAddress != address(0));
+		require (_baseDenominationActive == true);
+
+		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+
+		_stakedContent.primordialAmount = _stakedContent.primordialAmount.sub(_primordialAmount);
+
+		// Primordial Token is the base AO Token
+		AOToken _primordialToken = AOToken(_baseDenominationAddress);
+		require (_primordialToken.unstakeIcoTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedIndex));
+		return true;
+	}
+
+	/*
 	function _rewardBuyContentNetworkEarning(address _sender, address _stakeOwner, address _host, bytes32 _buyId, bytes32 _stakeId, uint256 _denominationAmount, bytes8 _denomination, uint256 _profitPercentage) internal {
 		// Make sure the _denomination is in the available list
-		require (_treasury.denominations(_denomination) != address(0));
+		(address _denominationAddress, bool _denominationActive) = _treasury.getDenomination(_denomination);
+		require (_denominationAddress != address(0));
+		require (_denominationActive == true);
 
 		BoughtContent storage _boughtContent = boughtContents[boughtContentIndex[_buyId]];
 
 		_boughtContent.denominationAmount = _denominationAmount;
 		_boughtContent.denomination = _denomination;
 
-		AOToken _denominationToken = AOToken(_treasury.denominations(_denomination));
+		AOToken _denominationToken = AOToken(_denominationAddress);
 
 		// Transfer the profit percentage to stake owner
 		uint256 _contentCreatorProfit = (_denominationAmount.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
@@ -478,12 +622,16 @@ contract AOContent is owned {
 	}
 
 	function _rewardBuyContentPrimordialEarning(address _sender, address _stakeOwner, address _host, bytes32 _buyId, bytes32 _stakeId, uint256 _icoTokenAmount, uint256 _profitPercentage) internal {
+		(, address _baseDenominationAddress, bool _baseDenominationActive) = _treasury.getBaseDenomination();
+		require (_baseDenominationAddress != address(0));
+		require (_baseDenominationActive == true);
+
 		BoughtContent storage _boughtContent = boughtContents[boughtContentIndex[_buyId]];
 
 		_boughtContent.icoTokenAmount = _icoTokenAmount;
 
 		// ICO Token is the base AO Token
-		AOToken _icoToken = AOToken(_treasury.denominations(_treasury.BASE_DENOMINATION()));
+		AOToken _icoToken = AOToken(_baseDenominationAddress);
 		_boughtContent.icoTokenWeightedIndex = _icoToken.weightedIndexByAddress(_sender);
 
 		// Transfer the profit percentage to stake owner
@@ -495,4 +643,5 @@ contract AOContent is owned {
 		require (_icoToken.whitelistTransferIcoTokenFrom(_sender, _host, _icoTokenAmount.sub(_contentCreatorIcoProfit)));
 		emit BuyContentPrimordialTokenEarning(_host, _sender, _buyId, _stakeId, _icoTokenAmount.sub(_contentCreatorIcoProfit), _boughtContent.icoTokenWeightedIndex, PERCENTAGE_DIVISOR.sub(_profitPercentage), 1);
 	}
+	*/
 }
