@@ -1601,13 +1601,13 @@
 	"ast": {
 		"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOZetta.sol",
 		"exportedSymbols": {
-			"AOZetta": [4502]
+			"AOZetta": [5861]
 		},
-		"id": 4503,
+		"id": 5862,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 4471,
+				"id": 5830,
 				"literals": ["solidity", "^", "0.4", ".24"],
 				"nodeType": "PragmaDirective",
 				"src": "0:24:11"
@@ -1615,10 +1615,10 @@
 			{
 				"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOToken.sol",
 				"file": "./AOToken.sol",
-				"id": 4472,
+				"id": 5831,
 				"nodeType": "ImportDirective",
-				"scope": 4503,
-				"sourceUnit": 3996,
+				"scope": 5862,
+				"sourceUnit": 4678,
 				"src": "26:23:11",
 				"symbolAliases": [],
 				"unitAlias": ""
@@ -1629,51 +1629,51 @@
 						"arguments": null,
 						"baseName": {
 							"contractScope": null,
-							"id": 4473,
+							"id": 5832,
 							"name": "AOToken",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 3995,
+							"referencedDeclaration": 4677,
 							"src": "71:7:11",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_AOToken_$3995",
+								"typeIdentifier": "t_contract$_AOToken_$4677",
 								"typeString": "contract AOToken"
 							}
 						},
-						"id": 4474,
+						"id": 5833,
 						"nodeType": "InheritanceSpecifier",
 						"src": "71:7:11"
 					}
 				],
-				"contractDependencies": [3995, 5023, 5098],
+				"contractDependencies": [4677, 6382, 6457],
 				"contractKind": "contract",
 				"documentation": null,
 				"fullyImplemented": true,
-				"id": 4502,
-				"linearizedBaseContracts": [4502, 3995, 5023, 5098],
+				"id": 5861,
+				"linearizedBaseContracts": [5861, 4677, 6382, 6457],
 				"name": "AOZetta",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
 						"body": {
-							"id": 4500,
+							"id": 5859,
 							"nodeType": "Block",
 							"src": "251:63:11",
 							"statements": [
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 4490,
+										"id": 5849,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 4488,
+											"id": 5847,
 											"name": "powerOfTen",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 1858,
+											"referencedDeclaration": 2540,
 											"src": "255:10:11",
 											"typeDescriptions": {
 												"typeIdentifier": "t_uint256",
@@ -1685,7 +1685,7 @@
 										"rightHandSide": {
 											"argumentTypes": null,
 											"hexValue": "3231",
-											"id": 4489,
+											"id": 5848,
 											"isConstant": false,
 											"isLValue": false,
 											"isPure": true,
@@ -1706,25 +1706,25 @@
 											"typeString": "uint256"
 										}
 									},
-									"id": 4491,
+									"id": 5850,
 									"nodeType": "ExpressionStatement",
 									"src": "255:15:11"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 4494,
+										"id": 5853,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 4492,
+											"id": 5851,
 											"name": "decimals",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 4663,
+											"referencedDeclaration": 6022,
 											"src": "274:8:11",
 											"typeDescriptions": {
 												"typeIdentifier": "t_uint8",
@@ -1736,7 +1736,7 @@
 										"rightHandSide": {
 											"argumentTypes": null,
 											"hexValue": "3231",
-											"id": 4493,
+											"id": 5852,
 											"isConstant": false,
 											"isLValue": false,
 											"isPure": true,
@@ -1757,25 +1757,25 @@
 											"typeString": "uint8"
 										}
 									},
-									"id": 4495,
+									"id": 5854,
 									"nodeType": "ExpressionStatement",
 									"src": "274:13:11"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 4498,
+										"id": 5857,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 4496,
+											"id": 5855,
 											"name": "icoContract",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 1896,
+											"referencedDeclaration": 2578,
 											"src": "291:11:11",
 											"typeDescriptions": {
 												"typeIdentifier": "t_bool",
@@ -1787,7 +1787,7 @@
 										"rightHandSide": {
 											"argumentTypes": null,
 											"hexValue": "66616c7365",
-											"id": 4497,
+											"id": 5856,
 											"isConstant": false,
 											"isLValue": false,
 											"isPure": true,
@@ -1808,14 +1808,14 @@
 											"typeString": "bool"
 										}
 									},
-									"id": 4499,
+									"id": 5858,
 									"nodeType": "ExpressionStatement",
 									"src": "291:19:11"
 								}
 							]
 						},
 						"documentation": "@dev Constructor function",
-						"id": 4501,
+						"id": 5860,
 						"implemented": true,
 						"isConstructor": true,
 						"isDeclaredConst": false,
@@ -1824,11 +1824,11 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 4483,
+										"id": 5842,
 										"name": "initialSupply",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 4476,
+										"referencedDeclaration": 5835,
 										"src": "205:13:11",
 										"typeDescriptions": {
 											"typeIdentifier": "t_uint256",
@@ -1837,11 +1837,11 @@
 									},
 									{
 										"argumentTypes": null,
-										"id": 4484,
+										"id": 5843,
 										"name": "tokenName",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 4478,
+										"referencedDeclaration": 5837,
 										"src": "220:9:11",
 										"typeDescriptions": {
 											"typeIdentifier": "t_string_memory_ptr",
@@ -1850,11 +1850,11 @@
 									},
 									{
 										"argumentTypes": null,
-										"id": 4485,
+										"id": 5844,
 										"name": "tokenSymbol",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 4480,
+										"referencedDeclaration": 5839,
 										"src": "231:11:11",
 										"typeDescriptions": {
 											"typeIdentifier": "t_string_memory_ptr",
@@ -1862,17 +1862,17 @@
 										}
 									}
 								],
-								"id": 4486,
+								"id": 5845,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 4482,
+									"id": 5841,
 									"name": "AOToken",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 3995,
+									"referencedDeclaration": 4677,
 									"src": "197:7:11",
 									"typeDescriptions": {
-										"typeIdentifier": "t_type$_t_contract$_AOToken_$3995_$",
+										"typeIdentifier": "t_type$_t_contract$_AOToken_$4677_$",
 										"typeString": "type(contract AOToken)"
 									}
 								},
@@ -1883,15 +1883,15 @@
 						"name": "",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 4481,
+							"id": 5840,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 4476,
+									"id": 5835,
 									"name": "initialSupply",
 									"nodeType": "VariableDeclaration",
-									"scope": 4501,
+									"scope": 5860,
 									"src": "134:21:11",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1900,7 +1900,7 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 4475,
+										"id": 5834,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
 										"src": "134:7:11",
@@ -1914,10 +1914,10 @@
 								},
 								{
 									"constant": false,
-									"id": 4478,
+									"id": 5837,
 									"name": "tokenName",
 									"nodeType": "VariableDeclaration",
-									"scope": 4501,
+									"scope": 5860,
 									"src": "157:16:11",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1926,7 +1926,7 @@
 										"typeString": "string"
 									},
 									"typeName": {
-										"id": 4477,
+										"id": 5836,
 										"name": "string",
 										"nodeType": "ElementaryTypeName",
 										"src": "157:6:11",
@@ -1940,10 +1940,10 @@
 								},
 								{
 									"constant": false,
-									"id": 4480,
+									"id": 5839,
 									"name": "tokenSymbol",
 									"nodeType": "VariableDeclaration",
-									"scope": 4501,
+									"scope": 5860,
 									"src": "175:18:11",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1952,7 +1952,7 @@
 										"typeString": "string"
 									},
 									"typeName": {
-										"id": 4479,
+										"id": 5838,
 										"name": "string",
 										"nodeType": "ElementaryTypeName",
 										"src": "175:6:11",
@@ -1969,19 +1969,19 @@
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 4487,
+							"id": 5846,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "251:0:11"
 						},
-						"scope": 4502,
+						"scope": 5861,
 						"src": "122:192:11",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					}
 				],
-				"scope": 4503,
+				"scope": 5862,
 				"src": "51:265:11"
 			}
 		],
@@ -1995,9 +1995,9 @@
 		"4": {
 			"events": {},
 			"links": {},
-			"address": "0x4255e8e54a15ea29ae23f4657aac6ef55ce08f58"
+			"address": "0x3808df3b93b5ce41403594ed4c4e4efbb73431da"
 		}
 	},
 	"schemaVersion": "1.0.1",
-	"updatedAt": "2018-08-01T15:02:07.521Z"
+	"updatedAt": "2018-08-06T14:39:08.671Z"
 }
