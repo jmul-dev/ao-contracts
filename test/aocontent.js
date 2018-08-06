@@ -281,7 +281,7 @@ contract("AOContent", function(accounts) {
 		});
 
 		it("stakeContent() - should be able to stake content with only primordial tokens", async function() {
-			var primordialAmount = 1000000;
+			var primordialAmount = 1000100;
 			var account1WeightedIndexBefore = await aotoken.weightedIndexByAddress(account1);
 			var account1PrimordialBalanceBefore = await aotoken.icoBalanceOf(account1);
 			var account1PrimordialStakedBalanceBefore = await aotoken.icoStakedBalance(account1, account1WeightedIndexBefore.toNumber());
@@ -496,16 +496,10 @@ contract("AOContent", function(accounts) {
 			await setProfitPercentage(stakeId3);
 		});
 
-		/*
-
-
-
-
-
 		it("unstakePartialContent() - should NOT be able to partially unstake non-existing staked content", async function() {
 			var canUnstakePartial;
 			try {
-				await aocontent.unstakePartialContent("someid", 10, 10, { from: account1 });
+				await aocontent.unstakePartialContent("someid", 10, 10, "kilo", 10, { from: account1 });
 				canUnstakePartial = true;
 			} catch (e) {
 				canUnstakePartial = false;
@@ -514,10 +508,24 @@ contract("AOContent", function(accounts) {
 		});
 
 		it("unstakePartialContent() - should NOT be able to partially unstake existing staked content if stake owner is not the same as the sender", async function() {
-			var unstakePartialContent = async function(stakeId) {
+			var unstakePartialContent = async function(
+				stakeId,
+				networkIntegerAmount,
+				networkFractionAmount,
+				denomination,
+				primordialAmoun
+			) {
 				var canUnstakePartial;
 				try {
-					await aocontent.unstakePartialContent(stakeId, 10, 10, { from: account2 });
+					await aocontent.unstakePartialContent(
+						stakeId,
+						networkIntegerAmount,
+						networkFractionAmount,
+						denomination,
+						primordialAmount,
+						{ from: account2 }
+					);
+
 					canUnstakePartial = true;
 				} catch (e) {
 					canUnstakePartial = false;
@@ -525,84 +533,55 @@ contract("AOContent", function(accounts) {
 				assert.notEqual(canUnstakePartial, true, "Non-stake owner address can partially unstake existing staked content");
 			};
 
-			await unstakePartialContent(aotokenStakeId);
-			await unstakePartialContent(aokiloStakeId);
-			await unstakePartialContent(aomegaStakeId);
-			await unstakePartialContent(aogigaStakeId);
-			await unstakePartialContent(aoteraStakeId);
-			await unstakePartialContent(aopetaStakeId);
-			await unstakePartialContent(aoexaStakeId);
-			await unstakePartialContent(aozettaStakeId);
-			await unstakePartialContent(aoyottaStakeId);
-			await unstakePartialContent(aoxonaStakeId);
+			await unstakePartialContent(stakeId1, 10, 10, "kilo", 0);
+			await unstakePartialContent(stakeId2, 0, 0, "", 10);
+			await unstakePartialContent(stakeId3, 10, 10, "kilo", 10);
 		});
 
-		it("unstakePartialContent() - should NOT be able to partially unstake existing staked content if the requested denomination amount is more than the balance of the staked amount", async function() {
-			var unstakePartialContent = async function(stakeId) {
+		it("unstakePartialContent() - should NOT be able to partially unstake existing staked content if the requested unstake amount is more than the balance of the staked amount", async function() {
+			var unstakePartialContent = async function(
+				stakeId,
+				networkIntegerAmount,
+				networkFractionAmount,
+				denomination,
+				primordialAmoun
+			) {
 				var canUnstakePartial;
 				try {
-					await aocontent.unstakePartialContent(stakeId, 2500, 0, { from: account2 });
+					await aocontent.unstakePartialContent(
+						stakeId,
+						networkIntegerAmount,
+						networkFractionAmount,
+						denomination,
+						primordialAmount,
+						{ from: account2 }
+					);
+
 					canUnstakePartial = true;
 				} catch (e) {
 					canUnstakePartial = false;
 				}
-				assert.notEqual(
-					canUnstakePartial,
-					true,
-					"Stake owner can partially unstake denomination tokens more than it's existing balance."
-				);
+				assert.notEqual(canUnstakePartial, true, "Stake owner can partially unstake more tokens than it's existing balance.");
 			};
 
-			await unstakePartialContent(aotokenStakeId);
-			await unstakePartialContent(aokiloStakeId);
-			await unstakePartialContent(aomegaStakeId);
-			await unstakePartialContent(aogigaStakeId);
-			await unstakePartialContent(aoteraStakeId);
-			await unstakePartialContent(aopetaStakeId);
-			await unstakePartialContent(aoexaStakeId);
-			await unstakePartialContent(aozettaStakeId);
-			await unstakePartialContent(aoyottaStakeId);
-			await unstakePartialContent(aoxonaStakeId);
+			await unstakePartialContent(stakeId1, 10, 10, "giga", 0);
+			await unstakePartialContent(stakeId2, 0, 0, "", 10000000);
+			await unstakePartialContent(stakeId3, 10, 10, "giga", 10);
 		});
 
-		it("unstakePartialContent() - should NOT be able to partially unstake existing staked content if the requested ICO token amount is more than the balance of the staked ICO amount", async function() {
-			var unstakePartialContent = async function(stakeId) {
-				var canUnstakePartial;
-				try {
-					await aocontent.unstakePartialContent(stakeId, 0, 150, { from: account2 });
-					canUnstakePartial = true;
-				} catch (e) {
-					canUnstakePartial = false;
-				}
-				assert.notEqual(
-					canUnstakePartial,
-					true,
-					"Stake owner can partially unstake ICO tokens more than it's existing ICO balance."
-				);
-			};
-
-			await unstakePartialContent(aotokenStakeId);
-			await unstakePartialContent(aokiloStakeId);
-			await unstakePartialContent(aomegaStakeId);
-			await unstakePartialContent(aogigaStakeId);
-			await unstakePartialContent(aoteraStakeId);
-			await unstakePartialContent(aopetaStakeId);
-			await unstakePartialContent(aoexaStakeId);
-			await unstakePartialContent(aozettaStakeId);
-			await unstakePartialContent(aoyottaStakeId);
-			await unstakePartialContent(aoxonaStakeId);
-		});
-
-		it("unstakePartialContent() - should be able to partially unstake only normal ERC20 AO token from existing staked content", async function() {
-			var denominationAmount = 5;
-			var unstakePartialContent = async function(stakeId, tokenMeta) {
+		it("unstakePartialContent() - should be able to partially unstake only network token from existing staked content", async function() {
+			var unstakePartialContent = async function(stakeId, networkIntegerAmount, networkFractionAmount, denomination) {
 				var stakedContentBefore = await aocontent.stakedContentById(stakeId);
-				var account1BalanceBefore = await tokenMeta.balanceOf(account1);
-				var account1StakedBalanceBefore = await tokenMeta.stakedBalance(account1);
+				var account1TotalNetworkBalanceBefore = await aotreasury.totalNetworkBalanceOf(account1);
+				var account1TotalNetworkStakedBalanceBefore = await aotreasury.totalNetworkStakedBalanceOf(account1);
+				var networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
 
 				var canUnstakePartial;
 				try {
-					await aocontent.unstakePartialContent(stakeId, denominationAmount, 0, { from: account1 });
+					await aocontent.unstakePartialContent(stakeId, networkIntegerAmount, networkFractionAmount, denomination, 0, {
+						from: account1
+					});
+
 					canUnstakePartial = true;
 				} catch (e) {
 					canUnstakePartial = false;
@@ -610,67 +589,61 @@ contract("AOContent", function(accounts) {
 				assert.equal(
 					canUnstakePartial,
 					true,
-					"Stake owner address unable to partially unstake normal ERC20 AO token from existing staked content"
+					"Stake owner was unable to partially unstake network tokens from existing staked content."
 				);
 
 				var stakedContentAfter = await aocontent.stakedContentById(stakeId);
-				var account1BalanceAfter = await tokenMeta.balanceOf(account1);
-				var account1StakedBalanceAfter = await tokenMeta.stakedBalance(account1);
+				var account1TotalNetworkBalanceAfter = await aotreasury.totalNetworkBalanceOf(account1);
+				var account1TotalNetworkStakedBalanceAfter = await aotreasury.totalNetworkStakedBalanceOf(account1);
 
 				assert.equal(
 					stakedContentAfter[1].toString(),
-					stakedContentBefore[1].minus(denominationAmount).toString(),
-					"Staked content has incorrect denominationAmount after unstaking"
+					stakedContentBefore[1].minus(networkAmount).toString(),
+					"Staked content has incorrect networkAmount after unstaking"
 				);
-				assert.equal(stakedContentAfter[2], stakedContentBefore[2], "Staked content has incorrect denomination after unstaking");
+				assert.equal(
+					stakedContentAfter[2].toString(),
+					stakedContentBefore[2].toString(),
+					"Staked content has incorrect primordialAmount after unstaking"
+				);
 				assert.equal(
 					stakedContentAfter[3].toString(),
 					stakedContentBefore[3].toString(),
-					"Staked content has incorrect icoTokenAmount after unstaking"
+					"Staked content has incorrect primordialWeightedIndex after unstaking"
 				);
+				assert.equal(stakedContentAfter[7], true, "Staked content has incorrect status after unstaking");
 				assert.equal(
-					stakedContentAfter[4].toString(),
-					stakedContentBefore[4].toString(),
-					"Staked content has incorrect icoTokenWeightedIndex after unstaking"
-				);
-				assert.equal(stakedContentAfter[8], true, "Staked content has incorrect status after unstaking");
-				assert.equal(
-					account1BalanceAfter.toString(),
-					account1BalanceBefore.plus(denominationAmount).toString(),
+					account1TotalNetworkBalanceAfter.toString(),
+					account1TotalNetworkBalanceBefore.plus(networkAmount).toString(),
 					"Account1 has incorrect balance after unstaking"
 				);
 				assert.equal(
-					account1StakedBalanceAfter.toString(),
-					account1StakedBalanceBefore.minus(denominationAmount).toString(),
+					account1TotalNetworkStakedBalanceAfter.toString(),
+					account1TotalNetworkStakedBalanceBefore.minus(networkAmount).toString(),
 					"Account1 has incorrect staked balance after unstaking"
 				);
 			};
 
-			await unstakePartialContent(aotokenStakeId, aotoken);
-			await unstakePartialContent(aokiloStakeId, aokilo);
-			await unstakePartialContent(aomegaStakeId, aomega);
-			await unstakePartialContent(aogigaStakeId, aogiga);
-			await unstakePartialContent(aoteraStakeId, aotera);
-			await unstakePartialContent(aopetaStakeId, aopeta);
-			await unstakePartialContent(aoexaStakeId, aoexa);
-			await unstakePartialContent(aozettaStakeId, aozetta);
-			await unstakePartialContent(aoyottaStakeId, aoyotta);
-			await unstakePartialContent(aoxonaStakeId, aoxona);
+			await unstakePartialContent(stakeId1, 10, 10, "kilo");
+			await unstakePartialContent(stakeId3, 10, 10, "kilo");
 		});
 
-		it("unstakePartialContent() - should be able to partially unstake only ICO AO token from existing staked content", async function() {
-			var icoTokenAmount = 5;
-			var unstakePartialContent = async function(stakeId, tokenMeta) {
+		it("unstakePartialContent() - should be able to partially unstake only primordial token from existing staked content", async function() {
+			var primordialAmount = 10;
+			var unstakePartialContent = async function(stakeId) {
 				var stakedContentBefore = await aocontent.stakedContentById(stakeId);
-				var account1BalanceBefore = await tokenMeta.balanceOf(account1);
-				var account1StakedBalanceBefore = await tokenMeta.stakedBalance(account1);
-				var account1IcoBalanceBefore = await aotoken.icoBalanceOf(account1);
-				var account1IcoStakedBalanceBefore = await aotoken.icoStakedBalance(account1, stakedContentBefore[4].toString());
+				var account1TotalNetworkBalanceBefore = await aotreasury.totalNetworkBalanceOf(account1);
+				var account1TotalNetworkStakedBalanceBefore = await aotreasury.totalNetworkStakedBalanceOf(account1);
+				var account1TotalPrimordialBalanceBefore = await aotreasury.totalPrimordialBalanceOf(account1);
+				var account1TotalPrimordialStakedBalanceBefore = await aotreasury.totalPrimordialStakedBalanceOf(
+					account1,
+					stakedContentBefore[3].toString()
+				);
 				var account1WeightedIndexBefore = await aotoken.weightedIndexByAddress(account1);
 
 				var canUnstakePartial;
 				try {
-					await aocontent.unstakePartialContent(stakeId, 0, icoTokenAmount, { from: account1 });
+					await aocontent.unstakePartialContent(stakeId, 0, 0, "", primordialAmount, { from: account1 });
 					canUnstakePartial = true;
 				} catch (e) {
 					canUnstakePartial = false;
@@ -678,52 +651,54 @@ contract("AOContent", function(accounts) {
 				assert.equal(
 					canUnstakePartial,
 					true,
-					"Stake owner address unable to partially unstake ICO AO token from existing staked content"
+					"Stake owner address unable to partially unstake primordial token from existing staked content"
 				);
 
 				var stakedContentAfter = await aocontent.stakedContentById(stakeId);
-				var account1BalanceAfter = await tokenMeta.balanceOf(account1);
-				var account1StakedBalanceAfter = await tokenMeta.stakedBalance(account1);
-				var account1IcoBalanceAfter = await aotoken.icoBalanceOf(account1);
-				var account1IcoStakedBalanceAfter = await aotoken.icoStakedBalance(account1, stakedContentAfter[4].toString());
+				var account1TotalNetworkBalanceAfter = await aotreasury.totalNetworkBalanceOf(account1);
+				var account1TotalNetworkStakedBalanceAfter = await aotreasury.totalNetworkStakedBalanceOf(account1);
+				var account1TotalPrimordialBalanceAfter = await aotreasury.totalPrimordialBalanceOf(account1);
+				var account1TotalPrimordialStakedBalanceAfter = await aotreasury.totalPrimordialStakedBalanceOf(
+					account1,
+					stakedContentAfter[3].toString()
+				);
 				var account1WeightedIndexAfter = await aotoken.weightedIndexByAddress(account1);
 
 				assert.equal(
 					stakedContentAfter[1].toString(),
 					stakedContentBefore[1].toString(),
-					"Staked content has incorrect denominationAmount after unstaking"
+					"Staked content has incorrect networkAmount after unstaking"
 				);
-				assert.equal(stakedContentAfter[2], stakedContentBefore[2], "Staked content has incorrect denomination after unstaking");
+				assert.equal(
+					stakedContentAfter[2].toString(),
+					stakedContentBefore[2].minus(primordialAmount).toString(),
+					"Staked content has incorrect primordialAmount after unstaking"
+				);
 				assert.equal(
 					stakedContentAfter[3].toString(),
-					stakedContentBefore[3].minus(icoTokenAmount).toString(),
-					"Staked content has incorrect icoTokenAmount after unstaking"
+					stakedContentBefore[3].toString(),
+					"Staked content has incorrect primordialWeightedIndex after unstaking"
 				);
+				assert.equal(stakedContentAfter[7], true, "Staked content has incorrect status after unstaking");
 				assert.equal(
-					stakedContentAfter[4].toString(),
-					stakedContentBefore[4].toString(),
-					"Staked content has incorrect icoTokenWeightedIndex after unstaking"
-				);
-				assert.equal(stakedContentAfter[8], true, "Staked content has incorrect status after unstaking");
-				assert.equal(
-					account1BalanceAfter.toString(),
-					account1BalanceBefore.toString(),
+					account1TotalNetworkBalanceAfter.toString(),
+					account1TotalNetworkBalanceBefore.toString(),
 					"Account1 has incorrect balance after unstaking"
 				);
 				assert.equal(
-					account1StakedBalanceAfter.toString(),
-					account1StakedBalanceBefore.toString(),
+					account1TotalNetworkStakedBalanceAfter.toString(),
+					account1TotalNetworkStakedBalanceBefore.toString(),
 					"Account1 has incorrect staked balance after unstaking"
 				);
 				assert.equal(
-					account1IcoBalanceAfter.toString(),
-					account1IcoBalanceBefore.plus(icoTokenAmount).toString(),
-					"Account1 has incorrect ICO balance after unstaking"
+					account1TotalPrimordialBalanceAfter.toString(),
+					account1TotalPrimordialBalanceBefore.plus(primordialAmount).toString(),
+					"Account1 has incorrect primordial balance after unstaking"
 				);
 				assert.equal(
-					account1IcoStakedBalanceAfter.toString(),
-					account1IcoStakedBalanceBefore.minus(icoTokenAmount).toString(),
-					"Account1 has incorrect ICO staked balance after unstaking"
+					account1TotalPrimordialStakedBalanceAfter.toString(),
+					account1TotalPrimordialStakedBalanceBefore.minus(primordialAmount).toString(),
+					"Account1 has incorrect primordial staked balance after unstaking"
 				);
 				assert.equal(
 					account1WeightedIndexAfter.toString(),
@@ -731,33 +706,39 @@ contract("AOContent", function(accounts) {
 					"Account1 has incorrect weighted index after unstaking"
 				);
 			};
-
-			await unstakePartialContent(aotokenStakeId, aotoken);
-			await unstakePartialContent(aokiloStakeId, aokilo);
-			await unstakePartialContent(aomegaStakeId, aomega);
-			await unstakePartialContent(aogigaStakeId, aogiga);
-			await unstakePartialContent(aoteraStakeId, aotera);
-			await unstakePartialContent(aopetaStakeId, aopeta);
-			await unstakePartialContent(aoexaStakeId, aoexa);
-			await unstakePartialContent(aozettaStakeId, aozetta);
-			await unstakePartialContent(aoyottaStakeId, aoyotta);
-			await unstakePartialContent(aoxonaStakeId, aoxona);
+			await unstakePartialContent(stakeId2);
+			await unstakePartialContent(stakeId3);
 		});
 
 		it("unstakePartialContent() - should be able to partially unstake both normal ERC20 AO Token and ICO AO token from existing staked content", async function() {
-			var denominationAmount = 5;
-			var icoTokenAmount = 5;
-			var unstakePartialContent = async function(stakeId, tokenMeta) {
+			var unstakePartialContent = async function(
+				stakeId,
+				networkIntegerAmount,
+				networkFractionAmount,
+				denomination,
+				primordialAmount
+			) {
 				var stakedContentBefore = await aocontent.stakedContentById(stakeId);
-				var account1BalanceBefore = await tokenMeta.balanceOf(account1);
-				var account1StakedBalanceBefore = await tokenMeta.stakedBalance(account1);
-				var account1IcoBalanceBefore = await aotoken.icoBalanceOf(account1);
-				var account1IcoStakedBalanceBefore = await aotoken.icoStakedBalance(account1, stakedContentBefore[4].toString());
+				var account1TotalNetworkBalanceBefore = await aotreasury.totalNetworkBalanceOf(account1);
+				var account1TotalNetworkStakedBalanceBefore = await aotreasury.totalNetworkStakedBalanceOf(account1);
+				var account1TotalPrimordialBalanceBefore = await aotreasury.totalPrimordialBalanceOf(account1);
+				var account1TotalPrimordialStakedBalanceBefore = await aotreasury.totalPrimordialStakedBalanceOf(
+					account1,
+					stakedContentBefore[3].toString()
+				);
 				var account1WeightedIndexBefore = await aotoken.weightedIndexByAddress(account1);
+				var networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
 
 				var canUnstakePartial;
 				try {
-					await aocontent.unstakePartialContent(stakeId, denominationAmount, icoTokenAmount, { from: account1 });
+					await aocontent.unstakePartialContent(
+						stakeId,
+						networkIntegerAmount,
+						networkFractionAmount,
+						denomination,
+						primordialAmount,
+						{ from: account1 }
+					);
 					canUnstakePartial = true;
 				} catch (e) {
 					canUnstakePartial = false;
@@ -765,52 +746,54 @@ contract("AOContent", function(accounts) {
 				assert.equal(
 					canUnstakePartial,
 					true,
-					"Stake owner address unable to partially unstake ICO AO token from existing staked content"
+					"Stake owner address unable to partially unstake network and primordial token from existing staked content"
 				);
 
 				var stakedContentAfter = await aocontent.stakedContentById(stakeId);
-				var account1BalanceAfter = await tokenMeta.balanceOf(account1);
-				var account1StakedBalanceAfter = await tokenMeta.stakedBalance(account1);
-				var account1IcoBalanceAfter = await aotoken.icoBalanceOf(account1);
-				var account1IcoStakedBalanceAfter = await aotoken.icoStakedBalance(account1, stakedContentAfter[4].toString());
+				var account1TotalNetworkBalanceAfter = await aotreasury.totalNetworkBalanceOf(account1);
+				var account1TotalNetworkStakedBalanceAfter = await aotreasury.totalNetworkStakedBalanceOf(account1);
+				var account1TotalPrimordialBalanceAfter = await aotreasury.totalPrimordialBalanceOf(account1);
+				var account1TotalPrimordialStakedBalanceAfter = await aotreasury.totalPrimordialStakedBalanceOf(
+					account1,
+					stakedContentAfter[3].toString()
+				);
 				var account1WeightedIndexAfter = await aotoken.weightedIndexByAddress(account1);
 
 				assert.equal(
 					stakedContentAfter[1].toString(),
-					stakedContentBefore[1].minus(denominationAmount).toString(),
-					"Staked content has incorrect denominationAmount after unstaking"
+					stakedContentBefore[1].minus(networkAmount).toString(),
+					"Staked content has incorrect networkAmount after unstaking"
 				);
-				assert.equal(stakedContentAfter[2], stakedContentBefore[2], "Staked content has incorrect denomination after unstaking");
+				assert.equal(
+					stakedContentAfter[2].toString(),
+					stakedContentBefore[2].minus(primordialAmount).toString(),
+					"Staked content has incorrect primordialAmount after unstaking"
+				);
 				assert.equal(
 					stakedContentAfter[3].toString(),
-					stakedContentBefore[3].minus(icoTokenAmount).toString(),
-					"Staked content has incorrect icoTokenAmount after unstaking"
+					stakedContentBefore[3].toString(),
+					"Staked content has incorrect primordialWeightedIndex after unstaking"
 				);
+				assert.equal(stakedContentAfter[7], true, "Staked content has incorrect status after unstaking");
 				assert.equal(
-					stakedContentAfter[4].toString(),
-					stakedContentBefore[4].toString(),
-					"Staked content has incorrect icoTokenWeightedIndex after unstaking"
-				);
-				assert.equal(stakedContentAfter[8], true, "Staked content has incorrect status after unstaking");
-				assert.equal(
-					account1BalanceAfter.toString(),
-					account1BalanceBefore.plus(denominationAmount).toString(),
+					account1TotalNetworkBalanceAfter.toString(),
+					account1TotalNetworkBalanceBefore.plus(networkAmount).toString(),
 					"Account1 has incorrect balance after unstaking"
 				);
 				assert.equal(
-					account1StakedBalanceAfter.toString(),
-					account1StakedBalanceBefore.minus(denominationAmount).toString(),
+					account1TotalNetworkStakedBalanceAfter.toString(),
+					account1TotalNetworkStakedBalanceBefore.minus(networkAmount).toString(),
 					"Account1 has incorrect staked balance after unstaking"
 				);
 				assert.equal(
-					account1IcoBalanceAfter.toString(),
-					account1IcoBalanceBefore.plus(icoTokenAmount).toString(),
-					"Account1 has incorrect ICO balance after unstaking"
+					account1TotalPrimordialBalanceAfter.toString(),
+					account1TotalPrimordialBalanceBefore.plus(primordialAmount).toString(),
+					"Account1 has incorrect primordial balance after unstaking"
 				);
 				assert.equal(
-					account1IcoStakedBalanceAfter.toString(),
-					account1IcoStakedBalanceBefore.minus(icoTokenAmount).toString(),
-					"Account1 has incorrect ICO staked balance after unstaking"
+					account1TotalPrimordialStakedBalanceAfter.toString(),
+					account1TotalPrimordialStakedBalanceBefore.minus(primordialAmount).toString(),
+					"Account1 has incorrect primordial staked balance after unstaking"
 				);
 				assert.equal(
 					account1WeightedIndexAfter.toString(),
@@ -818,17 +801,7 @@ contract("AOContent", function(accounts) {
 					"Account1 has incorrect weighted index after unstaking"
 				);
 			};
-
-			await unstakePartialContent(aotokenStakeId, aotoken);
-			await unstakePartialContent(aokiloStakeId, aokilo);
-			await unstakePartialContent(aomegaStakeId, aomega);
-			await unstakePartialContent(aogigaStakeId, aogiga);
-			await unstakePartialContent(aoteraStakeId, aotera);
-			await unstakePartialContent(aopetaStakeId, aopeta);
-			await unstakePartialContent(aoexaStakeId, aoexa);
-			await unstakePartialContent(aozettaStakeId, aozetta);
-			await unstakePartialContent(aoyottaStakeId, aoyotta);
-			await unstakePartialContent(aoxonaStakeId, aoxona);
+			await unstakePartialContent(stakeId3, 10, 10, "kilo", 10);
 		});
 
 		it("unstakeContent() - should NOT be able to unstake non-existing staked content", async function() {
@@ -854,26 +827,24 @@ contract("AOContent", function(accounts) {
 				assert.notEqual(canUnstake, true, "Non-stake owner address can unstake existing staked content");
 			};
 
-			await unstakeContent(aotokenStakeId);
-			await unstakeContent(aokiloStakeId);
-			await unstakeContent(aomegaStakeId);
-			await unstakeContent(aogigaStakeId);
-			await unstakeContent(aoteraStakeId);
-			await unstakeContent(aopetaStakeId);
-			await unstakeContent(aoexaStakeId);
-			await unstakeContent(aozettaStakeId);
-			await unstakeContent(aoyottaStakeId);
-			await unstakeContent(aoxonaStakeId);
+			await unstakeContent(stakeId1);
+			await unstakeContent(stakeId2);
+			await unstakeContent(stakeId3);
 		});
 
 		it("unstakeContent() - should be able to unstake existing staked content", async function() {
-			var unstakeContent = async function(stakeId, tokenMeta) {
+			var unstakeContent = async function(stakeId) {
 				var stakedContentBefore = await aocontent.stakedContentById(stakeId);
-				var account1BalanceBefore = await tokenMeta.balanceOf(account1);
-				var account1StakedBalanceBefore = await tokenMeta.stakedBalance(account1);
-				var account1IcoBalanceBefore = await aotoken.icoBalanceOf(account1);
-				var account1IcoStakedBalanceBefore = await aotoken.icoStakedBalance(account1, stakedContentBefore[4].toString());
+				var account1TotalNetworkBalanceBefore = await aotreasury.totalNetworkBalanceOf(account1);
+				var account1TotalNetworkStakedBalanceBefore = await aotreasury.totalNetworkStakedBalanceOf(account1);
+				var account1TotalPrimordialBalanceBefore = await aotreasury.totalPrimordialBalanceOf(account1);
+				var account1TotalPrimordialStakedBalanceBefore = await aotreasury.totalPrimordialStakedBalanceOf(
+					account1,
+					stakedContentBefore[3].toString()
+				);
 				var account1WeightedIndexBefore = await aotoken.weightedIndexByAddress(account1);
+				var networkAmount = stakedContentBefore[1];
+				var primordialAmount = stakedContentBefore[2];
 
 				var canUnstake;
 				try {
@@ -882,67 +853,59 @@ contract("AOContent", function(accounts) {
 				} catch (e) {
 					canUnstake = false;
 				}
-				assert.equal(canUnstake, true, "Stake owner address unable to unstake existing staked content");
+				assert.equal(
+					canUnstake,
+					true,
+					"Stake owner address unable to unstake network and primordial token from existing staked content"
+				);
 
 				var stakedContentAfter = await aocontent.stakedContentById(stakeId);
-				var account1BalanceAfter = await tokenMeta.balanceOf(account1);
-				var account1StakedBalanceAfter = await tokenMeta.stakedBalance(account1);
-				var account1IcoBalanceAfter = await aotoken.icoBalanceOf(account1);
-				var account1IcoStakedBalanceAfter = await aotoken.icoStakedBalance(account1, stakedContentBefore[4].toString());
-				var account1WeightedIndexAfter = await aotoken.weightedIndexByAddress(account1);
-				assert.equal(stakedContentAfter[1].toString(), 0, "Staked content has incorrect denominationAmount after unstaking");
-				assert.equal(
-					web3.toAscii(stakedContentAfter[2]).replace(/\0/g, ""),
-					"",
-					"Staked content has incorrect denomination after unstaking"
+				var account1TotalNetworkBalanceAfter = await aotreasury.totalNetworkBalanceOf(account1);
+				var account1TotalNetworkStakedBalanceAfter = await aotreasury.totalNetworkStakedBalanceOf(account1);
+				var account1TotalPrimordialBalanceAfter = await aotreasury.totalPrimordialBalanceOf(account1);
+				var account1TotalPrimordialStakedBalanceAfter = await aotreasury.totalPrimordialStakedBalanceOf(
+					account1,
+					stakedContentBefore[3].toString()
 				);
-				assert.equal(stakedContentAfter[3].toString(), 0, "Staked content has incorrect icoTokenAmount after unstaking");
-				assert.equal(stakedContentAfter[4].toString(), 0, "Staked content has incorrect icoTokenWeightedIndex after unstaking");
-				assert.equal(stakedContentAfter[8], false, "Staked content has incorrect status after unstaking");
+				var account1WeightedIndexAfter = await aotoken.weightedIndexByAddress(account1);
+
+				assert.equal(stakedContentAfter[1].toString(), 0, "Staked content has incorrect networkAmount after unstaking");
+				assert.equal(stakedContentAfter[2].toString(), 0, "Staked content has incorrect primordialAmount after unstaking");
+				assert.equal(stakedContentAfter[3].toString(), 0, "Staked content has incorrect primordialWeightedIndex after unstaking");
+				assert.equal(stakedContentAfter[7], false, "Staked content has incorrect status after unstaking");
 				assert.equal(
-					account1BalanceAfter.toString(),
-					account1BalanceBefore.plus(stakedContentBefore[1]).toString(),
+					account1TotalNetworkBalanceAfter.toString(),
+					account1TotalNetworkBalanceBefore.plus(networkAmount).toString(),
 					"Account1 has incorrect balance after unstaking"
 				);
 				assert.equal(
-					account1StakedBalanceAfter.toString(),
-					account1StakedBalanceBefore.minus(stakedContentBefore[1]).toString(),
+					account1TotalNetworkStakedBalanceAfter.toString(),
+					account1TotalNetworkStakedBalanceBefore.minus(networkAmount).toString(),
 					"Account1 has incorrect staked balance after unstaking"
 				);
 				assert.equal(
-					account1IcoBalanceAfter.toString(),
-					account1IcoBalanceBefore.plus(stakedContentBefore[3]).toString(),
-					"Account1 has incorrect ICO balance after unstaking"
+					account1TotalPrimordialBalanceAfter.toString(),
+					account1TotalPrimordialBalanceBefore.plus(primordialAmount).toString(),
+					"Account1 has incorrect primordial balance after unstaking"
 				);
 				assert.equal(
-					account1IcoStakedBalanceAfter.toString(),
-					account1IcoStakedBalanceBefore.minus(stakedContentBefore[3]).toString(),
-					"Account1 has incorrect ICO staked balance after unstaking"
+					account1TotalPrimordialStakedBalanceAfter.toString(),
+					account1TotalPrimordialStakedBalanceBefore.minus(primordialAmount).toString(),
+					"Account1 has incorrect primordial staked balance after unstaking"
 				);
-				var totalWeightedTokens = account1WeightedIndexBefore
-					.times(account1IcoBalanceBefore)
-					.plus(stakedContentBefore[4].times(stakedContentBefore[3]));
-				var totalTokens = account1IcoBalanceBefore.plus(stakedContentBefore[3]);
-				var newWeightedIndex = parseInt(totalWeightedTokens.div(totalTokens).toString());
 				assert.equal(
 					account1WeightedIndexAfter.toString(),
-					newWeightedIndex,
+					account1WeightedIndexBefore.toString(),
 					"Account1 has incorrect weighted index after unstaking"
 				);
 			};
 
-			await unstakeContent(aotokenStakeId, aotoken);
-			await unstakeContent(aokiloStakeId, aokilo);
-			await unstakeContent(aomegaStakeId, aomega);
-			await unstakeContent(aogigaStakeId, aogiga);
-			await unstakeContent(aoteraStakeId, aotera);
-			await unstakeContent(aopetaStakeId, aopeta);
-			await unstakeContent(aoexaStakeId, aoexa);
-			await unstakeContent(aozettaStakeId, aozetta);
-			await unstakeContent(aoyottaStakeId, aoyotta);
-			await unstakeContent(aoxonaStakeId, aoxona);
+			await unstakeContent(stakeId1);
+			await unstakeContent(stakeId2);
+			await unstakeContent(stakeId3);
 		});
 
+		/*
 		it("stakeExistingContent() - should NOT be able to stake non-existing staked content", async function() {
 			var canStakeExisting;
 			try {

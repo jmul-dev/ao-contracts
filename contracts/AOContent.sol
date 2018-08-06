@@ -328,8 +328,8 @@ contract AOContent is owned {
 			require (_unstakePartialNetworkToken(_stakeId, _stakedContent.networkAmount, 0, _baseDenominationName));
 		}
 		if (_stakedContent.primordialAmount > 0) {
-			_stakedContent.primordialWeightedIndex = 0;
 			require (_unstakePartialPrimordialToken(_stakeId, _stakedContent.primordialAmount));
+			_stakedContent.primordialWeightedIndex = 0;
 		}
 		emit UnstakeContent(_stakedContent.stakeOwner, _stakeId);
 	}
@@ -498,7 +498,12 @@ contract AOContent is owned {
 				_stakedNetworkAmount < _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination)
 			) ||
 			_stakedPrimordialAmount < _primordialAmount ||
-			(_stakedNetworkAmount.sub(_treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination)).add(_stakedPrimordialAmount.sub(_primordialAmount)) < _stakedFileSize)
+			(
+				_denomination.length > 0
+					&& (_networkIntegerAmount > 0 || _networkFractionAmount > 0)
+					&& (_stakedNetworkAmount.sub(_treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination)).add(_stakedPrimordialAmount.sub(_primordialAmount)) < _stakedFileSize)
+			) ||
+			( _denomination.length == 0 && _networkIntegerAmount == 0 && _networkFractionAmount == 0 && _primordialAmount > 0 && _stakedPrimordialAmount.sub(_primordialAmount) < _stakedFileSize)
 		) {
 			return false;
 		} else {
