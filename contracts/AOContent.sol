@@ -62,6 +62,14 @@ contract AOContent is owned {
 	// To check whether or not a stakedContent has been bought by buyer
 	mapping (address => mapping (bytes32 => bytes32)) internal buyerOwnedStakeId;
 
+	// Mapping from address to his/her network token profit
+	// Accumulated when someone buys content from content creator/host
+	mapping (address => uint256) public buyContentNetworkTokenProfit;
+
+	// Mapping from address to his/her primordial token profit at weighted index
+	// Accumulated when someone buys content from content creator/host
+	mapping (address => mapping (uint256 => uint256)) public buyContentPrimordialTokenProfit;
+
 	// Event to be broadcasted to public when `stakeOwner` stakes a new content
 	event StakeContent(
 		address indexed stakeOwner,
@@ -90,21 +98,19 @@ contract AOContent is owned {
 	// Event to be broadcasted to public when `stakeOwner` re-stakes an existing content
 	event StakeExistingContent(address indexed stakeOwner, bytes32 indexed stakeId, uint256 currentNetworkAmount, uint256 currentPrimordialAmount, uint256 currentPrimordialWeightedIndex);
 
-	// Event to be broadcasted to public when emergency mode is triggered
-	event EscapeHatch();
-
-	/*
-
-	// Event to be broadcasted to public when `buyer` buys an existing content
-	event BuyContent(address indexed buyer, bytes32 indexed buyId, bytes32 indexed stakeId, address host, uint256 denominationAmountSpent, bytes8 denomination, uint256 icoTokenAmountSpent, uint256 icoTokenWeightedIndex);
-
-	// Event to be broadcasted to public when stake owner (content creator) or host receives profit when someone buys the content
+	// Event to be broadcasted to public when we reward content/creator when someone buys the content
 	// recipientType:
 	// 0 => Stake Owner (Content Creator)
 	// 1 => Node Host
-	event BuyContentNetworkTokenEarning(address indexed recipient, address indexed sender, bytes32 indexed buyId, bytes32 stakeId, uint256 denominationAmount, bytes8 denomination, uint256 profitPercentage, uint8 recipientType);
-	event BuyContentPrimordialTokenEarning(address indexed recipient, address indexed sender, bytes32 indexed buyId, bytes32 stakeId, uint256 icoTokenAmount, uint256 icoTokenWeightedIndex, uint256 profitPercentage, uint8 recipientType);
-	 */
+	event BuyContentNetworkTokenEarning(address indexed sender, address indexed recipient, bytes32 indexed buyId, bytes32 stakeId, uint256  networkAmount, uint256 networkProfitAmount, uint256 profitPercentage, uint8 recipientType);
+
+	event BuyContentPrimordialTokenEarning(address indexed sender, address indexed recipient, bytes32 indexed buyId, bytes32 stakeId, uint256 primordialAmount, uint256 primordialWeightedIndex, uint256 primordialProfitAmount, uint256 profitPercentage, uint8 recipientType);
+
+	// Event to be broadcasted to public when `buyer` buys a content
+	event BuyContent(address indexed buyer, bytes32 buyId, bytes32 stakeId, address host, uint256 networkIntegerAmount, uint256 networkFractionAmount, bytes8 denomination, uint256 totalNetworkAmount, uint256 primordialAmount, uint256 primordialWeightedIndex);
+
+	// Event to be broadcasted to public when emergency mode is triggered
+	event EscapeHatch();
 
 	/**
 	 * @dev Constructor function
@@ -185,7 +191,7 @@ contract AOContent is owned {
 		require (_fileSize > 0);
 		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
 		require (_profitPercentage <= PERCENTAGE_DIVISOR);
-		require (_isAdequate(_networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _fileSize) == true);
+		require (_canStake(_networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _fileSize) == true);
 
 		// Increment totalStakedContents
 		totalStakedContents++;
@@ -379,24 +385,23 @@ contract AOContent is owned {
 	/**
 	 * @dev Buy existing content
 	 * @param _stakeId The ID of the staked content
-	 * @param _host The host address of the content
-	 * @param _denominationAmount The amount of normal ERC20 token to spend
-	 * @param _denomination The denomination of the normal ERC20 token, i.e ao, kilo, mega, etc.
-	 * @param _icoTokenAmount The amount of ICO Token to spend
-	function buyContent(bytes32 _stakeId, address _host, uint256 _denominationAmount, bytes8 _denomination, uint256 _icoTokenAmount) public isActive {
+	 * @param _host The node address that hosts the file
+	 * @param _networkIntegerAmount The integer amount of network token to spend
+	 * @param _networkFractionAmount The fraction amount of network token to spend
+	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
+	 * @param _primordialAmount The amount of primordial Token to spend
+	 */
+	function buyContent(bytes32 _stakeId, address _host, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount) public isActive {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakeId] > 0);
 		// Make sure buyer has not bought this content previously
 		require (buyerOwnedStakeId[msg.sender][_stakeId].length == 0);
-		require (_denominationAmount > 0 || _icoTokenAmount > 0);
-
-		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
-
-		// Make sure the token amount can pay for the content price
-		require (_denominationAmount.add(_icoTokenAmount) >= _stakedContent.denominationAmount.add(_stakedContent.icoTokenAmount));
-
 		// _host has to be either the stake owner (content creator) or someone who has purchased the content previously
-		require (_host == _stakedContent.stakeOwner || buyerOwnedStakeId[_host][_stakeId].length > 0);
+		require (_host == stakedContents[stakedContentIndex[_stakeId]].stakeOwner || buyerOwnedStakeId[_host][_stakeId].length > 0);
+
+		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
+		// Make sure the token amount can pay for the content price
+		require (_canBuy(_stakeId, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount));
 
 		// Increment totalBoughtContents;
 		totalBoughtContents++;
@@ -414,19 +419,18 @@ contract AOContent is owned {
 		boughtContentIndex[_buyId] = totalBoughtContents;
 		buyerOwnedStakeId[msg.sender][_stakeId] = _buyId;
 
-		if (_denominationAmount > 0) {
-			_rewardBuyContentNetworkEarning(msg.sender, _stakedContent.stakeOwner, _host, _buyId, _stakeId, _denominationAmount, _denomination, _stakedContent.profitPercentage);
+		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
+			require (_payNetworkToken(_buyId, _networkIntegerAmount, _networkFractionAmount, _denomination));
 		}
-		if (_icoTokenAmount > 0) {
-			_rewardBuyContentPrimordialEarning(msg.sender, _stakedContent.stakeOwner, _host, _buyId, _stakeId, _icoTokenAmount, _stakedContent.profitPercentage);
+		if (_primordialAmount > 0) {
+			require (_payPrimordialToken(_buyId, _primordialAmount));
 		}
 
 		// TODO:
 		// Mint network token and reward Foundation, stake owner and host accordingly
 
-		emit BuyContent(msg.sender, _buyId, _stakeId, _host, _denominationAmount, _denomination, _icoTokenAmount, _boughtContent.icoTokenWeightedIndex);
+		emit BuyContent(_boughtContent.buyer, _boughtContent.buyId, _boughtContent.stakeId, _boughtContent.host, _networkIntegerAmount, _networkFractionAmount, _denomination, _boughtContent.networkAmount, _boughtContent.primordialAmount, _boughtContent.primordialWeightedIndex);
 	}
-	 */
 
 	/***** INTERNAL METHODS *****/
 	/**
@@ -438,7 +442,7 @@ contract AOContent is owned {
 	 * @param _fileSize The file size of the content
 	 * @return true when the amount is sufficient, false otherwise
 	 */
-	function _isAdequate(uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount, uint256 _fileSize) internal view returns (bool) {
+	function _canStake(uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount, uint256 _fileSize) internal view returns (bool) {
 		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			if (_treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) >= _fileSize) {
 				return true;
@@ -602,51 +606,109 @@ contract AOContent is owned {
 		}
 	}
 
-	/*
-	function _rewardBuyContentNetworkEarning(address _sender, address _stakeOwner, address _host, bytes32 _buyId, bytes32 _stakeId, uint256 _denominationAmount, bytes8 _denomination, uint256 _profitPercentage) internal {
-		// Make sure the _denomination is in the available list
-		(address _denominationAddress, bool _denominationActive) = _treasury.getDenomination(_denomination);
-		require (_denominationAddress != address(0));
-		require (_denominationActive == true);
+	/**
+	 * @dev Check whether the network token and/or primordial token is adequate to pay for existing staked content
+	 * @param _stakeId The stake ID to be checked
+	 * @param _networkIntegerAmount The integer amount of the network token
+	 * @param _networkFractionAmount The fraction amount of the network token
+	 * @param _denomination The denomination of the the network token
+	 * @param _primordialAmount The amount of primordial token
+	 * @return true when the amount is sufficient, false otherwise
+	 */
+	function _canBuy(bytes32 _stakeId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount) internal view returns (bool) {
+		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+		uint256 _price = _stakedContent.networkAmount.add(_stakedContent.primordialAmount);
 
-		BoughtContent storage _boughtContent = boughtContents[boughtContentIndex[_buyId]];
-
-		_boughtContent.denominationAmount = _denominationAmount;
-		_boughtContent.denomination = _denomination;
-
-		AOToken _denominationToken = AOToken(_denominationAddress);
-
-		// Transfer the profit percentage to stake owner
-		uint256 _contentCreatorProfit = (_denominationAmount.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
-		require (_denominationToken.whitelistTransferFrom(_sender, _stakeOwner, _contentCreatorProfit));
-		emit BuyContentNetworkTokenEarning(_stakeOwner, _sender, _buyId, _stakeId, _contentCreatorProfit, _denomination, _profitPercentage, 0);
-
-		// Transfer the profit difference to _host
-		require (_denominationToken.whitelistTransferFrom(_sender, _host, _denominationAmount.sub(_contentCreatorProfit)));
-		emit BuyContentNetworkTokenEarning(_host, _sender, _buyId, _stakeId, _denominationAmount.sub(_contentCreatorProfit), _denomination, PERCENTAGE_DIVISOR.sub(_profitPercentage), 1);
+		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
+			return _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) >= _price;
+		} else if (_primordialAmount > 0) {
+			return _primordialAmount >= _price;
+		} else {
+			return false;
+		}
 	}
 
-	function _rewardBuyContentPrimordialEarning(address _sender, address _stakeOwner, address _host, bytes32 _buyId, bytes32 _stakeId, uint256 _icoTokenAmount, uint256 _profitPercentage) internal {
+
+	/**
+	 * @dev Pay bought content with network token
+	 * @param _buyId The ID of the bought content
+	 * @param _networkIntegerAmount The integer amount of the network token to pay
+	 * @param _networkFractionAmount The fraction amount of the network token to pay
+	 * @param _denomination The denomination of the the network token to pay
+	 * @return true on success
+	 */
+	function _payNetworkToken(bytes32 _buyId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination) internal isValidDenomination(_denomination) returns (bool) {
+		BoughtContent storage _boughtContent = boughtContents[boughtContentIndex[_buyId]];
+		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_boughtContent.stakeId]];
+
+		_boughtContent.networkAmount = _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
+
+		// Transfer payment
+		require (_transferNetworkTokenPayment(_boughtContent.buyer, _networkIntegerAmount, _networkFractionAmount, _denomination));
+
+		// Store how much the content creator earns
+		uint256 _contentCreatorProfit = (_boughtContent.networkAmount.mul(_stakedContent.profitPercentage)).div(PERCENTAGE_DIVISOR);
+		buyContentNetworkTokenProfit[_stakedContent.stakeOwner] = buyContentNetworkTokenProfit[_stakedContent.stakeOwner].add(_contentCreatorProfit);
+		emit BuyContentNetworkTokenEarning(_boughtContent.buyer, _stakedContent.stakeOwner, _boughtContent.buyId, _boughtContent.stakeId, _boughtContent.networkAmount, _contentCreatorProfit, _stakedContent.profitPercentage, 0);
+
+		// Store how much the node host earns
+		buyContentNetworkTokenProfit[_boughtContent.host] = buyContentNetworkTokenProfit[_boughtContent.host].add(_boughtContent.networkAmount.sub(_contentCreatorProfit));
+		emit BuyContentNetworkTokenEarning(_boughtContent.buyer, _boughtContent.host, _boughtContent.buyId, _boughtContent.stakeId, _boughtContent.networkAmount, _boughtContent.networkAmount.sub(_contentCreatorProfit), PERCENTAGE_DIVISOR.sub(_stakedContent.profitPercentage), 1);
+		return true;
+	}
+
+	/**
+	 * @dev Actually transfer the network token for the purchase
+	 * @param _sender The address of the sender
+	 * @param _networkIntegerAmount The integer amount of the network token to transfer
+	 * @param _networkFractionAmount The fraction amount of the network token to transfer
+	 * @param _denomination The denomination of the the network token to transfer
+	 * @return true on success
+	 */
+	function _transferNetworkTokenPayment(address _sender, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination) internal returns (bool) {
+		// Transfer tokens from each denomination in payment address to this contract
+		(address[] memory _paymentAddress, uint256[] memory _paymentAmount) = _treasury.determinePayment(_sender, _networkIntegerAmount, _networkFractionAmount, _denomination);
+
+		for (uint256 i=0; i < _paymentAddress.length; i++) {
+			if (_paymentAddress[i] != address(0) && _paymentAmount[i] > 0) {
+				require (AOToken(_paymentAddress[i]).whitelistTransferFrom(_sender, this, _paymentAmount[i]));
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * @dev Pay bought content with primordial token
+	 * @param _buyId The ID of the bought content
+	 * @param _primordialAmount The amount of the primordial token to pay
+	 * @return true on success
+	 */
+	function _payPrimordialToken(bytes32 _buyId, uint256 _primordialAmount) internal returns (bool) {
+		// Make sure base denomination is active
 		(, address _baseDenominationAddress, bool _baseDenominationActive) = _treasury.getBaseDenomination();
 		require (_baseDenominationAddress != address(0));
 		require (_baseDenominationActive == true);
 
 		BoughtContent storage _boughtContent = boughtContents[boughtContentIndex[_buyId]];
+		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_boughtContent.stakeId]];
 
-		_boughtContent.icoTokenAmount = _icoTokenAmount;
+		_boughtContent.primordialAmount = _primordialAmount;
 
-		// ICO Token is the base AO Token
-		AOToken _icoToken = AOToken(_baseDenominationAddress);
-		_boughtContent.icoTokenWeightedIndex = _icoToken.weightedIndexByAddress(_sender);
+		// Primordial Token is the base AO Token
+		AOToken _primordialToken = AOToken(_baseDenominationAddress);
+		_boughtContent.primordialWeightedIndex = _primordialToken.weightedIndexByAddress(_boughtContent.buyer);
 
-		// Transfer the profit percentage to stake owner
-		uint256 _contentCreatorIcoProfit = (_icoTokenAmount.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
-		require (_icoToken.whitelistTransferIcoTokenFrom(_sender, _stakeOwner, _contentCreatorIcoProfit));
-		emit BuyContentPrimordialTokenEarning(_stakeOwner, _sender, _buyId, _stakeId, _contentCreatorIcoProfit, _boughtContent.icoTokenWeightedIndex, _profitPercentage, 0);
+		// Transfer payment
+		require (_primordialToken.whitelistTransferIcoTokenFrom(_boughtContent.buyer, this, _boughtContent.primordialAmount));
 
-		// Transfer the profit difference to _host
-		require (_icoToken.whitelistTransferIcoTokenFrom(_sender, _host, _icoTokenAmount.sub(_contentCreatorIcoProfit)));
-		emit BuyContentPrimordialTokenEarning(_host, _sender, _buyId, _stakeId, _icoTokenAmount.sub(_contentCreatorIcoProfit), _boughtContent.icoTokenWeightedIndex, PERCENTAGE_DIVISOR.sub(_profitPercentage), 1);
+		// Store how much the content creator earns
+		uint256 _contentCreatorProfit = (_boughtContent.primordialAmount.mul(_stakedContent.profitPercentage)).div(PERCENTAGE_DIVISOR);
+		buyContentPrimordialTokenProfit[_stakedContent.stakeOwner][_boughtContent.primordialWeightedIndex] = buyContentPrimordialTokenProfit[_stakedContent.stakeOwner][_boughtContent.primordialWeightedIndex].add(_contentCreatorProfit);
+		emit BuyContentPrimordialTokenEarning(_boughtContent.buyer, _stakedContent.stakeOwner, _boughtContent.buyId, _boughtContent.stakeId, _boughtContent.primordialAmount, _boughtContent.primordialWeightedIndex, _contentCreatorProfit, _stakedContent.profitPercentage, 0);
+
+		// Store how much the node host earns
+		buyContentPrimordialTokenProfit[_boughtContent.host][_boughtContent.primordialWeightedIndex] = buyContentPrimordialTokenProfit[_boughtContent.host][_boughtContent.primordialWeightedIndex].add(_boughtContent.primordialAmount.sub(_contentCreatorProfit));
+		emit BuyContentPrimordialTokenEarning(_boughtContent.buyer, _boughtContent.host, _boughtContent.buyId, _boughtContent.stakeId, _boughtContent.primordialAmount, _boughtContent.primordialWeightedIndex, _boughtContent.primordialAmount.sub(_contentCreatorProfit), PERCENTAGE_DIVISOR.sub(_stakedContent.profitPercentage), 1);
+		return true;
 	}
-	*/
 }
