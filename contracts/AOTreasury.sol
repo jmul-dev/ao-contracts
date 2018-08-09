@@ -170,14 +170,12 @@ contract AOTreasury is owned {
 	/**
 	 * @dev Given `integerAmount` and `fractionAmount` price at `denominationName`, return list of denominations and the amount to pay the price with
 	 * @param sender The sender address
-	 * @param integerAmount The integer amount of the price
-	 * @param fractionAmount The fraction amount of the price
-	 * @param denominationName The denomination name of the price
+	 * @param totalAmount The amount to pay
 	 * @return A list of denomination addresses as payment
 	 * @return A list of denomination amounts for each denomination address payment
 	 */
-	function determinePayment(address sender, uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) public isValidDenomination(denominationName) view returns (address[], uint256[]) {
-		uint256 totalPrice = toBase(integerAmount, fractionAmount, denominationName);
+	function determinePayment(address sender, uint256 totalAmount) public view returns (address[], uint256[]) {
+		uint256 totalPrice = totalAmount;
 		uint256 totalPayment;
 		require (totalNetworkBalanceOf(sender) >= totalPrice);
 		address[] memory denominationAddress = new address[](totalDenominations);
@@ -217,14 +215,12 @@ contract AOTreasury is owned {
 	/**
 	 * @dev Given `integerAmount` and `fractionAmount` price at `denominationName`, return list of denominations and the amount to unstake the price with
 	 * @param sender The sender address
-	 * @param integerAmount The integer amount of the price
-	 * @param fractionAmount The fraction amount of the price
-	 * @param denominationName The denomination name of the price
+	 * @param totalAmount The amount to unstake
 	 * @return A list of denomination addresses to unstake
 	 * @return A list of denomination amounts for each denomination address
 	 */
-	function determineUnstake(address sender, uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) public isValidDenomination(denominationName) view returns (address[], uint256[]) {
-		uint256 totalPrice = toBase(integerAmount, fractionAmount, denominationName);
+	function determineUnstake(address sender, uint256 totalAmount) public view returns (address[], uint256[]) {
+		uint256 totalPrice = totalAmount;
 		uint256 totalUnstake;
 		require (totalNetworkStakedBalanceOf(sender) >= totalPrice);
 		address[] memory denominationAddress = new address[](totalDenominations);

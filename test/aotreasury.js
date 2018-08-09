@@ -252,7 +252,8 @@ contract("AOTreasury", function(accounts) {
 		it("should FAIL when the price is greater than user total balance", async function() {
 			var canDeterminePayment;
 			try {
-				var payment = await aotreasury.determinePayment(account1, 1, 5, "tera");
+				var baseAmount = await aotreasury.toBase(1, 5, "tera");
+				var payment = await aotreasury.determinePayment(account1, baseAmount.toString());
 				canDeterminePayment = true;
 			} catch (e) {
 				canDeterminePayment = false;
@@ -262,7 +263,8 @@ contract("AOTreasury", function(accounts) {
 		it("should FAIL when the denomination is invalid", async function() {
 			var canDeterminePayment;
 			try {
-				var payment = await aotreasury.determinePayment(account1, 1, 5, "deca");
+				var baseAmount = await aotreasury.toBase(1, 5, "deca");
+				var payment = await aotreasury.determinePayment(account1, baseAmount.toString());
 				canDeterminePayment = true;
 			} catch (e) {
 				canDeterminePayment = false;
@@ -271,8 +273,10 @@ contract("AOTreasury", function(accounts) {
 		});
 		it("should return correct payment denominations and amounts given a price at denomination", async function() {
 			var canDeterminePayment;
+			var baseAmount;
 			try {
-				var payment = await aotreasury.determinePayment(account1, 1, 20, "kilo"); // 1.020 AO Kilo
+				baseAmount = await aotreasury.toBase(1, 20, "kilo");
+				var payment = await aotreasury.determinePayment(account1, baseAmount.toString()); // 1.020 AO Kilo
 				canDeterminePayment = true;
 			} catch (e) {
 				canDeterminePayment = false;
@@ -296,7 +300,8 @@ contract("AOTreasury", function(accounts) {
 			}
 
 			try {
-				var payment = await aotreasury.determinePayment(account1, 2, 9, "kilo"); // 2.009 AO Kilo
+				baseAmount = await aotreasury.toBase(2, 9, "kilo");
+				var payment = await aotreasury.determinePayment(account1, baseAmount.toString()); // 2.009 AO Kilo
 				canDeterminePayment = true;
 			} catch (e) {
 				canDeterminePayment = false;
@@ -330,7 +335,8 @@ contract("AOTreasury", function(accounts) {
 			await aoexa.mintToken(account1, 0.1 * 10 ** aoexadecimals.toNumber(), { from: owner }); // 0.1 AO Exa
 
 			try {
-				var payment = await aotreasury.determinePayment(account1, 100, 500002000, "peta"); // 100.000000500002800 AO Peta
+				baseAmount = await aotreasury.toBase(100, 500002000, "peta");
+				var payment = await aotreasury.determinePayment(account1, baseAmount.toString()); // 100.000000500002800 AO Peta
 				canDeterminePayment = true;
 			} catch (e) {
 				canDeterminePayment = false;
