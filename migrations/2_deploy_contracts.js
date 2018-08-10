@@ -10,6 +10,9 @@ var AOZetta = artifacts.require("./AOZetta.sol");
 var AOYotta = artifacts.require("./AOYotta.sol");
 var AOXona = artifacts.require("./AOXona.sol");
 
+var AOLibrary = artifacts.require("./AOLibrary.sol");
+var AOEarning = artifacts.require("./AOEarning.sol");
+
 // Contracts that interact with AO and its denominations contracts
 var AOTreasury = artifacts.require("./AOTreasury.sol");
 var AOContent = artifacts.require("./AOContent.sol");
@@ -22,7 +25,7 @@ module.exports = function(deployer, network, accounts) {
 		deployerAccount = accounts[0];
 	}
 
-	var aotoken, aokilo, aomega, aogiga, aotera, aopeta, aoexa, aozetta, aoyotta, aoxona, aotreasury, aocontent;
+	var aotoken, aokilo, aomega, aogiga, aotera, aopeta, aoexa, aozetta, aoyotta, aoxona, aolibrary, aoearning, aotreasury, aocontent;
 	deployer.deploy([
 		[AOToken, 0, "AO Token", "AOTKN"],
 		[AOKilo, 0, "AO Kilo", "AOKILO"],
@@ -34,6 +37,7 @@ module.exports = function(deployer, network, accounts) {
 		[AOZetta, 0, "AO Zetta", "AOZETTA"],
 		[AOYotta, 0, "AO Yotta", "AOYOTTA"],
 		[AOXona, 0, "AO Xona", "AOXONA"],
+		AOLibrary,
 		AOTreasury
 	]);
 
@@ -50,7 +54,13 @@ module.exports = function(deployer, network, accounts) {
 			aozetta = await AOZetta.deployed();
 			aoyotta = await AOYotta.deployed();
 			aoxona = await AOXona.deployed();
-			return deployer.deploy(AOContent, aotreasury.address);
+			aolibrary = await AOLibrary.deployed();
+			return deployer.deploy(AOEarning, aotreasury.address);
+		})
+		.then(async function() {
+			aoearning = await AOEarning.deployed();
+			deployer.link(AOLibrary, AOContent);
+			return deployer.deploy(AOContent, aotreasury.address, aoearning.address);
 		})
 		.then(async function() {
 			aocontent = await AOContent.deployed();
@@ -90,5 +100,8 @@ module.exports = function(deployer, network, accounts) {
 			await aozetta.setWhitelist(aotreasury.address, true, { from: deployerAccount });
 			await aoyotta.setWhitelist(aotreasury.address, true, { from: deployerAccount });
 			await aoxona.setWhitelist(aotreasury.address, true, { from: deployerAccount });
+
+			// aoearning grant access to aocontent
+			await aoearning.setWhitelist(aocontent.address, true, { from: deployerAccount });
 		});
 };
