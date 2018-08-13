@@ -1,3 +1,5 @@
+var AOLibrary = artifacts.require("./AOLibrary.sol");
+
 // AO and its denominations
 var AOToken = artifacts.require("./AOToken.sol");
 var AOKilo = artifacts.require("./AOKilo.sol");
@@ -10,7 +12,6 @@ var AOZetta = artifacts.require("./AOZetta.sol");
 var AOYotta = artifacts.require("./AOYotta.sol");
 var AOXona = artifacts.require("./AOXona.sol");
 
-var AOLibrary = artifacts.require("./AOLibrary.sol");
 var AOEarning = artifacts.require("./AOEarning.sol");
 
 // Contracts that interact with AO and its denominations contracts
@@ -26,6 +27,18 @@ module.exports = function(deployer, network, accounts) {
 	}
 
 	var aotoken, aokilo, aomega, aogiga, aotera, aopeta, aoexa, aozetta, aoyotta, aoxona, aolibrary, aoearning, aotreasury, aocontent;
+	deployer.deploy(AOLibrary);
+	deployer.link(AOLibrary, AOToken);
+	deployer.link(AOLibrary, AOKilo);
+	deployer.link(AOLibrary, AOMega);
+	deployer.link(AOLibrary, AOGiga);
+	deployer.link(AOLibrary, AOTera);
+	deployer.link(AOLibrary, AOPeta);
+	deployer.link(AOLibrary, AOExa);
+	deployer.link(AOLibrary, AOZetta);
+	deployer.link(AOLibrary, AOYotta);
+	deployer.link(AOLibrary, AOXona);
+
 	deployer.deploy([
 		[AOToken, 0, "AO Token", "AOTKN"],
 		[AOKilo, 0, "AO Kilo", "AOKILO"],
@@ -37,13 +50,12 @@ module.exports = function(deployer, network, accounts) {
 		[AOZetta, 0, "AO Zetta", "AOZETTA"],
 		[AOYotta, 0, "AO Yotta", "AOYOTTA"],
 		[AOXona, 0, "AO Xona", "AOXONA"],
-		AOLibrary,
 		AOTreasury
 	]);
 
 	deployer
 		.then(async function() {
-			aotreasury = await AOTreasury.deployed();
+			aolibrary = await AOLibrary.deployed();
 			aotoken = await AOToken.deployed();
 			aokilo = await AOKilo.deployed();
 			aomega = await AOMega.deployed();
@@ -54,7 +66,7 @@ module.exports = function(deployer, network, accounts) {
 			aozetta = await AOZetta.deployed();
 			aoyotta = await AOYotta.deployed();
 			aoxona = await AOXona.deployed();
-			aolibrary = await AOLibrary.deployed();
+			aotreasury = await AOTreasury.deployed();
 			return deployer.deploy(AOEarning, aotreasury.address);
 		})
 		.then(async function() {

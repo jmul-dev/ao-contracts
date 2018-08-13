@@ -431,10 +431,15 @@ contract("AOToken", function(accounts) {
 			assert.equal(account1Lot1[1].toNumber(), 2 * weightedIndexDivisor.toNumber(), "Account1 lot has incorrect global lot index");
 			assert.equal(account1Lot1[2].toNumber(), 100, "Account1 lot has incorrect ICO token amount");
 		});
-		it("_updateWeightedIndex() - Should re-calculate existing `account` lots' indexes and update his/her overall weighted index", async function() {
+		it("Should re-calculate existing `account` lots' indexes and update his/her overall weighted index", async function() {
 			var account1Lot1 = await tokenMeta.lotOfOwnerByIndex(account1, 0);
 			assert.equal(account1Lot1[1].toNumber(), 2 * weightedIndexDivisor.toNumber(), "Account1 lot #1 has incorrect global lot index");
 			assert.equal(account1Lot1[2].toNumber(), 100, "Account1 lot #1 has incorrect ICO token amount");
+			var account1WeightedIndex = await tokenMeta.weightedIndexByAddress(account1);
+			var account1IcoBalance = await tokenMeta.icoBalanceOf(account1);
+
+			assert.equal(account1WeightedIndex.toNumber(), account1Lot1[1].toNumber(), "Account1 has incorrect weighted index");
+			assert.equal(account1IcoBalance.toNumber(), account1Lot1[2].toNumber(), "Account1 has incorrect ICO balance");
 
 			var buySuccess;
 			try {
@@ -449,6 +454,19 @@ contract("AOToken", function(accounts) {
 			assert.equal(account1Lot2[1].toNumber(), 3 * weightedIndexDivisor.toNumber(), "Account1 lot #2 has incorrect global lot index");
 			assert.equal(account1Lot2[2].toNumber(), 10000, "Account1 lot #2 has incorrect ICO token amount");
 
+			// Calculate weighted index
+			var totalWeightedTokens =
+				(account1Lot1[1].mul(account1Lot1[2])).add(
+					(account1Lot2[1].mul(account1Lot2[2])));
+			var totalTokens = account1Lot1[2].add(account1Lot2[2]);
+			var newWeightedIndex = parseInt(totalWeightedTokens.div(totalTokens).toNumber());
+
+			account1WeightedIndex = await tokenMeta.weightedIndexByAddress(account1);
+			account1IcoBalance = await tokenMeta.icoBalanceOf(account1);
+
+			assert.equal(account1WeightedIndex.toNumber(), newWeightedIndex, "Account1 has incorrect weighted index");
+			assert.equal(account1IcoBalance.toNumber(), totalTokens.toNumber(), "Account1 has incorrect ICO balance");
+
 			try {
 				await tokenMeta.buyIcoToken({ from: account1, value: 800000 });
 				buySuccess = true;
@@ -461,20 +479,28 @@ contract("AOToken", function(accounts) {
 			assert.equal(account1Lot3[1].toNumber(), 4 * weightedIndexDivisor.toNumber(), "Account1 lot #3 has incorrect global lot index");
 			assert.equal(account1Lot3[2].toNumber(), 8000, "Account1 lot #3 has incorrect ICO token amount");
 
-			var account1WeightedIndex = await tokenMeta.weightedIndexByAddress(account1);
+			account1WeightedIndex = await tokenMeta.weightedIndexByAddress(account1);
+			account1IcoBalance = await tokenMeta.icoBalanceOf(account1);
 
 			// Calculate weighted index
-			var totalWeightedTokens =
-				account1Lot1[1].toNumber() * account1Lot1[2].toNumber() +
-				account1Lot2[1].toNumber() * account1Lot2[2].toNumber() +
-				account1Lot3[1].toNumber() * account1Lot3[2].toNumber();
-			var totalTokens = account1Lot1[2].toNumber() + account1Lot2[2].toNumber() + account1Lot3[2].toNumber();
-			var newWeightedIndex = parseInt(totalWeightedTokens / totalTokens);
-			assert.equal(
-				account1WeightedIndex.toNumber(),
-				newWeightedIndex,
-				"Account1 has incorrect weighted index after multiple buy transactions"
-			);
+			totalWeightedTokens =
+				(totalTokens.mul(newWeightedIndex)).add(
+					(account1Lot3[1].mul(account1Lot3[2])));
+			totalTokens = totalTokens.add(account1Lot3[2]);
+			newWeightedIndex = parseInt(totalWeightedTokens.div(totalTokens).toNumber());
+
+			assert.equal(account1WeightedIndex.toNumber(), newWeightedIndex, "Account1 has incorrect weighted index");
+			assert.equal(account1IcoBalance.toNumber(), totalTokens.toNumber(), "Account1 has incorrect ICO balance");
+
+			// Calculate weighted index from lot 1-3
+			totalWeightedTokens = (account1Lot1[1].mul(account1Lot1[2])).add(
+				(account1Lot2[1].mul(account1Lot2[2]))).add(
+				(account1Lot3[1].mul(account1Lot3[2]))
+				);
+			totalTokens = account1Lot1[2].add(account1Lot2[2]).add(account1Lot3[2]);
+			newWeightedIndex = parseInt(totalWeightedTokens.div(totalTokens).toNumber());
+			assert.equal(account1WeightedIndex.toNumber(), newWeightedIndex, "Account1 has incorrect weighted index");
+			assert.equal(account1IcoBalance.toNumber(), totalTokens.toNumber(), "Account1 has incorrect ICO balance");
 		});
 		it("should NOT allow buy ICO if max ICO cap is reached (ICO has ended)", async function() {
 			var icoTotalSupply = await tokenMeta.icoTotalSupply();

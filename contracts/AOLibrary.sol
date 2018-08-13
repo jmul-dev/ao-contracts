@@ -113,4 +113,22 @@ library AOLibrary {
 			return false;
 		}
 	}
+
+	/**
+	 * @dev Calculate the new weighted index when adding `_additionalPrimordialAmount` at `_additionalWeightedIdex` to the current `_currentPrimordialBalance` at `_currentWeightedIndex`
+	 * @param _currentWeightedIndex Account's current weighted index
+	 * @param _currentPrimordialBalance Account's current primordial token balance
+	 * @param _additionalWeightedIndex The weighted index to be added
+	 * @param _additionalPrimordialAmount The primordial token amount to be added
+	 * @return the new primordial weighted index
+	 */
+	function calculateWeightedIndex(uint256 _currentWeightedIndex, uint256 _currentPrimordialBalance, uint256 _additionalWeightedIndex, uint256 _additionalPrimordialAmount) public pure returns (uint256) {
+		if (_currentWeightedIndex > 0) {
+			uint256 _totalWeightedTokens = (_currentWeightedIndex.mul(_currentPrimordialBalance)).add(_additionalWeightedIndex.mul(_additionalPrimordialAmount));
+			uint256 _totalTokens = _currentPrimordialBalance.add(_additionalPrimordialAmount);
+			return _totalWeightedTokens.div(_totalTokens);
+		} else {
+			return _additionalWeightedIndex;
+		}
+	}
 }

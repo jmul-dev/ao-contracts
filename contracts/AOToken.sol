@@ -4,6 +4,7 @@ import './SafeMath.sol';
 import './owned.sol';
 import './TokenERC20.sol';
 import './tokenRecipient.sol';
+import './AOLibrary.sol';
 
 /**
  * @title AOToken
@@ -254,9 +255,7 @@ contract AOToken is owned, TokenERC20 {
 		icoStakedBalance[_from][_weightedIndex] = icoStakedBalance[_from][_weightedIndex].sub(_value);
 
 		// Recalculate owner weighted index
-		uint256 totalWeightedTokens = (ownerWeightedIndex[_from].mul(icoBalanceOf[_from])).add(_weightedIndex.mul(_value));
-		uint256 totalTokens = icoBalanceOf[_from].add(_value);
-		ownerWeightedIndex[_from] = totalWeightedTokens.div(totalTokens);
+		ownerWeightedIndex[_from] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_from], icoBalanceOf[_from], _weightedIndex, _value);
 
 		// Add to the targeted balance
 		icoBalanceOf[_from] = icoBalanceOf[_from].add(_value);
@@ -278,10 +277,12 @@ contract AOToken is owned, TokenERC20 {
 
 		// Make sure the new lot is created successfully
 		require (_lot.lotOwner == _to);
+
+		// Update the weighted index of the recipient
+		ownerWeightedIndex[_to] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_to], icoBalanceOf[_to], ownerWeightedIndex[_from], _value);
+
 		// Transfer the ICO tokens
 		require (_transferIcoToken(_from, _to, _value));
-		// Update the weighted index of the recipient
-		require (_updateWeightedIndex(_to));
 		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.index, _lot.tokenAmount);
 		return true;
 	}
@@ -349,10 +350,12 @@ contract AOToken is owned, TokenERC20 {
 
 		// Make sure the new lot is created successfully
 		require (_lot.lotOwner == _to);
+
+		// Update the weighted index of the recipient
+		ownerWeightedIndex[_to] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_to], icoBalanceOf[_to], ownerWeightedIndex[msg.sender], _value);
+
 		// Transfer the ICO tokens
 		require (_transferIcoToken(msg.sender, _to, _value));
-		// Update the weighted index of the recipient
-		require (_updateWeightedIndex(_to));
 		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.index, _lot.tokenAmount);
 		return true;
 	}
@@ -373,10 +376,12 @@ contract AOToken is owned, TokenERC20 {
 
 		// Make sure the new lot is created successfully
 		require (_lot.lotOwner == _to);
+
+		// Update the weighted index of the recipient
+		ownerWeightedIndex[_to] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_to], icoBalanceOf[_to], ownerWeightedIndex[_from], _value);
+
 		// Transfer the ICO tokens
 		require (_transferIcoToken(_from, _to, _value));
-		// Update the weighted index of the recipient
-		require (_updateWeightedIndex(_to));
 		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.index, _lot.tokenAmount);
 		return true;
 	}
@@ -618,8 +623,8 @@ contract AOToken is owned, TokenERC20 {
 		uint256 lotIdIndex = ownedLots[_account].length;
 		ownedLots[_account].push(lotId);
 		ownedLotsIndex[_account][lotId] = lotIdIndex;
+		ownerWeightedIndex[_account] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_account], icoBalanceOf[_account], lot.index, lot.tokenAmount);
 		require (_mintIcoToken(_account, _tokenAmount));
-		require (_updateWeightedIndex(_account));
 		emit LotCreation(lot.lotOwner, lot.lotId, lot.index, lot.tokenAmount);
 	}
 
@@ -634,24 +639,6 @@ contract AOToken is owned, TokenERC20 {
 		icoTotalSupply = icoTotalSupply.add(mintedAmount);
 		emit IcoTransfer(0, this, mintedAmount);
 		emit IcoTransfer(this, target, mintedAmount);
-		return true;
-	}
-
-	/**
-	 * @dev Calculate and update the weighted index of owner's total ICO tokens
-	 * @param account The account address to be updated
-	 */
-	function _updateWeightedIndex(address account) internal returns (bool) {
-		if (ownedLots[account].length > 0) {
-			uint256 totalWeightedTokens;
-			uint256 totalTokens;
-			for (uint256 i=0; i < ownedLots[account].length; i++) {
-				Lot memory _lot = lots[ownedLots[account][i]];
-				totalWeightedTokens = totalWeightedTokens.add(_lot.index.mul(_lot.tokenAmount));
-				totalTokens = totalTokens.add(_lot.tokenAmount);
-			}
-			ownerWeightedIndex[account] = totalWeightedTokens.div(totalTokens);
-		}
 		return true;
 	}
 
