@@ -455,9 +455,7 @@ contract("AOToken", function(accounts) {
 			assert.equal(account1Lot2[2].toNumber(), 10000, "Account1 lot #2 has incorrect ICO token amount");
 
 			// Calculate weighted index
-			var totalWeightedTokens =
-				(account1Lot1[1].mul(account1Lot1[2])).add(
-					(account1Lot2[1].mul(account1Lot2[2])));
+			var totalWeightedTokens = account1Lot1[1].mul(account1Lot1[2]).add(account1Lot2[1].mul(account1Lot2[2]));
 			var totalTokens = account1Lot1[2].add(account1Lot2[2]);
 			var newWeightedIndex = parseInt(totalWeightedTokens.div(totalTokens).toNumber());
 
@@ -483,9 +481,7 @@ contract("AOToken", function(accounts) {
 			account1IcoBalance = await tokenMeta.icoBalanceOf(account1);
 
 			// Calculate weighted index
-			totalWeightedTokens =
-				(totalTokens.mul(newWeightedIndex)).add(
-					(account1Lot3[1].mul(account1Lot3[2])));
+			totalWeightedTokens = totalTokens.mul(newWeightedIndex).add(account1Lot3[1].mul(account1Lot3[2]));
 			totalTokens = totalTokens.add(account1Lot3[2]);
 			newWeightedIndex = parseInt(totalWeightedTokens.div(totalTokens).toNumber());
 
@@ -493,10 +489,10 @@ contract("AOToken", function(accounts) {
 			assert.equal(account1IcoBalance.toNumber(), totalTokens.toNumber(), "Account1 has incorrect ICO balance");
 
 			// Calculate weighted index from lot 1-3
-			totalWeightedTokens = (account1Lot1[1].mul(account1Lot1[2])).add(
-				(account1Lot2[1].mul(account1Lot2[2]))).add(
-				(account1Lot3[1].mul(account1Lot3[2]))
-				);
+			totalWeightedTokens = account1Lot1[1]
+				.mul(account1Lot1[2])
+				.add(account1Lot2[1].mul(account1Lot2[2]))
+				.add(account1Lot3[1].mul(account1Lot3[2]));
 			totalTokens = account1Lot1[2].add(account1Lot2[2]).add(account1Lot3[2]);
 			newWeightedIndex = parseInt(totalWeightedTokens.div(totalTokens).toNumber());
 			assert.equal(account1WeightedIndex.toNumber(), newWeightedIndex, "Account1 has incorrect weighted index");
