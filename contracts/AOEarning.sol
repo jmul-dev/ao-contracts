@@ -4,6 +4,7 @@ import './SafeMath.sol';
 import './owned.sol';
 import './AOToken.sol';
 import './AOTreasury.sol';
+import './AOLibrary.sol';
 
 /**
  * @title AOEarning
@@ -37,9 +38,13 @@ contract AOEarning is owned {
 	// Accumulated when request node buys content from host
 	mapping (address => mapping(bytes32 => PrimordialEarning)) public primordialEarningEscrow;
 
-	// Mapping from address to claimable primordial token earning at weighted index
+	// Mapping from address to claimable primordial token earning
 	// Accumulated when request node has verified the bought content and become a distribution node
-	mapping (address => mapping(uint256 => uint256)) public primordialEarningClaimable;
+	mapping (address => uint256) public primordialEarningClaimable;
+
+	// Mapping from address to his/her global primordial earning weighted index
+	// Everytime a primordial earning is added for an account, we need to re-calculate the earning weighted index
+	mapping (address => uint256) public primordialEarningWeightedIndex;
 
 	// Event to be broadcasted to public when content creator/host earns network token in escrow when someone buys the content
 	// recipientType:
@@ -70,6 +75,9 @@ contract AOEarning is owned {
 
 	// Event to be broadcasted to public when address claims the network earning
 	event ClaimNetworkEarning(address indexed account, uint256 amount);
+
+	// Event to be broadcasted to public when address claims the primordial earning
+	event ClaimPrimordialEarning(address indexed account, uint256 amount, uint256 weightedIndex);
 
 	// Event to be broadcasted to public when emergency mode is triggered
 	event EscapeHatch();
@@ -179,7 +187,11 @@ contract AOEarning is owned {
 		uint256 _primordialWeightedIndex = _primordialEarning.primordialWeightedIndex;
 		_primordialEarning.primordialAmount = 0;
 		_primordialEarning.primordialWeightedIndex = 0;
-		primordialEarningClaimable[_stakeOwner][_primordialWeightedIndex] = primordialEarningClaimable[_stakeOwner][_primordialWeightedIndex].add(_primordialAmount);
+
+		// Update primordial weighted index
+		primordialEarningWeightedIndex[_stakeOwner] = AOLibrary.calculateWeightedIndex(primordialEarningWeightedIndex[_stakeOwner], primordialEarningClaimable[_stakeOwner], _primordialWeightedIndex, _primordialAmount);
+		// Update the primordial balance
+		primordialEarningClaimable[_stakeOwner] = primordialEarningClaimable[_stakeOwner].add(_primordialAmount);
 		emit BuyContentPrimordialEarningClaimable(_stakeOwner, _purchaseId, _primordialAmount, _primordialWeightedIndex, 0);
 
 		// Release the network earning in escrow for host
@@ -194,7 +206,11 @@ contract AOEarning is owned {
 		_primordialWeightedIndex = _primordialEarning.primordialWeightedIndex;
 		_primordialEarning.primordialAmount = 0;
 		_primordialEarning.primordialWeightedIndex = 0;
-		primordialEarningClaimable[_host][_primordialWeightedIndex] = primordialEarningClaimable[_host][_primordialWeightedIndex].add(_primordialAmount);
+
+		// Update primordial weighted index
+		primordialEarningWeightedIndex[_host] = AOLibrary.calculateWeightedIndex(primordialEarningWeightedIndex[_host], primordialEarningClaimable[_host], _primordialWeightedIndex, _primordialAmount);
+		// Update the primordial balance
+		primordialEarningClaimable[_host] = primordialEarningClaimable[_host].add(_primordialAmount);
 		emit BuyContentPrimordialEarningClaimable(_host, _purchaseId, _primordialAmount, _primordialWeightedIndex, 1);
 	}
 
@@ -221,6 +237,21 @@ contract AOEarning is owned {
 
 	/**
 	 * @dev Account withdraws the claimable primordial earning
-	function withdrawPrimordialEarning() public {
 	 */
+	function withdrawPrimordialEarning() public {
+		// Make sure there is balance to withdraw
+		require (primordialEarningClaimable[msg.sender] > 0);
+		require (primordialEarningWeightedIndex[msg.sender] > 0);
+
+		uint256 _primordialEarning = primordialEarningClaimable[msg.sender];
+		uint256 _primordialWeightedIndex = primordialEarningWeightedIndex[msg.sender];
+		primordialEarningClaimable[msg.sender] = 0;
+		primordialEarningWeightedIndex[msg.sender] = 0;
+
+		(, address _baseDenominationAddress, bool _baseDenominationActive) = _treasury.getBaseDenomination();
+		require (_baseDenominationAddress != address(0));
+		require (_baseDenominationActive == true);
+		require (AOToken(_baseDenominationAddress).whitelistTransferIcoTokenAtWeightedIndex(msg.sender, _primordialEarning, _primordialWeightedIndex));
+		emit ClaimPrimordialEarning(msg.sender, _primordialEarning, _primordialWeightedIndex);
+	}
 }

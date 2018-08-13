@@ -38,6 +38,8 @@ module.exports = function(deployer, network, accounts) {
 	deployer.link(AOLibrary, AOZetta);
 	deployer.link(AOLibrary, AOYotta);
 	deployer.link(AOLibrary, AOXona);
+	deployer.link(AOLibrary, AOContent);
+	deployer.link(AOLibrary, AOEarning);
 
 	deployer.deploy([
 		[AOToken, 0, "AO Token", "AOTKN"],
@@ -71,7 +73,6 @@ module.exports = function(deployer, network, accounts) {
 		})
 		.then(async function() {
 			aoearning = await AOEarning.deployed();
-			deployer.link(AOLibrary, AOContent);
 			return deployer.deploy(AOContent, aotreasury.address, aoearning.address);
 		})
 		.then(async function() {
