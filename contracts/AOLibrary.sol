@@ -95,20 +95,17 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Check whether the network token and/or primordial token is adequate to pay for existing staked content
+	 * @dev Check whether the network token is adequate to pay for existing staked content
 	 * @param _treasuryAddress AO treasury contract address
 	 * @param _price The price of the content
 	 * @param _networkIntegerAmount The integer amount of the network token
 	 * @param _networkFractionAmount The fraction amount of the network token
 	 * @param _denomination The denomination of the the network token
-	 * @param _primordialAmount The amount of primordial token
 	 * @return true when the amount is sufficient, false otherwise
 	 */
-	function canBuy(address _treasuryAddress, uint256 _price, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount) public view returns (bool) {
+	function canBuy(address _treasuryAddress, uint256 _price, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination) public view returns (bool) {
 		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
-			return AOTreasury(_treasuryAddress).toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) >= _price;
-		} else if (_primordialAmount > 0) {
-			return _primordialAmount >= _price;
+			return AOTreasury(_treasuryAddress).toBase(_networkIntegerAmount, _networkFractionAmount, _denomination) >= _price;
 		} else {
 			return false;
 		}
@@ -130,5 +127,29 @@ library AOLibrary {
 		} else {
 			return _additionalWeightedIndex;
 		}
+	}
+
+	/**
+	 * @dev Generate hash of the message
+	 * @param _callingContractAddress the address of the calling contract
+	 * @param _message the message to be hashed
+	 * @return hash
+	 */
+	function doHash(address _callingContractAddress, string _message) public pure returns (bytes32) {
+		return keccak256(abi.encodePacked(_callingContractAddress, _message));
+	}
+
+	/**
+	 * @dev Return the address that signed the message
+	 * @param _callingContractAddress the address of the calling contract
+	 * @param _message the message that was signed
+	 * @param _v part of the signature
+	 * @param _r part of the signature
+	 * @param _s part of the signature
+	 * @return the address that signed the message
+	 */
+	function checkSignature(address _callingContractAddress, string _message, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
+		bytes32 _hash = doHash(_callingContractAddress, _message);
+		return ecrecover(_hash, _v, _r, _s);
 	}
 }

@@ -264,52 +264,6 @@ contract AOToken is owned, TokenERC20 {
 		return true;
 	}
 
-	/**
-	 * @dev Whitelisted address sends `_value` ICO tokens to `_to` from `_from`
-	 * @param _from The address of the sender
-	 * @param _to The address of the recipient
-	 * @param _value The amount to send
-	 * @return true on success
-	 */
-	function whitelistTransferIcoTokenFrom(address _from, address _to, uint256 _value) public isIco inWhitelist(msg.sender) returns (bool success) {
-		bytes32 _createdLotId = _createWeightedIndexLot(_to, _value, ownerWeightedIndex[_from]);
-		Lot memory _lot = lots[_createdLotId];
-
-		// Make sure the new lot is created successfully
-		require (_lot.lotOwner == _to);
-
-		// Update the weighted index of the recipient
-		ownerWeightedIndex[_to] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_to], icoBalanceOf[_to], ownerWeightedIndex[_from], _value);
-
-		// Transfer the ICO tokens
-		require (_transferIcoToken(_from, _to, _value));
-		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.index, _lot.tokenAmount);
-		return true;
-	}
-
-	/**
-	 * @dev Whitelisted address sends `_value` ICO tokens at `_weightedIndex` to `_to`
-	 * @param _to The address of the recipient
-	 * @param _value The amount to send
-	 * @param _weightedIndex The weighted index of the token
-	 * @return true on success
-	 */
-	function whitelistTransferIcoTokenAtWeightedIndex(address _to, uint256 _value, uint256 _weightedIndex) public isIco inWhitelist(msg.sender) returns (bool success) {
-		bytes32 _createdLotId = _createWeightedIndexLot(_to, _value, _weightedIndex);
-		Lot memory _lot = lots[_createdLotId];
-
-		// Make sure the new lot is created successfully
-		require (_lot.lotOwner == _to);
-
-		// Update the weighted index of the recipient
-		ownerWeightedIndex[_to] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_to], icoBalanceOf[_to], _weightedIndex, _value);
-
-		// Transfer the ICO tokens
-		require (_transferIcoToken(msg.sender, _to, _value));
-		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.index, _lot.tokenAmount);
-		return true;
-	}
-
 	/***** PUBLIC METHODS *****/
 	/***** NORMAL ERC20 PUBLIC METHODS *****/
 	/**

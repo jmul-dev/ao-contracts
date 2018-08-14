@@ -18,7 +18,6 @@ contract AOContent is owned {
 
 	bool public paused;
 	bool public killed;
-	uint256 public inflationRate; // support up to 4 decimals, i.e 12.3456% = 123456
 	uint256 constant public PERCENTAGE_DIVISOR = 10 ** 6; // 100% = 1000000
 	uint256 public totalContents;
 	uint256 public totalContentHosts;
@@ -71,9 +70,7 @@ contract AOContent is owned {
 		bytes32 purchaseId;
 		bytes32 contentHostId;
 		address buyer;
-		uint256 networkAmount; // total network token staked in base denomination
-		uint256 primordialAmount;	// the amount of primordial AO Token to stake (always in base denomination)
-		uint256 primordialWeightedIndex;
+		uint256 networkAmount; // total network token paid in base denomination
 		uint256 createdOnTimestamp;
 	}
 
@@ -127,7 +124,7 @@ contract AOContent is owned {
 	event StakeExistingContent(address indexed stakeOwner, bytes32 indexed stakeId, bytes32 indexed contentId, uint256 currentNetworkAmount, uint256 currentPrimordialAmount, uint256 currentPrimordialWeightedIndex);
 
 	// Event to be broadcasted to public when a request node buys a content
-	event BuyContent(address indexed buyer, bytes32 indexed purchaseId, bytes32 indexed contentHostId, uint256 paidNetworkAmount, uint256 paidPrimordialAmount, uint256 paidPrimordialWeightedIndex, uint256 createdOnTimestamp);
+	event BuyContent(address indexed buyer, bytes32 indexed purchaseId, bytes32 indexed contentHostId, uint256 paidNetworkAmount, uint256 createdOnTimestamp);
 
 	// Event to be broadcasted to public when emergency mode is triggered
 	event EscapeHatch();
@@ -169,14 +166,6 @@ contract AOContent is owned {
 		require (killed == false);
 		killed = true;
 		emit EscapeHatch();
-	}
-
-	/**
-	 * @dev Whitelisted address sets inflation rate
-	 * @param _inflationRate The new inflation rate value to be set
-	 */
-	function setInflationRate(uint256 _inflationRate) public inWhitelist(msg.sender) {
-		inflationRate = _inflationRate;
 	}
 
 	/***** PUBLIC METHODS *****/
@@ -425,14 +414,13 @@ contract AOContent is owned {
 	}
 
 	/**
-	 * @dev Bring content in to the requesting node by sending network/primordial tokens to the contract to pay for the content
+	 * @dev Bring content in to the requesting node by sending network tokens to the contract to pay for the content
 	 * @param _contentHostId The ID of hosted content
 	 * @param _networkIntegerAmount The integer amount of network token to pay
 	 * @param _networkFractionAmount The fraction amount of network token to pay
 	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
-	 * @param _primordialAmount The amount of primordial Token to pay
 	 */
-	function buyContent(bytes32 _contentHostId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount) public isActive {
+	function buyContent(bytes32 _contentHostId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination) public isActive {
 		// Make sure the content host exist
 		require (contentHostIndex[_contentHostId] > 0);
 
@@ -446,8 +434,8 @@ contract AOContent is owned {
 		require (buyerPurchaseReceipts[msg.sender][_contentHostId].length == 0);
 
 		// Make sure the token amount can pay for the content price
-		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
-		require (AOLibrary.canBuy(treasuryAddress, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount));
+		require (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0));
+		require (AOLibrary.canBuy(treasuryAddress, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination));
 
 		// Increment totalPurchaseReceipts;
 		totalPurchaseReceipts++;
@@ -462,54 +450,30 @@ contract AOContent is owned {
 		_purchaseReceipt.purchaseId = _purchaseId;
 		_purchaseReceipt.contentHostId = _contentHostId;
 		_purchaseReceipt.buyer = msg.sender;
+		// Update the receipt with the correct network amount
+		_purchaseReceipt.networkAmount = _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
 		_purchaseReceipt.createdOnTimestamp = now;
 
 		purchaseReceiptIndex[_purchaseId] = totalPurchaseReceipts;
 		buyerPurchaseReceipts[msg.sender][_contentHostId] = _purchaseId;
 
-		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
-			// Update the receipt with the correct network amount
-			_purchaseReceipt.networkAmount = _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
+		// Have the buyer transfer the network amount
+		_transferNetworkToken(msg.sender, _purchaseReceipt.networkAmount);
 
-			// Have the buyer transfer the network amount
-			_transferNetworkToken(msg.sender, _purchaseReceipt.networkAmount);
+		// Calculate content creator and host's network earning and store them in escrow
+		_earning.calculateNetworkEarning(
+			_purchaseId,
+			_stakedContent.stakeId,
+			_contentHost.contentHostId,
+			_stakedContent.networkAmount,
+			_stakedContent.primordialAmount,
+			_stakedContent.primordialWeightedIndex,
+			_stakedContent.profitPercentage,
+			_stakedContent.stakeOwner,
+			_contentHost.host
+		);
 
-			// Calculate content creator and host' network earning and store them in escrow
-			_earning.calculateNetworkEarning(_purchaseId, _stakedContent.stakeId, _contentHost.contentHostId, _purchaseReceipt.networkAmount, _stakedContent.profitPercentage, _stakedContent.stakeOwner, _contentHost.host);
-		}
-		if (_primordialAmount > 0) {
-			// Make sure base denomination is active
-			(, address _baseDenominationAddress, bool _baseDenominationActive) = _treasury.getBaseDenomination();
-			require (_baseDenominationAddress != address(0));
-			require (_baseDenominationActive == true);
-
-			// Update the receipt with the correct primordial amounit
-			_purchaseReceipt.primordialAmount = _primordialAmount;
-
-			// Primordial Token is the base AO Token
-			AOToken _primordialToken = AOToken(_baseDenominationAddress);
-			_purchaseReceipt.primordialWeightedIndex = _primordialToken.weightedIndexByAddress(msg.sender);
-
-			// Transfer payment
-			require (_primordialToken.whitelistTransferIcoTokenFrom(msg.sender, earningAddress, _purchaseReceipt.primordialAmount));
-
-			// Calculate content creator and host' primordial earning and store them in escrow
-			_earning.calculatePrimordialEarning(_purchaseId, _stakedContent.stakeId, _contentHost.contentHostId, _purchaseReceipt.primordialAmount, _purchaseReceipt.primordialWeightedIndex, _stakedContent.profitPercentage, _stakedContent.stakeOwner, _contentHost.host);
-		}
-
-		// TODO:
-		// Mint network token and reward Foundation, stake owner and host accordingly
-
-		emit BuyContent(_purchaseReceipt.buyer, _purchaseReceipt.purchaseId, _purchaseReceipt.contentHostId, _purchaseReceipt.networkAmount, _purchaseReceipt.primordialAmount, _purchaseReceipt.primordialWeightedIndex, _purchaseReceipt.createdOnTimestamp);
-	}
-
-	function doHash(string _message) public constant returns (bytes32) {
-		return keccak256(abi.encodePacked(address(this), _message));
-	}
-
-	function checkSignature(string _message, uint8 _v, bytes32 _r, bytes32 _s) public constant returns (address) {
-		bytes32 _hash = doHash(_message);
-		return ecrecover(_hash, _v, _r, _s);
+		emit BuyContent(_purchaseReceipt.buyer, _purchaseReceipt.purchaseId, _purchaseReceipt.contentHostId, _purchaseReceipt.networkAmount, _purchaseReceipt.createdOnTimestamp);
 	}
 
 	/**
@@ -529,7 +493,7 @@ contract AOContent is owned {
 		// Verify that the file is not tampered by validating the base challenge signature
 		// The signed base challenge key should match the one from content creator
 		Content memory _content = contents[contentIndex[_contentId]];
-		require (checkSignature(_content.baseChallenge, _baseChallengeV, _baseChallengeR, _baseChallengeS) == msg.sender);
+		require (AOLibrary.checkSignature(address(this), _content.baseChallenge, _baseChallengeV, _baseChallengeR, _baseChallengeS) == msg.sender);
 
 		_hostContent(msg.sender, _stakeId, _encChallenge, _contentDatKey, _metadataDatKey);
 

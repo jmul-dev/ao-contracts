@@ -39,7 +39,6 @@ module.exports = function(deployer, network, accounts) {
 	deployer.link(AOLibrary, AOYotta);
 	deployer.link(AOLibrary, AOXona);
 	deployer.link(AOLibrary, AOContent);
-	deployer.link(AOLibrary, AOEarning);
 
 	deployer.deploy([
 		[AOToken, 0, "AO Token", "AOTKN"],
@@ -114,7 +113,23 @@ module.exports = function(deployer, network, accounts) {
 			await aoyotta.setWhitelist(aotreasury.address, true, { from: deployerAccount });
 			await aoxona.setWhitelist(aotreasury.address, true, { from: deployerAccount });
 
+			// Grant access to aoearning to transact on behalf of others on all AO Tokens denominations
+			await aotoken.setWhitelist(aoearning.address, true, { from: deployerAccount });
+			await aokilo.setWhitelist(aoearning.address, true, { from: deployerAccount });
+			await aomega.setWhitelist(aoearning.address, true, { from: deployerAccount });
+			await aogiga.setWhitelist(aoearning.address, true, { from: deployerAccount });
+			await aotera.setWhitelist(aoearning.address, true, { from: deployerAccount });
+			await aopeta.setWhitelist(aoearning.address, true, { from: deployerAccount });
+			await aoexa.setWhitelist(aoearning.address, true, { from: deployerAccount });
+			await aozetta.setWhitelist(aoearning.address, true, { from: deployerAccount });
+			await aoyotta.setWhitelist(aoearning.address, true, { from: deployerAccount });
+			await aoxona.setWhitelist(aoearning.address, true, { from: deployerAccount });
+
 			// aoearning grant access to aocontent
 			await aoearning.setWhitelist(aocontent.address, true, { from: deployerAccount });
+
+			// set inflation rate and foundation cut
+			await aoearning.setInflationRate(10000, { from: deployerAccount }); // inflation rate 1%
+			await aoearning.setFoundationCut(5000, { from: deployerAccount }); // foundation cut 0.5%
 		});
 };
