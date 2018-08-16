@@ -68,11 +68,11 @@ module.exports = function(deployer, network, accounts) {
 			aoyotta = await AOYotta.deployed();
 			aoxona = await AOXona.deployed();
 			aotreasury = await AOTreasury.deployed();
-			return deployer.deploy(AOEarning, aotreasury.address);
+			return deployer.deploy(AOEarning, aotoken.address, aotreasury.address);
 		})
 		.then(async function() {
 			aoearning = await AOEarning.deployed();
-			return deployer.deploy(AOContent, aotreasury.address, aoearning.address);
+			return deployer.deploy(AOContent, aotoken.address, aotreasury.address, aoearning.address);
 		})
 		.then(async function() {
 			aocontent = await AOContent.deployed();
