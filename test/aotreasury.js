@@ -16,7 +16,7 @@ contract("AOTreasury", function(accounts) {
 	var owner = accounts[0];
 	var account1 = accounts[1];
 	var someAddress = "0x0694bdcab07b298e88a834a3c91602cb8f457bde";
-	var ao;
+	var ao, kilo, mega, giga, tera, peta, exa, zetta, yotta, xona;
 	before(async function() {
 		aotreasury = await AOTreasury.deployed();
 		aotoken = await AOToken.deployed();
@@ -31,43 +31,36 @@ contract("AOTreasury", function(accounts) {
 		aoxona = await AOXona.deployed();
 	});
 	it("should have all of AO denominations", async function() {
-		ao = await aotreasury.getDenomination("ao");
-		var kilo = await aotreasury.getDenomination("kilo");
-		var mega = await aotreasury.getDenomination("mega");
-		var giga = await aotreasury.getDenomination("giga");
-		var tera = await aotreasury.getDenomination("tera");
-		var peta = await aotreasury.getDenomination("peta");
-		var exa = await aotreasury.getDenomination("exa");
-		var zetta = await aotreasury.getDenomination("zetta");
-		var yotta = await aotreasury.getDenomination("yotta");
-		var xona = await aotreasury.getDenomination("xona");
+		ao = await aotreasury.getDenominationByName("ao");
+		kilo = await aotreasury.getDenominationByName("kilo");
+		mega = await aotreasury.getDenominationByName("mega");
+		giga = await aotreasury.getDenominationByName("giga");
+		tera = await aotreasury.getDenominationByName("tera");
+		peta = await aotreasury.getDenominationByName("peta");
+		exa = await aotreasury.getDenominationByName("exa");
+		zetta = await aotreasury.getDenominationByName("zetta");
+		yotta = await aotreasury.getDenominationByName("yotta");
+		xona = await aotreasury.getDenominationByName("xona");
 
-		assert.equal(ao[0], aotoken.address, "contract is missing ao from list of denominations");
-		assert.equal(kilo[0], aokilo.address, "contract is missing kilo from list of denominations");
-		assert.equal(mega[0], aomega.address, "Contract is missing mega from list of denominations");
-		assert.equal(giga[0], aogiga.address, "Contract is missing giga from list of denominations");
-		assert.equal(tera[0], aotera.address, "Contract is missing tera from list of denominations");
-		assert.equal(peta[0], aopeta.address, "Contract is missing peta from list of denominations");
-		assert.equal(exa[0], aoexa.address, "Contract is missing exa from list of denominations");
-		assert.equal(zetta[0], aozetta.address, "Contract is missing zetta from list of denominations");
-		assert.equal(yotta[0], aoyotta.address, "Contract is missing yotta from list of denominations");
-		assert.equal(xona[0], aoxona.address, "Contract is missing xona from list of denominations");
-		assert.equal(ao[1], true, "ao denomination is inactive");
-		assert.equal(kilo[1], true, "kilo denomination is inactive");
-		assert.equal(mega[1], true, "mega denomination is inactive");
-		assert.equal(giga[1], true, "giga denomination is inactive");
-		assert.equal(tera[1], true, "tera denomination is inactive");
-		assert.equal(peta[1], true, "peta denomination is inactive");
-		assert.equal(exa[1], true, "exa denomination is inactive");
-		assert.equal(zetta[1], true, "zetta denomination is inactive");
-		assert.equal(yotta[1], true, "yotta denomination is inactive");
-		assert.equal(xona[1], true, "xona denomination is inactive");
+		assert.equal(ao[1], aotoken.address, "contract is missing ao from list of denominations");
+		assert.equal(kilo[1], aokilo.address, "contract is missing kilo from list of denominations");
+		assert.equal(mega[1], aomega.address, "Contract is missing mega from list of denominations");
+		assert.equal(giga[1], aogiga.address, "Contract is missing giga from list of denominations");
+		assert.equal(tera[1], aotera.address, "Contract is missing tera from list of denominations");
+		assert.equal(peta[1], aopeta.address, "Contract is missing peta from list of denominations");
+		assert.equal(exa[1], aoexa.address, "Contract is missing exa from list of denominations");
+		assert.equal(zetta[1], aozetta.address, "Contract is missing zetta from list of denominations");
+		assert.equal(yotta[1], aoyotta.address, "Contract is missing yotta from list of denominations");
+		assert.equal(xona[1], aoxona.address, "Contract is missing xona from list of denominations");
 	});
 	it("should have ao as the base denomination", async function() {
 		var baseDenomination = await aotreasury.getBaseDenomination();
-		assert.equal(web3.toAscii(baseDenomination[0]).replace(/\0/g, ""), "ao", "Base denomination name does not match ao name");
-		assert.equal(baseDenomination[1], ao[0], "Base denomination address does not match ao denomination address");
-		assert.equal(baseDenomination[2], ao[1], "Base denomination status does not match ao denomination status");
+		assert.equal(web3.toAscii(baseDenomination[0]).replace(/\0/g, ""), "ao", "Base denomination short name does not match");
+		assert.equal(baseDenomination[1], ao[1], "Base denomination address does not match ao denomination address");
+		assert.equal(baseDenomination[2], ao[2], "Base denomination name does not match ao name");
+		assert.equal(baseDenomination[3], ao[3], "Base denomination symbol does not match ao symbol");
+		assert.equal(baseDenomination[4].toNumber(), ao[4].toNumber(), "Base denomination decimals does not match ao decimals");
+		assert.equal(baseDenomination[5].toNumber(), ao[5].toNumber(), "Base denomination power of ten does not match ao power of ten");
 	});
 	it("toBase() should return correct amount", async function() {
 		var kiloToBase = await aotreasury.toBase(9, 1, "kilo");
@@ -128,60 +121,6 @@ contract("AOTreasury", function(accounts) {
 		assert.equal(baseToXona[0].toNumber(), 9, "fromBase xona return wrong integer");
 		assert.equal(baseToXona[1].toNumber(), "123456789123456789", "fromBase xona return wrong fraction");
 	});
-	contract("totalNetworkBalanceOf()", function() {
-		before(async function() {
-			var aokilodecimals = await aokilo.decimals();
-			var aomegadecimals = await aomega.decimals();
-			var aogigadecimals = await aogiga.decimals();
-			var aoteradecimals = await aotera.decimals();
-			var aopetadecimals = await aopeta.decimals();
-			var aoexadecimals = await aoexa.decimals();
-			var aozettadecimals = await aozetta.decimals();
-			var aoyottadecimals = await aoyotta.decimals();
-			var aoxonadecimals = await aoxona.decimals();
-
-			// Mint 1 token for each denominations
-			await aotoken.mintToken(account1, 1, { from: owner });
-			await aokilo.mintToken(account1, 1 * 10 ** aokilodecimals.toNumber(), { from: owner });
-			await aomega.mintToken(account1, 1 * 10 ** aomegadecimals.toNumber(), { from: owner });
-			await aogiga.mintToken(account1, 1 * 10 ** aogigadecimals.toNumber(), { from: owner });
-			await aotera.mintToken(account1, 1 * 10 ** aoteradecimals.toNumber(), { from: owner });
-			await aopeta.mintToken(account1, 1 * 10 ** aopetadecimals.toNumber(), { from: owner });
-			await aoexa.mintToken(account1, 1 * 10 ** aoexadecimals.toNumber(), { from: owner });
-			await aozetta.mintToken(account1, 1 * 10 ** aozettadecimals.toNumber(), { from: owner });
-			await aoyotta.mintToken(account1, 1 * 10 ** aoyottadecimals.toNumber(), { from: owner });
-			await aoxona.mintToken(account1, 1 * 10 ** aoxonadecimals.toNumber(), { from: owner });
-		});
-		it("should return the correct sum of total balance from all denominations in base denomination", async function() {
-			var totalNetworkBalance = await aotreasury.totalNetworkBalanceOf(account1);
-			var aotokenBalance = await aotoken.balanceOf(account1);
-			var aokiloBalance = await aokilo.balanceOf(account1);
-			var aomegaBalance = await aomega.balanceOf(account1);
-			var aogigaBalance = await aogiga.balanceOf(account1);
-			var aoteraBalance = await aotera.balanceOf(account1);
-			var aopetaBalance = await aopeta.balanceOf(account1);
-			var aoexaBalance = await aoexa.balanceOf(account1);
-			var aozettaBalance = await aozetta.balanceOf(account1);
-			var aoyottaBalance = await aoyotta.balanceOf(account1);
-			var aoxonaBalance = await aoxona.balanceOf(account1);
-
-			assert.equal(
-				totalNetworkBalance.toString(),
-				aotokenBalance
-					.add(aokiloBalance)
-					.add(aomegaBalance)
-					.add(aogigaBalance)
-					.add(aoteraBalance)
-					.add(aopetaBalance)
-					.add(aoexaBalance)
-					.add(aozettaBalance)
-					.add(aoyottaBalance)
-					.add(aoxonaBalance)
-					.toString(),
-				"Total balance return incorrect amount"
-			);
-		});
-	});
 	contract("Owner only function tests", function() {
 		it("only owner can add denomination", async function() {
 			var canAdd;
@@ -210,161 +149,54 @@ contract("AOTreasury", function(accounts) {
 		it("only owner can update denomination", async function() {
 			var canUpdate;
 			try {
-				await aotreasury.updateDenomination("kilo", aokilo.address, false, { from: account1 });
+				await aotreasury.updateDenomination("kilo", aokilo.address, { from: account1 });
 				canUpdate = true;
 			} catch (e) {
 				canUpdate = false;
 			}
 			assert.notEqual(canUpdate, true, "Others can update denomination");
 			try {
-				await aotreasury.updateDenomination("deca", someAddress, false, { from: owner });
+				await aotreasury.updateDenomination("deca", someAddress, { from: owner });
 				canUpdate = true;
 			} catch (e) {
 				canUpdate = false;
 			}
 			assert.notEqual(canUpdate, true, "Owner can update non-existing denomination");
 			try {
-				await aotreasury.updateDenomination("kilo", someAddress, false, { from: owner });
+				await aotreasury.updateDenomination("kilo", someAddress, { from: owner });
 				canUpdate = true;
 			} catch (e) {
 				canUpdate = false;
 			}
 			assert.notEqual(canUpdate, true, "Owner can set invalid denomination address");
 			try {
-				await aotreasury.updateDenomination("kilo", aokilo.address, false, { from: owner });
+				await aotreasury.updateDenomination("kilo", aokilo.address, { from: owner });
 				canUpdate = true;
 			} catch (e) {
 				canUpdate = false;
 			}
 			assert.equal(canUpdate, true, "Owner can't update denomination");
-			var kilo = await aotreasury.getDenomination("kilo");
-			assert.equal(kilo[0], aokilo.address, "Denomination has incorrect denomination address after update");
-			assert.equal(kilo[1], false, "Denomination has incorrect status after update");
+			var kilo = await aotreasury.getDenominationByName("kilo");
+			assert.equal(kilo[1], aokilo.address, "Denomination has incorrect denomination address after update");
 		});
 	});
-	contract("determinePayment()", function() {
-		before(async function() {
-			var aokilodecimals = await aokilo.decimals();
+	contract("getDenominationByIndex()", function() {
+		it("should return the correct denomination info", async function() {
+			var index1 = await aotreasury.getDenominationByIndex(1);
+			assert.equal(web3.toAscii(index1[0]).replace(/\0/g, ""), "ao", "Base denomination short name does not match");
+			assert.equal(index1[1], ao[1], "Base denomination address does not match ao denomination address");
+			assert.equal(index1[2], ao[2], "Base denomination name does not match ao name");
+			assert.equal(index1[3], ao[3], "Base denomination symbol does not match ao symbol");
+			assert.equal(index1[4].toNumber(), ao[4].toNumber(), "Base denomination decimals does not match ao decimals");
+			assert.equal(index1[5].toNumber(), ao[5].toNumber(), "Base denomination power of ten does not match ao power of ten");
 
-			await aotoken.mintToken(account1, 800, { from: owner }); // 800 AO Token
-			await aokilo.mintToken(account1, 2 * 10 ** aokilodecimals.toNumber(), { from: owner }); // 2 AO Kilo
-		});
-		it("should FAIL when the price is greater than user total balance", async function() {
-			var canDeterminePayment;
-			try {
-				var baseAmount = await aotreasury.toBase(1, 5, "tera");
-				var payment = await aotreasury.determinePayment(account1, baseAmount.toString());
-				canDeterminePayment = true;
-			} catch (e) {
-				canDeterminePayment = false;
-			}
-			assert.notEqual(canDeterminePayment, true, "Contract can determine payment when user does not have enough balance");
-		});
-		it("should FAIL when the denomination is invalid", async function() {
-			var canDeterminePayment;
-			try {
-				var baseAmount = await aotreasury.toBase(1, 5, "deca");
-				var payment = await aotreasury.determinePayment(account1, baseAmount.toString());
-				canDeterminePayment = true;
-			} catch (e) {
-				canDeterminePayment = false;
-			}
-			assert.notEqual(canDeterminePayment, true, "Contract can determine payment even though the passed denomination is invalid");
-		});
-		it("should return correct payment denominations and amounts given a price at denomination", async function() {
-			var canDeterminePayment;
-			var baseAmount;
-			try {
-				baseAmount = await aotreasury.toBase(1, 20, "kilo");
-				var payment = await aotreasury.determinePayment(account1, baseAmount.toString()); // 1.020 AO Kilo
-				canDeterminePayment = true;
-			} catch (e) {
-				canDeterminePayment = false;
-			}
-			assert.equal(canDeterminePayment, true, "Contract unable to determine the payment for valid price at denomination");
-			var aokiloDenominationIndex = await aotreasury.denominationIndex("kilo");
-			var paymentDenominations = payment[0];
-			var paymentDenominationAmount = payment[1];
-			for (i = 0; i < paymentDenominations.length; i++) {
-				if (i == aokiloDenominationIndex.minus(1).toNumber()) {
-					assert.equal(paymentDenominations[i], aokilo.address, "Payment has incorrect denomination address");
-					assert.equal(paymentDenominationAmount[i].toNumber(), 1020, "Payment has incorrect denomination amount");
-				} else {
-					assert.equal(
-						paymentDenominations[i],
-						"0x0000000000000000000000000000000000000000",
-						"Payment denomination address should not exist"
-					);
-					assert.equal(paymentDenominationAmount[i].toNumber(), 0, "Payment amount should not exist");
-				}
-			}
-
-			try {
-				baseAmount = await aotreasury.toBase(2, 9, "kilo");
-				var payment = await aotreasury.determinePayment(account1, baseAmount.toString()); // 2.009 AO Kilo
-				canDeterminePayment = true;
-			} catch (e) {
-				canDeterminePayment = false;
-			}
-			assert.equal(canDeterminePayment, true, "Contract unable to determine the payment for valid price at denomination");
-			var aotokenDenominationIndex = await aotreasury.denominationIndex("ao");
-			var aokiloDenominationIndex = await aotreasury.denominationIndex("kilo");
-			var paymentDenominations = payment[0];
-			var paymentDenominationAmount = payment[1];
-			for (i = 0; i < paymentDenominations.length; i++) {
-				if (i == aotokenDenominationIndex.minus(1).toNumber()) {
-					assert.equal(paymentDenominations[i], aotoken.address, "Payment has incorrect denomination address");
-					assert.equal(paymentDenominationAmount[i].toNumber(), 9, "Payment has incorrect denomination amount");
-				} else if (i == aokiloDenominationIndex.minus(1).toNumber()) {
-					assert.equal(paymentDenominations[i], aokilo.address, "Payment has incorrect denomination address");
-					assert.equal(paymentDenominationAmount[i].toNumber(), 2000, "Payment has incorrect denomination amount");
-				} else {
-					assert.equal(
-						paymentDenominations[i],
-						"0x0000000000000000000000000000000000000000",
-						"Payment denomination address should not exist"
-					);
-					assert.equal(paymentDenominationAmount[i].toNumber(), 0, "Payment amount should not exist");
-				}
-			}
-
-			var aogigadecimals = await aogiga.decimals();
-			var aoexadecimals = await aoexa.decimals();
-
-			await aogiga.mintToken(account1, 0.5 * 10 ** aogigadecimals.toNumber(), { from: owner }); // 0.5 AO Giga
-			await aoexa.mintToken(account1, 0.1 * 10 ** aoexadecimals.toNumber(), { from: owner }); // 0.1 AO Exa
-
-			try {
-				baseAmount = await aotreasury.toBase(100, 500002000, "peta");
-				var payment = await aotreasury.determinePayment(account1, baseAmount.toString()); // 100.000000500002800 AO Peta
-				canDeterminePayment = true;
-			} catch (e) {
-				canDeterminePayment = false;
-			}
-			assert.equal(canDeterminePayment, true, "Contract unable to determine the payment for valid price at denomination");
-			var aogigaDenominationIndex = await aotreasury.denominationIndex("giga");
-			var aoexaDenominationIndex = await aotreasury.denominationIndex("exa");
-			var paymentDenominations = payment[0];
-			var paymentDenominationAmount = payment[1];
-			for (i = 0; i < paymentDenominations.length; i++) {
-				if (i == aokiloDenominationIndex.minus(1).toNumber()) {
-					assert.equal(paymentDenominations[i], aokilo.address, "Payment has incorrect denomination address");
-					assert.equal(paymentDenominationAmount[i].toNumber(), 2000, "Payment has incorrect denomination amount");
-				} else if (i == aogigaDenominationIndex.minus(1).toNumber()) {
-					assert.equal(paymentDenominations[i], aogiga.address, "Payment has incorrect denomination address");
-					assert.equal(paymentDenominationAmount[i].toNumber(), 500000000, "Payment has incorrect denomination amount");
-				} else if (i == aoexaDenominationIndex.minus(1).toNumber()) {
-					assert.equal(paymentDenominations[i], aoexa.address, "Payment has incorrect denomination address");
-					assert.equal(paymentDenominationAmount[i].toNumber(), 100000000000000000, "Payment has incorrect denomination amount");
-				} else {
-					assert.equal(
-						paymentDenominations[i],
-						"0x0000000000000000000000000000000000000000",
-						"Payment denomination address should not exist"
-					);
-					assert.equal(paymentDenominationAmount[i].toNumber(), 0, "Payment amount should not exist");
-				}
-			}
+			var index2 = await aotreasury.getDenominationByIndex(2);
+			assert.equal(web3.toAscii(index2[0]).replace(/\0/g, ""), "kilo", "Base denomination short name does not match");
+			assert.equal(index2[1], kilo[1], "Base denomination address does not match kilo denomination address");
+			assert.equal(index2[2], kilo[2], "Base denomination name does not match kilo name");
+			assert.equal(index2[3], kilo[3], "Base denomination symbol does not match kilo symbol");
+			assert.equal(index2[4].toNumber(), kilo[4].toNumber(), "Base denomination decimals does not match kilo decimals");
+			assert.equal(index2[5].toNumber(), kilo[5].toNumber(), "Base denomination power of ten does not match kilo power of ten");
 		});
 	});
 	contract("exchange()", function() {
@@ -463,6 +295,49 @@ contract("AOTreasury", function(accounts) {
 				account1GigaBalanceAfter.toNumber(),
 				account1GigaBalanceBefore.plus(50).toNumber(),
 				"Account1 has incorrect AO Giga Token balance after exchanging"
+			);
+		});
+	});
+	contract("toHighestDenomination()", function() {
+		it("should return the correct highest possible denomination given a base amount", async function() {
+			var highestDenomination = await aotreasury.toHighestDenomination(10);
+			assert.equal(
+				web3.toAscii(highestDenomination[0]).replace(/\0/g, ""),
+				"ao",
+				"Highest denomination returns incorrect denomination"
+			);
+			assert.equal(highestDenomination[1], ao[1], "Highest denomination returns incorrect denomination address");
+			assert.equal(highestDenomination[2].toNumber(), 10, "Highest denomination returns incorrect integer amount");
+			assert.equal(highestDenomination[3].toNumber(), 0, "Highest denomination returns incorrect fraction amount");
+			assert.equal(highestDenomination[4], ao[2], "Highest denomination name does not match ao name");
+			assert.equal(highestDenomination[5], ao[3], "Highest denomination symbol does not match ao symbol");
+			assert.equal(highestDenomination[6].toNumber(), ao[4].toNumber(), "Highest denomination decimals does not match ao decimals");
+			assert.equal(
+				highestDenomination[7].toNumber(),
+				ao[5].toNumber(),
+				"Highest denomination power of ten does not match ao power of ten"
+			);
+
+			var highestDenomination = await aotreasury.toHighestDenomination(28340394);
+			assert.equal(
+				web3.toAscii(highestDenomination[0]).replace(/\0/g, ""),
+				"mega",
+				"Highest denomination returns incorrect denomination"
+			);
+			assert.equal(highestDenomination[1], mega[1], "Highest denomination returns incorrect denomination address");
+			assert.equal(highestDenomination[2].toNumber(), 28, "Highest denomination returns incorrect integer amount");
+			assert.equal(highestDenomination[3].toNumber(), 340394, "Highest denomination returns incorrect fraction amount");
+			assert.equal(highestDenomination[4], mega[2], "Highest denomination name does not match mega name");
+			assert.equal(highestDenomination[5], mega[3], "Highest denomination symbol does not match mega symbol");
+			assert.equal(
+				highestDenomination[6].toNumber(),
+				mega[4].toNumber(),
+				"Highest denomination decimals does not match mega decimals"
+			);
+			assert.equal(
+				highestDenomination[7].toNumber(),
+				mega[5].toNumber(),
+				"Highest denomination power of ten does not match mega power of ten"
 			);
 		});
 	});
