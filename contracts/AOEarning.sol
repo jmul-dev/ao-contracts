@@ -16,6 +16,10 @@ contract AOEarning is owned {
 	bool public paused;
 	bool public killed;
 
+	address public baseDenominationAddress;
+	address public treasuryAddress;
+
+	AOToken internal _baseAO;
 	AOTreasury internal _treasury;
 
 	uint256 public inflationRate; // support up to 4 decimals, i.e 12.3456% = 123456
@@ -24,59 +28,79 @@ contract AOEarning is owned {
 	uint256 constant public PERCENTAGE_DIVISOR = 10 ** 6; // 100% = 1000000
 	uint256 constant public WEIGHTED_INDEX_DIVISOR = 10 ** 6; // 1000000 = 1
 
-	// Mapping from address to network token earning of a purchase in escrow
-	// Accumulated when request node buys content from host
-	mapping (address => mapping(bytes32 => uint256)) public networkEarningEscrow;
+	// Total earning from staking content from all nodes
+	uint256 public totalStakeContentEarning;
 
-	// Mapping from address to claimable network token earning
-	// Accumulated when request node has verified the bought content and become a distribution node
-	mapping (address => uint256) public networkEarningClaimable;
+	// Total earning from hosting content from all nodes
+	uint256 public totalHostContentEarning;
 
-	// Mapping from address to inflation bonus (network token) of a purchase in escrow
-	// Accumulated when request node buys content from host
-	mapping (address => mapping(bytes32 => uint256)) public inflationBonusEscrow;
+	// Total foundation earning
+	uint256 public totalFoundationEarning;
 
-	// Mapping from address to claimable inflation bonus (network token)
-	// Accumulated when request node has verified the bought content and become a distribution node
-	mapping (address => uint256) public inflationBonusClaimable;
+	// Mapping from address to his/her earning from content that he/she staked
+	mapping (address => uint256) public stakeContentEarning;
 
-	// Event to be broadcasted to public when content creator/host earns network token in escrow when someone buys the content
-	// recipientType:
-	// 0 => Content Creator (Stake Owner)
-	// 1 => Node Host
-	event BuyContentNetworkEarningEscrow(address indexed recipient, bytes32 purchaseId, bytes32 contentHostId, bytes32 stakeId, uint256 networkPrice, uint256 recipientProfitPercentage, uint256 networkEarningAmount, uint8 recipientType);
+	// Mapping from address to his/her earning from content that he/she hosted
+	mapping (address => uint256) public hostContentEarning;
 
-	// Event to be broadcasted to public when content creator/host earned network token is claimmable
-	// recipientType:
-	// 0 => Content Creator (Stake Owner)
-	// 1 => Node Host
-	event BuyContentNetworkEarningClaimable(address indexed recipient, bytes32 purchaseId, uint256 claimableNetworkAmount, uint8 recipientType);
+	// Mapping from address to his/her network price earning
+	// i.e, when staked amount = filesize
+	mapping (address => uint256) public networkPriceEarning;
 
-	// Event to be broadcasted to public when content creator/host earns inflation bonus network token in escrow when someone buys the content
+	// Mapping from address to his/her content price earning
+	// i.e, when staked amount > filesize
+	mapping (address => uint256) public contentPriceEarning;
+
+	// Mapping from address to his/her inflation bonus
+	mapping (address => uint256) public inflationBonusAccrued;
+
+	struct Earning {
+		bytes32 purchaseId;
+		uint256 paymentEarning;
+		uint256 inflationBonus;
+	}
+
+	// Mapping from address to earning from staking content of a purchase ID
+	mapping (address => mapping(bytes32 => Earning)) public stakeEarnings;
+
+	// Mapping from address to earning from hosting content of a purchase ID
+	mapping (address => mapping(bytes32 => Earning)) public hostEarnings;
+
+	// Mapping from purchase ID to earning for Foundation
+	mapping (bytes32 => Earning) public foundationEarnings;
+
+	// Event to be broadcasted to public when content creator/host/foundation earns inflation bonus in escrow when request node buys the content
 	// recipientType:
 	// 0 => Content Creator (Stake Owner)
 	// 1 => Node Host
 	// 2 => Foundation
-	event BuyContentInflationBonusEscrow(address indexed recipient, bytes32 purchaseId, bytes32 contentHostId, bytes32 stakeId, uint256 recipientProfitPercentage, uint256 inflationBonusAmount, uint8 recipientType);
+	event InflationBonusEscrowed(address indexed recipient, bytes32 purchaseId, uint256 totalInflationBonusAmount, uint256 recipientProfitPercentage, uint256 recipientInflationBonus, uint8 recipientType);
 
-	// Event to be broadcasted to public when content creator/host earned inflation bonus network token is claimmable
+	// Event to be broadcasted to public when content creator/host earns the payment split in escrow when request node buys the content
+	// recipientType:
+	// 0 => Content Creator (Stake Owner)
+	// 1 => Node Host
+	event PaymentEarningEscrowed(address indexed recipient, bytes32 purchaseId, uint256 totalPaymentAmount, uint256 recipientProfitPercentage, uint256 recipientPaymentEarning, uint8 recipientType);
+
+	// Event to be broadcasted to public when content creator/host/foundation earning is released from escrow
 	// recipientType:
 	// 0 => Content Creator (Stake Owner)
 	// 1 => Node Host
 	// 2 => Foundation
-	event BuyContentInflationBonusClaimable(address indexed recipient, bytes32 purchaseId, uint256 claimableNetworkAmount, uint8 recipientType);
-
-	// Event to be broadcasted to public when address claims the network earning from buy content and inflationBonus
-	event ClaimEarning(address indexed account, uint256 networkEarningAmount, uint256 inflationBonusAmount);
+	event EarningUnescrowed(address indexed recipient, bytes32 purchaseId, uint256 paymentEarning, uint256 inflationBonus, uint8 recipientType);
 
 	// Event to be broadcasted to public when emergency mode is triggered
 	event EscapeHatch();
 
 	/**
 	 * @dev Constructor function
+	 * @param _baseDenominationAddress The address of AO base token
 	 * @param _treasuryAddress The address of AOTreasury
 	 */
-	constructor(address _treasuryAddress) public {
+	constructor(address _baseDenominationAddress, address _treasuryAddress) public {
+		baseDenominationAddress = _baseDenominationAddress;
+		treasuryAddress = _treasuryAddress;
+		_baseAO = AOToken(_baseDenominationAddress);
 		_treasury = AOTreasury(_treasuryAddress);
 		setMultiplierModifier(1000000); // multiplierModifier = 1
 	}
@@ -96,6 +120,16 @@ contract AOEarning is owned {
 	 */
 	function setPaused(bool _paused) public onlyOwner {
 		paused = _paused;
+	}
+
+	/**
+	 * @dev Owner updates base denomination address
+	 * @param _newBaseDenominationAddress The new address
+	 */
+	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyOwner {
+		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).icoContract() == true);
+		baseDenominationAddress = _newBaseDenominationAddress;
+		_baseAO = AOToken(baseDenominationAddress);
 	}
 
 	/**
@@ -138,10 +172,10 @@ contract AOEarning is owned {
 	/***** PUBLIC METHODS *****/
 
 	/**
-	 * @dev Calculate the content creator/host network earning when request node buys the content
+	 * @dev Calculate the content creator/host/foundation earning when request node buys the content.
+	 *		Also at this stage, all of the earnings are stored in escrow
+	 * @param _buyer The request node address that buys the content
 	 * @param _purchaseId The ID of the purchase receipt object
-	 * @param _stakeId The ID of the staked content object
-	 * @param _contentHostId The ID of the content host object
 	 * @param _networkAmountStaked The amount of network tokens at stake
 	 * @param _primordialAmountStaked The amount of primordial tokens at stake
 	 * @param _primordialWeightedIndexStaked The weighted index of primordial tokens at stake
@@ -149,86 +183,72 @@ contract AOEarning is owned {
 	 * @param _stakeOwner The address of the stake owner
 	 * @param _host The address of the host
 	 */
-	function calculateNetworkEarning(
+	function calculateEarning(
+		address _buyer,
 		bytes32 _purchaseId,
-		bytes32 _stakeId,
-		bytes32 _contentHostId,
 		uint256 _networkAmountStaked,
 		uint256 _primordialAmountStaked,
 		uint256 _primordialWeightedIndexStaked,
 		uint256 _profitPercentage,
 		address _stakeOwner,
-		address _host) public isActive inWhitelist(msg.sender) {
-		uint256 _totalStaked = _networkAmountStaked.add(_primordialAmountStaked);
-		// Store how much the content creator (stake owner) earns in escrow
-		uint256 _stakeOwnerProfit = (_totalStaked.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
-		networkEarningEscrow[_stakeOwner][_purchaseId] = _stakeOwnerProfit;
-		emit BuyContentNetworkEarningEscrow(_stakeOwner, _purchaseId, _contentHostId, _stakeId, _totalStaked, _profitPercentage, _stakeOwnerProfit, 0);
+		address _host) public isActive inWhitelist(msg.sender) returns (bool) {
 
-		// Store how much the node host earns in escrow
-		networkEarningEscrow[_host][_purchaseId] = _totalStaked.sub(_stakeOwnerProfit);
-		emit BuyContentNetworkEarningEscrow(_host, _purchaseId, _contentHostId, _stakeId, _totalStaked, PERCENTAGE_DIVISOR.sub(_profitPercentage), _totalStaked.sub(_stakeOwnerProfit), 1);
+		// Split the payment earning between content creator and host and store them in escrow
+		_escrowPaymentEarning(_buyer, _purchaseId, _networkAmountStaked.add(_primordialAmountStaked), _profitPercentage, _stakeOwner, _host);
 
-		// Store the inflation bonus earning for content creator/node/foundation in escrow
-		_escrowInflationBonus(_purchaseId, _stakeId, _contentHostId, _calculateInflationBonus(_networkAmountStaked, _primordialAmountStaked, _primordialWeightedIndexStaked), _profitPercentage, _stakeOwner, _host);
+		// Calculate the inflation bonus earning for content creator/node/foundation in escrow
+		_escrowInflationBonus(_purchaseId, _calculateInflationBonus(_networkAmountStaked, _primordialAmountStaked, _primordialWeightedIndexStaked), _profitPercentage, _stakeOwner, _host);
+		return true;
 	}
 
 	/**
-	 * @dev Release the network earning and inflation bonus that is in escrow for specific purchase ID
+	 * @dev Release the payment earning and inflation bonus that is in escrow for specific purchase ID
 	 * @param _purchaseId The purchase receipt ID to check
+	 * @param _buyerPaidAmount The request node paid amount when buying the content
+	 * @param _fileSize The size of the content
 	 * @param _stakeOwner The address of the stake owner
 	 * @param _host The address of the node that host the file
+	 * @return true on success
 	 */
-	function releaseEarning(bytes32 _purchaseId, address _stakeOwner, address _host) public isActive inWhitelist(msg.sender) {
-		// Release the network earning in escrow for stake owner
-		_releaseNetworkEarning(_purchaseId, _stakeOwner, 0);
+	function releaseEarning(bytes32 _purchaseId, uint256 _buyerPaidAmount, uint256 _fileSize, address _stakeOwner, address _host) public isActive inWhitelist(msg.sender) returns (bool) {
+		// Release the earning in escrow for stake owner
+		_releaseEarning(_purchaseId, _buyerPaidAmount, _fileSize, _stakeOwner, 0);
 
-		// Release the network earning in escrow for host
-		_releaseNetworkEarning(_purchaseId, _host, 1);
+		// Release the earning in escrow for host
+		_releaseEarning(_purchaseId, _buyerPaidAmount, _fileSize, _host, 1);
 
-		// Release the inflation bonus in escrow for stake owner
-		_releaseInflationBonus(_purchaseId, _stakeOwner, 0);
-
-		// Release the inflation bonus in escrow for host
-		_releaseInflationBonus(_purchaseId, _host, 1);
-
-		// Release the inflation bonus in escrow for foundation
-		_releaseInflationBonus(_purchaseId, owner, 2);
-	}
-
-	/**
-	 * @dev Account withdraws the claimable network earning and/or inflation bonus
-	 */
-	function withdrawEarning() public {
-		// Make sure there is balance to withdraw
-		require (networkEarningClaimable[msg.sender] > 0 || inflationBonusClaimable[msg.sender] > 0);
-		require (_treasury.totalNetworkBalanceOf(address(this)) >= networkEarningClaimable[msg.sender]);
-
-		uint256 _networkEarning = networkEarningClaimable[msg.sender];
-		if (_networkEarning > 0) {
-			networkEarningClaimable[msg.sender] = 0;
-			(address[] memory _paymentAddress, uint256[] memory _paymentAmount) = _treasury.determinePayment(address(this), _networkEarning);
-
-			// Stake tokens from each denomination in payment address
-			for (uint256 i=0; i < _paymentAddress.length; i++) {
-				if (_paymentAddress[i] != address(0) && _paymentAmount[i] > 0) {
-					require (AOToken(_paymentAddress[i]).transfer(msg.sender, _paymentAmount[i]));
-				}
-			}
-		}
-
-		uint256 _inflationBonusAmount = inflationBonusClaimable[msg.sender];
-		if (_inflationBonusAmount > 0) {
-			(, address _baseDenominationAddress, bool _baseDenominationActive) = _treasury.getBaseDenomination();
-			require (_baseDenominationAddress != address(0));
-			require (_baseDenominationActive == true);
-			inflationBonusClaimable[msg.sender] = 0;
-			require (AOToken(_baseDenominationAddress).mintToken(msg.sender, _inflationBonusAmount));
-		}
-		emit ClaimEarning(msg.sender, _networkEarning, _inflationBonusAmount);
+		// Release the earning in escrow for foundation
+		_releaseEarning(_purchaseId, _buyerPaidAmount, _fileSize, owner, 2);
+		return true;
 	}
 
 	/***** INTERNAL METHODS *****/
+	/**
+	 * @dev Calculate the payment split for content creator/host and store them in escrow
+	 * @param _buyer the request node address that buys the content
+	 * @param _purchaseId The ID of the purchase receipt object
+	 * @param _totalStaked The total staked amount of the content
+	 * @param _profitPercentage The content creator's profit percentage
+	 * @param _stakeOwner The address of the stake owner
+	 * @param _host The address of the host
+	 */
+	function _escrowPaymentEarning(address _buyer, bytes32 _purchaseId, uint256 _totalStaked, uint256 _profitPercentage, address _stakeOwner, address _host) internal {
+		// Store how much the content creator (stake owner) earns in escrow
+		uint256 _stakeOwnerEarning = (_totalStaked.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
+		Earning storage _stakeEarning = stakeEarnings[_stakeOwner][_purchaseId];
+		_stakeEarning.purchaseId = _purchaseId;
+		_stakeEarning.paymentEarning = _stakeOwnerEarning;
+		require (_baseAO.escrowFrom(_buyer, _stakeOwner, _stakeEarning.paymentEarning));
+		emit PaymentEarningEscrowed(_stakeOwner, _purchaseId, _totalStaked, _profitPercentage, _stakeEarning.paymentEarning, 0);
+
+		// Store how much the node host earns in escrow
+		Earning storage _hostEarning = hostEarnings[_host][_purchaseId];
+		_hostEarning.purchaseId = _purchaseId;
+		_hostEarning.paymentEarning = _totalStaked.sub(_stakeOwnerEarning);
+		require (_baseAO.escrowFrom(_buyer, _host, _hostEarning.paymentEarning));
+		emit PaymentEarningEscrowed(_host, _purchaseId, _totalStaked, PERCENTAGE_DIVISOR.sub(_profitPercentage), _hostEarning.paymentEarning, 1);
+	}
+
 	/**
 	 * @dev Calculate the inflation bonus amount
 	 * @param _networkAmountStaked The amount of network tokens at stake
@@ -260,20 +280,15 @@ contract AOEarning is owned {
 		 * We need to divide temp with WEIGHTED_INDEX_DIVISOR later
 		 * Multiplier = WEIGHTED_INDEX_DIVISOR + ((multiplierModifier * temp) / WEIGHTED_INDEX_DIVISOR)
 		 */
-		(, address _baseDenominationAddress, bool _baseDenominationActive) = _treasury.getBaseDenomination();
-		require (_baseDenominationAddress != address(0));
-		require (_baseDenominationActive == true);
-		uint256 _lastWeightedIndex = AOToken(_baseDenominationAddress).lotIndex().mul(WEIGHTED_INDEX_DIVISOR);
+		uint256 _lastWeightedIndex = _baseAO.lotIndex().mul(WEIGHTED_INDEX_DIVISOR);
 		require (_lastWeightedIndex >= _weightedIndex);
 		uint256 _temp = (_lastWeightedIndex.sub(_weightedIndex)).mul(WEIGHTED_INDEX_DIVISOR).div(_lastWeightedIndex);
 		return WEIGHTED_INDEX_DIVISOR.add(multiplierModifier.mul(_temp).div(WEIGHTED_INDEX_DIVISOR));
 	}
 
 	/**
-	 * @dev Store inflation bonus in escrow
+	 * @dev Mint the inflation bonus for content creator/host/foundation and store them in escrow
 	 * @param _purchaseId The ID of the purchase receipt object
-	 * @param _stakeId The ID of the staked content object
-	 * @param _contentHostId The ID of the content host object
 	 * @param _inflationBonusAmount The amount of inflation bonus earning
 	 * @param _profitPercentage The content creator's profit percentage
 	 * @param _stakeOwner The address of the stake owner
@@ -281,8 +296,6 @@ contract AOEarning is owned {
 	 */
 	function _escrowInflationBonus(
 		bytes32 _purchaseId,
-		bytes32 _stakeId,
-		bytes32 _contentHostId,
 		uint256 _inflationBonusAmount,
 		uint256 _profitPercentage,
 		address _stakeOwner,
@@ -290,56 +303,93 @@ contract AOEarning is owned {
 	) internal {
 		if (_inflationBonusAmount > 0) {
 			// Store how much the content creator earns in escrow
-			uint256 _stakeOwnerProfit = (_inflationBonusAmount.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
-			inflationBonusEscrow[_stakeOwner][_purchaseId] = _stakeOwnerProfit;
+			uint256 _stakeOwnerInflationBonus = (_inflationBonusAmount.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
+			Earning storage _stakeEarning = stakeEarnings[_stakeOwner][_purchaseId];
+			_stakeEarning.inflationBonus = _stakeOwnerInflationBonus;
+			require (_baseAO.mintTokenEscrow(_stakeOwner, _stakeEarning.inflationBonus));
+			emit InflationBonusEscrowed(_stakeOwner, _purchaseId, _inflationBonusAmount, _profitPercentage, _stakeEarning.inflationBonus, 0);
 
-			emit BuyContentInflationBonusEscrow(_stakeOwner, _purchaseId, _contentHostId, _stakeId, _profitPercentage, _stakeOwnerProfit, 0);
-
-			// Store how much the node host earns
-			inflationBonusEscrow[_host][_purchaseId] = _inflationBonusAmount.sub(_stakeOwnerProfit);
-			emit BuyContentInflationBonusEscrow(_host, _purchaseId, _contentHostId, _stakeId, PERCENTAGE_DIVISOR.sub(_profitPercentage), _inflationBonusAmount.sub(_stakeOwnerProfit), 1);
+			// Store how much the host earns in escrow
+			Earning storage _hostEarning = hostEarnings[_host][_purchaseId];
+			_hostEarning.inflationBonus = _inflationBonusAmount.sub(_stakeOwnerInflationBonus);
+			require (_baseAO.mintTokenEscrow(_host, _hostEarning.inflationBonus));
+			emit InflationBonusEscrowed(_host, _purchaseId, _inflationBonusAmount, PERCENTAGE_DIVISOR.sub(_profitPercentage), _hostEarning.inflationBonus, 1);
 
 			// Store how much the foundation earns in escrow
-			uint256 _foundationProfit = (_inflationBonusAmount.mul(foundationCut)).div(PERCENTAGE_DIVISOR);
-			inflationBonusEscrow[owner][_purchaseId] = _foundationProfit;
-
-			emit BuyContentInflationBonusEscrow(owner, _purchaseId, _contentHostId, _stakeId, foundationCut, _foundationProfit, 2);
+			Earning storage _foundationEarning = foundationEarnings[_purchaseId];
+			_foundationEarning.purchaseId = _purchaseId;
+			_foundationEarning.inflationBonus = (_inflationBonusAmount.mul(foundationCut)).div(PERCENTAGE_DIVISOR);
+			require (_baseAO.mintTokenEscrow(owner, _foundationEarning.inflationBonus));
+			emit InflationBonusEscrowed(owner, _purchaseId, _inflationBonusAmount, foundationCut, _foundationEarning.inflationBonus, 2);
 		} else {
-			emit BuyContentInflationBonusEscrow(_stakeOwner, _purchaseId, _contentHostId, _stakeId, _profitPercentage, 0, 0);
-			emit BuyContentInflationBonusEscrow(_host, _purchaseId, _contentHostId, _stakeId, PERCENTAGE_DIVISOR.sub(_profitPercentage), 0, 1);
-			emit BuyContentInflationBonusEscrow(owner, _purchaseId, _contentHostId, _stakeId, foundationCut, 0, 2);
+			emit InflationBonusEscrowed(_stakeOwner, _purchaseId, 0, _profitPercentage, 0, 0);
+			emit InflationBonusEscrowed(_host, _purchaseId, 0, PERCENTAGE_DIVISOR.sub(_profitPercentage), 0, 1);
+			emit InflationBonusEscrowed(owner, _purchaseId, 0, foundationCut, 0, 2);
 		}
 	}
 
 	/**
-	 * @dev Release the escrowed network token earning for a specific purchase ID for an account
+	 * @dev Release the escrowed earning for a specific purchase ID for an account
 	 * @param _purchaseId The purchase receipt ID
+	 * @param _buyerPaidAmount The request node paid amount when buying the content
+	 * @param _fileSize The size of the content
 	 * @param _account The address of account that made the earning (content creator/host)
-	 * @param _recipientType The type of the earning recipient (0 => content creator. 1 => host)
+	 * @param _recipientType The type of the earning recipient (0 => content creator. 1 => host. 2 => foundation)
 	 */
-	function _releaseNetworkEarning(bytes32 _purchaseId, address _account, uint8 _recipientType) internal {
-		uint256 _networkEarning = networkEarningEscrow[_account][_purchaseId];
-		networkEarningEscrow[_account][_purchaseId] = 0;
-		networkEarningClaimable[_account] = networkEarningClaimable[_account].add(_networkEarning);
-		emit BuyContentNetworkEarningClaimable(_account, _purchaseId, _networkEarning, _recipientType);
-	}
+	function _releaseEarning(bytes32 _purchaseId, uint256 _buyerPaidAmount, uint256 _fileSize, address _account, uint8 _recipientType) internal {
+		// Make sure the recipient type is valid
+		require (_recipientType >= 0 && _recipientType <= 2);
 
-	/**
-	 * @dev Release the escrowed inflation bonus for a specific purchase ID for an account
-	 * @param _purchaseId The purchase receipt ID
-	 * @param _account The address of account that made the earning (content creator/host/foundation)
-	 * @param _recipientType The type of the inflation bonus recipient (0 => content creator. 1 => host. 2 => foundation)
-	 */
-	function _releaseInflationBonus(bytes32 _purchaseId, address _account, uint8 _recipientType) internal {
-		// Release the inflation bonus in escrow for stake owner
-		uint256 _inflationBonusAmount = inflationBonusEscrow[_account][_purchaseId];
-		if (_inflationBonusAmount > 0) {
-			inflationBonusEscrow[_account][_purchaseId] = 0;
-			inflationBonusClaimable[_account] = inflationBonusClaimable[_account].add(_inflationBonusAmount);
-			emit BuyContentInflationBonusClaimable(_account, _purchaseId, _inflationBonusAmount, _recipientType);
+		uint256 _paymentEarning;
+		uint256 _inflationBonus;
+		uint256 _totalEarning;
+		if (_recipientType == 0) {
+			Earning storage _stakeEarning = stakeEarnings[_account][_purchaseId];
+			_paymentEarning = _stakeEarning.paymentEarning;
+			_inflationBonus = _stakeEarning.inflationBonus;
+			_stakeEarning.paymentEarning = 0;
+			_stakeEarning.inflationBonus = 0;
+			_totalEarning = _paymentEarning.add(_inflationBonus);
+
+			// Update the global var settings
+			totalStakeContentEarning = totalStakeContentEarning.add(_totalEarning);
+			stakeContentEarning[_account] = stakeContentEarning[_account].add(_totalEarning);
+			if (_buyerPaidAmount > _fileSize) {
+				contentPriceEarning[_account] = contentPriceEarning[_account].add(_stakeEarning.paymentEarning);
+			} else {
+				networkPriceEarning[_account] = networkPriceEarning[_account].add(_stakeEarning.paymentEarning);
+			}
+			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_stakeEarning.inflationBonus);
+		} else if (_recipientType == 1) {
+			Earning storage _hostEarning = hostEarnings[_account][_purchaseId];
+			_paymentEarning = _hostEarning.paymentEarning;
+			_inflationBonus = _hostEarning.inflationBonus;
+			_hostEarning.paymentEarning = 0;
+			_hostEarning.inflationBonus = 0;
+			_totalEarning = _paymentEarning.add(_inflationBonus);
+
+			// Update the global var settings
+			totalHostContentEarning = totalHostContentEarning.add(_totalEarning);
+			hostContentEarning[_account] = hostContentEarning[_account].add(_totalEarning);
+			if (_buyerPaidAmount > _fileSize) {
+				contentPriceEarning[_account] = contentPriceEarning[_account].add(_hostEarning.paymentEarning);
+			} else {
+				networkPriceEarning[_account] = networkPriceEarning[_account].add(_hostEarning.paymentEarning);
+			}
+			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_hostEarning.inflationBonus);
 		} else {
-			emit BuyContentInflationBonusClaimable(_account, _purchaseId, 0, _recipientType);
-		}
-	}
+			Earning storage _foundationEarning = foundationEarnings[_purchaseId];
+			_paymentEarning = _foundationEarning.paymentEarning;
+			_inflationBonus = _foundationEarning.inflationBonus;
+			_foundationEarning.paymentEarning = 0;
+			_foundationEarning.inflationBonus = 0;
+			_totalEarning = _paymentEarning.add(_inflationBonus);
 
+			// Update the global var settings
+			totalFoundationEarning = totalFoundationEarning.add(_totalEarning);
+			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_foundationEarning.inflationBonus);
+		}
+		require (_baseAO.unescrowFrom(_account, _totalEarning));
+		emit EarningUnescrowed(_account, _purchaseId, _paymentEarning, _inflationBonus, _recipientType);
+	}
 }

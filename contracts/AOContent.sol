@@ -24,8 +24,10 @@ contract AOContent is owned {
 	uint256 public totalStakedContents;
 	uint256 public totalPurchaseReceipts;
 
+	address public baseDenominationAddress;
 	address public treasuryAddress;
 	address public earningAddress;
+	AOToken internal _baseAO;
 	AOTreasury internal _treasury;
 	AOEarning internal _earning;
 
@@ -131,11 +133,14 @@ contract AOContent is owned {
 
 	/**
 	 * @dev Constructor function
+	 * @param _baseDenominationAddress The address of AO base token
 	 * @param _treasuryAddress The address of AOTreasury
 	 * @param _earningAddress The address of AOEarning
 	 */
-	constructor(address _treasuryAddress, address _earningAddress) public {
+	constructor(address _baseDenominationAddress, address _treasuryAddress, address _earningAddress) public {
+		baseDenominationAddress = _baseDenominationAddress;
 		treasuryAddress = _treasuryAddress;
+		_baseAO = AOToken(_baseDenominationAddress);
 		_treasury = AOTreasury(_treasuryAddress);
 		_earning = AOEarning(_earningAddress);
 	}
@@ -155,6 +160,16 @@ contract AOContent is owned {
 	 */
 	function setPaused(bool _paused) public onlyOwner {
 		paused = _paused;
+	}
+
+	/**
+	 * @dev Owner updates base denomination address
+	 * @param _newBaseDenominationAddress The new address
+	 */
+	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyOwner {
+		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).icoContract() == true);
+		baseDenominationAddress = _newBaseDenominationAddress;
+		_baseAO = AOToken(baseDenominationAddress);
 	}
 
 	/**
@@ -324,11 +339,11 @@ contract AOContent is owned {
 		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			uint256 _unstakeNetworkAmount = _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
 			_stakedContent.networkAmount = _stakedContent.networkAmount.sub(_unstakeNetworkAmount);
-			_unstakePartialNetworkToken(msg.sender, _unstakeNetworkAmount);
+			require (_baseAO.unstakeFrom(msg.sender, _unstakeNetworkAmount));
 		}
 		if (_primordialAmount > 0) {
 			_stakedContent.primordialAmount = _stakedContent.primordialAmount.sub(_primordialAmount);
-			_unstakePartialPrimordialToken(msg.sender, _primordialAmount, _stakedContent.primordialWeightedIndex);
+			require (_baseAO.unstakeIcoTokenFrom(msg.sender, _primordialAmount, _stakedContent.primordialWeightedIndex));
 		}
 		emit UnstakePartialContent(_stakedContent.stakeOwner, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedIndex);
 	}
@@ -352,14 +367,14 @@ contract AOContent is owned {
 		if (_stakedContent.networkAmount > 0) {
 			uint256 _unstakeNetworkAmount = _stakedContent.networkAmount;
 			_stakedContent.networkAmount = 0;
-			_unstakePartialNetworkToken(msg.sender, _unstakeNetworkAmount);
+			require (_baseAO.unstakeFrom(msg.sender, _unstakeNetworkAmount));
 		}
 		if (_stakedContent.primordialAmount > 0) {
 			uint256 _primordialAmount = _stakedContent.primordialAmount;
 			uint256 _primordialWeightedIndex = _stakedContent.primordialWeightedIndex;
 			_stakedContent.primordialAmount = 0;
 			_stakedContent.primordialWeightedIndex = 0;
-			_unstakePartialPrimordialToken(msg.sender, _primordialAmount, _primordialWeightedIndex);
+			require (_baseAO.unstakeIcoTokenFrom(msg.sender, _primordialAmount, _primordialWeightedIndex));
 		}
 		emit UnstakeContent(_stakedContent.stakeOwner, _stakeId);
 	}
@@ -388,26 +403,22 @@ contract AOContent is owned {
 		// Make sure we can stake primordial token
 		// If we are currently staking an active staked content, then the stake owner's weighted index has to match `stakedContent.primordialWeightedIndex`
 		// i.e, can't use a combination of different weighted index. Stake owner has to call unstakeContent() to unstake all tokens first
-		(, address _baseDenominationAddress, bool _baseDenominationActive) = _treasury.getBaseDenomination();
-		require (_baseDenominationAddress != address(0));
-		require (_baseDenominationActive == true);
-		AOToken _primordialToken = AOToken(_baseDenominationAddress);
 		if (_primordialAmount > 0 && _stakedContent.active && _stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedIndex > 0) {
-			require (_primordialToken.weightedIndexByAddress(msg.sender) == _stakedContent.primordialWeightedIndex);
+			require (_baseAO.weightedIndexByAddress(msg.sender) == _stakedContent.primordialWeightedIndex);
 		}
 
 		_stakedContent.active = true;
 		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			uint256 _stakeNetworkAmount = _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
 			_stakedContent.networkAmount = _stakedContent.networkAmount.add(_stakeNetworkAmount);
-			_stakeNetworkToken(_stakedContent.stakeOwner, _stakeNetworkAmount);
+			require (_baseAO.stakeFrom(_stakedContent.stakeOwner, _stakeNetworkAmount));
 		}
 		if (_primordialAmount > 0) {
 			_stakedContent.primordialAmount = _stakedContent.primordialAmount.add(_primordialAmount);
 
 			// Primordial Token is the base AO Token
-			_stakedContent.primordialWeightedIndex = _primordialToken.weightedIndexByAddress(_stakedContent.stakeOwner);
-			require (_primordialToken.stakeIcoTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedIndex));
+			_stakedContent.primordialWeightedIndex = _baseAO.weightedIndexByAddress(_stakedContent.stakeOwner);
+			require (_baseAO.stakeIcoTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedIndex));
 		}
 
 		emit StakeExistingContent(msg.sender, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedIndex);
@@ -451,33 +462,34 @@ contract AOContent is owned {
 		_purchaseReceipt.contentHostId = _contentHostId;
 		_purchaseReceipt.buyer = msg.sender;
 		// Update the receipt with the correct network amount
-		_purchaseReceipt.networkAmount = _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
+		_purchaseReceipt.networkAmount = _stakedContent.networkAmount.add(_stakedContent.primordialAmount);
 		_purchaseReceipt.createdOnTimestamp = now;
 
 		purchaseReceiptIndex[_purchaseId] = totalPurchaseReceipts;
 		buyerPurchaseReceipts[msg.sender][_contentHostId] = _purchaseId;
 
 		// Have the buyer transfer the network amount
-		_transferNetworkToken(msg.sender, _purchaseReceipt.networkAmount);
+		//_transferNetworkToken(msg.sender, _purchaseReceipt.networkAmount);
 
-		// Calculate content creator and host's network earning and store them in escrow
-		_earning.calculateNetworkEarning(
+		// Calculate content creator/host/foundation earning from this purchase and store them in escrow
+		require (_earning.calculateEarning(
+			msg.sender,
 			_purchaseId,
-			_stakedContent.stakeId,
-			_contentHost.contentHostId,
 			_stakedContent.networkAmount,
 			_stakedContent.primordialAmount,
 			_stakedContent.primordialWeightedIndex,
 			_stakedContent.profitPercentage,
 			_stakedContent.stakeOwner,
 			_contentHost.host
-		);
+		));
 
 		emit BuyContent(_purchaseReceipt.buyer, _purchaseReceipt.purchaseId, _purchaseReceipt.contentHostId, _purchaseReceipt.networkAmount, _purchaseReceipt.createdOnTimestamp);
 	}
 
 	/**
 	 * @dev Request node wants to become a distribution node after buying the content
+	 *		Also, if this transaction succeeds, we release all of the earnings that are
+	 *		currently in escrow for content creator/host/foundation
 	 */
 	function becomeHost(bytes32 _purchaseId, uint8 _baseChallengeV, bytes32 _baseChallengeR, bytes32 _baseChallengeS, string _encChallenge, string _contentDatKey, string _metadataDatKey) public isActive {
 		// Make sure the purchase receipt exist
@@ -498,7 +510,7 @@ contract AOContent is owned {
 		_hostContent(msg.sender, _stakeId, _encChallenge, _contentDatKey, _metadataDatKey);
 
 		// Release earning from escrow
-		_earning.releaseEarning(_purchaseId, stakedContents[stakedContentIndex[_stakeId]].stakeOwner, contentHosts[contentHostIndex[_purchaseReceipt.contentHostId]].host);
+		require (_earning.releaseEarning(_purchaseId, _purchaseReceipt.networkAmount, _content.fileSize, stakedContents[stakedContentIndex[_stakeId]].stakeOwner, contentHosts[contentHostIndex[_purchaseReceipt.contentHostId]].host));
 	}
 
 	/***** INTERNAL METHODS *****/
@@ -601,88 +613,17 @@ contract AOContent is owned {
 
 		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			_stakedContent.networkAmount = _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
-			_stakeNetworkToken(_stakedContent.stakeOwner, _stakedContent.networkAmount);
+			require (_baseAO.stakeFrom(_stakeOwner, _stakedContent.networkAmount));
 		}
 		if (_primordialAmount > 0) {
-			// Make sure base denomination is active
-			(, address _baseDenominationAddress, bool _baseDenominationActive) = _treasury.getBaseDenomination();
-			require (_baseDenominationAddress != address(0));
-			require (_baseDenominationActive == true);
-
 			_stakedContent.primordialAmount = _primordialAmount;
 
 			// Primordial Token is the base AO Token
-			AOToken _primordialToken = AOToken(_baseDenominationAddress);
-			_stakedContent.primordialWeightedIndex = _primordialToken.weightedIndexByAddress(_stakedContent.stakeOwner);
-			require (_primordialToken.stakeIcoTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedIndex));
+			_stakedContent.primordialWeightedIndex = _baseAO.weightedIndexByAddress(_stakedContent.stakeOwner);
+			require (_baseAO.stakeIcoTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedIndex));
 		}
 
 		emit StakeContent(_stakedContent.stakeOwner, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedIndex, _stakedContent.profitPercentage, _stakedContent.createdOnTimestamp);
 		return _stakedContent.stakeId;
-	}
-
-	/**
-	 * @dev Stake network token on existing staked content
-	 * @param _stakeOwner The stake owner address
-	 * @param _networkAmount The amount of the network token to stake
-	 */
-	function _stakeNetworkToken(address _stakeOwner, uint256 _networkAmount) internal {
-		(address[] memory _paymentAddress, uint256[] memory _paymentAmount) = _treasury.determinePayment(_stakeOwner, _networkAmount);
-
-		// Stake tokens from each denomination in payment address
-		for (uint256 i=0; i < _paymentAddress.length; i++) {
-			if (_paymentAddress[i] != address(0) && _paymentAmount[i] > 0) {
-				require (AOToken(_paymentAddress[i]).stakeFrom(_stakeOwner, _paymentAmount[i]));
-			}
-		}
-	}
-
-	/**
-	 * @dev Unstake some network token on existing staked content
-	 * @param _stakeOwner The stake owner address
-	 * @param _unstakeNetworkAmount The amount of the network token to unstake
-	 */
-	function _unstakePartialNetworkToken(address _stakeOwner, uint256 _unstakeNetworkAmount) internal {
-		(address[] memory _unstakeAddress, uint256[] memory _unstakeAmount) = _treasury.determineUnstake(_stakeOwner, _unstakeNetworkAmount);
-
-		// Unstake tokens from each denomination in unstake address
-		for (uint256 i=0; i < _unstakeAddress.length; i++) {
-			if (_unstakeAddress[i] != address(0) && _unstakeAmount[i] > 0) {
-				require (AOToken(_unstakeAddress[i]).unstakeFrom(_stakeOwner, _unstakeAmount[i]));
-			}
-		}
-	}
-
-	/**
-	 * @dev Unstake some primordial token on existing staked content
-	 * @param _stakeOwner The address of the stake owner
-	 * @param _primordialAmount The amount of the primordial token to unstake
-	 * @param _primordialWeightedIndex The weighted index of the primordial token to unstake
-	 */
-	function _unstakePartialPrimordialToken(address _stakeOwner, uint256 _primordialAmount, uint256 _primordialWeightedIndex) internal {
-		// Make sure base denomination is active
-		(, address _baseDenominationAddress, bool _baseDenominationActive) = _treasury.getBaseDenomination();
-		require (_baseDenominationAddress != address(0));
-		require (_baseDenominationActive == true);
-
-		// Primordial Token is the base AO Token
-		AOToken _primordialToken = AOToken(_baseDenominationAddress);
-		require (_primordialToken.unstakeIcoTokenFrom(_stakeOwner, _primordialAmount, _primordialWeightedIndex));
-	}
-
-	/**
-	 * @dev Transfer the network token for the purchase
-	 * @param _buyer The address of the buyer
-	 * @param _networkAmount The amount of the network token to transfer
-	 */
-	function _transferNetworkToken(address _buyer, uint256 _networkAmount) internal {
-		// Transfer tokens from each denomination in payment address to this contract
-		(address[] memory _paymentAddress, uint256[] memory _paymentAmount) = _treasury.determinePayment(_buyer, _networkAmount);
-
-		for (uint256 i=0; i < _paymentAddress.length; i++) {
-			if (_paymentAddress[i] != address(0) && _paymentAmount[i] > 0) {
-				require (AOToken(_paymentAddress[i]).whitelistTransferFrom(_buyer, earningAddress, _paymentAmount[i]));
-			}
-		}
 	}
 }
