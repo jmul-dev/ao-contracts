@@ -21,11 +21,14 @@ contract AOToken is owned, TokenERC20 {
 
 	mapping (address => bool) public frozenAccount;
 	mapping (address => uint256) public stakedBalance;
+	mapping (address => uint256) public escrowedBalance;
 
 	// This generates a public event on the blockchain that will notify clients
 	event FrozenFunds(address target, bool frozen);
 	event Stake(address indexed from, uint256 value);
 	event Unstake(address indexed from, uint256 value);
+	event Escrow(address indexed from, address indexed to, uint256 value);
+	event Unescrow(address indexed from, uint256 value);
 
 	/***** ICO TOKEN VARIABLES *****/
 	uint256 public icoTotalSupply;
@@ -164,6 +167,47 @@ contract AOToken is owned, TokenERC20 {
 	}
 
 	/**
+	 * @dev Store `_value` from `_from` to `_to` in escrow
+	 * @param _from The address of the sender
+	 * @param _to The address of the recipient
+	 * @param _value The amount of normal ERC20 tokens to put in escrow
+	 * @return true on success
+	 */
+	function escrowFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
+		require (balanceOf[_from] >= _value);						// Check if the targeted balance is enough
+		balanceOf[_from] = balanceOf[_from].sub(_value);			// Subtract from the targeted balance
+		escrowedBalance[_to] = escrowedBalance[_to].add(_value);	// Add to the targeted escrowed balance
+		emit Escrow(_from, _to, _value);
+		return true;
+	}
+
+	/**
+	 * @dev Create `mintedAmount` tokens and send it to `target` escrow balance
+	 * @param target Address to receive the tokens
+	 * @param mintedAmount The amount of tokens it will receive in escrow
+	 */
+	function mintTokenEscrow(address target, uint256 mintedAmount) public inWhitelist(msg.sender) returns (bool) {
+		escrowedBalance[target] = escrowedBalance[target].add(mintedAmount);
+		totalSupply = totalSupply.add(mintedAmount);
+		emit Escrow(this, target, mintedAmount);
+		return true;
+	}
+
+	/**
+	 * @dev Release escrowed `_value` from `_from`
+	 * @param _from The address of the sender
+	 * @param _value The amount of escrowed normal ERC20 tokens to be released
+	 * @return true on success
+	 */
+	function unescrowFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
+		require (escrowedBalance[_from] >= _value);						// Check if the targeted escrowed balance is enough
+		escrowedBalance[_from] = escrowedBalance[_from].sub(_value);	// Subtract from the targeted escrowed balance
+		balanceOf[_from] = balanceOf[_from].add(_value);				// Add to the targeted balance
+		emit Unescrow(_from, _value);
+		return true;
+	}
+
+	/**
 	 *
 	 * @dev Whitelisted address remove `_value` tokens from the system irreversibly on behalf of `_from`.
 	 *
@@ -175,18 +219,6 @@ contract AOToken is owned, TokenERC20 {
 		balanceOf[_from] = balanceOf[_from].sub(_value);    // Subtract from the targeted balance
 		totalSupply = totalSupply.sub(_value);              // Update totalSupply
 		emit Burn(_from, _value);
-		return true;
-	}
-
-	/**
-	 * @dev Whitelisted address sends `_value` normal ERC20 tokens to `_to` from `_from`
-	 * @param _from The address of the sender
-	 * @param _to The address of the recipient
-	 * @param _value The amount of normal ERC20 tokens to send
-	 * @return true on success
-	 */
-	function whitelistTransferFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool success) {
-		_transfer(_from, _to, _value);
 		return true;
 	}
 

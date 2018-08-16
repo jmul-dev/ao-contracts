@@ -1081,6 +1081,8 @@ contract("AOToken", function(accounts) {
 		before(async function() {
 			await tokenMeta.mintToken(account1, 100, { from: owner });
 			await tokenMeta.buyIcoToken({ from: account1, value: 1000000 });
+			await tokenMeta.mintToken(account2, 100, { from: owner });
+			await tokenMeta.mintToken(account3, 200, { from: owner });
 		});
 
 		it("only owner can whitelist account that can transact on behalf of others", async function() {
@@ -1120,12 +1122,19 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canStake, true, "Account that do not have permission can stake on behalf of others");
 			try {
+				await tokenMeta.stakeFrom(account1, 100000, { from: whitelistedAccount });
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+			}
+			assert.notEqual(canStake, true, "Account can stake more than available balance");
+			try {
 				await tokenMeta.stakeFrom(account1, 10, { from: whitelistedAccount });
 				canStake = true;
 			} catch (e) {
 				canStake = false;
 			}
-			assert.equal(canStake, true, "Account that has permission can't stake on behalf of thers");
+			assert.equal(canStake, true, "Account that has permission can't stake on behalf of others");
 
 			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
 			var account1StakedBalanceAfter = await tokenMeta.stakedBalance(account1);
@@ -1157,12 +1166,19 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canUnstake, true, "Account that do not have permission can unstake on behalf of others");
 			try {
+				await tokenMeta.unstakeFrom(account1, 100000, { from: whitelistedAccount });
+				canUnstake = true;
+			} catch (e) {
+				canUnstake = false;
+			}
+			assert.notEqual(canUnstake, true, "Account can unstake more than available balance");
+			try {
 				await tokenMeta.unstakeFrom(account1, 10, { from: whitelistedAccount });
 				canUnstake = true;
 			} catch (e) {
 				canUnstake = false;
 			}
-			assert.equal(canUnstake, true, "Account that has permission can't unstake on behalf of thers");
+			assert.equal(canUnstake, true, "Account that has permission can't unstake on behalf of others");
 
 			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
 			var account1StakedBalanceAfter = await tokenMeta.stakedBalance(account1);
@@ -1195,12 +1211,19 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canStakeIco, true, "Account that do not have permission can stake ICO tokens on behalf of others");
 			try {
+				await tokenMeta.stakeIcoTokenFrom(account1, 1000000, account1WeightedIndexBefore.toNumber(), { from: whitelistedAccount });
+				canStakeIco = true;
+			} catch (e) {
+				canStakeIco = false;
+			}
+			assert.notEqual(canStakeIco, true, "Account can stake more than available balance");
+			try {
 				await tokenMeta.stakeIcoTokenFrom(account1, 10, account1WeightedIndexBefore.toNumber(), { from: whitelistedAccount });
 				canStakeIco = true;
 			} catch (e) {
 				canStakeIco = false;
 			}
-			assert.equal(canStakeIco, true, "Account that has permission can't stake ICO tokens on behalf of thers");
+			assert.equal(canStakeIco, true, "Account that has permission can't stake ICO tokens on behalf of others");
 			stakedIcoWeightedIndex = account1WeightedIndexBefore.toNumber();
 
 			var account1IcoBalanceAfter = await tokenMeta.icoBalanceOf(account1);
@@ -1244,12 +1267,19 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canUnstakeIco, true, "Account that do not have permission can unstake ICO tokens on behalf of others");
 			try {
+				await tokenMeta.unstakeIcoTokenFrom(account1, 100000, stakedIcoWeightedIndex, { from: whitelistedAccount });
+				canUnstakeIco = true;
+			} catch (e) {
+				canUnstakeIco = false;
+			}
+			assert.notEqual(canUnstakeIco, true, "Account can unstake more than available balance");
+			try {
 				await tokenMeta.unstakeIcoTokenFrom(account1, 10, stakedIcoWeightedIndex, { from: whitelistedAccount });
 				canUnstakeIco = true;
 			} catch (e) {
 				canUnstakeIco = false;
 			}
-			assert.equal(canUnstakeIco, true, "Account that has permission can't unstake ICO tokens on behalf of thers");
+			assert.equal(canUnstakeIco, true, "Account that has permission can't unstake ICO tokens on behalf of others");
 
 			var account1IcoBalanceAfter = await tokenMeta.icoBalanceOf(account1);
 			var account1WeightedIndexAfter = await tokenMeta.weightedIndexByAddress(account1);
@@ -1292,12 +1322,19 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canBurn, true, "Account that do not have permission can burn on behalf of others");
 			try {
+				await tokenMeta.whitelistBurnFrom(account1, 1000000, { from: whitelistedAccount });
+				canBurn = true;
+			} catch (e) {
+				canBurn = false;
+			}
+			assert.notEqual(canBurn, true, "Account can burn more than available balance");
+			try {
 				await tokenMeta.whitelistBurnFrom(account1, 10, { from: whitelistedAccount });
 				canBurn = true;
 			} catch (e) {
 				canBurn = false;
 			}
-			assert.equal(canBurn, true, "Account that has permission can't burn on behalf of thers");
+			assert.equal(canBurn, true, "Account that has permission can't burn on behalf of others");
 
 			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
 			var totalSupplyAfter = await tokenMeta.totalSupply();
@@ -1312,6 +1349,172 @@ contract("AOToken", function(accounts) {
 				totalSupplyBefore.minus(10).toNumber(),
 				"Contract has incorrect total supply after burning"
 			);
+		});
+
+		it("should be able to escrow tokens on behalf of others", async function() {
+			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
+			var account2BalanceBefore = await tokenMeta.balanceOf(account2);
+			var account1EscrowedBalanceBefore = await tokenMeta.escrowedBalance(account1);
+			var totalSupplyBefore = await tokenMeta.totalSupply();
+
+			var canEscrow;
+			try {
+				await tokenMeta.escrowFrom(account2, account1, 10, { from: account2 });
+				canEscrow = true;
+			} catch (e) {
+				canEscrow = false;
+			}
+			assert.notEqual(canEscrow, true, "Account that do not have permission can escrow on behalf of others");
+			try {
+				await tokenMeta.escrowFrom(account2, account1, 1000, { from: whitelistedAccount });
+				canEscrow = true;
+			} catch (e) {
+				canEscrow = false;
+			}
+			assert.notEqual(canEscrow, true, "Account can escrow more than available balance");
+			try {
+				await tokenMeta.escrowFrom(account2, account1, 10, { from: whitelistedAccount });
+				canEscrow = true;
+			} catch (e) {
+				canEscrow = false;
+			}
+			assert.equal(canEscrow, true, "Account that has permission can't escrow on behalf of others");
+
+			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
+			var account2BalanceAfter = await tokenMeta.balanceOf(account2);
+			var account1EscrowedBalanceAfter = await tokenMeta.escrowedBalance(account1);
+			var totalSupplyAfter = await tokenMeta.totalSupply();
+
+			assert.equal(account1BalanceAfter.toNumber(), account1BalanceBefore.toNumber(), "Account1 has incorrect balance after escrow");
+			assert.equal(
+				account2BalanceAfter.toNumber(),
+				account2BalanceBefore.minus(10).toNumber(),
+				"Account2 has incorrect balance after escrow"
+			);
+			assert.equal(
+				account1EscrowedBalanceAfter.toNumber(),
+				account1EscrowedBalanceBefore.plus(10).toNumber(),
+				"Account1 has incorrect escrowed balance after escrow"
+			);
+			assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.toNumber(), "Contract has incorrect total supply after escrow");
+
+			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
+			var account3BalanceBefore = await tokenMeta.balanceOf(account3);
+			var account1EscrowedBalanceBefore = await tokenMeta.escrowedBalance(account1);
+			var totalSupplyBefore = await tokenMeta.totalSupply();
+
+			try {
+				await tokenMeta.escrowFrom(account3, account1, 75, { from: whitelistedAccount });
+				canEscrow = true;
+			} catch (e) {
+				canEscrow = false;
+			}
+			assert.equal(canEscrow, true, "Account that has permission can't escrow on behalf of others");
+
+			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
+			var account3BalanceAfter = await tokenMeta.balanceOf(account3);
+			var account1EscrowedBalanceAfter = await tokenMeta.escrowedBalance(account1);
+			var totalSupplyAfter = await tokenMeta.totalSupply();
+
+			assert.equal(account1BalanceAfter.toNumber(), account1BalanceBefore.toNumber(), "Account1 has incorrect balance after escrow");
+			assert.equal(
+				account3BalanceAfter.toNumber(),
+				account3BalanceBefore.minus(75).toNumber(),
+				"Account3 has incorrect balance after escrow"
+			);
+			assert.equal(
+				account1EscrowedBalanceAfter.toNumber(),
+				account1EscrowedBalanceBefore.plus(75).toNumber(),
+				"Account1 has incorrect escrowed balance after escrow"
+			);
+			assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.toNumber(), "Contract has incorrect total supply after escrow");
+		});
+
+		it("should be able to mint and escrow tokens to an account", async function() {
+			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
+			var account1EscrowedBalanceBefore = await tokenMeta.escrowedBalance(account1);
+			var totalSupplyBefore = await tokenMeta.totalSupply();
+
+			var canMintEscrow;
+			try {
+				await tokenMeta.mintTokenEscrow(account1, 10, { from: account2 });
+				canMintEscrow = true;
+			} catch (e) {
+				canMintEscrow = false;
+			}
+			assert.notEqual(canMintEscrow, true, "Account that do not have permission can mint and escrow");
+			try {
+				await tokenMeta.mintTokenEscrow(account1, 10, { from: whitelistedAccount });
+				canMintEscrow = true;
+			} catch (e) {
+				canMintEscrow = false;
+			}
+			assert.equal(canMintEscrow, true, "Account that has permission can't mint and escrow");
+
+			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
+			var account1EscrowedBalanceAfter = await tokenMeta.escrowedBalance(account1);
+			var totalSupplyAfter = await tokenMeta.totalSupply();
+
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.toNumber(),
+				"Account1 has incorrect balance after mint and escrow"
+			);
+			assert.equal(
+				account1EscrowedBalanceAfter.toNumber(),
+				account1EscrowedBalanceBefore.plus(10).toNumber(),
+				"Account1 has incorrect escrowed balance after mint and escrow"
+			);
+			assert.equal(
+				totalSupplyAfter.toNumber(),
+				totalSupplyBefore.plus(10).toNumber(),
+				"Contract has incorrect total supply after mint and escrow"
+			);
+		});
+
+		it("should be able to unescrow tokens for an account", async function() {
+			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
+			var account1EscrowedBalanceBefore = await tokenMeta.escrowedBalance(account1);
+			var totalSupplyBefore = await tokenMeta.totalSupply();
+
+			var canUnescrow;
+			try {
+				await tokenMeta.unescrowFrom(account1, 10, { from: account2 });
+				canUnescrow = true;
+			} catch (e) {
+				canUnescrow = false;
+			}
+			assert.notEqual(canUnescrow, true, "Account that do not have permission can unescrow tokens on behalf of others");
+			try {
+				await tokenMeta.unescrowFrom(account1, 100000, { from: whitelistedAccount });
+				canUnescrow = true;
+			} catch (e) {
+				canUnescrow = false;
+			}
+			assert.notEqual(canUnescrow, true, "Account can unescrow more than available balance");
+			try {
+				await tokenMeta.unescrowFrom(account1, 10, { from: whitelistedAccount });
+				canUnescrow = true;
+			} catch (e) {
+				canUnescrow = false;
+			}
+			assert.equal(canUnescrow, true, "Account that has permission can't unescrow on behalf of others");
+
+			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
+			var account1EscrowedBalanceAfter = await tokenMeta.escrowedBalance(account1);
+			var totalSupplyAfter = await tokenMeta.totalSupply();
+
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.plus(10).toNumber(),
+				"Account1 has incorrect balance after unescrow"
+			);
+			assert.equal(
+				account1EscrowedBalanceAfter.toNumber(),
+				account1EscrowedBalanceBefore.minus(10).toNumber(),
+				"Account1 has incorrect escrowed balance after unescrow"
+			);
+			assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.toNumber(), "Contract has incorrect total supply after unescrow");
 		});
 	});
 });
