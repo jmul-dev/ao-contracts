@@ -1,9 +1,10 @@
 var AOContent = artifacts.require("./AOContent.sol");
 var AOToken = artifacts.require("./AOToken.sol");
 var AOTreasury = artifacts.require("./AOTreasury.sol");
+var AOEarning = artifacts.require("./AOEarning.sol");
 
-contract("AOContent", function(accounts) {
-	var aocontent, aotoken, aodecimals, aotreasury;
+contract("AOContent & AOEarning", function(accounts) {
+	var aocontent, aotoken, aodecimals, aotreasury, aoearning;
 	var someAddress = "0x0694bdcab07b298e88a834a3c91602cb8f457bde";
 	var owner = accounts[0];
 	var account1 = accounts[1];
@@ -20,11 +21,12 @@ contract("AOContent", function(accounts) {
 		aocontent = await AOContent.deployed();
 		aotoken = await AOToken.deployed();
 		aotreasury = await AOTreasury.deployed();
+		aoearning = await AOEarning.deployed();
 
 		// Get the decimals
 		aodecimals = await aotoken.decimals();
 	});
-	contract("Owner Only Function Tests", function() {
+	contract("AOContent - Owner Only Function Tests", function() {
 		it("only owner can pause/unpause contract", async function() {
 			var canPause;
 			try {
@@ -92,8 +94,153 @@ contract("AOContent", function(accounts) {
 			assert.equal(killed, true, "Contract has incorrect killed value after owner call escape hatch");
 		});
 	});
-	contract("Staking Function Tests", function() {
-		var contentId1, contentId2, contentId3, stakeId1, stakeId2, stakeId3, contentHostId1, contentHostId2, contentHostId3;
+
+	contract("AOEarning - Owner Only Function Tests", function() {
+		it("only owner can pause/unpause contract", async function() {
+			var canPause;
+			try {
+				await aoearning.setPaused(true, { from: account1 });
+				canPause = true;
+			} catch (e) {
+				canPause = false;
+			}
+			assert.notEqual(canPause, true, "Non-owner can pause contract");
+			try {
+				await aoearning.setPaused(true, { from: owner });
+				canPause = true;
+			} catch (e) {
+				canPause = false;
+			}
+			assert.equal(canPause, true, "Owner can't pause contract");
+			var paused = await aoearning.paused();
+			assert.equal(paused, true, "Contract has incorrect paused value after owner set paused");
+		});
+
+		it("only owner can set base denomination address", async function() {
+			var canSetBaseDenominationAddress;
+			try {
+				await aoearning.setBaseDenominationAddress(aotoken.address, { from: account1 });
+				canSetBaseDenominationAddress = true;
+			} catch (e) {
+				canSetBaseDenominationAddress = false;
+			}
+			assert.notEqual(canSetBaseDenominationAddress, true, "Non-owner can set base denomination address");
+			try {
+				await aoearning.setBaseDenominationAddress(someAddress, { from: owner });
+				canSetBaseDenominationAddress = true;
+			} catch (e) {
+				canSetBaseDenominationAddress = false;
+			}
+			assert.notEqual(canSetBaseDenominationAddress, true, "Owner can set invalid base denomination address");
+			try {
+				await aoearning.setBaseDenominationAddress(aotoken.address, { from: owner });
+				canSetBaseDenominationAddress = true;
+			} catch (e) {
+				canSetBaseDenominationAddress = false;
+			}
+			assert.equal(canSetBaseDenominationAddress, true, "Owner can't set base denomination address");
+			var baseDenominationAddress = await aoearning.baseDenominationAddress();
+			assert.equal(baseDenominationAddress, aotoken.address, "Contract has incorrect base denomination address");
+		});
+
+		it("only owner can set inflation rate", async function() {
+			var canSetInflationRate;
+			try {
+				await aoearning.setInflationRate(10000, { from: account1 });
+				canSetInflationRate = true;
+			} catch (e) {
+				canSetInflationRate = false;
+			}
+			assert.notEqual(canSetInflationRate, true, "Non-owner can set inflation rate");
+			try {
+				await aoearning.setInflationRate(10000, { from: owner });
+				canSetInflationRate = true;
+			} catch (e) {
+				canSetInflationRate = false;
+			}
+			assert.equal(canSetInflationRate, true, "Owner can't set inflation rate");
+			var inflationRate = await aoearning.inflationRate();
+			assert.equal(inflationRate.toString(), 10000, "Contract has incorrect inflation rate after owner set inflation rate");
+		});
+
+		it("only owner can set foundation cut", async function() {
+			var canSetFoundationCut;
+			try {
+				await aoearning.setFoundationCut(5000, { from: account1 });
+				canSetFoundationCut = true;
+			} catch (e) {
+				canSetFoundationCut = false;
+			}
+			assert.notEqual(canSetFoundationCut, true, "Non-owner can set foundation cut");
+			try {
+				await aoearning.setFoundationCut(5000, { from: owner });
+				canSetFoundationCut = true;
+			} catch (e) {
+				canSetFoundationCut = false;
+			}
+			assert.equal(canSetFoundationCut, true, "Owner can't set foundation cut");
+			var foundationCut = await aoearning.foundationCut();
+			assert.equal(foundationCut.toString(), 5000, "Contract has incorrect foundation cut after owner set foundation cut");
+		});
+
+		it("only owner can set multiplier modifier", async function() {
+			var canSetMultiplierModifier;
+			try {
+				await aoearning.setMultiplierModifier(1000000, { from: account1 });
+				canSetMultiplierModifier = true;
+			} catch (e) {
+				canSetMultiplierModifier = false;
+			}
+			assert.notEqual(canSetMultiplierModifier, true, "Non-owner can set multiplier modifier");
+			try {
+				await aoearning.setMultiplierModifier(1000000, { from: owner });
+				canSetMultiplierModifier = true;
+			} catch (e) {
+				canSetMultiplierModifier = false;
+			}
+			assert.equal(canSetMultiplierModifier, true, "Owner can't set multiplier modifier");
+			var multiplierModifier = await aoearning.multiplierModifier();
+			assert.equal(
+				multiplierModifier.toString(),
+				1000000,
+				"Contract has incorrect multiplier modifier after owner set multiplier modifier"
+			);
+		});
+
+		it("only owner can call escape hatch", async function() {
+			var canEscapeHatch;
+			try {
+				await aoearning.escapeHatch({ from: account1 });
+				canEscapeHatch = true;
+			} catch (e) {
+				canEscapeHatch = false;
+			}
+			assert.notEqual(canEscapeHatch, true, "Non-owner can call escape hatch");
+			try {
+				await aoearning.escapeHatch({ from: owner });
+				canEscapeHatch = true;
+			} catch (e) {
+				canEscapeHatch = false;
+			}
+			assert.equal(canEscapeHatch, true, "Owner can't call escape hatch");
+			var killed = await aoearning.killed();
+			assert.equal(killed, true, "Contract has incorrect killed value after owner call escape hatch");
+		});
+	});
+
+	contract("Stake, Unstake & Buy Content Function Tests", function() {
+		var contentId1,
+			contentId2,
+			contentId3,
+			stakeId1,
+			stakeId2,
+			stakeId3,
+			contentHostId1,
+			contentHostId2,
+			contentHostId3,
+			contentHost1Price,
+			contentHost2Price,
+			contentHost3Price;
 
 		var stakeContent = async function(account, networkIntegerAmount, networkFractionAmount, denomination, primordialAmount) {
 			var accountBalanceBefore = await aotoken.balanceOf(account);
@@ -393,6 +540,9 @@ contract("AOContent", function(accounts) {
 			// Buy 2 lots so that we can test avg weighted index
 			await aotoken.buyIcoToken({ from: account1, value: 50000000000 });
 			await aotoken.buyIcoToken({ from: account1, value: 50000000000 });
+
+			// Let's give account2 some tokens
+			await aotoken.mintToken(account2, 10 ** 9, { from: owner }); // 1,000,000,000 AO Token
 		});
 
 		it("stakeContent() - should NOT stake content if params provided are not valid", async function() {
@@ -879,10 +1029,126 @@ contract("AOContent", function(accounts) {
 			await stakeExistingContent(account1, stakeId2, 1, 0, "mega", 10);
 			await stakeExistingContent(account1, stakeId3, 0, 900000, "mega", 110000);
 
+			var networkAmount = await aotreasury.toBase(2, 10, "kilo");
+			contentHost1Price = networkAmount.add(1000000);
+			networkAmount = await aotreasury.toBase(1, 0, "mega");
+			contentHost2Price = networkAmount.add(10);
+			networkAmount = await aotreasury.toBase(0, 900000, "mega");
+			contentHost3Price = networkAmount.add(110000);
+
 			// Should be able to stake again on active staked content
 			await stakeExistingContent(account1, stakeId1, 0, 500, "kilo", 0);
 			await stakeExistingContent(account1, stakeId2, 0, 10, "mega", 1000);
 			await stakeExistingContent(account1, stakeId3, 100, 0, "ao", 100);
+
+			networkAmount = await aotreasury.toBase(0, 500, "kilo");
+			contentHost1Price = contentHost1Price.add(networkAmount);
+			networkAmount = await aotreasury.toBase(0, 10, "mega");
+			contentHost2Price = contentHost2Price.add(networkAmount).add(1000);
+			networkAmount = await aotreasury.toBase(100, 0, "ao");
+			contentHost3Price = contentHost3Price.add(networkAmount).add(100);
+		});
+
+		it("contentHostPrice() - should be able to return the price of a content hosted by a host", async function() {
+			var getContentHostPrice;
+			try {
+				await aocontent.contentHostPrice("someid");
+				getContentHostPrice = true;
+			} catch (e) {
+				getContentHostPrice = false;
+			}
+			assert.notEqual(getContentHostPrice, true, "Contract can get price for non-existing contentHostID");
+
+			var _contentHost1Price = await aocontent.contentHostPrice(contentHostId1);
+			assert.equal(_contentHost1Price.toString(), contentHost1Price.toString(), "Content host has incorrect price");
+
+			var _contentHost2Price = await aocontent.contentHostPrice(contentHostId2);
+			assert.equal(_contentHost2Price.toString(), contentHost2Price.toString(), "Content host has incorrect price");
+
+			var _contentHost3Price = await aocontent.contentHostPrice(contentHostId3);
+			assert.equal(_contentHost3Price.toString(), contentHost3Price.toString(), "Content host has incorrect price");
+		});
+
+		it("buyContent() - should NOT be able to buy content if sent tokens < price", async function() {
+			var buyContent = async function(account, contentHostId) {
+				var canBuyContent;
+				try {
+					await aocontent.buyContent(contentHostId, 10, 0, "ao", { from: account });
+					canBuyContent = true;
+				} catch (e) {
+					canBuyContent = false;
+				}
+				assert.notEqual(canBuyContent, true, "Account can buy content even though sent tokens < price");
+			};
+			await buyContent(account2, contentHostId1);
+			await buyContent(account2, contentHostId2);
+			await buyContent(account2, contentHostId3);
+		});
+
+		it("buyContent() - should NOT be able to buy content if account does not have enough balance", async function() {
+			var buyContent = async function(account, contentHostId) {
+				var canBuyContent;
+				try {
+					await aocontent.buyContent(contentHostId, 5, 0, "mega", { from: account });
+					canBuyContent = true;
+				} catch (e) {
+					canBuyContent = false;
+				}
+				assert.notEqual(canBuyContent, true, "Account can buy content even though account does not have enough balance");
+			};
+			await buyContent(account3, contentHostId1);
+			await buyContent(account3, contentHostId2);
+			await buyContent(account3, contentHostId3);
+		});
+
+		it("buyContent() - should be able to buy content", async function() {
+			var accountBalanceBefore = await aotoken.balanceOf(account2);
+
+			var price = await aocontent.contentHostPrice(contentHostId1);
+			var inflationRate = await aoearning.inflationRate();
+			var foundationCut = await aoearning.foundationCut();
+			var multiplierModifier = await aoearning.multiplierModifier();
+			var percentageDivisor = await aoearning.PERCENTAGE_DIVISOR();
+			var weightedIndexDivisor = await aoearning.WEIGHTED_INDEX_DIVISOR();
+			var stakedContent = await aocontent.stakedContentById(stakeId1);
+			var stakedNetworkAmount = stakedContent[2];
+			var stakedPrimordialAmount = stakedContent[3];
+			var stakedPrimordialWeightedIndex = stakedContent[4];
+			var profitPercentage = stakedContent[5];
+
+			var canBuyContent, buyContentEvent, purchaseId, purchaseReceipt, stakeEarning, hostEarning, foundationEarning;
+			try {
+				var result = await aocontent.buyContent(contentHostId1, 3, 0, "mega", { from: account2 });
+				canBuyContent = true;
+				buyContentEvent = result.logs[0];
+				purchaseId = buyContentEvent.args.purchaseId;
+				purchaseReceipt = await aocontent.purchaseReceiptById(purchaseId);
+				stakeEarning = await aoearning.stakeEarnings(account1, purchaseId);
+				hostEarning = await aoearning.hostEarnings(account1, purchaseId);
+				foundationEarning = await aoearning.foundationEarnings(purchaseId);
+			} catch (e) {
+				canBuyContent = false;
+				buyContentEvent = null;
+				purchaseId = null;
+				purchaseReceipt = null;
+				stakeEarning = null;
+				hostEarning = null;
+				foundationEarning = null;
+			}
+			assert.equal(canBuyContent, true, "Account can't buy content even though sent tokens >= price");
+			assert.notEqual(purchaseId, null, "Unable to determine the purchaseID from the log after buying content");
+
+			assert.equal(purchaseReceipt[0], contentHostId1, "Purchase receipt has incorrect content host ID");
+			assert.equal(purchaseReceipt[1], account2, "Purchase receipt has incorrect buyer address");
+			assert.equal(purchaseReceipt[2].toString(), contentHost1Price.toString(), "Purchase receipt has incorrect paid network amount");
+			var accountBalanceAfter = await aotoken.balanceOf(account2);
+			assert.equal(
+				accountBalanceAfter.toString(),
+				accountBalanceBefore.minus(price).toString(),
+				"Account has incorrect balance after buying content"
+			);
+
+			// Calculate earning
 		});
 	});
 });

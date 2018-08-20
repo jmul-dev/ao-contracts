@@ -102,7 +102,7 @@ contract AOContent is owned {
 
 	// Mapping from buyer's content host ID to the buy ID
 	// To check whether or not buyer has bought/paid for a content
-	mapping (address => mapping (bytes32 => bytes32)) internal buyerPurchaseReceipts;
+	mapping (address => mapping (bytes32 => bytes32)) public buyerPurchaseReceipts;
 
 	// Event to be broadcasted to public when `content` is stored
 	event StoreContent(address indexed creator, bytes32 indexed contentId, uint256 fileSize);
@@ -332,11 +332,11 @@ contract AOContent is owned {
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 		// Make sure the staked content is currently active (staked) with some amounts
-		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || _stakedContent.primordialAmount > 0));
+		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedIndex > 0)));
 		// Make sure the staked content has enough balance to unstake
 		require (AOLibrary.canUnstakePartial(treasuryAddress, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _stakedContent.networkAmount, _stakedContent.primordialAmount, _content.fileSize));
 
-		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
+		if (_denomination[0] != 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			uint256 _unstakeNetworkAmount = _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
 			_stakedContent.networkAmount = _stakedContent.networkAmount.sub(_unstakeNetworkAmount);
 			require (_baseAO.unstakeFrom(msg.sender, _unstakeNetworkAmount));
@@ -360,7 +360,7 @@ contract AOContent is owned {
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 		// Make sure the staked content is currently active (staked) with some amounts
-		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || _stakedContent.primordialAmount > 0));
+		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedIndex > 0)));
 
 		_stakedContent.active = false;
 
@@ -408,7 +408,7 @@ contract AOContent is owned {
 		}
 
 		_stakedContent.active = true;
-		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
+		if (_denomination[0] != 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			uint256 _stakeNetworkAmount = _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
 			_stakedContent.networkAmount = _stakedContent.networkAmount.add(_stakeNetworkAmount);
 			require (_baseAO.stakeFrom(_stakedContent.stakeOwner, _stakeNetworkAmount));
@@ -422,6 +422,22 @@ contract AOContent is owned {
 		}
 
 		emit StakeExistingContent(msg.sender, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedIndex);
+	}
+
+	/**
+	 * @dev Determine the content price hosted by a host
+	 * @param _contentHostId The content host ID to be checked
+	 * @return the price of the content
+	 */
+	function contentHostPrice(bytes32 _contentHostId) public isActive view returns (uint256) {
+		// Make sure content host exist
+		require (contentHostIndex[_contentHostId] > 0);
+
+		ContentHost memory _contentHost = contentHosts[contentHostIndex[_contentHostId]];
+		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_contentHost.stakeId]];
+		// Make sure content is currently staked
+		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedIndex > 0)));
+		return _stakedContent.networkAmount.add(_stakedContent.primordialAmount);
 	}
 
 	/**
@@ -439,13 +455,13 @@ contract AOContent is owned {
 		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_contentHost.stakeId]];
 
 		// Make sure the content currently has stake
-		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || _stakedContent.primordialAmount > 0));
+		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedIndex > 0)));
 
 		// Make sure the buyer has not bought this content previously
-		require (buyerPurchaseReceipts[msg.sender][_contentHostId].length == 0);
+		require (buyerPurchaseReceipts[msg.sender][_contentHostId][0] == 0);
 
 		// Make sure the token amount can pay for the content price
-		require (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0));
+		require (_denomination[0] != 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0));
 		require (AOLibrary.canBuy(treasuryAddress, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination));
 
 		// Increment totalPurchaseReceipts;
@@ -468,9 +484,6 @@ contract AOContent is owned {
 		purchaseReceiptIndex[_purchaseId] = totalPurchaseReceipts;
 		buyerPurchaseReceipts[msg.sender][_contentHostId] = _purchaseId;
 
-		// Have the buyer transfer the network amount
-		//_transferNetworkToken(msg.sender, _purchaseReceipt.networkAmount);
-
 		// Calculate content creator/host/foundation earning from this purchase and store them in escrow
 		require (_earning.calculateEarning(
 			msg.sender,
@@ -484,6 +497,26 @@ contract AOContent is owned {
 		));
 
 		emit BuyContent(_purchaseReceipt.buyer, _purchaseReceipt.purchaseId, _purchaseReceipt.contentHostId, _purchaseReceipt.networkAmount, _purchaseReceipt.createdOnTimestamp);
+	}
+
+	/**
+	 * @dev Return purchase receipt info at a given ID
+	 * @param _purchaseId The ID of the purchased content
+	 * @return The ID of the content host
+	 * @return address of the buyer
+	 * @return paid network amount
+	 * @return created on timestamp
+	 */
+	function purchaseReceiptById(bytes32 _purchaseId) public view returns (bytes32, address, uint256, uint256) {
+		// Make sure the purchase receipt exist
+		require (purchaseReceiptIndex[_purchaseId] > 0);
+		PurchaseReceipt memory _purchaseReceipt = purchaseReceipts[purchaseReceiptIndex[_purchaseId]];
+		return (
+			_purchaseReceipt.contentHostId,
+			_purchaseReceipt.buyer,
+			_purchaseReceipt.networkAmount,
+			_purchaseReceipt.createdOnTimestamp
+		);
 	}
 
 	/**
@@ -611,7 +644,7 @@ contract AOContent is owned {
 
 		stakedContentIndex[_stakeId] = totalStakedContents;
 
-		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
+		if (_denomination[0] != 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			_stakedContent.networkAmount = _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
 			require (_baseAO.stakeFrom(_stakeOwner, _stakedContent.networkAmount));
 		}
