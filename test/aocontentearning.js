@@ -2,6 +2,7 @@ var AOContent = artifacts.require("./AOContent.sol");
 var AOToken = artifacts.require("./AOToken.sol");
 var AOTreasury = artifacts.require("./AOTreasury.sol");
 var AOEarning = artifacts.require("./AOEarning.sol");
+var EthCrypto = require("eth-crypto");
 
 contract("AOContent & AOEarning", function(accounts) {
 	var aocontent, aotoken, aodecimals, aotreasury, aoearning;
@@ -10,10 +11,19 @@ contract("AOContent & AOEarning", function(accounts) {
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var account3 = accounts[3];
+	// Retrieve private keys from ganache
+	var account2PrivateKey = "0x6a35c58d0acad0ceca9c03d37aa2d2288d70afe0690f5e5f5e05aeab93b95dad";
+	var account3PrivateKey = "0xf4bab2d2f0c5119cc6aad0735bbf0a017d229cbf430c0041af382b93e713a1c3";
 	var baseChallenge = "basechallengestring";
 	var encChallenge = "encchallengestring";
+	var account2EncChallenge = "account2encchallengestring";
+	var account3EncChallenge = "account3encchallengestring";
 	var contentDatKey = "7bde24fb38d6e316ec48874c937f4582f3a494df1ecf387e6edb2e25bff700f7";
 	var metadataDatKey = "7bde24fb38d6e316ec48874c937f4582f3a494df1ecf387e6edb2e25bff700f7";
+	var account2ContentDatKey = "02bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
+	var account2MetadataDatKey = "02bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
+	var account3ContentDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
+	var account3MetadataDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 	var fileSize = 1000000; // 1000000 bytes = min 1000000 AO
 	var profitPercentage = 600000; // 60%
 
@@ -228,7 +238,7 @@ contract("AOContent & AOEarning", function(accounts) {
 		});
 	});
 
-	contract("Stake, Unstake & Buy Content Function Tests", function() {
+	contract("Stake, Unstake, Buy Content & Become Host Function Tests", function() {
 		var contentId1,
 			contentId2,
 			contentId3,
@@ -240,7 +250,9 @@ contract("AOContent & AOEarning", function(accounts) {
 			contentHostId3,
 			contentHost1Price,
 			contentHost2Price,
-			contentHost3Price;
+			contentHost3Price,
+			purchaseId,
+			contentHostId4;
 
 		var stakeContent = async function(account, networkIntegerAmount, networkFractionAmount, denomination, primordialAmount) {
 			var accountBalanceBefore = await aotoken.balanceOf(account);
@@ -1101,7 +1113,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			await buyContent(account3, contentHostId3);
 		});
 
-		it("buyContent() - should be able to buy content", async function() {
+		it("buyContent() - should be able to buy content and store all of the earnings of stake owner (content creator)/host/foundation in escrow", async function() {
 			var accountBalanceBefore = await aotoken.balanceOf(account2);
 			var stakeOwnerBalanceBefore = await aotoken.balanceOf(account1);
 			var hostBalanceBefore = await aotoken.balanceOf(account1);
@@ -1119,7 +1131,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			var stakedPrimordialWeightedIndex = stakedContent[4];
 			var profitPercentage = stakedContent[5];
 
-			var canBuyContent, buyContentEvent, purchaseId, purchaseReceipt, stakeEarning, hostEarning, foundationEarning;
+			var canBuyContent, buyContentEvent, purchaseReceipt, stakeEarning, hostEarning, foundationEarning;
 			try {
 				var result = await aocontent.buyContent(contentHostId1, 3, 0, "mega", { from: account2 });
 				canBuyContent = true;
@@ -1233,6 +1245,353 @@ contract("AOContent & AOEarning", function(accounts) {
 				"Stake owner/host has incorrect escrowed balance"
 			);
 			assert.equal(foundationEscrowedBalance.toString(), foundationInflationBonus, "Foundation has incorrect escrowed balance");
+
+			try {
+				var result = await aocontent.buyContent(contentHostId1, 3, 0, "mega", { from: account2 });
+				canBuyContent = true;
+			} catch (e) {
+				canBuyContent = false;
+			}
+			assert.notEqual(canBuyContent, true, "Account can buy the same content more than once");
+		});
+
+		it("becomeHost() - should NOT be able to become host if params provided are not valid", async function() {
+			var canBecomeHost;
+			var signHash = EthCrypto.hash.keccak256([
+				{
+					type: "address",
+					value: aocontent.address
+				},
+				{
+					type: "string",
+					value: baseChallenge
+				}
+			]);
+
+			var signature = EthCrypto.sign(account2PrivateKey, signHash);
+
+			var vrs = EthCrypto.vrs.fromString(signature);
+
+			try {
+				await aocontent.becomeHost(
+					"someid",
+					vrs.v,
+					vrs.r,
+					vrs.s,
+					account2EncChallenge,
+					account2ContentDatKey,
+					account2MetadataDatKey,
+					{ from: account2 }
+				);
+				canBecomeHost = true;
+			} catch (e) {
+				canBecomeHost = false;
+			}
+			assert.notEqual(canBecomeHost, true, "Account can become host of content of an unknown purchase ID");
+
+			try {
+				await aocontent.becomeHost(
+					purchaseId,
+					0,
+					vrs.r,
+					vrs.s,
+					account2EncChallenge,
+					account2ContentDatKey,
+					account2MetadataDatKey,
+					{ from: account2 }
+				);
+				canBecomeHost = true;
+			} catch (e) {
+				canBecomeHost = false;
+			}
+			assert.notEqual(
+				canBecomeHost,
+				true,
+				"Account can become host of content even though it's missing part of the base challenge signature"
+			);
+
+			try {
+				await aocontent.becomeHost(
+					purchaseId,
+					vrs.v,
+					"",
+					vrs.s,
+					account2EncChallenge,
+					account2ContentDatKey,
+					account2MetadataDatKey,
+					{ from: account2 }
+				);
+				canBecomeHost = true;
+			} catch (e) {
+				canBecomeHost = false;
+			}
+			assert.notEqual(
+				canBecomeHost,
+				true,
+				"Account can become host of content even though it's missing part of the base challenge signature"
+			);
+
+			try {
+				await aocontent.becomeHost(
+					purchaseId,
+					vrs.v,
+					vrs.r,
+					"",
+					account2EncChallenge,
+					account2ContentDatKey,
+					account2MetadataDatKey,
+					{ from: account2 }
+				);
+				canBecomeHost = true;
+			} catch (e) {
+				canBecomeHost = false;
+			}
+			assert.notEqual(
+				canBecomeHost,
+				true,
+				"Account can become host of content even though it's missing part of the base challenge signature"
+			);
+
+			try {
+				await aocontent.becomeHost(purchaseId, vrs.v, vrs.r, vrs.s, "", account2ContentDatKey, account2MetadataDatKey, {
+					from: account2
+				});
+				canBecomeHost = true;
+			} catch (e) {
+				canBecomeHost = false;
+			}
+			assert.notEqual(
+				canBecomeHost,
+				true,
+				"Account can become host of content even though it's missing the encrypted challenge string"
+			);
+
+			try {
+				await aocontent.becomeHost(purchaseId, vrs.v, vrs.r, vrs.s, account2EncChallenge, "", account2MetadataDatKey, {
+					from: account2
+				});
+				canBecomeHost = true;
+			} catch (e) {
+				canBecomeHost = false;
+			}
+			assert.notEqual(canBecomeHost, true, "Account can become host of content even though it's missing the content dat key");
+
+			try {
+				await aocontent.becomeHost(purchaseId, vrs.v, vrs.r, vrs.s, account2EncChallenge, account2ContentDatKey, "", {
+					from: account2
+				});
+				canBecomeHost = true;
+			} catch (e) {
+				canBecomeHost = false;
+			}
+			assert.notEqual(canBecomeHost, true, "Account can become host of content even though it's missing the metadata dat key");
+
+			try {
+				await aocontent.becomeHost(
+					purchaseId,
+					vrs.v,
+					vrs.r,
+					vrs.s,
+					account2EncChallenge,
+					account2ContentDatKey,
+					account2MetadataDatKey,
+					{ from: account1 }
+				);
+				canBecomeHost = true;
+			} catch (e) {
+				canBecomeHost = false;
+			}
+			assert.notEqual(canBecomeHost, true, "Account can become host of content of a purchase receipt owned by others");
+		});
+
+		it("becomeHost() (stake owner and host are the same address) - should be able to become host and release all the escrowed earnings for stake owner (content creator)/host/foundation", async function() {
+			var signHash = EthCrypto.hash.keccak256([
+				{
+					type: "address",
+					value: aocontent.address
+				},
+				{
+					type: "string",
+					value: baseChallenge
+				}
+			]);
+
+			var signature = EthCrypto.sign(account2PrivateKey, signHash);
+
+			var vrs = EthCrypto.vrs.fromString(signature);
+
+			var stakeOwnerBalanceBefore = await aotoken.balanceOf(account1);
+			var hostBalanceBefore = await aotoken.balanceOf(account1);
+			var foundationBalanceBefore = await aotoken.balanceOf(owner);
+
+			var stakeOwnerEscrowedBalanceBefore = await aotoken.escrowedBalance(account1);
+			var hostEscrowedBalanceBefore = await aotoken.escrowedBalance(account1);
+			var foundationEscrowedBalanceBefore = await aotoken.escrowedBalance(owner);
+
+			var stakeEarningBefore = await aoearning.stakeEarnings(account1, purchaseId);
+			var hostEarningBefore = await aoearning.hostEarnings(account1, purchaseId);
+			var foundationEarningBefore = await aoearning.foundationEarnings(purchaseId);
+
+			var canBecomeHost, hostContentEvent, contentHost;
+			try {
+				var result = await aocontent.becomeHost(
+					purchaseId,
+					vrs.v,
+					vrs.r,
+					vrs.s,
+					account2EncChallenge,
+					account2ContentDatKey,
+					account2MetadataDatKey,
+					{ from: account2 }
+				);
+				canBecomeHost = true;
+
+				hostContentEvent = result.logs[0];
+				contentHostId4 = hostContentEvent.args.contentHostId;
+				contentHost = await aocontent.contentHostById(contentHostId4);
+			} catch (e) {
+				canBecomeHost = false;
+				hostContentEvent = null;
+				contentHostId4 = null;
+			}
+			assert.equal(canBecomeHost, true, "Account fails becoming host of the content");
+
+			// Verify the content host object
+			assert.equal(contentHost[0], stakeId1, "Content host has incorrect stake ID");
+			assert.equal(contentHost[1], account2, "Content host has incorrect host");
+			assert.equal(contentHost[2], account2ContentDatKey, "Content host has incorrect content dat key");
+			assert.equal(contentHost[3], account2MetadataDatKey, "Content host has incorrect metadata dat key");
+
+			var stakeOwnerBalanceAfter = await aotoken.balanceOf(account1);
+			var hostBalanceAfter = await aotoken.balanceOf(account1);
+			var foundationBalanceAfter = await aotoken.balanceOf(owner);
+
+			var stakeOwnerEscrowedBalanceAfter = await aotoken.escrowedBalance(account1);
+			var hostEscrowedBalanceAfter = await aotoken.escrowedBalance(account1);
+			var foundationEscrowedBalanceAfter = await aotoken.escrowedBalance(owner);
+
+			var stakeEarningAfter = await aoearning.stakeEarnings(account1, purchaseId);
+			var hostEarningAfter = await aoearning.hostEarnings(account1, purchaseId);
+			var foundationEarningAfter = await aoearning.foundationEarnings(purchaseId);
+
+			// Verify the earning
+			assert.equal(stakeEarningAfter[0], purchaseId, "Stake earning has incorrect purchaseId");
+			assert.equal(stakeEarningAfter[1].toString(), 0, "Stake earning has incorrect paymentEarning after request node become host");
+			assert.equal(stakeEarningAfter[2].toString(), 0, "Stake earning has incorrect inflationBonus after request node become host");
+
+			assert.equal(hostEarningAfter[0], purchaseId, "Host earning has incorrect purchaseId");
+			assert.equal(hostEarningAfter[1].toString(), 0, "Host earning has incorrect paymentEarning after request node become host");
+			assert.equal(hostEarningAfter[2].toString(), 0, "Host earning has incorrect inflationBonus after request node become host");
+
+			assert.equal(foundationEarningAfter[0], purchaseId, "Foundation earning has incorrect purchaseId");
+			assert.equal(
+				foundationEarningAfter[1].toString(),
+				0,
+				"Foundation earning has incorrect paymentEarning after request node become host"
+			);
+			assert.equal(
+				foundationEarningAfter[2].toString(),
+				0,
+				"Foundation earning has incorrect inflationBonus after request node become host"
+			);
+
+			// Verify the balance
+			// Since stake owner and host are the same
+			assert.equal(
+				stakeOwnerBalanceAfter.toString(),
+				stakeOwnerBalanceBefore
+					.plus(stakeEarningBefore[1])
+					.plus(stakeEarningBefore[2])
+					.plus(hostEarningBefore[1])
+					.plus(hostEarningBefore[2])
+					.toString(),
+				"Stake owner/host has incorrect balance after request node become host"
+			);
+			assert.equal(
+				foundationBalanceAfter.toString(),
+				foundationBalanceBefore.plus(foundationEarningBefore[2]).toString(),
+				"Foundation has incorrect balance after request node become host"
+			);
+
+			// Verify the escrowed balance
+			// since stake owner and host are the same
+			assert.equal(
+				stakeOwnerEscrowedBalanceAfter.toString(),
+				stakeOwnerEscrowedBalanceBefore
+					.minus(stakeEarningBefore[1])
+					.minus(stakeEarningBefore[2])
+					.minus(hostEarningBefore[1])
+					.minus(hostEarningBefore[2])
+					.toString(),
+				"Stake owner/host has incorrect escrowed balance after request node become host"
+			);
+			assert.equal(
+				foundationEscrowedBalanceAfter.toString(),
+				foundationEscrowedBalanceBefore.minus(foundationEarningBefore[2]).toString(),
+				"Foundation has incorrect escrowed balance after request node become host"
+			);
+		});
+
+		it("new node should be able to buy content from new distribution node, and then become a host itself", async function() {
+			// Let's give account3 some tokens
+			await aotoken.mintToken(account3, 10 ** 9, { from: owner }); // 1,000,000,000 AO Token
+
+			var canBuyContent, buyContentEvent;
+			try {
+				var result = await aocontent.buyContent(contentHostId4, 3, 0, "mega", { from: account3 });
+				canBuyContent = true;
+				buyContentEvent = result.logs[0];
+				purchaseId = buyContentEvent.args.purchaseId;
+			} catch (e) {
+				canBuyContent = false;
+				buyContentEvent = null;
+				purchaseId = null;
+			}
+			assert.equal(canBuyContent, true, "Account can't buy content even though sent tokens >= price");
+
+			var signHash = EthCrypto.hash.keccak256([
+				{
+					type: "address",
+					value: aocontent.address
+				},
+				{
+					type: "string",
+					value: baseChallenge
+				}
+			]);
+
+			var signature = EthCrypto.sign(account3PrivateKey, signHash);
+
+			var vrs = EthCrypto.vrs.fromString(signature);
+			var canBecomeHost, hostContentEvent, contentHostId, contentHost;
+			try {
+				var result = await aocontent.becomeHost(
+					purchaseId,
+					vrs.v,
+					vrs.r,
+					vrs.s,
+					account3EncChallenge,
+					account3ContentDatKey,
+					account3MetadataDatKey,
+					{ from: account3 }
+				);
+				canBecomeHost = true;
+
+				hostContentEvent = result.logs[0];
+				contentHostId = hostContentEvent.args.contentHostId;
+				contentHost = await aocontent.contentHostById(contentHostId);
+			} catch (e) {
+				canBecomeHost = false;
+				hostContentEvent = null;
+				contentHostId = null;
+			}
+			assert.equal(canBecomeHost, true, "Account fails becoming host of the content");
+
+			// Verify the content host object
+			assert.equal(contentHost[0], stakeId1, "Content host has incorrect stake ID");
+			assert.equal(contentHost[1], account3, "Content host has incorrect host");
+			assert.equal(contentHost[2], account3ContentDatKey, "Content host has incorrect content dat key");
+			assert.equal(contentHost[3], account3MetadataDatKey, "Content host has incorrect metadata dat key");
 		});
 	});
 });
