@@ -748,7 +748,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			var setProfitPercentage = async function(stakeId) {
 				var canSetProfitPercentage;
 				try {
-					await aocontent.setProfitPercentage(stakeId, 400000, { from: account1 });
+					await aocontent.setProfitPercentage(stakeId, 800000, { from: account1 });
 					canSetProfitPercentage = true;
 				} catch (e) {
 					canSetProfitPercentage = false;
@@ -1103,6 +1103,9 @@ contract("AOContent & AOEarning", function(accounts) {
 
 		it("buyContent() - should be able to buy content", async function() {
 			var accountBalanceBefore = await aotoken.balanceOf(account2);
+			var stakeOwnerBalanceBefore = await aotoken.balanceOf(account1);
+			var hostBalanceBefore = await aotoken.balanceOf(account1);
+			var foundationBalanceBefore = await aotoken.balanceOf(owner);
 
 			var price = await aocontent.contentHostPrice(contentHostId1);
 			var inflationRate = await aoearning.inflationRate();
@@ -1142,13 +1145,94 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.equal(purchaseReceipt[1], account2, "Purchase receipt has incorrect buyer address");
 			assert.equal(purchaseReceipt[2].toString(), contentHost1Price.toString(), "Purchase receipt has incorrect paid network amount");
 			var accountBalanceAfter = await aotoken.balanceOf(account2);
+			var stakeOwnerBalanceAfter = await aotoken.balanceOf(account1);
+			var hostBalanceAfter = await aotoken.balanceOf(account1);
+			var foundationBalanceAfter = await aotoken.balanceOf(owner);
+
 			assert.equal(
 				accountBalanceAfter.toString(),
 				accountBalanceBefore.minus(price).toString(),
 				"Account has incorrect balance after buying content"
 			);
+			assert.equal(
+				stakeOwnerBalanceAfter.toString(),
+				stakeOwnerBalanceBefore.toString(),
+				"Stake owner has incorrect balance after buying content"
+			);
+			assert.equal(hostBalanceAfter.toString(), hostBalanceBefore.toString(), "Host has incorrect balance after buying content");
+			assert.equal(
+				foundationBalanceAfter.toString(),
+				foundationBalanceBefore.toString(),
+				"Foundation has incorrect balance after buying content"
+			);
 
-			// Calculate earning
+			// Calculate stake owner/host payment earning
+			var stakeOwnerPaymentEarning = parseInt(
+				price
+					.mul(profitPercentage)
+					.div(percentageDivisor)
+					.toString()
+			);
+			var hostPaymentEarning = price.minus(stakeOwnerPaymentEarning);
+
+			// Verify payment earning
+			assert.equal(stakeEarning[0], purchaseId, "Stake earning has incorrect purchase ID");
+			assert.equal(stakeEarning[1].toString(), stakeOwnerPaymentEarning, "Stake earning has incorrect paymentEarning amount");
+
+			assert.equal(hostEarning[0], purchaseId, "Host earning has incorrect purchase ID");
+			assert.equal(hostEarning[1].toString(), hostPaymentEarning, "Host earning has incorrect paymentEarning amount");
+
+			assert.equal(foundationEarning[0], purchaseId, "Foundation earning has incorrect purchase ID");
+			assert.equal(foundationEarning[1].toString(), 0, "Foundation earning has incorrect paymentEarning amount");
+
+			// Calculate inflation bonus
+			var networkBonus = parseInt(stakedNetworkAmount.times(inflationRate).div(percentageDivisor));
+
+			var lastWeightedIndex = await aotoken.lotIndex();
+			lastWeightedIndex = lastWeightedIndex.times(weightedIndexDivisor);
+			var temp = parseInt(
+				lastWeightedIndex
+					.minus(stakedPrimordialWeightedIndex)
+					.times(weightedIndexDivisor)
+					.div(lastWeightedIndex)
+			);
+			var multiplier = weightedIndexDivisor.plus(parseInt(multiplierModifier.times(temp).div(weightedIndexDivisor)));
+
+			var primordialBonus = parseInt(
+				stakedPrimordialAmount
+					.times(multiplier)
+					.div(weightedIndexDivisor)
+					.times(inflationRate)
+					.div(percentageDivisor)
+			);
+			var inflationBonus = networkBonus + primordialBonus;
+
+			// Calculate stake owner/host/foundation inflation bonus
+			var stakeOwnerInflationBonus = parseInt(profitPercentage.times(inflationBonus).div(percentageDivisor));
+			var hostInflationBonus = inflationBonus - stakeOwnerInflationBonus;
+			var foundationInflationBonus = parseInt(foundationCut.times(inflationBonus).div(percentageDivisor));
+
+			// Verify inflation bonus
+			assert.equal(stakeEarning[2].toString(), stakeOwnerInflationBonus, "Stake earning has incorrect inflationBonus amount");
+			assert.equal(hostEarning[2].toString(), hostInflationBonus, "Host earning has incorrect inflationBonus amount");
+			assert.equal(
+				foundationEarning[2].toString(),
+				foundationInflationBonus,
+				"Foundation earning has incorrect inflationBonus amount"
+			);
+
+			// Verify escrowed balance
+			var stakeOwnerEscrowedBalance = await aotoken.escrowedBalance(account1);
+			var hostEscrowedBalance = await aotoken.escrowedBalance(account1);
+			var foundationEscrowedBalance = await aotoken.escrowedBalance(owner);
+
+			// since the stake owner and the host are the same
+			assert.equal(
+				stakeOwnerEscrowedBalance.toString(),
+				price.add(inflationBonus).toString(),
+				"Stake owner/host has incorrect escrowed balance"
+			);
+			assert.equal(foundationEscrowedBalance.toString(), foundationInflationBonus, "Foundation has incorrect escrowed balance");
 		});
 	});
 });
