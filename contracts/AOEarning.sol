@@ -355,11 +355,11 @@ contract AOEarning is owned {
 			totalStakeContentEarning = totalStakeContentEarning.add(_totalEarning);
 			stakeContentEarning[_account] = stakeContentEarning[_account].add(_totalEarning);
 			if (_buyerPaidAmount > _fileSize) {
-				contentPriceEarning[_account] = contentPriceEarning[_account].add(_stakeEarning.paymentEarning);
+				contentPriceEarning[_account] = contentPriceEarning[_account].add(_totalEarning);
 			} else {
-				networkPriceEarning[_account] = networkPriceEarning[_account].add(_stakeEarning.paymentEarning);
+				networkPriceEarning[_account] = networkPriceEarning[_account].add(_totalEarning);
 			}
-			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_stakeEarning.inflationBonus);
+			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_inflationBonus);
 		} else if (_recipientType == 1) {
 			Earning storage _hostEarning = hostEarnings[_account][_purchaseId];
 			_paymentEarning = _hostEarning.paymentEarning;
@@ -372,11 +372,11 @@ contract AOEarning is owned {
 			totalHostContentEarning = totalHostContentEarning.add(_totalEarning);
 			hostContentEarning[_account] = hostContentEarning[_account].add(_totalEarning);
 			if (_buyerPaidAmount > _fileSize) {
-				contentPriceEarning[_account] = contentPriceEarning[_account].add(_hostEarning.paymentEarning);
+				contentPriceEarning[_account] = contentPriceEarning[_account].add(_totalEarning);
 			} else {
-				networkPriceEarning[_account] = networkPriceEarning[_account].add(_hostEarning.paymentEarning);
+				networkPriceEarning[_account] = networkPriceEarning[_account].add(_totalEarning);
 			}
-			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_hostEarning.inflationBonus);
+			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_inflationBonus);
 		} else {
 			Earning storage _foundationEarning = foundationEarnings[_purchaseId];
 			_paymentEarning = _foundationEarning.paymentEarning;
@@ -387,7 +387,7 @@ contract AOEarning is owned {
 
 			// Update the global var settings
 			totalFoundationEarning = totalFoundationEarning.add(_totalEarning);
-			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_foundationEarning.inflationBonus);
+			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_inflationBonus);
 		}
 		require (_baseAO.unescrowFrom(_account, _totalEarning));
 		emit EarningUnescrowed(_account, _purchaseId, _paymentEarning, _inflationBonus, _recipientType);

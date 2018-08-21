@@ -1432,6 +1432,15 @@ contract("AOContent & AOEarning", function(accounts) {
 			var hostEarningBefore = await aoearning.hostEarnings(account1, purchaseId);
 			var foundationEarningBefore = await aoearning.foundationEarnings(purchaseId);
 
+			var totalStakeContentEarningBefore = await aoearning.totalStakeContentEarning();
+			var totalHostContentEarningBefore = await aoearning.totalHostContentEarning();
+			var totalFoundationEarningBefore = await aoearning.totalFoundationEarning();
+			var stakeContentEarningBefore = await aoearning.stakeContentEarning(account1);
+			var hostContentEarningBefore = await aoearning.hostContentEarning(account1);
+			var networkPriceEarningBefore = await aoearning.networkPriceEarning(account1);
+			var contentPriceEarningBefore = await aoearning.contentPriceEarning(account1);
+			var inflationBonusAccruedBefore = await aoearning.inflationBonusAccrued(account1);
+
 			var canBecomeHost, hostContentEvent, contentHost;
 			try {
 				var result = await aocontent.becomeHost(
@@ -1473,6 +1482,15 @@ contract("AOContent & AOEarning", function(accounts) {
 			var stakeEarningAfter = await aoearning.stakeEarnings(account1, purchaseId);
 			var hostEarningAfter = await aoearning.hostEarnings(account1, purchaseId);
 			var foundationEarningAfter = await aoearning.foundationEarnings(purchaseId);
+
+			var totalStakeContentEarningAfter = await aoearning.totalStakeContentEarning();
+			var totalHostContentEarningAfter = await aoearning.totalHostContentEarning();
+			var totalFoundationEarningAfter = await aoearning.totalFoundationEarning();
+			var stakeContentEarningAfter = await aoearning.stakeContentEarning(account1);
+			var hostContentEarningAfter = await aoearning.hostContentEarning(account1);
+			var networkPriceEarningAfter = await aoearning.networkPriceEarning(account1);
+			var contentPriceEarningAfter = await aoearning.contentPriceEarning(account1);
+			var inflationBonusAccruedAfter = await aoearning.inflationBonusAccrued(account1);
 
 			// Verify the earning
 			assert.equal(stakeEarningAfter[0], purchaseId, "Stake earning has incorrect purchaseId");
@@ -1529,6 +1547,69 @@ contract("AOContent & AOEarning", function(accounts) {
 				foundationEscrowedBalanceAfter.toString(),
 				foundationEscrowedBalanceBefore.minus(foundationEarningBefore[2]).toString(),
 				"Foundation has incorrect escrowed balance after request node become host"
+			);
+
+			// Verify global variables earnings
+			assert.equal(
+				totalStakeContentEarningAfter.toString(),
+				totalStakeContentEarningBefore
+					.plus(stakeEarningBefore[1])
+					.plus(stakeEarningBefore[2])
+					.toString(),
+				"Contract has incorrect totalStakeContentEarning"
+			);
+			assert.equal(
+				totalHostContentEarningAfter.toString(),
+				totalHostContentEarningBefore
+					.plus(hostEarningBefore[1])
+					.plus(hostEarningBefore[2])
+					.toString(),
+				"Contract has incorrect totalHostContentEarning"
+			);
+			assert.equal(
+				totalFoundationEarningAfter.toString(),
+				totalFoundationEarningBefore.plus(foundationEarningBefore[2]).toString(),
+				"Contract has incorrect totalFoundationEarning"
+			);
+			assert.equal(
+				stakeContentEarningAfter.toString(),
+				stakeContentEarningBefore
+					.plus(stakeEarningBefore[1])
+					.plus(stakeEarningBefore[2])
+					.toString(),
+				"Contract has incorrect stakeContentEarning for stakeOwner"
+			);
+			assert.equal(
+				hostContentEarningAfter.toString(),
+				hostContentEarningBefore
+					.plus(hostEarningBefore[1])
+					.plus(hostEarningBefore[2])
+					.toString(),
+				"Contract has incorrect hostContentEarning for host"
+			);
+			assert.equal(
+				networkPriceEarningAfter.toString(),
+				networkPriceEarningBefore.toString(),
+				"Contract has incorrect networkPriceEarning"
+			);
+			// Since stakeOwner/host are the same
+			assert.equal(
+				contentPriceEarningAfter.toString(),
+				contentPriceEarningBefore
+					.plus(stakeEarningBefore[1])
+					.plus(stakeEarningBefore[2])
+					.plus(hostEarningBefore[1])
+					.plus(hostEarningBefore[2])
+					.toString(),
+				"Contract has incorrect contentPriceEarning for stake owner/host"
+			);
+			assert.equal(
+				inflationBonusAccruedAfter.toString(),
+				inflationBonusAccruedBefore
+					.plus(stakeEarningBefore[2])
+					.plus(hostEarningBefore[2])
+					.toString(),
+				"Contract has incorrect inflationBonusAccrued for stake owner/host"
 			);
 		});
 
