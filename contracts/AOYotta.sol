@@ -10,6 +10,6 @@ contract AOYotta is AOToken {
 		AOToken(initialSupply, tokenName, tokenSymbol) public {
 		powerOfTen = 24;
 		decimals = 24;
-		icoContract = false;
+		networkExchangeContract = false;
 	}
 }

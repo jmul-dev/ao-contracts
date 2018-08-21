@@ -258,8 +258,11 @@ contract("AOContent & AOEarning", function(accounts) {
 			var accountBalanceBefore = await aotoken.balanceOf(account);
 			var accountStakedBalanceBefore = await aotoken.stakedBalance(account);
 			var accountWeightedIndexBefore = await aotoken.weightedIndexByAddress(account);
-			var accountPrimordialBalanceBefore = await aotoken.icoBalanceOf(account);
-			var accountPrimordialStakedBalanceBefore = await aotoken.icoStakedBalance(account, accountWeightedIndexBefore.toNumber());
+			var accountPrimordialBalanceBefore = await aotoken.primordialBalanceOf(account);
+			var accountPrimordialStakedBalanceBefore = await aotoken.primordialStakedBalance(
+				account,
+				accountWeightedIndexBefore.toNumber()
+			);
 
 			var canStake, content, stakedContent, contentHost, storeContentEvent, stakeContentEvent, hostContentEvent;
 			try {
@@ -339,8 +342,8 @@ contract("AOContent & AOEarning", function(accounts) {
 			var accountBalanceAfter = await aotoken.balanceOf(account);
 			var accountStakedBalanceAfter = await aotoken.stakedBalance(account);
 			var accountWeightedIndexAfter = await aotoken.weightedIndexByAddress(account);
-			var accountPrimordialBalanceAfter = await aotoken.icoBalanceOf(account);
-			var accountPrimordialStakedBalanceAfter = await aotoken.icoStakedBalance(account, accountWeightedIndexAfter.toNumber());
+			var accountPrimordialBalanceAfter = await aotoken.primordialBalanceOf(account);
+			var accountPrimordialStakedBalanceAfter = await aotoken.primordialStakedBalance(account, accountWeightedIndexAfter.toNumber());
 
 			assert.equal(
 				accountBalanceAfter.toString(),
@@ -383,8 +386,8 @@ contract("AOContent & AOEarning", function(accounts) {
 			var accountBalanceBefore = await aotoken.balanceOf(account);
 			var accountStakedBalanceBefore = await aotoken.stakedBalance(account);
 			var accountWeightedIndexBefore = await aotoken.weightedIndexByAddress(account);
-			var accountPrimordialBalanceBefore = await aotoken.icoBalanceOf(account);
-			var accountPrimordialStakedBalanceBefore = await aotoken.icoStakedBalance(account, stakedContentBefore[4].toString());
+			var accountPrimordialBalanceBefore = await aotoken.primordialBalanceOf(account);
+			var accountPrimordialStakedBalanceBefore = await aotoken.primordialStakedBalance(account, stakedContentBefore[4].toString());
 
 			var networkAmount =
 				networkIntegerAmount > 0 || networkFractionAmount > 0
@@ -418,8 +421,8 @@ contract("AOContent & AOEarning", function(accounts) {
 			var accountBalanceAfter = await aotoken.balanceOf(account);
 			var accountStakedBalanceAfter = await aotoken.stakedBalance(account);
 			var accountWeightedIndexAfter = await aotoken.weightedIndexByAddress(account);
-			var accountPrimordialBalanceAfter = await aotoken.icoBalanceOf(account);
-			var accountPrimordialStakedBalanceAfter = await aotoken.icoStakedBalance(account, stakedContentAfter[4].toString());
+			var accountPrimordialBalanceAfter = await aotoken.primordialBalanceOf(account);
+			var accountPrimordialStakedBalanceAfter = await aotoken.primordialStakedBalance(account, stakedContentAfter[4].toString());
 
 			assert.equal(
 				stakedContentAfter[2].toString(),
@@ -476,8 +479,11 @@ contract("AOContent & AOEarning", function(accounts) {
 			var accountBalanceBefore = await aotoken.balanceOf(account);
 			var accountStakedBalanceBefore = await aotoken.stakedBalance(account);
 			var accountWeightedIndexBefore = await aotoken.weightedIndexByAddress(account);
-			var accountPrimordialBalanceBefore = await aotoken.icoBalanceOf(account);
-			var accountPrimordialStakedBalanceBefore = await aotoken.icoStakedBalance(account, accountWeightedIndexBefore.toString());
+			var accountPrimordialBalanceBefore = await aotoken.primordialBalanceOf(account);
+			var accountPrimordialStakedBalanceBefore = await aotoken.primordialStakedBalance(
+				account,
+				accountWeightedIndexBefore.toString()
+			);
 
 			var canStakeExisting;
 			try {
@@ -499,8 +505,8 @@ contract("AOContent & AOEarning", function(accounts) {
 			var accountBalanceAfter = await aotoken.balanceOf(account);
 			var accountStakedBalanceAfter = await aotoken.stakedBalance(account);
 			var accountWeightedIndexAfter = await aotoken.weightedIndexByAddress(account);
-			var accountPrimordialBalanceAfter = await aotoken.icoBalanceOf(account);
-			var accountPrimordialStakedBalanceAfter = await aotoken.icoStakedBalance(account, stakedContentAfter[4].toString());
+			var accountPrimordialBalanceAfter = await aotoken.primordialBalanceOf(account);
+			var accountPrimordialStakedBalanceAfter = await aotoken.primordialStakedBalance(account, stakedContentAfter[4].toString());
 
 			assert.equal(
 				stakedContentAfter[2].toString(),
@@ -550,8 +556,8 @@ contract("AOContent & AOEarning", function(accounts) {
 			// Let's give account1 some tokens
 			await aotoken.mintToken(account1, 10 ** 9, { from: developer }); // 1,000,000,000 AO Token
 			// Buy 2 lots so that we can test avg weighted index
-			await aotoken.buyIcoToken({ from: account1, value: 50000000000 });
-			await aotoken.buyIcoToken({ from: account1, value: 50000000000 });
+			await aotoken.buyPrimordialToken({ from: account1, value: 50000000000 });
+			await aotoken.buyPrimordialToken({ from: account1, value: 50000000000 });
 
 			// Let's give account2 some tokens
 			await aotoken.mintToken(account2, 10 ** 9, { from: developer }); // 1,000,000,000 AO Token
@@ -894,8 +900,11 @@ contract("AOContent & AOEarning", function(accounts) {
 				var accountBalanceBefore = await aotoken.balanceOf(account);
 				var accountStakedBalanceBefore = await aotoken.stakedBalance(account);
 				var accountWeightedIndexBefore = await aotoken.weightedIndexByAddress(account);
-				var accountPrimordialBalanceBefore = await aotoken.icoBalanceOf(account);
-				var accountPrimordialStakedBalanceBefore = await aotoken.icoStakedBalance(account, stakedContentBefore[4].toString());
+				var accountPrimordialBalanceBefore = await aotoken.primordialBalanceOf(account);
+				var accountPrimordialStakedBalanceBefore = await aotoken.primordialStakedBalance(
+					account,
+					stakedContentBefore[4].toString()
+				);
 
 				var networkAmount = stakedContentBefore[2];
 				var primordialAmount = stakedContentBefore[3];
@@ -917,8 +926,8 @@ contract("AOContent & AOEarning", function(accounts) {
 				var accountBalanceAfter = await aotoken.balanceOf(account);
 				var accountStakedBalanceAfter = await aotoken.stakedBalance(account);
 				var accountWeightedIndexAfter = await aotoken.weightedIndexByAddress(account);
-				var accountPrimordialBalanceAfter = await aotoken.icoBalanceOf(account);
-				var accountPrimordialStakedBalanceAfter = await aotoken.icoStakedBalance(account, stakedContentBefore[4].toString());
+				var accountPrimordialBalanceAfter = await aotoken.primordialBalanceOf(account);
+				var accountPrimordialStakedBalanceAfter = await aotoken.primordialStakedBalance(account, stakedContentBefore[4].toString());
 
 				assert.equal(stakedContentAfter[2].toString(), 0, "Staked content has incorrect networkAmount after unstaking");
 				assert.equal(stakedContentAfter[3].toString(), 0, "Staked content has incorrect primordialAmount after unstaking");

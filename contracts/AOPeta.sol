@@ -10,6 +10,6 @@ contract AOPeta is AOToken {
 		AOToken(initialSupply, tokenName, tokenSymbol) public {
 		powerOfTen = 15;
 		decimals = 15;
-		icoContract = false;
+		networkExchangeContract = false;
 	}
 }

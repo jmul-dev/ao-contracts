@@ -10,6 +10,6 @@ contract AOKilo is AOToken {
 		AOToken(initialSupply, tokenName, tokenSymbol) public {
 		powerOfTen = 3;
 		decimals = 3;
-		icoContract = false;
+		networkExchangeContract = false;
 	}
 }

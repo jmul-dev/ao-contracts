@@ -10,6 +10,6 @@ contract AOExa is AOToken {
 		AOToken(initialSupply, tokenName, tokenSymbol) public {
 		powerOfTen = 18;
 		decimals = 18;
-		icoContract = false;
+		networkExchangeContract = false;
 	}
 }

@@ -15,7 +15,7 @@ contract AOToken is developed, TokenERC20 {
 	// To differentiate denomination of AO
 	uint256 public powerOfTen;
 
-	/***** NORMAL ERC20 TOKEN VARIABLES *****/
+	/***** NETWORK TOKEN VARIABLES *****/
 	uint256 public sellPrice;
 	uint256 public buyPrice;
 
@@ -30,36 +30,36 @@ contract AOToken is developed, TokenERC20 {
 	event Escrow(address indexed from, address indexed to, uint256 value);
 	event Unescrow(address indexed from, uint256 value);
 
-	/***** ICO TOKEN VARIABLES *****/
-	uint256 public icoTotalSupply;
-	uint256 public icoSellPrice;
-	uint256 public icoBuyPrice;
-	bool public icoContract;
+	/***** PRIMORDIAL TOKEN VARIABLES *****/
+	uint256 public primordialTotalSupply;
+	uint256 public primordialSellPrice;
+	uint256 public primordialBuyPrice;
+	bool public networkExchangeContract;
 
-	mapping (address => uint256) public icoBalanceOf;
-	mapping (address => mapping (address => uint256)) public icoAllowance;
+	mapping (address => uint256) public primordialBalanceOf;
+	mapping (address => mapping (address => uint256)) public primordialAllowance;
 
 	// Mapping from owner's lot weighted index to the amount of staked tokens
-	mapping (address => mapping (uint256 => uint256)) public icoStakedBalance;
+	mapping (address => mapping (uint256 => uint256)) public primordialStakedBalance;
 
-	event IcoTransfer(address indexed from, address indexed to, uint256 value);
-	event IcoApproval(address indexed _owner, address indexed _spender, uint256 _value);
-	event IcoBurn(address indexed from, uint256 value);
-	event IcoStake(address indexed from, uint256 value, uint256 weightedIndex);
-	event IcoUnstake(address indexed from, uint256 value, uint256 weightedIndex);
+	event PrimordialTransfer(address indexed from, address indexed to, uint256 value);
+	event PrimordialApproval(address indexed _owner, address indexed _spender, uint256 _value);
+	event PrimordialBurn(address indexed from, uint256 value);
+	event PrimordialStake(address indexed from, uint256 value, uint256 weightedIndex);
+	event PrimordialUnstake(address indexed from, uint256 value, uint256 weightedIndex);
 
 	uint256 public totalLots;
 	uint256 public lotIndex;
 
 	// Max supply of 1,125,899,906,842,620 AOTKN
-	uint256 constant public MAX_ICO_SUPPLY = 1125899906842620;
+	uint256 constant public MAX_Primordial_SUPPLY = 1125899906842620;
 	// The amount of tokens that we want to reserve for foundation
-	uint256 constant public ICO_RESERVED_FOR_FOUNDATION = 125899906842620;
+	uint256 constant public Primordial_RESERVED_FOR_FOUNDATION = 125899906842620;
 	// Account for 6 decimal points for weighted index
 	uint256 constant public WEIGHTED_INDEX_DIVISOR = 10 ** 6; // 1000000 = 1
 
 	bool public foundationReserved;
-	bool public icoEnded;
+	bool public networkExchangeEnded;
 
 	struct Lot {
 		bytes32 lotId;
@@ -91,20 +91,20 @@ contract AOToken is developed, TokenERC20 {
 		TokenERC20(initialSupply, tokenName, tokenSymbol) public {
 		powerOfTen = 0;
 		decimals = 0;
-		icoContract = true;
-		setIcoPrices(0, 10000); // Set ICO buy price to 10000 Wei/token
+		networkExchangeContract = true;
+		setPrimordialPrices(0, 10000); // Set Primordial buy price to 10000 Wei/token
 	}
 
 	/**
-	 * @dev Checks if this is the ICO contract
+	 * @dev Checks if this is the Primordial contract
 	 */
-	modifier isIco {
-		require (icoContract == true);
+	modifier isNetworkExchange {
+		require (networkExchangeContract == true);
 		_;
 	}
 
 	/***** DEVELOPER ONLY METHODS *****/
-	/***** NORMAL ERC20 DEVELOPER ONLY METHODS *****/
+	/***** NETWORK TOKEN DEVELOPER ONLY METHODS *****/
 	/**
 	 * @dev Prevent/Allow target from sending & receiving tokens
 	 * @param target Address to be frozen
@@ -170,7 +170,7 @@ contract AOToken is developed, TokenERC20 {
 	 * @dev Store `_value` from `_from` to `_to` in escrow
 	 * @param _from The address of the sender
 	 * @param _to The address of the recipient
-	 * @param _value The amount of normal ERC20 tokens to put in escrow
+	 * @param _value The amount of network tokens to put in escrow
 	 * @return true on success
 	 */
 	function escrowFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
@@ -196,7 +196,7 @@ contract AOToken is developed, TokenERC20 {
 	/**
 	 * @dev Release escrowed `_value` from `_from`
 	 * @param _from The address of the sender
-	 * @param _value The amount of escrowed normal ERC20 tokens to be released
+	 * @param _value The amount of escrowed network tokens to be released
 	 * @return true on success
 	 */
 	function unescrowFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
@@ -222,82 +222,82 @@ contract AOToken is developed, TokenERC20 {
 		return true;
 	}
 
-	/***** ICO TOKEN DEVELOPER ONLY METHODS *****/
+	/***** PRIMORDIAL TOKEN DEVELOPER ONLY METHODS *****/
 	/**
-	 * @dev Allow users to buy ICO tokens for `newBuyPrice` eth and sell ICO tokens for `newSellPrice` eth
-	 * @param newIcoSellPrice Price users can sell to the contract
-	 * @param newIcoBuyPrice Price users can buy from the contract
+	 * @dev Allow users to buy Primordial tokens for `newBuyPrice` eth and sell Primordial tokens for `newSellPrice` eth
+	 * @param newPrimordialSellPrice Price users can sell to the contract
+	 * @param newPrimordialBuyPrice Price users can buy from the contract
 	 */
-	function setIcoPrices(uint256 newIcoSellPrice, uint256 newIcoBuyPrice) public onlyDeveloper isIco {
-		icoSellPrice = newIcoSellPrice;
-		icoBuyPrice = newIcoBuyPrice;
+	function setPrimordialPrices(uint256 newPrimordialSellPrice, uint256 newPrimordialBuyPrice) public onlyDeveloper isNetworkExchange {
+		primordialSellPrice = newPrimordialSellPrice;
+		primordialBuyPrice = newPrimordialBuyPrice;
 	}
 
 	/**
 	 * @dev Reserve some tokens for the Foundation
 	 */
-	function reserveForFoundation() public onlyDeveloper isIco {
-		require (icoEnded == false);
+	function reserveForFoundation() public onlyDeveloper isNetworkExchange {
+		require (networkExchangeEnded == false);
 		require (foundationReserved == false);
-		require (icoTotalSupply < MAX_ICO_SUPPLY);
+		require (primordialTotalSupply < MAX_Primordial_SUPPLY);
 
 		foundationReserved = true;
-		uint256 tokenAmount = ICO_RESERVED_FOR_FOUNDATION;
+		uint256 tokenAmount = Primordial_RESERVED_FOR_FOUNDATION;
 
-		if (icoTotalSupply.add(tokenAmount) >= MAX_ICO_SUPPLY) {
-			tokenAmount = MAX_ICO_SUPPLY.sub(icoTotalSupply);
-			icoEnded = true;
+		if (primordialTotalSupply.add(tokenAmount) >= MAX_Primordial_SUPPLY) {
+			tokenAmount = MAX_Primordial_SUPPLY.sub(primordialTotalSupply);
+			networkExchangeEnded = true;
 		}
 
-		_createIcoLot(msg.sender, tokenAmount);
+		_createPrimordialLot(msg.sender, tokenAmount);
 	}
 
 	/**
-	 * @dev Stake `_value` ICO tokens at `_weightedIndex ` index on behalf of `_from`
+	 * @dev Stake `_value` Primordial tokens at `_weightedIndex ` index on behalf of `_from`
 	 * @param _from The address of the target
-	 * @param _value The amount of ICO tokens to stake
-	 * @param _weightedIndex The weighted index of the ICO tokens
+	 * @param _value The amount of Primordial tokens to stake
+	 * @param _weightedIndex The weighted index of the Primordial tokens
 	 * @return true on success
 	 */
-	function stakeIcoTokenFrom(address _from, uint256 _value, uint256 _weightedIndex) public inWhitelist(msg.sender) isIco returns (bool) {
+	function stakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedIndex) public inWhitelist(msg.sender) isNetworkExchange returns (bool) {
 		// Check if the targeted balance is enough
-		require (icoBalanceOf[_from] >= _value);
+		require (primordialBalanceOf[_from] >= _value);
 		// Make sure the weighted index is the same as account's current weighted index
 		require (_weightedIndex == ownerWeightedIndex[_from]);
 		// Subtract from the targeted balance
-		icoBalanceOf[_from] = icoBalanceOf[_from].sub(_value);
+		primordialBalanceOf[_from] = primordialBalanceOf[_from].sub(_value);
 		// Add to the targeted staked balance
-		icoStakedBalance[_from][_weightedIndex] = icoStakedBalance[_from][_weightedIndex].add(_value);
-		emit IcoStake(_from, _value, _weightedIndex);
+		primordialStakedBalance[_from][_weightedIndex] = primordialStakedBalance[_from][_weightedIndex].add(_value);
+		emit PrimordialStake(_from, _value, _weightedIndex);
 		return true;
 	}
 
 	/**
-	 * @dev Unstake `_value` ICO tokens at `_weightedIndex` on behalf of `_from`
+	 * @dev Unstake `_value` Primordial tokens at `_weightedIndex` on behalf of `_from`
 	 * @param _from The address of the target
 	 * @param _value The amount to unstake
-	 * @param _weightedIndex The weighted index of the ICO tokens
+	 * @param _weightedIndex The weighted index of the Primordial tokens
 	 * @return true on success
 	 */
-	function unstakeIcoTokenFrom(address _from, uint256 _value, uint256 _weightedIndex) public inWhitelist(msg.sender) isIco returns (bool) {
+	function unstakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedIndex) public inWhitelist(msg.sender) isNetworkExchange returns (bool) {
 		// Check if the targeted staked balance is enough
-		require (icoStakedBalance[_from][_weightedIndex] >= _value);
+		require (primordialStakedBalance[_from][_weightedIndex] >= _value);
 
 		// Subtract from the targeted staked balance
-		icoStakedBalance[_from][_weightedIndex] = icoStakedBalance[_from][_weightedIndex].sub(_value);
+		primordialStakedBalance[_from][_weightedIndex] = primordialStakedBalance[_from][_weightedIndex].sub(_value);
 
 		// Recalculate owner weighted index
-		ownerWeightedIndex[_from] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_from], icoBalanceOf[_from], _weightedIndex, _value);
+		ownerWeightedIndex[_from] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_from], primordialBalanceOf[_from], _weightedIndex, _value);
 
 		// Add to the targeted balance
-		icoBalanceOf[_from] = icoBalanceOf[_from].add(_value);
+		primordialBalanceOf[_from] = primordialBalanceOf[_from].add(_value);
 
-		emit IcoUnstake(_from, _value, _weightedIndex);
+		emit PrimordialUnstake(_from, _value, _weightedIndex);
 		return true;
 	}
 
 	/***** PUBLIC METHODS *****/
-	/***** NORMAL ERC20 PUBLIC METHODS *****/
+	/***** NETWORK TOKEN PUBLIC METHODS *****/
 	/**
 	 * @dev Buy tokens from contract by sending ether
 	 */
@@ -319,41 +319,41 @@ contract AOToken is developed, TokenERC20 {
 		msg.sender.transfer(amount.mul(sellPrice));
 	}
 
-	/***** ICO TOKEN PUBLIC METHODS *****/
+	/***** Primordial TOKEN PUBLIC METHODS *****/
 	/**
-	 * @dev Buy ICO tokens from contract by sending ether
+	 * @dev Buy Primordial tokens from contract by sending ether
 	 */
-	function buyIcoToken() public payable isIco {
-		require (icoEnded == false);
-		require (icoTotalSupply < MAX_ICO_SUPPLY);
-		require (icoBuyPrice > 0);
+	function buyPrimordialToken() public payable isNetworkExchange {
+		require (networkExchangeEnded == false);
+		require (primordialTotalSupply < MAX_Primordial_SUPPLY);
+		require (primordialBuyPrice > 0);
 		require (msg.value > 0);
 
 		// Calculate the amount of tokens
-		uint256 tokenAmount = msg.value.div(icoBuyPrice);
+		uint256 tokenAmount = msg.value.div(primordialBuyPrice);
 
 		uint256 remainderEth = 0;
 
-		// Make sure icoTotalSupply is not overflowing
-		if (icoTotalSupply.add(tokenAmount) >= MAX_ICO_SUPPLY) {
-			tokenAmount = MAX_ICO_SUPPLY.sub(icoTotalSupply);
-			icoEnded = true;
-			remainderEth = msg.value.sub(tokenAmount.mul(icoBuyPrice));
+		// Make sure primordialTotalSupply is not overflowing
+		if (primordialTotalSupply.add(tokenAmount) >= MAX_Primordial_SUPPLY) {
+			tokenAmount = MAX_Primordial_SUPPLY.sub(primordialTotalSupply);
+			networkExchangeEnded = true;
+			remainderEth = msg.value.sub(tokenAmount.mul(primordialBuyPrice));
 		}
 
-		_createIcoLot(msg.sender, tokenAmount);
+		_createPrimordialLot(msg.sender, tokenAmount);
 		if (remainderEth > 0) {
 			msg.sender.transfer(remainderEth);
 		}
 	}
 
 	/**
-	 * @dev Send `_value` ICO tokens to `_to` from your account
+	 * @dev Send `_value` Primordial tokens to `_to` from your account
 	 * @param _to The address of the recipient
 	 * @param _value The amount to send
 	 * @return true on success
 	 */
-	function transferIcoToken(address _to, uint256 _value) public isIco returns (bool success) {
+	function transferPrimordialToken(address _to, uint256 _value) public isNetworkExchange returns (bool success) {
 		bytes32 _createdLotId = _createWeightedIndexLot(_to, _value, ownerWeightedIndex[msg.sender]);
 		Lot memory _lot = lots[_createdLotId];
 
@@ -361,24 +361,24 @@ contract AOToken is developed, TokenERC20 {
 		require (_lot.lotOwner == _to);
 
 		// Update the weighted index of the recipient
-		ownerWeightedIndex[_to] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_to], icoBalanceOf[_to], ownerWeightedIndex[msg.sender], _value);
+		ownerWeightedIndex[_to] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_to], primordialBalanceOf[_to], ownerWeightedIndex[msg.sender], _value);
 
-		// Transfer the ICO tokens
-		require (_transferIcoToken(msg.sender, _to, _value));
+		// Transfer the Primordial tokens
+		require (_transferPrimordialToken(msg.sender, _to, _value));
 		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.index, _lot.tokenAmount);
 		return true;
 	}
 
 	/**
-	 * @dev Send `_value` ICO tokens to `_to` from `_from`
+	 * @dev Send `_value` Primordial tokens to `_to` from `_from`
 	 * @param _from The address of the sender
 	 * @param _to The address of the recipient
 	 * @param _value The amount to send
 	 * @return true on success
 	 */
-	function transferIcoTokenFrom(address _from, address _to, uint256 _value) public isIco returns (bool success) {
-		require (_value <= icoAllowance[_from][msg.sender]);
-		icoAllowance[_from][msg.sender] = icoAllowance[_from][msg.sender].sub(_value);
+	function transferPrimordialTokenFrom(address _from, address _to, uint256 _value) public isNetworkExchange returns (bool success) {
+		require (_value <= primordialAllowance[_from][msg.sender]);
+		primordialAllowance[_from][msg.sender] = primordialAllowance[_from][msg.sender].sub(_value);
 
 		bytes32 _createdLotId = _createWeightedIndexLot(_to, _value, ownerWeightedIndex[_from]);
 		Lot memory _lot = lots[_createdLotId];
@@ -387,67 +387,67 @@ contract AOToken is developed, TokenERC20 {
 		require (_lot.lotOwner == _to);
 
 		// Update the weighted index of the recipient
-		ownerWeightedIndex[_to] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_to], icoBalanceOf[_to], ownerWeightedIndex[_from], _value);
+		ownerWeightedIndex[_to] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_to], primordialBalanceOf[_to], ownerWeightedIndex[_from], _value);
 
-		// Transfer the ICO tokens
-		require (_transferIcoToken(_from, _to, _value));
+		// Transfer the Primordial tokens
+		require (_transferPrimordialToken(_from, _to, _value));
 		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.index, _lot.tokenAmount);
 		return true;
 	}
 
 	/**
-	 * @dev Allows `_spender` to spend no more than `_value` ICO tokens in your behalf
+	 * @dev Allows `_spender` to spend no more than `_value` Primordial tokens in your behalf
 	 * @param _spender The address authorized to spend
 	 * @param _value The max amount they can spend
 	 * @return true on success
 	 */
-	function approveIcoToken(address _spender, uint256 _value) public isIco returns (bool success) {
-		icoAllowance[msg.sender][_spender] = _value;
-		emit IcoApproval(msg.sender, _spender, _value);
+	function approvePrimordialToken(address _spender, uint256 _value) public isNetworkExchange returns (bool success) {
+		primordialAllowance[msg.sender][_spender] = _value;
+		emit PrimordialApproval(msg.sender, _spender, _value);
 		return true;
 	}
 
 	/**
-	 * @dev Allows `_spender` to spend no more than `_value` ICO tokens in your behalf, and then ping the contract about it
+	 * @dev Allows `_spender` to spend no more than `_value` Primordial tokens in your behalf, and then ping the contract about it
 	 * @param _spender The address authorized to spend
 	 * @param _value The max amount they can spend
 	 * @param _extraData some extra information to send to the approved contract
 	 * @return true on success
 	 */
-	function approveIcoTokenAndCall(address _spender, uint256 _value, bytes _extraData) public isIco returns (bool success) {
+	function approvePrimordialTokenAndCall(address _spender, uint256 _value, bytes _extraData) public isNetworkExchange returns (bool success) {
 		tokenRecipient spender = tokenRecipient(_spender);
-		if (approveIcoToken(_spender, _value)) {
+		if (approvePrimordialToken(_spender, _value)) {
 			spender.receiveApproval(msg.sender, _value, this, _extraData);
 			return true;
 		}
 	}
 
 	/**
-	 * @dev Remove `_value` ICO tokens from the system irreversibly
+	 * @dev Remove `_value` Primordial tokens from the system irreversibly
 	 * @param _value The amount to burn
 	 * @return true on success
 	 */
-	function burnIcoToken(uint256 _value) public isIco returns (bool success) {
-		require (icoBalanceOf[msg.sender] >= _value);
-		icoBalanceOf[msg.sender] = icoBalanceOf[msg.sender].sub(_value);
-		icoTotalSupply = icoTotalSupply.sub(_value);
-		emit IcoBurn(msg.sender, _value);
+	function burnPrimordialToken(uint256 _value) public isNetworkExchange returns (bool success) {
+		require (primordialBalanceOf[msg.sender] >= _value);
+		primordialBalanceOf[msg.sender] = primordialBalanceOf[msg.sender].sub(_value);
+		primordialTotalSupply = primordialTotalSupply.sub(_value);
+		emit PrimordialBurn(msg.sender, _value);
 		return true;
 	}
 
 	/**
-	 * @dev Remove `_value` ICO tokens from the system irreversibly on behsalf of `_from`
+	 * @dev Remove `_value` Primordial tokens from the system irreversibly on behsalf of `_from`
 	 * @param _from The address of sender
 	 * @param _value The amount to burn
 	 * @return true on success
 	 */
-	function burnIcoTokenFrom(address _from, uint256 _value) public isIco returns (bool success) {
-		require (icoBalanceOf[_from] >= _value);
-		require (_value <= icoAllowance[_from][msg.sender]);
-		icoBalanceOf[_from] = icoBalanceOf[_from].sub(_value);
-		icoAllowance[_from][msg.sender] = icoAllowance[_from][msg.sender].sub(_value);
-		icoTotalSupply = icoTotalSupply.sub(_value);
-		emit IcoBurn(_from, _value);
+	function burnPrimordialTokenFrom(address _from, uint256 _value) public isNetworkExchange returns (bool success) {
+		require (primordialBalanceOf[_from] >= _value);
+		require (_value <= primordialAllowance[_from][msg.sender]);
+		primordialBalanceOf[_from] = primordialBalanceOf[_from].sub(_value);
+		primordialAllowance[_from][msg.sender] = primordialAllowance[_from][msg.sender].sub(_value);
+		primordialTotalSupply = primordialTotalSupply.sub(_value);
+		emit PrimordialBurn(_from, _value);
 		return true;
 	}
 
@@ -456,7 +456,7 @@ contract AOToken is developed, TokenERC20 {
 	 * @param _lotOwner The address of the lot owner
 	 * @return array of lot IDs
 	 */
-	function lotsByAddress(address _lotOwner) public isIco view returns (bytes32[]) {
+	function lotsByAddress(address _lotOwner) public isNetworkExchange view returns (bytes32[]) {
 		return ownedLots[_lotOwner];
 	}
 
@@ -465,7 +465,7 @@ contract AOToken is developed, TokenERC20 {
 	 * @param _lotOwner The address of the lot owner
 	 * @return total lots owner by the address
 	 */
-	function totalLotsByAddress(address _lotOwner) public isIco view returns (uint256) {
+	function totalLotsByAddress(address _lotOwner) public isNetworkExchange view returns (uint256) {
 		return ownedLots[_lotOwner].length;
 	}
 
@@ -475,9 +475,9 @@ contract AOToken is developed, TokenERC20 {
 	 * @param _index uint256 representing the index to be accessed of the requested lots list
 	 * @return id of the lot
 	 * @return index of the lot in (10 ** 6)
-	 * @return ICO token amount in the lot
+	 * @return Primordial token amount in the lot
 	 */
-	function lotOfOwnerByIndex(address _lotOwner, uint256 _index) public isIco view returns (bytes32, uint256, uint256) {
+	function lotOfOwnerByIndex(address _lotOwner, uint256 _index) public isNetworkExchange view returns (bytes32, uint256, uint256) {
 		require (_index < ownedLots[_lotOwner].length);
 		Lot memory _lot = lots[ownedLots[_lotOwner][_index]];
 		return (_lot.lotId, _lot.index, _lot.tokenAmount);
@@ -488,9 +488,9 @@ contract AOToken is developed, TokenERC20 {
 	 * @param _lotId The lot ID in question
 	 * @return id of the lot
 	 * @return index of the lot in (10 ** 6)
-	 * @return ICO token amount in the lot
+	 * @return Primordial token amount in the lot
 	 */
-	function lotById(bytes32 _lotId) public isIco view returns (bytes32, uint256, uint256) {
+	function lotById(bytes32 _lotId) public isNetworkExchange view returns (bytes32, uint256, uint256) {
 		Lot memory _lot = lots[_lotId];
 		return (_lot.lotId, _lot.index, _lot.tokenAmount);
 	}
@@ -500,92 +500,92 @@ contract AOToken is developed, TokenERC20 {
 	 * @param _lotOwner The address of the lot owner
 	 * @return the weighted index of the address (in 10 ** 6)
 	 */
-	function weightedIndexByAddress(address _lotOwner) public isIco view returns (uint256) {
+	function weightedIndexByAddress(address _lotOwner) public isNetworkExchange view returns (uint256) {
 		return ownerWeightedIndex[_lotOwner];
 	}
 
-	/***** NORMAL ERC20 & ICO TOKEN METHODS *****/
+	/***** NETWORK TOKEN & PRIMORDIAL TOKEN METHODS *****/
 	/**
-	 * @dev Send `_value` normal ERC20 and `_icoValue` ICO tokens to `_to` from your account
+	 * @dev Send `_value` network tokens and `_primordialValue` primordial tokens to `_to` from your account
 	 * @param _to The address of the recipient
-	 * @param _value The amount of normal ERC20 tokens to send
-	 * @param _icoValue The amount of ICO tokens to send
+	 * @param _value The amount of network tokens to send
+	 * @param _primordialValue The amount of Primordial tokens to send
 	 * @return true on success
 	 */
-	function transferTokens(address _to, uint256 _value, uint256 _icoValue) public isIco returns (bool success) {
+	function transferTokens(address _to, uint256 _value, uint256 _primordialValue) public isNetworkExchange returns (bool success) {
 		require (super.transfer(_to, _value));
-		require (transferIcoToken(_to, _icoValue));
+		require (transferPrimordialToken(_to, _primordialValue));
 		return true;
 	}
 
 	/**
-	 * @dev Send `_value` normal ERC20 and `_icoValue` ICO tokens to `_to` from `_from`
+	 * @dev Send `_value` network tokens and `_primordialValue` primordial tokens to `_to` from `_from`
 	 * @param _from The address of the sender
 	 * @param _to The address of the recipient
-	 * @param _value The amount of normal ERC20 tokens to send
-	 * @param _icoValue The amount of ICO tokens to send
+	 * @param _value The amount of network tokens tokens to send
+	 * @param _primordialValue The amount of Primordial tokens to send
 	 * @return true on success
 	 */
-	function transferTokensFrom(address _from, address _to, uint256 _value, uint256 _icoValue) public isIco returns (bool success) {
+	function transferTokensFrom(address _from, address _to, uint256 _value, uint256 _primordialValue) public isNetworkExchange returns (bool success) {
 		require (super.transferFrom(_from, _to, _value));
-		require (transferIcoTokenFrom(_from, _to, _icoValue));
+		require (transferPrimordialTokenFrom(_from, _to, _primordialValue));
 		return true;
 	}
 
 	/**
-	 * @dev Allows `_spender` to spend no more than `_value` normal ERC20 and `_icoValue` ICO tokens in your behalf
+	 * @dev Allows `_spender` to spend no more than `_value` network tokens and `_primordialValue` Primordial tokens in your behalf
 	 * @param _spender The address authorized to spend
-	 * @param _value The max amount of normal ERC20 they can spend
-	 * @param _icoValue The max amount of normal ERC20 they can spend
+	 * @param _value The max amount of network tokens they can spend
+	 * @param _primordialValue The max amount of network tokens they can spend
 	 * @return true on success
 	 */
-	function approveTokens(address _spender, uint256 _value, uint256 _icoValue) public isIco returns (bool success) {
+	function approveTokens(address _spender, uint256 _value, uint256 _primordialValue) public isNetworkExchange returns (bool success) {
 		require (super.approve(_spender, _value));
-		require (approveIcoToken(_spender, _icoValue));
+		require (approvePrimordialToken(_spender, _primordialValue));
 		return true;
 	}
 
 	/**
-	 * @dev Allows `_spender` to spend no more than `_value` normal ERC20 and `_icoValue` ICO tokens in your behalf, and then ping the contract about it
+	 * @dev Allows `_spender` to spend no more than `_value` network tokens and `_primordialValue` Primordial tokens in your behalf, and then ping the contract about it
 	 * @param _spender The address authorized to spend
-	 * @param _value The max amount of normal ERC20 they can spend
-	 * @param _icoValue The max amount of ICO Tokens they can spend
+	 * @param _value The max amount of network tokens they can spend
+	 * @param _primordialValue The max amount of Primordial Tokens they can spend
 	 * @param _extraData some extra information to send to the approved contract
 	 * @return true on success
 	 */
-	function approveTokensAndCall(address _spender, uint256 _value, uint256 _icoValue, bytes _extraData) public isIco returns (bool success) {
+	function approveTokensAndCall(address _spender, uint256 _value, uint256 _primordialValue, bytes _extraData) public isNetworkExchange returns (bool success) {
 		require (super.approveAndCall(_spender, _value, _extraData));
-		require (approveIcoTokenAndCall(_spender, _icoValue, _extraData));
+		require (approvePrimordialTokenAndCall(_spender, _primordialValue, _extraData));
 		return true;
 	}
 
 	/**
-	 * @dev Remove `_value` normal ERC20 and `_icoValue` ICO tokens from the system irreversibly
-	 * @param _value The amount of normal ERC20 to burn
-	 * @param _icoValue The amount of ICO tokens to burn
+	 * @dev Remove `_value` network tokens and `_primordialValue` Primordial tokens from the system irreversibly
+	 * @param _value The amount of network tokens to burn
+	 * @param _primordialValue The amount of Primordial tokens to burn
 	 * @return true on success
 	 */
-	function burnTokens(uint256 _value, uint256 _icoValue) public isIco returns (bool success) {
+	function burnTokens(uint256 _value, uint256 _primordialValue) public isNetworkExchange returns (bool success) {
 		require (super.burn(_value));
-		require (burnIcoToken(_icoValue));
+		require (burnPrimordialToken(_primordialValue));
 		return true;
 	}
 
 	/**
-	 * @dev Remove `_value` normal ERC20 and `_icoValue` ICO tokens from the system irreversibly on behsalf of `_from`
+	 * @dev Remove `_value` network tokens and `_primordialValue` Primordial tokens from the system irreversibly on behsalf of `_from`
 	 * @param _from The address of sender
-	 * @param _value The amount of normal ERC20 to burn
-	 * @param _icoValue The amount of ICO tokens to burn
+	 * @param _value The amount of network tokens to burn
+	 * @param _primordialValue The amount of Primordial tokens to burn
 	 * @return true on success
 	 */
-	function burnTokensFrom(address _from, uint256 _value, uint256 _icoValue) public isIco returns (bool success) {
+	function burnTokensFrom(address _from, uint256 _value, uint256 _primordialValue) public isNetworkExchange returns (bool success) {
 		require (super.burnFrom(_from, _value));
-		require (burnIcoTokenFrom(_from, _icoValue));
+		require (burnPrimordialTokenFrom(_from, _primordialValue));
 		return true;
 	}
 
 	/***** INTERNAL METHODS *****/
-	/***** NORMAL ERC20 INTERNAL METHODS *****/
+	/***** NETWORK TOKENS INTERNAL METHODS *****/
 	/**
 	 * @dev Send `_value` tokens from `_from` to `_to`
 	 * @param _from The address of sender
@@ -605,13 +605,13 @@ contract AOToken is developed, TokenERC20 {
 		assert(balanceOf[_from].add(balanceOf[_to]) == previousBalances);
 	}
 
-	/***** ICO TOKEN INTERNAL METHODS *****/
+	/***** PRIMORDIAL TOKEN INTERNAL METHODS *****/
 	/**
-	 * @dev Create a lot with `tokenAmount` of tokens for an `account` during ICO
+	 * @dev Create a lot with `tokenAmount` of tokens for an `account` during Primordial
 	 * @param _account Address of the lot owner
 	 * @param _tokenAmount The amount of tokens to be stored in the lot
 	 */
-	function _createIcoLot(address _account, uint256 _tokenAmount) internal {
+	function _createPrimordialLot(address _account, uint256 _tokenAmount) internal {
 		require (_account != address(0));
 		require (_tokenAmount > 0);
 
@@ -632,22 +632,22 @@ contract AOToken is developed, TokenERC20 {
 		uint256 lotIdIndex = ownedLots[_account].length;
 		ownedLots[_account].push(lotId);
 		ownedLotsIndex[_account][lotId] = lotIdIndex;
-		ownerWeightedIndex[_account] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_account], icoBalanceOf[_account], lot.index, lot.tokenAmount);
-		require (_mintIcoToken(_account, _tokenAmount));
+		ownerWeightedIndex[_account] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_account], primordialBalanceOf[_account], lot.index, lot.tokenAmount);
+		require (_mintPrimordialToken(_account, _tokenAmount));
 		emit LotCreation(lot.lotOwner, lot.lotId, lot.index, lot.tokenAmount);
 	}
 
 	/**
-	 * @dev Create `mintedAmount` ICO tokens and send it to `target`
-	 * @param target Address to receive the ICO tokens
-	 * @param mintedAmount The amount of ICO tokens it will receive
+	 * @dev Create `mintedAmount` Primordial tokens and send it to `target`
+	 * @param target Address to receive the Primordial tokens
+	 * @param mintedAmount The amount of Primordial tokens it will receive
 	 * @return true on success
 	 */
-	function _mintIcoToken(address target, uint256 mintedAmount) internal returns (bool) {
-		icoBalanceOf[target] = icoBalanceOf[target].add(mintedAmount);
-		icoTotalSupply = icoTotalSupply.add(mintedAmount);
-		emit IcoTransfer(0, this, mintedAmount);
-		emit IcoTransfer(this, target, mintedAmount);
+	function _mintPrimordialToken(address target, uint256 mintedAmount) internal returns (bool) {
+		primordialBalanceOf[target] = primordialBalanceOf[target].add(mintedAmount);
+		primordialTotalSupply = primordialTotalSupply.add(mintedAmount);
+		emit PrimordialTransfer(0, this, mintedAmount);
+		emit PrimordialTransfer(this, target, mintedAmount);
 		return true;
 	}
 
@@ -682,22 +682,22 @@ contract AOToken is developed, TokenERC20 {
 	}
 
 	/**
-	 * @dev Send `_value` ICO tokens from `_from` to `_to`
+	 * @dev Send `_value` Primordial tokens from `_from` to `_to`
 	 * @param _from The address of sender
 	 * @param _to The address of the recipient
 	 * @param _value The amount to send
 	 */
-	function _transferIcoToken(address _from, address _to, uint256 _value) internal returns (bool) {
+	function _transferPrimordialToken(address _from, address _to, uint256 _value) internal returns (bool) {
 		require (_to != address(0));									// Prevent transfer to 0x0 address. Use burn() instead
-		require (icoBalanceOf[_from] >= _value);						// Check if the sender has enough
-		require (icoBalanceOf[_to].add(_value) >= icoBalanceOf[_to]);	// Check for overflows
+		require (primordialBalanceOf[_from] >= _value);						// Check if the sender has enough
+		require (primordialBalanceOf[_to].add(_value) >= primordialBalanceOf[_to]);	// Check for overflows
 		require (!frozenAccount[_from]);								// Check if sender is frozen
 		require (!frozenAccount[_to]);									// Check if recipient is frozen
-		uint256 previousBalances = icoBalanceOf[_from].add(icoBalanceOf[_to]);
-		icoBalanceOf[_from] = icoBalanceOf[_from].sub(_value);			// Subtract from the sender
-		icoBalanceOf[_to] = icoBalanceOf[_to].add(_value);				// Add the same to the recipient
-		emit IcoTransfer(_from, _to, _value);
-		assert(icoBalanceOf[_from].add(icoBalanceOf[_to]) == previousBalances);
+		uint256 previousBalances = primordialBalanceOf[_from].add(primordialBalanceOf[_to]);
+		primordialBalanceOf[_from] = primordialBalanceOf[_from].sub(_value);			// Subtract from the sender
+		primordialBalanceOf[_to] = primordialBalanceOf[_to].add(_value);				// Add the same to the recipient
+		emit PrimordialTransfer(_from, _to, _value);
+		assert(primordialBalanceOf[_from].add(primordialBalanceOf[_to]) == previousBalances);
 		return true;
 	}
 }

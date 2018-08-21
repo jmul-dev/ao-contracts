@@ -167,7 +167,7 @@ contract AOContent is developed {
 	 * @param _newBaseDenominationAddress The new address
 	 */
 	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyDeveloper {
-		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).icoContract() == true);
+		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).networkExchangeContract() == true);
 		baseDenominationAddress = _newBaseDenominationAddress;
 		_baseAO = AOToken(baseDenominationAddress);
 	}
@@ -342,7 +342,7 @@ contract AOContent is developed {
 		}
 		if (_primordialAmount > 0) {
 			_stakedContent.primordialAmount = _stakedContent.primordialAmount.sub(_primordialAmount);
-			require (_baseAO.unstakeIcoTokenFrom(msg.sender, _primordialAmount, _stakedContent.primordialWeightedIndex));
+			require (_baseAO.unstakePrimordialTokenFrom(msg.sender, _primordialAmount, _stakedContent.primordialWeightedIndex));
 		}
 		emit UnstakePartialContent(_stakedContent.stakeOwner, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedIndex);
 	}
@@ -373,7 +373,7 @@ contract AOContent is developed {
 			uint256 _primordialWeightedIndex = _stakedContent.primordialWeightedIndex;
 			_stakedContent.primordialAmount = 0;
 			_stakedContent.primordialWeightedIndex = 0;
-			require (_baseAO.unstakeIcoTokenFrom(msg.sender, _primordialAmount, _primordialWeightedIndex));
+			require (_baseAO.unstakePrimordialTokenFrom(msg.sender, _primordialAmount, _primordialWeightedIndex));
 		}
 		emit UnstakeContent(_stakedContent.stakeOwner, _stakeId);
 	}
@@ -417,7 +417,7 @@ contract AOContent is developed {
 
 			// Primordial Token is the base AO Token
 			_stakedContent.primordialWeightedIndex = _baseAO.weightedIndexByAddress(_stakedContent.stakeOwner);
-			require (_baseAO.stakeIcoTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedIndex));
+			require (_baseAO.stakePrimordialTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedIndex));
 		}
 
 		emit StakeExistingContent(msg.sender, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedIndex);
@@ -652,7 +652,7 @@ contract AOContent is developed {
 
 			// Primordial Token is the base AO Token
 			_stakedContent.primordialWeightedIndex = _baseAO.weightedIndexByAddress(_stakedContent.stakeOwner);
-			require (_baseAO.stakeIcoTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedIndex));
+			require (_baseAO.stakePrimordialTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedIndex));
 		}
 
 		emit StakeContent(_stakedContent.stakeOwner, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedIndex, _stakedContent.profitPercentage, _stakedContent.createdOnTimestamp);

@@ -10,6 +10,6 @@ contract AOTera is AOToken {
 		AOToken(initialSupply, tokenName, tokenSymbol) public {
 		powerOfTen = 12;
 		decimals = 12;
-		icoContract = false;
+		networkExchangeContract = false;
 	}
 }

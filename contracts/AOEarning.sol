@@ -127,7 +127,7 @@ contract AOEarning is developed {
 	 * @param _newBaseDenominationAddress The new address
 	 */
 	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyDeveloper {
-		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).icoContract() == true);
+		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).networkExchangeContract() == true);
 		baseDenominationAddress = _newBaseDenominationAddress;
 		_baseAO = AOToken(baseDenominationAddress);
 	}

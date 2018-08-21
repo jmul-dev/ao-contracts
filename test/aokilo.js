@@ -42,7 +42,7 @@ contract("AOKilo", function(accounts) {
 		});
 	});
 
-	contract("Normal ERC20 Function Tests", function() {
+	contract("Network Tokens Function Tests", function() {
 		it("only developer can mint token", async function() {
 			var canMint;
 			var balance;
@@ -238,18 +238,18 @@ contract("AOKilo", function(accounts) {
 		});
 	});
 
-	contract("ICO Token Function Tests", function() {
-		it("developer should NOT be able to set ICO prices", async function() {
-			var canSetIcoPrices;
+	contract("Primordial Token Function Tests", function() {
+		it("developer should NOT be able to set Primordial prices", async function() {
+			var canSetPrimordialPrices;
 			try {
-				await tokenMeta.setIcoPrices(100, 100, { from: developer });
-				canSetIcoPrices = true;
+				await tokenMeta.setPrimordialPrices(100, 100, { from: developer });
+				canSetPrimordialPrices = true;
 			} catch (e) {
-				canSetIcoPrices = false;
+				canSetPrimordialPrices = false;
 			}
-			assert.equal(canSetIcoPrices, false, "Developer can set ICO token prices");
+			assert.equal(canSetPrimordialPrices, false, "Developer can set Primordial token prices");
 		});
-		it("developer should NOT be able to reserve ICO tokens for the Foundation", async function() {
+		it("developer should NOT be able to reserve Primordial tokens for the Foundation", async function() {
 			var canReserveForFoundation;
 			try {
 				await tokenMeta.reserveForFoundation({ from: developer });
@@ -257,47 +257,47 @@ contract("AOKilo", function(accounts) {
 			} catch (e) {
 				canReserveForFoundation = false;
 			}
-			assert.equal(canReserveForFoundation, false, "Developer can reserve ICO tokens for the Foundation");
+			assert.equal(canReserveForFoundation, false, "Developer can reserve Primordial tokens for the Foundation");
 		});
-		it("buyIcoToken() - should NOT be able tobuy ICO tokens from contract by sending ETH", async function() {
+		it("buyPrimordialToken() - should NOT be able tobuy Primordial tokens from contract by sending ETH", async function() {
 			var buySuccess;
 			try {
-				await tokenMeta.buyIcoToken({ from: account1, value: 10000 });
+				await tokenMeta.buyPrimordialToken({ from: account1, value: 10000 });
 				buySuccess = true;
 			} catch (e) {
 				buySuccess = false;
 			}
-			assert.equal(buySuccess, false, "Buy ICO token was successful when user sent some ETH");
+			assert.equal(buySuccess, false, "Buy Primordial token was successful when user sent some ETH");
 		});
-		it("transferIcoToken() - should NOT be able to send `_value` to `_to` from your account", async function() {
-			var transferIcoSuccess;
+		it("transferPrimordialToken() - should NOT be able to send `_value` to `_to` from your account", async function() {
+			var transferPrimordialSuccess;
 			try {
-				await tokenMeta.transferIcoToken(account2, 0, { from: account1 });
-				transferIcoSuccess = true;
+				await tokenMeta.transferPrimordialToken(account2, 0, { from: account1 });
+				transferPrimordialSuccess = true;
 			} catch (e) {
-				transferIcoSuccess = false;
+				transferPrimordialSuccess = false;
 			}
-			assert.equal(transferIcoSuccess, false, "Account1 can transfer ICO tokens");
+			assert.equal(transferPrimordialSuccess, false, "Account1 can transfer Primordial tokens");
 		});
-		it("burnIcoToken() - should NOT be able to remove `_value` tokens from the system irreversibly", async function() {
-			var burnIcoSuccess;
+		it("burnPrimordialToken() - should NOT be able to remove `_value` tokens from the system irreversibly", async function() {
+			var burnPrimordialSuccess;
 			try {
-				await tokenMeta.burnIcoToken(0, { from: account1 });
-				burnIcoSuccess = true;
+				await tokenMeta.burnPrimordialToken(0, { from: account1 });
+				burnPrimordialSuccess = true;
 			} catch (e) {
-				burnIcoSuccess = false;
+				burnPrimordialSuccess = false;
 			}
-			assert.equal(burnIcoSuccess, false, "Account1 can burn ICO tokens");
+			assert.equal(burnPrimordialSuccess, false, "Account1 can burn Primordial tokens");
 		});
-		it("approveIcoToken() - should NOT be able to set ICO allowance for other address", async function() {
-			var approveIcoSuccess;
+		it("approvePrimordialToken() - should NOT be able to set Primordial allowance for other address", async function() {
+			var approvePrimordialSuccess;
 			try {
-				await tokenMeta.approveIcoToken(account2, 0, { from: account1 });
-				approveIcoSuccess = true;
+				await tokenMeta.approvePrimordialToken(account2, 0, { from: account1 });
+				approvePrimordialSuccess = true;
 			} catch (e) {
-				approveIcoSuccess = false;
+				approvePrimordialSuccess = false;
 			}
-			assert.equal(approveIcoSuccess, false, "Account1 can set ICO allowance for other address");
+			assert.equal(approvePrimordialSuccess, false, "Account1 can set Primordial allowance for other address");
 		});
 		it("totalLotsByAddress() - should NOT be able to return the total lots owned by an address", async function() {
 			var totalLotsSuccess;
@@ -326,7 +326,7 @@ contract("AOKilo", function(accounts) {
 			await tokenMeta.mintToken(account1, 1000, { from: developer });
 		});
 
-		it("transferTokens() - should NOT be able to send `_value` normal ERC20 and `_icoValue` ICO tokens to `_to` from your account", async function() {
+		it("transferTokens() - should NOT be able to send `_value` network tokens and `_primordialValue` Primordial tokens to `_to` from your account", async function() {
 			var transferTokensSuccess;
 			try {
 				await tokenMeta.transferTokens(account2, 10, 0, { from: account1 });
@@ -334,9 +334,9 @@ contract("AOKilo", function(accounts) {
 			} catch (e) {
 				transferTokensSuccess = false;
 			}
-			assert.equal(transferTokensSuccess, false, "Account1 can transfer both normal ERC20 and ICO tokens");
+			assert.equal(transferTokensSuccess, false, "Account1 can transfer both network tokens and Primordial tokens");
 		});
-		it("burnTokens() - should NOT be able to remove `_value` normal ERC20 and `_icoValue` ICO tokens from the system irreversibly", async function() {
+		it("burnTokens() - should NOT be able to remove `_value` network tokens and `_primordialValue` Primordial tokens from the system irreversibly", async function() {
 			var burnTokensSuccess;
 			try {
 				await tokenMeta.burnTokens(5, 0, { from: account1 });
@@ -344,9 +344,9 @@ contract("AOKilo", function(accounts) {
 			} catch (e) {
 				burnTokensSuccess = false;
 			}
-			assert.equal(burnTokensSuccess, false, "Account1 can burn both normal ERC20 and ICO tokens");
+			assert.equal(burnTokensSuccess, false, "Account1 can burn both network tokens and Primordial tokens");
 		});
-		it("approveTokens() - should NOT be able to allow `_spender` to spend no more than `_value` normal ERC20 and `_icoValue` ICO tokens in your behalf", async function() {
+		it("approveTokens() - should NOT be able to allow `_spender` to spend no more than `_value` network tokens and `_primordialValue` Primordial tokens in your behalf", async function() {
 			var approveTokensSuccess;
 			try {
 				await tokenMeta.approveTokens(account2, 40, 0, { from: account1 });
@@ -354,11 +354,15 @@ contract("AOKilo", function(accounts) {
 			} catch (e) {
 				approveTokensSuccess = false;
 			}
-			assert.equal(approveTokensSuccess, false, "Account1 can set both normal ERC20 and ICO tokens allowances for other address");
+			assert.equal(
+				approveTokensSuccess,
+				false,
+				"Account1 can set both network tokens and Primordial tokens allowances for other address"
+			);
 		});
 	});
 	contract("Whitelisted Address Function Tests", function() {
-		var stakedIcoWeightedIndex;
+		var stakedPrimordialWeightedIndex;
 		before(async function() {
 			await tokenMeta.mintToken(account1, 100, { from: developer });
 		});
@@ -460,25 +464,25 @@ contract("AOKilo", function(accounts) {
 			);
 			assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.toNumber(), "Contract has incorrect total supply after unstaking");
 		});
-		it("should not be able to stake ICO tokens on behalf of others", async function() {
-			var canStakeIco;
+		it("should not be able to stake Primordial tokens on behalf of others", async function() {
+			var canStakePrimordial;
 			try {
-				await tokenMeta.stakeIcoTokenFrom(account1, 10, 0, { from: whitelistedAccount });
-				canStakeIco = true;
+				await tokenMeta.stakePrimordialTokenFrom(account1, 10, 0, { from: whitelistedAccount });
+				canStakePrimordial = true;
 			} catch (e) {
-				canStakeIco = false;
+				canStakePrimordial = false;
 			}
-			assert.equal(canStakeIco, false, "Contract allows account to stake ICO tokens on behalf of thers");
+			assert.equal(canStakePrimordial, false, "Contract allows account to stake Primordial tokens on behalf of thers");
 		});
-		it("should not be able to unstake ICO tokens on behalf of others", async function() {
-			var canUnstakeIco;
+		it("should not be able to unstake Primordial tokens on behalf of others", async function() {
+			var canUnstakePrimordial;
 			try {
-				await tokenMeta.unstakeIcoTokenFrom(account1, 10, 0, { from: whitelistedAccount });
-				canUnstakeIco = true;
+				await tokenMeta.unstakePrimordialTokenFrom(account1, 10, 0, { from: whitelistedAccount });
+				canUnstakePrimordial = true;
 			} catch (e) {
-				canUnstakeIco = false;
+				canUnstakePrimordial = false;
 			}
-			assert.equal(canUnstakeIco, false, "Contract allows account to unstake ICO tokens on behalf of thers");
+			assert.equal(canUnstakePrimordial, false, "Contract allows account to unstake Primordial tokens on behalf of thers");
 		});
 		it("should be able to burn tokens on behalf of others", async function() {
 			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
