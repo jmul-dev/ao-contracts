@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './owned.sol';
+import './developed.sol';
 import './AOToken.sol';
 import './AOTreasury.sol';
 import './AOEarning.sol';
@@ -13,7 +13,7 @@ import './AOLibrary.sol';
  * The purpose of this contract is to allow content creator to stake network ERC20 AO tokens and/or primordial AO Tokens
  * on his/her content
  */
-contract AOContent is owned {
+contract AOContent is developed {
 	using SafeMath for uint256;
 
 	bool public paused;
@@ -153,31 +153,30 @@ contract AOContent is owned {
 		_;
 	}
 
-	/***** OWNER ONLY METHODS *****/
+	/***** DEVELOPER ONLY METHODS *****/
 	/**
-	 * @dev Owner pauses/unpauses contract
+	 * @dev Developer pauses/unpauses contract
 	 * @param _paused Either to pause contract or not
 	 */
-	function setPaused(bool _paused) public onlyOwner {
+	function setPaused(bool _paused) public onlyDeveloper {
 		paused = _paused;
 	}
 
 	/**
-	 * @dev Owner updates base denomination address
+	 * @dev Developer updates base denomination address
 	 * @param _newBaseDenominationAddress The new address
 	 */
-	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyOwner {
+	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyDeveloper {
 		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).icoContract() == true);
 		baseDenominationAddress = _newBaseDenominationAddress;
 		_baseAO = AOToken(baseDenominationAddress);
 	}
 
 	/**
-	 * @dev Owner triggers emergency mode.
+	 * @dev Developer triggers emergency mode.
 	 *
-	 * Allow stake owners to withdraw all existing active staked funds
 	 */
-	function escapeHatch() public onlyOwner {
+	function escapeHatch() public onlyDeveloper {
 		require (killed == false);
 		killed = true;
 		emit EscapeHatch();

@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './owned.sol';
+import './developed.sol';
 import './AOToken.sol';
 import './AOTreasury.sol';
 
@@ -10,7 +10,7 @@ import './AOTreasury.sol';
  *
  * This contract stores the earning from staking/hosting content on AO
  */
-contract AOEarning is owned {
+contract AOEarning is developed {
 	using SafeMath for uint256;
 
 	bool public paused;
@@ -113,20 +113,20 @@ contract AOEarning is owned {
 		_;
 	}
 
-	/***** OWNER ONLY METHODS *****/
+	/***** DEVELOPER ONLY METHODS *****/
 	/**
-	 * @dev Owner pauses/unpauses contract
+	 * @dev Developer pauses/unpauses contract
 	 * @param _paused Either to pause contract or not
 	 */
-	function setPaused(bool _paused) public onlyOwner {
+	function setPaused(bool _paused) public onlyDeveloper {
 		paused = _paused;
 	}
 
 	/**
-	 * @dev Owner updates base denomination address
+	 * @dev Developer updates base denomination address
 	 * @param _newBaseDenominationAddress The new address
 	 */
-	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyOwner {
+	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyDeveloper {
 		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).icoContract() == true);
 		baseDenominationAddress = _newBaseDenominationAddress;
 		_baseAO = AOToken(baseDenominationAddress);
@@ -159,11 +159,10 @@ contract AOEarning is owned {
 	}
 
 	/**
-	 * @dev Owner triggers emergency mode.
+	 * @dev Developer triggers emergency mode.
 	 *
-	 * Allow stake owners to withdraw all existing active staked funds
 	 */
-	function escapeHatch() public onlyOwner {
+	function escapeHatch() public onlyDeveloper {
 		require (killed == false);
 		killed = true;
 		emit EscapeHatch();
@@ -218,7 +217,7 @@ contract AOEarning is owned {
 		_releaseEarning(_purchaseId, _buyerPaidAmount, _fileSize, _host, 1);
 
 		// Release the earning in escrow for foundation
-		_releaseEarning(_purchaseId, _buyerPaidAmount, _fileSize, owner, 2);
+		_releaseEarning(_purchaseId, _buyerPaidAmount, _fileSize, developer, 2);
 		return true;
 	}
 
@@ -319,12 +318,12 @@ contract AOEarning is owned {
 			Earning storage _foundationEarning = foundationEarnings[_purchaseId];
 			_foundationEarning.purchaseId = _purchaseId;
 			_foundationEarning.inflationBonus = (_inflationBonusAmount.mul(foundationCut)).div(PERCENTAGE_DIVISOR);
-			require (_baseAO.mintTokenEscrow(owner, _foundationEarning.inflationBonus));
-			emit InflationBonusEscrowed(owner, _purchaseId, _inflationBonusAmount, foundationCut, _foundationEarning.inflationBonus, 2);
+			require (_baseAO.mintTokenEscrow(developer, _foundationEarning.inflationBonus));
+			emit InflationBonusEscrowed(developer, _purchaseId, _inflationBonusAmount, foundationCut, _foundationEarning.inflationBonus, 2);
 		} else {
 			emit InflationBonusEscrowed(_stakeOwner, _purchaseId, 0, _profitPercentage, 0, 0);
 			emit InflationBonusEscrowed(_host, _purchaseId, 0, PERCENTAGE_DIVISOR.sub(_profitPercentage), 0, 1);
-			emit InflationBonusEscrowed(owner, _purchaseId, 0, foundationCut, 0, 2);
+			emit InflationBonusEscrowed(developer, _purchaseId, 0, foundationCut, 0, 2);
 		}
 	}
 

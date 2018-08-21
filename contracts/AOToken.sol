@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './owned.sol';
+import './developed.sol';
 import './TokenERC20.sol';
 import './tokenRecipient.sol';
 import './AOLibrary.sol';
@@ -9,7 +9,7 @@ import './AOLibrary.sol';
 /**
  * @title AOToken
  */
-contract AOToken is owned, TokenERC20 {
+contract AOToken is developed, TokenERC20 {
 	using SafeMath for uint256;
 
 	// To differentiate denomination of AO
@@ -103,14 +103,14 @@ contract AOToken is owned, TokenERC20 {
 		_;
 	}
 
-	/***** OWNER ONLY METHODS *****/
-	/***** NORMAL ERC20 OWNER ONLY METHODS *****/
+	/***** DEVELOPER ONLY METHODS *****/
+	/***** NORMAL ERC20 DEVELOPER ONLY METHODS *****/
 	/**
 	 * @dev Prevent/Allow target from sending & receiving tokens
 	 * @param target Address to be frozen
 	 * @param freeze Either to freeze it or not
 	 */
-	function freezeAccount(address target, bool freeze) public onlyOwner {
+	function freezeAccount(address target, bool freeze) public onlyDeveloper {
 		frozenAccount[target] = freeze;
 		emit FrozenFunds(target, freeze);
 	}
@@ -120,7 +120,7 @@ contract AOToken is owned, TokenERC20 {
 	 * @param newSellPrice Price users can sell to the contract
 	 * @param newBuyPrice Price users can buy from the contract
 	 */
-	function setPrices(uint256 newSellPrice, uint256 newBuyPrice) public onlyOwner {
+	function setPrices(uint256 newSellPrice, uint256 newBuyPrice) public onlyDeveloper {
 		sellPrice = newSellPrice;
 		buyPrice = newBuyPrice;
 	}
@@ -222,13 +222,13 @@ contract AOToken is owned, TokenERC20 {
 		return true;
 	}
 
-	/***** ICO TOKEN OWNER ONLY METHODS *****/
+	/***** ICO TOKEN DEVELOPER ONLY METHODS *****/
 	/**
 	 * @dev Allow users to buy ICO tokens for `newBuyPrice` eth and sell ICO tokens for `newSellPrice` eth
 	 * @param newIcoSellPrice Price users can sell to the contract
 	 * @param newIcoBuyPrice Price users can buy from the contract
 	 */
-	function setIcoPrices(uint256 newIcoSellPrice, uint256 newIcoBuyPrice) public onlyOwner isIco {
+	function setIcoPrices(uint256 newIcoSellPrice, uint256 newIcoBuyPrice) public onlyDeveloper isIco {
 		icoSellPrice = newIcoSellPrice;
 		icoBuyPrice = newIcoBuyPrice;
 	}
@@ -236,7 +236,7 @@ contract AOToken is owned, TokenERC20 {
 	/**
 	 * @dev Reserve some tokens for the Foundation
 	 */
-	function reserveForFoundation() public onlyOwner isIco {
+	function reserveForFoundation() public onlyDeveloper isIco {
 		require (icoEnded == false);
 		require (foundationReserved == false);
 		require (icoTotalSupply < MAX_ICO_SUPPLY);

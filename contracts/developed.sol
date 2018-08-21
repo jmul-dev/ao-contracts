@@ -1,18 +1,18 @@
 pragma solidity ^0.4.24;
 
-contract owned {
-	address public owner;
+contract developed {
+	address public developer;
 
 	// Check whether an address is whitelisted and granted access to transact
 	// on behalf of others
 	mapping (address => bool) public whitelist;
 
 	constructor() public {
-		owner = msg.sender;
+		developer = msg.sender;
 	}
 
-	modifier onlyOwner {
-		require(msg.sender == owner);
+	modifier onlyDeveloper {
+		require(msg.sender == developer);
 		_;
 	}
 
@@ -21,12 +21,12 @@ contract owned {
 	 *		i.e, `_account` is granted access to transact on behalf of others
 	 */
 	modifier inWhitelist(address _account) {
-		require (whitelist[_account] == true || _account == owner);
+		require (whitelist[_account] == true || _account == developer);
 		_;
 	}
 
-	function transferOwnership(address newOwner) onlyOwner public {
-		owner = newOwner;
+	function transferOwnership(address newDeveloper) onlyDeveloper public {
+		developer = newDeveloper;
 	}
 
 	/**
@@ -34,7 +34,7 @@ contract owned {
 	 * @param _account The address to whitelist
 	 * @param _whitelist Either to whitelist or not
 	 */
-	function setWhitelist(address _account, bool _whitelist) public onlyOwner {
+	function setWhitelist(address _account, bool _whitelist) public onlyDeveloper {
 		whitelist[_account] = _whitelist;
 	}
 }

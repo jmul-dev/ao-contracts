@@ -2,7 +2,7 @@ var AOToken = artifacts.require("./AOToken.sol");
 
 contract("AOToken", function(accounts) {
 	var tokenMeta;
-	var owner = accounts[0];
+	var developer = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var account3 = accounts[3];
@@ -41,7 +41,7 @@ contract("AOToken", function(accounts) {
 			});
 		});
 		it("should have 0 initial supply", function() {
-			return tokenMeta.balanceOf.call(owner).then(function(balance) {
+			return tokenMeta.balanceOf.call(developer).then(function(balance) {
 				assert.equal(balance.toNumber(), 0, "Contract has incorrect initial supply");
 			});
 		});
@@ -70,7 +70,7 @@ contract("AOToken", function(accounts) {
 		});
 	});
 	contract("Normal ERC20 Function Tests", function() {
-		it("only owner can mint token", async function() {
+		it("only developer can mint token", async function() {
 			var canMint;
 			var balance;
 			try {
@@ -83,13 +83,13 @@ contract("AOToken", function(accounts) {
 			assert.notEqual(canMint, true, "Others can mint token");
 			assert.notEqual(balance.toNumber(), 100, "Account1 is not supposed to have tokens");
 			try {
-				await tokenMeta.mintToken(account1, 100, { from: owner });
+				await tokenMeta.mintToken(account1, 100, { from: developer });
 				canMint = true;
 			} catch (e) {
 				canMint = false;
 			}
 			balance = await tokenMeta.balanceOf(account1);
-			assert.equal(canMint, true, "Owner can't mint token");
+			assert.equal(canMint, true, "Developer can't mint token");
 			assert.equal(balance.toNumber(), 100, "Account1 has incorrect balance after minting");
 		});
 		it("transfer() - should send correct `_value` to `_to` from your account", async function() {
@@ -120,7 +120,7 @@ contract("AOToken", function(accounts) {
 		it("transferFrom() - should send `_value` tokens to `_to` in behalf of `_from`", async function() {
 			var canTransferFrom;
 			try {
-				await tokenMeta.transferFrom(account1, account2, 5, { from: owner });
+				await tokenMeta.transferFrom(account1, account2, 5, { from: developer });
 				canTransferFrom = true;
 			} catch (e) {
 				canTransferFrom = false;
@@ -143,7 +143,7 @@ contract("AOToken", function(accounts) {
 		it("burnFrom() - should remove `_value` tokens from the system irreversibly on behalf of `_from`", async function() {
 			var canBurnFrom;
 			try {
-				await tokenMeta.burnFrom(account1, 5, { from: owner });
+				await tokenMeta.burnFrom(account1, 5, { from: developer });
 				canBurnFrom = true;
 			} catch (e) {
 				canBurnFrom = false;
@@ -168,7 +168,7 @@ contract("AOToken", function(accounts) {
 			assert.equal(account1Balance.toNumber(), 70, "Account1 has incorrect balance after burnFrom");
 			assert.equal(account2Allowance.toNumber(), 0, "Account2 has incorrect allowance after burnFrom");
 		});
-		it("only owner can freeze account", async function() {
+		it("only developer can freeze account", async function() {
 			var canFreezeAccount;
 			try {
 				await tokenMeta.freezeAccount(account1, true, { from: account1 });
@@ -178,14 +178,14 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canFreezeAccount, true, "Others can freeze account");
 			try {
-				await tokenMeta.freezeAccount(account1, true, { from: owner });
+				await tokenMeta.freezeAccount(account1, true, { from: developer });
 				canFreezeAccount = true;
 			} catch (e) {
 				canFreezeAccount = false;
 			}
-			assert.equal(canFreezeAccount, true, "Owner can't mint token");
+			assert.equal(canFreezeAccount, true, "Developer can't mint token");
 			var account1Frozen = await tokenMeta.frozenAccount(account1);
-			assert.equal(account1Frozen, true, "Account1 is not frozen after owner froze his account");
+			assert.equal(account1Frozen, true, "Account1 is not frozen after developer froze his account");
 		});
 		it("frozen account should NOT be able to transfer", async function() {
 			var canTransfer;
@@ -197,9 +197,9 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canTransfer, true, "Frozen account can transfer");
 			// Unfreeze account1
-			await tokenMeta.freezeAccount(account1, false, { from: owner });
+			await tokenMeta.freezeAccount(account1, false, { from: developer });
 		});
-		it("only owner can set prices", async function() {
+		it("only developer can set prices", async function() {
 			var canSetPrices;
 			try {
 				await tokenMeta.setPrices(2, 2, { from: account1 });
@@ -209,12 +209,12 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canSetPrices, true, "Others can set ERC20 token prices");
 			try {
-				await tokenMeta.setPrices(2, 2, { from: owner });
+				await tokenMeta.setPrices(2, 2, { from: developer });
 				canSetPrices = true;
 			} catch (e) {
 				canSetPrices = false;
 			}
-			assert.equal(canSetPrices, true, "Owner can't set ERC20 token prices");
+			assert.equal(canSetPrices, true, "Developer can't set ERC20 token prices");
 			var sellPrice = await tokenMeta.sellPrice();
 			var buyPrice = await tokenMeta.buyPrice();
 			assert.equal(sellPrice.toNumber(), 2, "Incorrect sell price");
@@ -229,7 +229,7 @@ contract("AOToken", function(accounts) {
 				canBuyToken = false;
 			}
 			assert.notEqual(canBuyToken, true, "Contract does not have enough ERC20 token balance to complete user's token purchase");
-			await tokenMeta.mintToken(tokenMeta.address, 1000, { from: owner });
+			await tokenMeta.mintToken(tokenMeta.address, 1000, { from: developer });
 			var contractBalance = await tokenMeta.balanceOf(tokenMeta.address);
 			assert.equal(contractBalance.toNumber(), 1000, "Contract has incorrect balance after mint");
 			try {
@@ -265,7 +265,7 @@ contract("AOToken", function(accounts) {
 		});
 	});
 	contract("ICO Token Function Tests", function() {
-		it("only owner can set ICO prices", async function() {
+		it("only developer can set ICO prices", async function() {
 			var canSetIcoPrices;
 			try {
 				await tokenMeta.setIcoPrices(100, 100, { from: account1 });
@@ -275,25 +275,25 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canSetIcoPrices, true, "Others can set ICO token prices");
 			try {
-				await tokenMeta.setIcoPrices(100, 100, { from: owner });
+				await tokenMeta.setIcoPrices(100, 100, { from: developer });
 				canSetIcoPrices = true;
 			} catch (e) {
 				canSetIcoPrices = false;
 			}
-			assert.equal(canSetIcoPrices, true, "Owner can't set ICO token prices");
+			assert.equal(canSetIcoPrices, true, "Developer can't set ICO token prices");
 			var icoSellPrice = await tokenMeta.icoSellPrice();
 			var icoBuyPrice = await tokenMeta.icoBuyPrice();
 			assert.equal(icoSellPrice.toNumber(), 100, "Incorrect ICO sell price");
 			assert.equal(icoBuyPrice.toNumber(), 100, "Incorrect ICO buy price");
 		});
-		it("only owner can reserve ICO tokens for the Foundation", async function() {
+		it("only developer can reserve ICO tokens for the Foundation", async function() {
 			var canReserveForFoundation;
 			var foundationReserved = await tokenMeta.foundationReserved();
 			var totalLots = await tokenMeta.totalLots();
 			var lotIndex = await tokenMeta.lotIndex();
-			var ownerIcoBalance = await tokenMeta.icoBalanceOf(owner);
-			var ownerTotalLots = await tokenMeta.totalLotsByAddress(owner);
-			var weightedIndexByAddress = await tokenMeta.weightedIndexByAddress(owner);
+			var developerIcoBalance = await tokenMeta.icoBalanceOf(developer);
+			var developerTotalLots = await tokenMeta.totalLotsByAddress(developer);
+			var weightedIndexByAddress = await tokenMeta.weightedIndexByAddress(developer);
 			var icoTotalSupply = await tokenMeta.icoTotalSupply();
 			assert.equal(
 				foundationReserved,
@@ -302,12 +302,20 @@ contract("AOToken", function(accounts) {
 			);
 			assert.equal(totalLots.toNumber(), 0, "Total lots is incorrect before reserve for Foundation transaction");
 			assert.equal(lotIndex.toNumber(), 0, "Lot index is incorrect before reserve for Foundation transaction");
-			assert.equal(ownerIcoBalance.toNumber(), 0, "Owner has incorrect ICO balance before reserve for Foundation transaction");
-			assert.equal(ownerTotalLots.toNumber(), 0, "Owner has incorrect total lots amount before reserve for Foundation transaction");
+			assert.equal(
+				developerIcoBalance.toNumber(),
+				0,
+				"Developer has incorrect ICO balance before reserve for Foundation transaction"
+			);
+			assert.equal(
+				developerTotalLots.toNumber(),
+				0,
+				"Developer has incorrect total lots amount before reserve for Foundation transaction"
+			);
 			assert.equal(
 				weightedIndexByAddress.toNumber(),
 				0,
-				"Owner has incorrect weighted index before reserve for Foundation transaction"
+				"Developer has incorrect weighted index before reserve for Foundation transaction"
 			);
 			assert.equal(icoTotalSupply.toNumber(), 0, "Contract has incorrect ICO total supply before reserve for Foundation transaction");
 			try {
@@ -318,18 +326,18 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canReserveForFoundation, true, "Others can reserve ICO tokens for the Foundation");
 			try {
-				await tokenMeta.reserveForFoundation({ from: owner });
+				await tokenMeta.reserveForFoundation({ from: developer });
 				canReserveForFoundation = true;
 			} catch (e) {
 				canReserveForFoundation = false;
 			}
-			assert.equal(canReserveForFoundation, true, "Owner can't reserve ICO tokens for the Foundation");
+			assert.equal(canReserveForFoundation, true, "Developer can't reserve ICO tokens for the Foundation");
 			foundationReserved = await tokenMeta.foundationReserved();
 			totalLots = await tokenMeta.totalLots();
 			lotIndex = await tokenMeta.lotIndex();
-			ownerIcoBalance = await tokenMeta.icoBalanceOf(owner);
-			ownerTotalLots = await tokenMeta.totalLotsByAddress(owner);
-			weightedIndexByAddress = await tokenMeta.weightedIndexByAddress(owner);
+			developerIcoBalance = await tokenMeta.icoBalanceOf(developer);
+			developerTotalLots = await tokenMeta.totalLotsByAddress(developer);
+			weightedIndexByAddress = await tokenMeta.weightedIndexByAddress(developer);
 			icoTotalSupply = await tokenMeta.icoTotalSupply();
 			assert.equal(
 				foundationReserved,
@@ -339,34 +347,38 @@ contract("AOToken", function(accounts) {
 			assert.equal(totalLots.toNumber(), 1, "Total lots is incorrect after reserve for Foundation transaction");
 			assert.equal(lotIndex.toNumber(), 1, "Lot index is incorrect after reserve for Foundation transaction");
 			assert.equal(
-				ownerIcoBalance.toNumber(),
+				developerIcoBalance.toNumber(),
 				icoReservedForFoundation.toNumber(),
-				"Owner has incorrect ICO balance after reserve for Foundation transaction"
+				"Developer has incorrect ICO balance after reserve for Foundation transaction"
 			);
-			assert.equal(ownerTotalLots.toNumber(), 1, "Owner has incorrect total lots amount after reserve for Foundation transaction");
+			assert.equal(
+				developerTotalLots.toNumber(),
+				1,
+				"Developer has incorrect total lots amount after reserve for Foundation transaction"
+			);
 			assert.equal(
 				weightedIndexByAddress.toNumber(),
 				1 * weightedIndexDivisor.toNumber(),
-				"Owner has incorrect weighted index after reserve for Foundation transaction"
+				"Developer has incorrect weighted index after reserve for Foundation transaction"
 			);
 			assert.equal(
 				icoTotalSupply.toNumber(),
 				icoReservedForFoundation.toNumber(),
 				"Contract has incorrect ICO total supply after reserve for Foundation transaction"
 			);
-			var ownerLot = await tokenMeta.lotOfOwnerByIndex(owner, 0);
-			assert.equal(ownerLot[1].toNumber(), 1 * weightedIndexDivisor.toNumber(), "Owner lot has incorrect global lot index");
-			assert.equal(ownerLot[2].toNumber(), icoReservedForFoundation.toNumber(), "Owner lot has incorrect ICO token amount");
+			var developerLot = await tokenMeta.lotOfOwnerByIndex(developer, 0);
+			assert.equal(developerLot[1].toNumber(), 1 * weightedIndexDivisor.toNumber(), "Developer lot has incorrect global lot index");
+			assert.equal(developerLot[2].toNumber(), icoReservedForFoundation.toNumber(), "Developer lot has incorrect ICO token amount");
 		});
 		it("can only reserve ICO tokens for the Foundation once", async function() {
 			var canReserveForFoundation;
 			try {
-				await tokenMeta.reserveForFoundation({ from: owner });
+				await tokenMeta.reserveForFoundation({ from: developer });
 				canReserveForFoundation = true;
 			} catch (e) {
 				canReserveForFoundation = false;
 			}
-			assert.notEqual(canReserveForFoundation, true, "Owner can reserve ICO tokens for the Foundation more than once");
+			assert.notEqual(canReserveForFoundation, true, "Developer can reserve ICO tokens for the Foundation more than once");
 		});
 		it("buyIcoToken() - buy ICO tokens from contract by sending ETH", async function() {
 			var account1IcoBalance = await tokenMeta.icoBalanceOf(account1);
@@ -642,7 +654,7 @@ contract("AOToken", function(accounts) {
 
 			var canTransferIcoFrom;
 			try {
-				await tokenMeta.transferIcoTokenFrom(account1, account3, 5, { from: owner });
+				await tokenMeta.transferIcoTokenFrom(account1, account3, 5, { from: developer });
 				canTransferIcoFrom = true;
 			} catch (e) {
 				canTransferIcoFrom = false;
@@ -719,7 +731,7 @@ contract("AOToken", function(accounts) {
 
 			var canBurnIcoFrom;
 			try {
-				await tokenMeta.burnIcoTokenFrom(account1, 5, { from: owner });
+				await tokenMeta.burnIcoTokenFrom(account1, 5, { from: developer });
 				canBurnIcoFrom = true;
 			} catch (e) {
 				canBurnIcoFrom = false;
@@ -781,7 +793,7 @@ contract("AOToken", function(accounts) {
 		});
 		it("frozen account should NOT be able to transfer ICO", async function() {
 			var canTransferIco;
-			await tokenMeta.freezeAccount(account1, true, { from: owner });
+			await tokenMeta.freezeAccount(account1, true, { from: developer });
 			try {
 				await tokenMeta.transferIcoToken(account2, 10, { from: account1 });
 				canTransferIco = true;
@@ -790,7 +802,7 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canTransferIco, true, "Frozen account can transfer ICO");
 			// Unfreeze account1
-			await tokenMeta.freezeAccount(account1, false, { from: owner });
+			await tokenMeta.freezeAccount(account1, false, { from: developer });
 		});
 		it("should return all lots owned by an address", async function() {
 			var _lots = await tokenMeta.lotsByAddress(account1);
@@ -826,7 +838,7 @@ contract("AOToken", function(accounts) {
 	});
 	contract("Token Combination Function Tests", function() {
 		before(async function() {
-			await tokenMeta.mintToken(account1, 1000, { from: owner });
+			await tokenMeta.mintToken(account1, 1000, { from: developer });
 			await tokenMeta.buyIcoToken({ from: account1, value: 10000000 });
 		});
 
@@ -932,7 +944,7 @@ contract("AOToken", function(accounts) {
 		it("transferTokensFrom() - should send `_value` normal ERC20 tokens and `_icoValue` ICO Tokens to `_to` in behalf of `_from`", async function() {
 			var canTransferTokensFrom;
 			try {
-				await tokenMeta.transferTokensFrom(account1, account3, 5, 5, { from: owner });
+				await tokenMeta.transferTokensFrom(account1, account3, 5, 5, { from: developer });
 				canTransferTokensFrom = true;
 			} catch (e) {
 				canTransferTokensFrom = false;
@@ -998,7 +1010,7 @@ contract("AOToken", function(accounts) {
 		it("burnTokensFrom() - should remove `_value` normal ERC20 and `_icoValue` ICO Tokens from the system irreversibly on behalf of `_from`", async function() {
 			var canBurnTokensFrom;
 			try {
-				await tokenMeta.burnTokensFrom(account1, 5, 5, { from: owner });
+				await tokenMeta.burnTokensFrom(account1, 5, 5, { from: developer });
 				canBurnTokensFrom = true;
 			} catch (e) {
 				canBurnTokensFrom = false;
@@ -1079,13 +1091,13 @@ contract("AOToken", function(accounts) {
 	contract("Whitelisted Address Function Tests", function() {
 		var stakedIcoWeightedIndex;
 		before(async function() {
-			await tokenMeta.mintToken(account1, 100, { from: owner });
+			await tokenMeta.mintToken(account1, 100, { from: developer });
 			await tokenMeta.buyIcoToken({ from: account1, value: 1000000 });
-			await tokenMeta.mintToken(account2, 100, { from: owner });
-			await tokenMeta.mintToken(account3, 200, { from: owner });
+			await tokenMeta.mintToken(account2, 100, { from: developer });
+			await tokenMeta.mintToken(account3, 200, { from: developer });
 		});
 
-		it("only owner can whitelist account that can transact on behalf of others", async function() {
+		it("only developer can whitelist account that can transact on behalf of others", async function() {
 			var canSetWhitelist;
 			try {
 				await tokenMeta.setWhitelist(whitelistedAccount, true, { from: account1 });
@@ -1095,17 +1107,17 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canSetWhitelist, true, "Others can set whitelist");
 			try {
-				await tokenMeta.setWhitelist(whitelistedAccount, true, { from: owner });
+				await tokenMeta.setWhitelist(whitelistedAccount, true, { from: developer });
 				canSetWhitelist = true;
 			} catch (e) {
 				canSetWhitelist = false;
 			}
-			assert.equal(canSetWhitelist, true, "Owner can't whitelist account to transact on behalf of others");
+			assert.equal(canSetWhitelist, true, "Developer can't whitelist account to transact on behalf of others");
 			var whitelistedAccountCanTransact = await tokenMeta.whitelist(whitelistedAccount);
 			assert.equal(
 				whitelistedAccountCanTransact,
 				true,
-				"Staking account doesn't have permission to transact after owner gave permission"
+				"Staking account doesn't have permission to transact after developer gave permission"
 			);
 		});
 		it("should be able to stake tokens on behalf of others", async function() {

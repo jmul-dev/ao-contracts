@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './owned.sol';
+import './developed.sol';
 import './AOToken.sol';
 
 /**
@@ -9,8 +9,11 @@ import './AOToken.sol';
  *
  * The purpose of this contract is to list all of the valid denominations of AO Token and do the conversion between denominations
  */
-contract AOTreasury is owned {
+contract AOTreasury is developed {
 	using SafeMath for uint256;
+
+	bool public paused;
+	bool public killed;
 
 	struct Denomination {
 		bytes8 name;
@@ -30,24 +33,56 @@ contract AOTreasury is owned {
 	// Event to be broadcasted to public when a token exchange happens
 	event Exchange(address indexed account, uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName);
 
+	// Event to be broadcasted to public when emergency mode is triggered
+	event EscapeHatch();
+
 	/**
 	 * @dev Constructor function
 	 */
 	constructor() public {}
 
+	/**
+	 * @dev Checks if contract is currently active
+	 */
+	modifier isActive {
+		require (paused == false && killed == false);
+		_;
+	}
+
+	/**
+	 * @dev Checks if denomination is valid
+	 */
 	modifier isValidDenomination(bytes8 denominationName) {
 		require (denominationIndex[denominationName] > 0 && denominations[denominationIndex[denominationName]].denominationAddress != address(0));
 		_;
 	}
 
-	/***** OWNER ONLY METHODS *****/
+	/***** DEVELOPER ONLY METHODS *****/
 	/**
-	 * @dev Owner adds denomination and the contract address associated with it
+	 * @dev Developer pauses/unpauses contract
+	 * @param _paused Either to pause contract or not
+	 */
+	function setPaused(bool _paused) public onlyDeveloper {
+		paused = _paused;
+	}
+
+	/**
+	 * @dev Developer triggers emergency mode.
+	 *
+	 */
+	function escapeHatch() public onlyDeveloper {
+		require (killed == false);
+		killed = true;
+		emit EscapeHatch();
+	}
+
+	/**
+	 * @dev Developer adds denomination and the contract address associated with it
 	 * @param denominationName The name of the denomination, i.e ao, kilo, mega, etc.
 	 * @param denominationAddress The address of the denomination token
 	 * @return true on success
 	 */
-	function addDenomination(bytes8 denominationName, address denominationAddress) public onlyOwner returns (bool) {
+	function addDenomination(bytes8 denominationName, address denominationAddress) public onlyDeveloper returns (bool) {
 		require (denominationName.length != 0);
 		require (denominationAddress != address(0));
 		require (denominationIndex[denominationName] == 0);
@@ -65,12 +100,12 @@ contract AOTreasury is owned {
 	}
 
 	/**
-	 * @dev Owner updates denomination address or activates/deactivates the denomination
+	 * @dev Developer updates denomination address or activates/deactivates the denomination
 	 * @param denominationName The name of the denomination, i.e ao, kilo, mega, etc.
 	 * @param denominationAddress The address of the denomination token
 	 * @return true on success
 	 */
-	function updateDenomination(bytes8 denominationName, address denominationAddress) public onlyOwner returns (bool) {
+	function updateDenomination(bytes8 denominationName, address denominationAddress) public onlyDeveloper returns (bool) {
 		require (denominationName.length != 0);
 		require (denominationIndex[denominationName] > 0);
 		require (denominationAddress != address(0));
@@ -200,7 +235,7 @@ contract AOTreasury is owned {
 	 * @param fromDenominationName The origin denomination
 	 * @param toDenominationName The target denomination
 	 */
-	function exchange(uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName) public isValidDenomination(fromDenominationName) isValidDenomination(toDenominationName) {
+	function exchange(uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName) public isActive isValidDenomination(fromDenominationName) isValidDenomination(toDenominationName) {
 		require (amount > 0);
 		Denomination memory _fromDenomination = denominations[denominationIndex[fromDenominationName]];
 		Denomination memory _toDenomination = denominations[denominationIndex[toDenominationName]];
