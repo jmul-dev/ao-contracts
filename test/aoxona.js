@@ -180,20 +180,20 @@ contract("AOXona", function(accounts) {
 			} catch (e) {
 				canSetPrices = false;
 			}
-			assert.notEqual(canSetPrices, true, "Others can set ERC20 token prices");
+			assert.notEqual(canSetPrices, true, "Others can set network token prices");
 			try {
 				await tokenMeta.setPrices(2, 2, { from: developer });
 				canSetPrices = true;
 			} catch (e) {
 				canSetPrices = false;
 			}
-			assert.equal(canSetPrices, true, "Developer can't set ERC20 token prices");
+			assert.equal(canSetPrices, true, "Developer can't set network token prices");
 			var sellPrice = await tokenMeta.sellPrice();
 			var buyPrice = await tokenMeta.buyPrice();
 			assert.equal(sellPrice.toNumber(), 2, "Incorrect sell price");
 			assert.equal(buyPrice.toNumber(), 2, "Incorrect buy price");
 		});
-		it("user can buy ERC20 tokens", async function() {
+		it("user can buy network tokens", async function() {
 			var canBuyToken;
 			try {
 				await tokenMeta.buy({ from: account2, value: 10 });
@@ -201,7 +201,7 @@ contract("AOXona", function(accounts) {
 			} catch (e) {
 				canBuyToken = false;
 			}
-			assert.notEqual(canBuyToken, true, "Contract does not have enough ERC20 token balance to complete user's token purchase");
+			assert.notEqual(canBuyToken, true, "Contract does not have enough network token balance to complete user's token purchase");
 			await tokenMeta.mintToken(tokenMeta.address, 1000, { from: developer });
 			var contractBalance = await tokenMeta.balanceOf(tokenMeta.address);
 			assert.equal(contractBalance.toNumber(), 1000, "Contract has incorrect balance after mint");
@@ -212,10 +212,10 @@ contract("AOXona", function(accounts) {
 				canBuyToken = false;
 			}
 			var account2Balance = await tokenMeta.balanceOf(account2);
-			assert.equal(canBuyToken, true, "Fail buying ERC20 token from contract");
+			assert.equal(canBuyToken, true, "Fail buying network token from contract");
 			assert.equal(account2Balance.toNumber(), 20, "Account has incorrect balance after buying token");
 		});
-		it("user can sell ERC20 tokens to contract", async function() {
+		it("user can sell network tokens to contract", async function() {
 			var canSellToken;
 			try {
 				await tokenMeta.sell(20, { from: account2 });
@@ -232,7 +232,7 @@ contract("AOXona", function(accounts) {
 			}
 			var account2Balance = await tokenMeta.balanceOf(account2);
 			var contractBalance = await tokenMeta.balanceOf(tokenMeta.address);
-			assert.equal(canSellToken, true, "Fail selling ERC20 token to contract");
+			assert.equal(canSellToken, true, "Fail selling network token to contract");
 			assert.equal(account2Balance.toNumber(), 15, "Account has incorrect balance after selling token");
 			assert.equal(contractBalance.toNumber(), 1000, "Contract has incorrect balance after user sell token");
 		});
