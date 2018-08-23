@@ -8,7 +8,7 @@ contract("AOToken", function(accounts) {
 	var account3 = accounts[3];
 	var whitelistedAccount = accounts[4];
 	var maxPrimordialSupply;
-	var primordialReservedForFoundation;
+	var tokensReservedForFoundation;
 	var weightedIndexDivisor;
 	var account1Lots = [];
 	var account2Lots = [];
@@ -46,16 +46,16 @@ contract("AOToken", function(accounts) {
 			});
 		});
 		it("should have max of 1125899906842620 Primordial tokens", function() {
-			return tokenMeta.MAX_Primordial_SUPPLY.call().then(function(primordialSupply) {
+			return tokenMeta.MAX_PRIMORDIAL_SUPPLY.call().then(function(primordialSupply) {
 				maxPrimordialSupply = primordialSupply;
 				assert.equal(maxPrimordialSupply.toNumber(), 1125899906842620, "Contract has incorrect max primordial supply amount");
 			});
 		});
-		it("should set aside 125899906842620 Primordial tokens reserved for Foundation", function() {
-			return tokenMeta.Primordial_RESERVED_FOR_FOUNDATION.call().then(function(reservedTokens) {
-				primordialReservedForFoundation = reservedTokens;
+		it("should set aside 125899906842620 tokens reserved for Foundation", function() {
+			return tokenMeta.TOKENS_RESERVED_FOR_FOUNDATION.call().then(function(reservedTokens) {
+				tokensReservedForFoundation = reservedTokens;
 				assert.equal(
-					primordialReservedForFoundation.toNumber(),
+					tokensReservedForFoundation.toNumber(),
 					125899906842620,
 					"Contract has incorrect reserved amount for Foundation"
 				);
@@ -343,6 +343,7 @@ contract("AOToken", function(accounts) {
 			foundationReserved = await tokenMeta.foundationReserved();
 			totalLots = await tokenMeta.totalLots();
 			lotIndex = await tokenMeta.lotIndex();
+			var developerNetworkBalance = await tokenMeta.balanceOf(developer);
 			developerPrimordialBalance = await tokenMeta.primordialBalanceOf(developer);
 			developerTotalLots = await tokenMeta.totalLotsByAddress(developer);
 			weightedIndexByAddress = await tokenMeta.weightedIndexByAddress(developer);
@@ -355,8 +356,13 @@ contract("AOToken", function(accounts) {
 			assert.equal(totalLots.toNumber(), 1, "Total lots is incorrect after reserve for Foundation transaction");
 			assert.equal(lotIndex.toNumber(), 1, "Lot index is incorrect after reserve for Foundation transaction");
 			assert.equal(
+				developerNetworkBalance.toNumber(),
+				tokensReservedForFoundation.toNumber(),
+				"Developer has incorrect network balance after reserve for Foundation transaction"
+			);
+			assert.equal(
 				developerPrimordialBalance.toNumber(),
-				primordialReservedForFoundation.toNumber(),
+				tokensReservedForFoundation.toNumber(),
 				"Developer has incorrect Primordial balance after reserve for Foundation transaction"
 			);
 			assert.equal(
@@ -371,14 +377,14 @@ contract("AOToken", function(accounts) {
 			);
 			assert.equal(
 				primordialTotalSupply.toNumber(),
-				primordialReservedForFoundation.toNumber(),
+				tokensReservedForFoundation.toNumber(),
 				"Contract has incorrect Primordial total supply after reserve for Foundation transaction"
 			);
 			var developerLot = await tokenMeta.lotOfOwnerByIndex(developer, 0);
 			assert.equal(developerLot[1].toNumber(), 1 * weightedIndexDivisor.toNumber(), "Developer lot has incorrect global lot index");
 			assert.equal(
 				developerLot[2].toNumber(),
-				primordialReservedForFoundation.toNumber(),
+				tokensReservedForFoundation.toNumber(),
 				"Developer lot has incorrect Primordial token amount"
 			);
 		});
@@ -413,7 +419,7 @@ contract("AOToken", function(accounts) {
 			assert.equal(account1WeightedIndex.toNumber(), 0, "Account1 has incorrect weighted index before buy Primordial transaction");
 			assert.equal(
 				primordialTotalSupply.toNumber(),
-				primordialReservedForFoundation.toNumber(),
+				tokensReservedForFoundation.toNumber(),
 				"Contract has incorrect Primordial total supply before user buy Primordial transaction"
 			);
 
@@ -425,6 +431,9 @@ contract("AOToken", function(accounts) {
 				buySuccess = false;
 			}
 			assert.equal(buySuccess, false, "Buy Primordial token succeeded even though user sent 0 ETH");
+
+			var account1NetworkBalanceBefore = await tokenMeta.balanceOf(account1);
+			var networkTotalSupplyBefore = await tokenMeta.totalSupply();
 			try {
 				await tokenMeta.buyPrimordialToken({ from: account1, value: 10000 });
 				buySuccess = true;
@@ -435,10 +444,25 @@ contract("AOToken", function(accounts) {
 
 			totalLots = await tokenMeta.totalLots();
 			lotIndex = await tokenMeta.lotIndex();
+
+			var account1NetworkBalanceAfter = await tokenMeta.balanceOf(account1);
+			var networkTotalSupplyAfter = await tokenMeta.totalSupply();
+
 			account1PrimordialBalance = await tokenMeta.primordialBalanceOf(account1);
 			account1TotalLots = await tokenMeta.totalLotsByAddress(account1);
 			account1WeightedIndex = await tokenMeta.weightedIndexByAddress(account1);
 			primordialTotalSupply = await tokenMeta.primordialTotalSupply();
+
+			assert.equal(
+				account1NetworkBalanceAfter.toString(),
+				account1NetworkBalanceBefore.plus(100).toString(),
+				"Account1 has incorrect network balance after buy primordial transaction"
+			);
+			assert.equal(
+				networkTotalSupplyAfter.toString(),
+				networkTotalSupplyBefore.plus(100).toString(),
+				"Contract has incorrect total supply after buy primordial transaction"
+			);
 			assert.equal(totalLots.toNumber(), 2, "Total lots is incorrect after user buy Primordial transaction");
 			assert.equal(lotIndex.toNumber(), 2, "Lot index is incorrect after user buy Primordial transaction");
 			assert.equal(
@@ -454,7 +478,7 @@ contract("AOToken", function(accounts) {
 			);
 			assert.equal(
 				primordialTotalSupply.toNumber(),
-				primordialReservedForFoundation.toNumber() + account1PrimordialBalance.toNumber(),
+				tokensReservedForFoundation.toNumber() + account1PrimordialBalance.toNumber(),
 				"Contract has incorrect Primordial total supply after user buy Primordial transaction"
 			);
 			var account1Lot1 = await tokenMeta.lotOfOwnerByIndex(account1, 0);

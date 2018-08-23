@@ -52,9 +52,9 @@ contract AOToken is developed, TokenERC20 {
 	uint256 public lotIndex;
 
 	// Max supply of 1,125,899,906,842,620 AOTKN
-	uint256 constant public MAX_Primordial_SUPPLY = 1125899906842620;
+	uint256 constant public MAX_PRIMORDIAL_SUPPLY = 1125899906842620;
 	// The amount of tokens that we want to reserve for foundation
-	uint256 constant public Primordial_RESERVED_FOR_FOUNDATION = 125899906842620;
+	uint256 constant public TOKENS_RESERVED_FOR_FOUNDATION = 125899906842620;
 	// Account for 6 decimal points for weighted index
 	uint256 constant public WEIGHTED_INDEX_DIVISOR = 10 ** 6; // 1000000 = 1
 
@@ -129,12 +129,10 @@ contract AOToken is developed, TokenERC20 {
 	 * @dev Create `mintedAmount` tokens and send it to `target`
 	 * @param target Address to receive the tokens
 	 * @param mintedAmount The amount of tokens it will receive
+	 * @return true on success
 	 */
 	function mintToken(address target, uint256 mintedAmount) public inWhitelist(msg.sender) returns (bool) {
-		balanceOf[target] = balanceOf[target].add(mintedAmount);
-		totalSupply = totalSupply.add(mintedAmount);
-		emit Transfer(0, this, mintedAmount);
-		emit Transfer(this, target, mintedAmount);
+		_mintToken(target, mintedAmount);
 		return true;
 	}
 
@@ -239,17 +237,20 @@ contract AOToken is developed, TokenERC20 {
 	function reserveForFoundation() public onlyDeveloper isNetworkExchange {
 		require (networkExchangeEnded == false);
 		require (foundationReserved == false);
-		require (primordialTotalSupply < MAX_Primordial_SUPPLY);
+		require (primordialTotalSupply < MAX_PRIMORDIAL_SUPPLY);
 
 		foundationReserved = true;
-		uint256 tokenAmount = Primordial_RESERVED_FOR_FOUNDATION;
+		uint256 tokenAmount = TOKENS_RESERVED_FOR_FOUNDATION;
 
-		if (primordialTotalSupply.add(tokenAmount) >= MAX_Primordial_SUPPLY) {
-			tokenAmount = MAX_Primordial_SUPPLY.sub(primordialTotalSupply);
+		if (primordialTotalSupply.add(tokenAmount) >= MAX_PRIMORDIAL_SUPPLY) {
+			tokenAmount = MAX_PRIMORDIAL_SUPPLY.sub(primordialTotalSupply);
 			networkExchangeEnded = true;
 		}
 
 		_createPrimordialLot(msg.sender, tokenAmount);
+
+		// Also mint equal network tokens for the foundation
+		_mintToken(msg.sender, tokenAmount);
 	}
 
 	/**
@@ -325,7 +326,7 @@ contract AOToken is developed, TokenERC20 {
 	 */
 	function buyPrimordialToken() public payable isNetworkExchange {
 		require (networkExchangeEnded == false);
-		require (primordialTotalSupply < MAX_Primordial_SUPPLY);
+		require (primordialTotalSupply < MAX_PRIMORDIAL_SUPPLY);
 		require (primordialBuyPrice > 0);
 		require (msg.value > 0);
 
@@ -335,13 +336,17 @@ contract AOToken is developed, TokenERC20 {
 		uint256 remainderEth = 0;
 
 		// Make sure primordialTotalSupply is not overflowing
-		if (primordialTotalSupply.add(tokenAmount) >= MAX_Primordial_SUPPLY) {
-			tokenAmount = MAX_Primordial_SUPPLY.sub(primordialTotalSupply);
+		if (primordialTotalSupply.add(tokenAmount) >= MAX_PRIMORDIAL_SUPPLY) {
+			tokenAmount = MAX_PRIMORDIAL_SUPPLY.sub(primordialTotalSupply);
 			networkExchangeEnded = true;
 			remainderEth = msg.value.sub(tokenAmount.mul(primordialBuyPrice));
 		}
 
 		_createPrimordialLot(msg.sender, tokenAmount);
+
+		// Also mint equal network tokens for the buyer
+		_mintToken(msg.sender, tokenAmount);
+
 		if (remainderEth > 0) {
 			msg.sender.transfer(remainderEth);
 		}
@@ -603,6 +608,18 @@ contract AOToken is developed, TokenERC20 {
 		balanceOf[_to] = balanceOf[_to].add(_value);            // Add the same to the recipient
 		emit Transfer(_from, _to, _value);
 		assert(balanceOf[_from].add(balanceOf[_to]) == previousBalances);
+	}
+
+	/**
+	 * @dev Create `mintedAmount` tokens and send it to `target`
+	 * @param target Address to receive the tokens
+	 * @param mintedAmount The amount of tokens it will receive
+	 */
+	function _mintToken(address target, uint256 mintedAmount) internal {
+		balanceOf[target] = balanceOf[target].add(mintedAmount);
+		totalSupply = totalSupply.add(mintedAmount);
+		emit Transfer(0, this, mintedAmount);
+		emit Transfer(this, target, mintedAmount);
 	}
 
 	/***** PRIMORDIAL TOKEN INTERNAL METHODS *****/
