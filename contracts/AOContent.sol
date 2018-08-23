@@ -73,6 +73,7 @@ contract AOContent is developed {
 		bytes32 contentHostId;
 		address buyer;
 		uint256 networkAmount; // total network token paid in base denomination
+		string publicKey; // The public key provided by request node
 		uint256 createdOnTimestamp;
 	}
 
@@ -126,7 +127,7 @@ contract AOContent is developed {
 	event StakeExistingContent(address indexed stakeOwner, bytes32 indexed stakeId, bytes32 indexed contentId, uint256 currentNetworkAmount, uint256 currentPrimordialAmount, uint256 currentPrimordialWeightedIndex);
 
 	// Event to be broadcasted to public when a request node buys a content
-	event BuyContent(address indexed buyer, bytes32 indexed purchaseId, bytes32 indexed contentHostId, uint256 paidNetworkAmount, uint256 createdOnTimestamp);
+	event BuyContent(address indexed buyer, bytes32 indexed purchaseId, bytes32 indexed contentHostId, uint256 paidNetworkAmount, string publicKey, uint256 createdOnTimestamp);
 
 	// Event to be broadcasted to public when emergency mode is triggered
 	event EscapeHatch();
@@ -445,10 +446,14 @@ contract AOContent is developed {
 	 * @param _networkIntegerAmount The integer amount of network token to pay
 	 * @param _networkFractionAmount The fraction amount of network token to pay
 	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
+	 * @param _publicKey The public key of the request node
 	 */
-	function buyContent(bytes32 _contentHostId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination) public isActive {
+	function buyContent(bytes32 _contentHostId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, string _publicKey) public isActive {
 		// Make sure the content host exist
 		require (contentHostIndex[_contentHostId] > 0);
+
+		// Make sure public key is not empty
+		require (bytes(_publicKey).length > 0);
 
 		ContentHost memory _contentHost = contentHosts[contentHostIndex[_contentHostId]];
 		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_contentHost.stakeId]];
@@ -478,6 +483,7 @@ contract AOContent is developed {
 		_purchaseReceipt.buyer = msg.sender;
 		// Update the receipt with the correct network amount
 		_purchaseReceipt.networkAmount = _stakedContent.networkAmount.add(_stakedContent.primordialAmount);
+		_purchaseReceipt.publicKey = _publicKey;
 		_purchaseReceipt.createdOnTimestamp = now;
 
 		purchaseReceiptIndex[_purchaseId] = totalPurchaseReceipts;
@@ -495,7 +501,7 @@ contract AOContent is developed {
 			_contentHost.host
 		));
 
-		emit BuyContent(_purchaseReceipt.buyer, _purchaseReceipt.purchaseId, _purchaseReceipt.contentHostId, _purchaseReceipt.networkAmount, _purchaseReceipt.createdOnTimestamp);
+		emit BuyContent(_purchaseReceipt.buyer, _purchaseReceipt.purchaseId, _purchaseReceipt.contentHostId, _purchaseReceipt.networkAmount, _purchaseReceipt.publicKey, _purchaseReceipt.createdOnTimestamp);
 	}
 
 	/**
@@ -504,9 +510,10 @@ contract AOContent is developed {
 	 * @return The ID of the content host
 	 * @return address of the buyer
 	 * @return paid network amount
+	 * @return request node's public key
 	 * @return created on timestamp
 	 */
-	function purchaseReceiptById(bytes32 _purchaseId) public view returns (bytes32, address, uint256, uint256) {
+	function purchaseReceiptById(bytes32 _purchaseId) public view returns (bytes32, address, uint256, string, uint256) {
 		// Make sure the purchase receipt exist
 		require (purchaseReceiptIndex[_purchaseId] > 0);
 		PurchaseReceipt memory _purchaseReceipt = purchaseReceipts[purchaseReceiptIndex[_purchaseId]];
@@ -514,6 +521,7 @@ contract AOContent is developed {
 			_purchaseReceipt.contentHostId,
 			_purchaseReceipt.buyer,
 			_purchaseReceipt.networkAmount,
+			_purchaseReceipt.publicKey,
 			_purchaseReceipt.createdOnTimestamp
 		);
 	}

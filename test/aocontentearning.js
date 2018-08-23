@@ -22,8 +22,11 @@ contract("AOContent & AOEarning", function(accounts) {
 	var metadataDatKey = "7bde24fb38d6e316ec48874c937f4582f3a494df1ecf387e6edb2e25bff700f7";
 	var account2ContentDatKey = "02bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 	var account2MetadataDatKey = "02bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
+	var account2PublicKey = "bf1cc3154424dc22191941d9f4f50b063a2b663a2337e5548abea633c1d06ece";
 	var account3ContentDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 	var account3MetadataDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
+	var account3PublicKey = "03a34d6aef3eb42335fb3cacb59478c0b44c0bbeb8bb4ca427dbc7044157a5d24b";
+
 	var fileSize = 1000000; // 1000000 bytes = min 1000000 AO
 	var profitPercentage = 600000; // 60%
 
@@ -1091,35 +1094,35 @@ contract("AOContent & AOEarning", function(accounts) {
 		});
 
 		it("buyContent() - should NOT be able to buy content if sent tokens < price", async function() {
-			var buyContent = async function(account, contentHostId) {
+			var buyContent = async function(account, contentHostId, publicKey) {
 				var canBuyContent;
 				try {
-					await aocontent.buyContent(contentHostId, 10, 0, "ao", { from: account });
+					await aocontent.buyContent(contentHostId, 10, 0, "ao", publicKey, { from: account });
 					canBuyContent = true;
 				} catch (e) {
 					canBuyContent = false;
 				}
 				assert.notEqual(canBuyContent, true, "Account can buy content even though sent tokens < price");
 			};
-			await buyContent(account2, contentHostId1);
-			await buyContent(account2, contentHostId2);
-			await buyContent(account2, contentHostId3);
+			await buyContent(account2, contentHostId1, account2PublicKey);
+			await buyContent(account2, contentHostId2, account2PublicKey);
+			await buyContent(account2, contentHostId3, account2PublicKey);
 		});
 
 		it("buyContent() - should NOT be able to buy content if account does not have enough balance", async function() {
-			var buyContent = async function(account, contentHostId) {
+			var buyContent = async function(account, contentHostId, publicKey) {
 				var canBuyContent;
 				try {
-					await aocontent.buyContent(contentHostId, 5, 0, "mega", { from: account });
+					await aocontent.buyContent(contentHostId, 5, 0, "mega", publicKey, { from: account });
 					canBuyContent = true;
 				} catch (e) {
 					canBuyContent = false;
 				}
 				assert.notEqual(canBuyContent, true, "Account can buy content even though account does not have enough balance");
 			};
-			await buyContent(account3, contentHostId1);
-			await buyContent(account3, contentHostId2);
-			await buyContent(account3, contentHostId3);
+			await buyContent(account3, contentHostId1, account3PublicKey);
+			await buyContent(account3, contentHostId2, account3PublicKey);
+			await buyContent(account3, contentHostId3, account3PublicKey);
 		});
 
 		it("buyContent() - should be able to buy content and store all of the earnings of stake owner (content creator)/host/foundation in escrow", async function() {
@@ -1142,7 +1145,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 			var canBuyContent, buyContentEvent, purchaseReceipt, stakeEarning, hostEarning, foundationEarning;
 			try {
-				var result = await aocontent.buyContent(contentHostId1, 3, 0, "mega", { from: account2 });
+				var result = await aocontent.buyContent(contentHostId1, 3, 0, "mega", account2PublicKey, { from: account2 });
 				canBuyContent = true;
 				buyContentEvent = result.logs[0];
 				purchaseId = buyContentEvent.args.purchaseId;
@@ -1165,6 +1168,8 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.equal(purchaseReceipt[0], contentHostId1, "Purchase receipt has incorrect content host ID");
 			assert.equal(purchaseReceipt[1], account2, "Purchase receipt has incorrect buyer address");
 			assert.equal(purchaseReceipt[2].toString(), contentHost1Price.toString(), "Purchase receipt has incorrect paid network amount");
+			assert.equal(purchaseReceipt[3], account2PublicKey, "Purchase receipt has incorrect public key");
+
 			var accountBalanceAfter = await aotoken.balanceOf(account2);
 			var stakeOwnerBalanceAfter = await aotoken.balanceOf(account1);
 			var hostBalanceAfter = await aotoken.balanceOf(account1);
@@ -1256,7 +1261,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.equal(foundationEscrowedBalance.toString(), foundationInflationBonus, "Foundation has incorrect escrowed balance");
 
 			try {
-				var result = await aocontent.buyContent(contentHostId1, 3, 0, "mega", { from: account2 });
+				var result = await aocontent.buyContent(contentHostId1, 3, 0, "mega", account2PublicKey, { from: account2 });
 				canBuyContent = true;
 			} catch (e) {
 				canBuyContent = false;
@@ -1628,7 +1633,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 			var canBuyContent, buyContentEvent;
 			try {
-				var result = await aocontent.buyContent(contentHostId4, 3, 0, "mega", { from: account3 });
+				var result = await aocontent.buyContent(contentHostId4, 3, 0, "mega", account3PublicKey, { from: account3 });
 				canBuyContent = true;
 				buyContentEvent = result.logs[0];
 				purchaseId = buyContentEvent.args.purchaseId;
