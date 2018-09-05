@@ -26,6 +26,7 @@ contract("AOContent & AOEarning", function(accounts) {
 	var account3ContentDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 	var account3MetadataDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 	var account3PublicKey = "03a34d6aef3eb42335fb3cacb59478c0b44c0bbeb8bb4ca427dbc7044157a5d24b";
+	var extraData = "someextradata";
 
 	var fileSize = 1000000; // 1000000 bytes = min 1000000 AO
 	var profitPercentage = 600000; // 60%
@@ -280,6 +281,7 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					fileSize,
 					profitPercentage,
+					extraData,
 					{ from: account }
 				);
 
@@ -334,6 +336,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			);
 			assert.equal(stakedContent[5].toString(), profitPercentage, "stakedContentById returns incorrect profitPercentage");
 			assert.equal(stakedContent[6], true, "stakedContentById returns incorrect active status");
+			assert.equal(stakedContent[8], extraData, "stakedContentById returns incorrect extraData");
 
 			// Verify contentHost
 			assert.equal(contentHost[0], stakeId, "contentHostById returns incorrect stakeID");
@@ -569,9 +572,22 @@ contract("AOContent & AOEarning", function(accounts) {
 		it("stakeContent() - should NOT stake content if params provided are not valid", async function() {
 			var canStake;
 			try {
-				await aocontent.stakeContent(1, 0, "mega", 0, "", encChallenge, contentDatKey, metadataDatKey, fileSize, profitPercentage, {
-					from: account1
-				});
+				await aocontent.stakeContent(
+					1,
+					0,
+					"mega",
+					0,
+					"",
+					encChallenge,
+					contentDatKey,
+					metadataDatKey,
+					fileSize,
+					profitPercentage,
+					extraData,
+					{
+						from: account1
+					}
+				);
 				canStake = true;
 			} catch (e) {
 				canStake = false;
@@ -590,6 +606,7 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					fileSize,
 					profitPercentage,
+					extraData,
 					{ from: account1 }
 				);
 				canStake = true;
@@ -599,18 +616,44 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canStake, true, "account1 can stake content even though it's missing encChallenge");
 
 			try {
-				await aocontent.stakeContent(1, 0, "mega", 0, baseChallenge, encChallenge, "", metadataDatKey, fileSize, profitPercentage, {
-					from: account1
-				});
+				await aocontent.stakeContent(
+					1,
+					0,
+					"mega",
+					0,
+					baseChallenge,
+					encChallenge,
+					"",
+					metadataDatKey,
+					fileSize,
+					profitPercentage,
+					extraData,
+					{
+						from: account1
+					}
+				);
 				canStake = true;
 			} catch (e) {
 				canStake = false;
 			}
 			assert.notEqual(canStake, true, "account1 can stake content even though it's missing contentDatKey");
 			try {
-				await aocontent.stakeContent(1, 0, "mega", 0, baseChallenge, encChallenge, contentDatKey, "", fileSize, profitPercentage, {
-					from: account1
-				});
+				await aocontent.stakeContent(
+					1,
+					0,
+					"mega",
+					0,
+					baseChallenge,
+					encChallenge,
+					contentDatKey,
+					"",
+					fileSize,
+					profitPercentage,
+					extraData,
+					{
+						from: account1
+					}
+				);
 				canStake = true;
 			} catch (e) {
 				canStake = false;
@@ -628,6 +671,7 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					0,
 					profitPercentage,
+					extraData,
 					{ from: account1 }
 				);
 				canStake = true;
@@ -647,6 +691,7 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					fileSize,
 					1100000,
+					extraData,
 					{ from: account1 }
 				);
 				canStake = true;
@@ -667,6 +712,7 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					fileSize,
 					profitPercentage,
+					extraData,
 					{ from: account1 }
 				);
 				canStake = true;
@@ -690,6 +736,7 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					fileSize,
 					700000,
+					extraData,
 					{ from: account1 }
 				);
 				canStake = true;

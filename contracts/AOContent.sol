@@ -54,6 +54,7 @@ contract AOContent is developed {
 		uint256 profitPercentage; // support up to 4 decimals, 100% = 1000000
 		bool active; // true if currently staked, false when unstaked
 		uint256 createdOnTimestamp;
+		string extraData;
 	}
 
 	struct ContentHost {
@@ -109,7 +110,7 @@ contract AOContent is developed {
 	event StoreContent(address indexed creator, bytes32 indexed contentId, uint256 fileSize);
 
 	// Event to be broadcasted to public when `stakeOwner` stakes a new content
-	event StakeContent(address indexed stakeOwner, bytes32 indexed stakeId, bytes32 indexed contentId, uint256 baseNetworkAmount, uint256 primordialAmount, uint256 primordialWeightedIndex, uint256 profitPercentage, uint256 createdOnTimestamp);
+	event StakeContent(address indexed stakeOwner, bytes32 indexed stakeId, bytes32 indexed contentId, uint256 baseNetworkAmount, uint256 primordialAmount, uint256 primordialWeightedIndex, uint256 profitPercentage, uint256 createdOnTimestamp, string extraData);
 
 	// Event to be broadcasted to public when a node hosts a content
 	event HostContent(address indexed host, bytes32 indexed contentHostId, bytes32 stakeId, string contentDatKey, string metadataDatKey);
@@ -196,6 +197,7 @@ contract AOContent is developed {
 	 * @param _metadataDatKey The dat key of the content's metadata
 	 * @param _fileSize The size of the file
 	 * @param _profitPercentage The percentage of profit the stake owner's media will charge
+	 * @param _extraData some extra information to send to the contract when staking a content
 	 */
 	function stakeContent(
 		uint256 _networkIntegerAmount,
@@ -207,7 +209,8 @@ contract AOContent is developed {
 		string _contentDatKey,
 		string _metadataDatKey,
 		uint256 _fileSize,
-		uint256 _profitPercentage)
+		uint256 _profitPercentage,
+		string _extraData)
 		public
 		isActive {
 		require (bytes(_baseChallenge).length > 0);
@@ -220,7 +223,7 @@ contract AOContent is developed {
 		bytes32 _contentId = _storeContent(msg.sender, _baseChallenge, _fileSize);
 
 		// Stake the network/primordial token on content
-		bytes32 _stakeId = _stakeContent(msg.sender, _contentId, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _profitPercentage);
+		bytes32 _stakeId = _stakeContent(msg.sender, _contentId, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _profitPercentage, _extraData);
 
 		// Add the node info that hosts this content (in this case the creator himself)
 		_hostContent(msg.sender, _stakeId, _encChallenge, _contentDatKey, _metadataDatKey);
@@ -293,8 +296,9 @@ contract AOContent is developed {
 	 * @return the profit percentage of the content
 	 * @return status of the staked content
 	 * @return the timestamp when the staked content was created
+	 * @return the extra information sent to the contract when staking a content
 	 */
-	function stakedContentById(bytes32 _stakeId) public view returns (bytes32, address, uint256, uint256, uint256, uint256, bool, uint256) {
+	function stakedContentById(bytes32 _stakeId) public view returns (bytes32, address, uint256, uint256, uint256, uint256, bool, uint256, string) {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakeId] > 0);
 
@@ -307,7 +311,8 @@ contract AOContent is developed {
 			_stakedContent.primordialWeightedIndex,
 			_stakedContent.profitPercentage,
 			_stakedContent.active,
-			_stakedContent.createdOnTimestamp
+			_stakedContent.createdOnTimestamp,
+			_stakedContent.extraData
 		);
 	}
 
@@ -629,9 +634,10 @@ contract AOContent is developed {
 	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
 	 * @param _primordialAmount The amount of primordial Token to stake
 	 * @param _profitPercentage The percentage of profit the stake owner's media will charge
+	 * @param _extraData some extra information to send to the contract when staking a content
 	 * @return the newly created staked content ID
 	 */
-	function _stakeContent(address _stakeOwner, bytes32 _contentId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount, uint256 _profitPercentage) internal returns (bytes32) {
+	function _stakeContent(address _stakeOwner, bytes32 _contentId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount, uint256 _profitPercentage, string _extraData) internal returns (bytes32) {
 		// Increment totalStakedContents
 		totalStakedContents++;
 
@@ -648,6 +654,7 @@ contract AOContent is developed {
 		_stakedContent.profitPercentage = _profitPercentage;
 		_stakedContent.active = true;
 		_stakedContent.createdOnTimestamp = now;
+		_stakedContent.extraData = _extraData;
 
 		stakedContentIndex[_stakeId] = totalStakedContents;
 
@@ -663,7 +670,8 @@ contract AOContent is developed {
 			require (_baseAO.stakePrimordialTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedIndex));
 		}
 
-		emit StakeContent(_stakedContent.stakeOwner, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedIndex, _stakedContent.profitPercentage, _stakedContent.createdOnTimestamp);
+		emit StakeContent(_stakedContent.stakeOwner, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedIndex, _stakedContent.profitPercentage, _stakedContent.createdOnTimestamp, _stakedContent.extraData);
+
 		return _stakedContent.stakeId;
 	}
 }
