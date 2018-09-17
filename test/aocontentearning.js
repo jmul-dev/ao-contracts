@@ -2,10 +2,11 @@ var AOContent = artifacts.require("./AOContent.sol");
 var AOToken = artifacts.require("./AOToken.sol");
 var AOTreasury = artifacts.require("./AOTreasury.sol");
 var AOEarning = artifacts.require("./AOEarning.sol");
+var AOLibrary = artifacts.require("./AOLibrary.sol");
 var EthCrypto = require("eth-crypto");
 
 contract("AOContent & AOEarning", function(accounts) {
-	var aocontent, aotoken, aodecimals, aotreasury, aoearning;
+	var aocontent, aotoken, aodecimals, aotreasury, aoearning, library;
 	var someAddress = "0x0694bdcab07b298e88a834a3c91602cb8f457bde";
 	var developer = accounts[0];
 	var account1 = accounts[1];
@@ -39,6 +40,8 @@ contract("AOContent & AOEarning", function(accounts) {
 
 		// Get the decimals
 		aodecimals = await aotoken.decimals();
+
+		library = await AOLibrary.deployed();
 	});
 	contract("AOContent - Developer Only Function Tests", function() {
 		it("only developer can pause/unpause contract", async function() {
@@ -1502,6 +1505,10 @@ contract("AOContent & AOEarning", function(accounts) {
 			var contentPriceEarningBefore = await aoearning.contentPriceEarning(account1);
 			var inflationBonusAccruedBefore = await aoearning.inflationBonusAccrued(account1);
 
+			var totalStakedContentStakeEarningBefore = await aoearning.totalStakedContentStakeEarning(stakeId1);
+			var totalStakedContentHostEarningBefore = await aoearning.totalStakedContentHostEarning(stakeId1);
+			var totalStakedContentFoundationEarningBefore = await aoearning.totalStakedContentFoundationEarning(stakeId1);
+
 			var canBecomeHost, hostContentEvent, contentHost;
 			try {
 				var result = await aocontent.becomeHost(
@@ -1552,6 +1559,10 @@ contract("AOContent & AOEarning", function(accounts) {
 			var networkPriceEarningAfter = await aoearning.networkPriceEarning(account1);
 			var contentPriceEarningAfter = await aoearning.contentPriceEarning(account1);
 			var inflationBonusAccruedAfter = await aoearning.inflationBonusAccrued(account1);
+
+			var totalStakedContentStakeEarningAfter = await aoearning.totalStakedContentStakeEarning(stakeId1);
+			var totalStakedContentHostEarningAfter = await aoearning.totalStakedContentHostEarning(stakeId1);
+			var totalStakedContentFoundationEarningAfter = await aoearning.totalStakedContentFoundationEarning(stakeId1);
 
 			// Verify the earning
 			assert.equal(stakeEarningAfter[0], purchaseId, "Stake earning has incorrect purchaseId");
@@ -1672,6 +1683,28 @@ contract("AOContent & AOEarning", function(accounts) {
 					.toString(),
 				"Contract has incorrect inflationBonusAccrued for stake owner/host"
 			);
+
+			assert.equal(
+				totalStakedContentStakeEarningAfter.toString(),
+				totalStakedContentStakeEarningBefore
+					.plus(stakeEarningBefore[1])
+					.plus(stakeEarningBefore[2])
+					.toString(),
+				"Staked content has incorrect totalStakedContentStakeEarning value"
+			);
+			assert.equal(
+				totalStakedContentHostEarningAfter.toString(),
+				totalStakedContentHostEarningBefore
+					.plus(hostEarningBefore[1])
+					.plus(hostEarningBefore[2])
+					.toString(),
+				"Staked content has incorrect totalStakedContentHostEarning value"
+			);
+			assert.equal(
+				totalStakedContentFoundationEarningAfter.toString(),
+				totalStakedContentFoundationEarningBefore.plus(foundationEarningBefore[2]).toString(),
+				"Staked content has incorrect totalStakedContentFoundationEarning value"
+			);
 		});
 
 		it("new node should be able to buy content from new distribution node, and then become a host itself", async function() {
@@ -1734,6 +1767,130 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.equal(contentHost[1], account3, "Content host has incorrect host");
 			assert.equal(contentHost[2], account3ContentDatKey, "Content host has incorrect content dat key");
 			assert.equal(contentHost[3], account3MetadataDatKey, "Content host has incorrect metadata dat key");
+		});
+
+		it("AOLibrary - getContentMetrics(), it should return the staking and earning information of a stake ID", async function() {
+			var canGetContentMetrics, metrics;
+			try {
+				metrics = await library.getContentMetrics(aocontent.address, aoearning.address, "someid");
+				canGetContentMetrics = true;
+			} catch (e) {
+				canGetContentMetrics = false;
+			}
+			assert.notEqual(canGetContentMetrics, true, "Library contract can get content metrics of non-existing stake ID");
+
+			try {
+				metrics = await library.getContentMetrics(aocontent.address, aoearning.address, stakeId1);
+				canGetContentMetrics = true;
+			} catch (e) {
+				canGetContentMetrics = false;
+			}
+			assert.equal(canGetContentMetrics, true, "Library contract can't get content metrics of existing stake ID");
+
+			var stakedContent = await aocontent.stakedContentById(stakeId1);
+			assert.equal(metrics[0].toString(), stakedContent[2].toString(), "getContentMetrics() returns incorrect staked networkAmount");
+			assert.equal(
+				metrics[1].toString(),
+				stakedContent[3].toString(),
+				"getContentMetrics() returns incorrect staked primordialAmount"
+			);
+			assert.equal(
+				metrics[2].toString(),
+				stakedContent[4].toString(),
+				"getContentMetrics() returns incorrect staked primordialWeightedIndex"
+			);
+
+			var totalStakedContentStakeEarning = await aoearning.totalStakedContentStakeEarning(stakeId1);
+			var totalStakedContentHostEarning = await aoearning.totalStakedContentHostEarning(stakeId1);
+			var totalStakedContentFoundationEarning = await aoearning.totalStakedContentFoundationEarning(stakeId1);
+
+			assert.equal(
+				metrics[3].toString(),
+				totalStakedContentStakeEarning.toString(),
+				"getContentMetrics() returns incorrect total earning from staking content"
+			);
+			assert.equal(
+				metrics[4].toString(),
+				totalStakedContentHostEarning.toString(),
+				"getContentMetrics() returns incorrect total earning from hosting content"
+			);
+			assert.equal(
+				metrics[5].toString(),
+				totalStakedContentFoundationEarning.toString(),
+				"getContentMetrics() returns incorrect total earning for Foundation"
+			);
+		});
+
+		it("AOLibrary - getStakingMetrics(), it should return the staking information of a stake ID", async function() {
+			var canGetStakingMetrics, metrics;
+			try {
+				metrics = await library.getStakingMetrics(aocontent.address, "someid");
+				canGetStakingMetrics = true;
+			} catch (e) {
+				canGetStakingMetrics = false;
+			}
+			assert.notEqual(canGetStakingMetrics, true, "Library contract can get staking metrics of non-existing stake ID");
+
+			try {
+				metrics = await library.getStakingMetrics(aocontent.address, stakeId1);
+				canGetStakingMetrics = true;
+			} catch (e) {
+				canGetStakingMetrics = false;
+			}
+			assert.equal(canGetStakingMetrics, true, "Library contract can't get staking metrics of existing stake ID");
+
+			var stakedContent = await aocontent.stakedContentById(stakeId1);
+			assert.equal(metrics[0].toString(), stakedContent[2].toString(), "getStakingMetrics() returns incorrect staked networkAmount");
+			assert.equal(
+				metrics[1].toString(),
+				stakedContent[3].toString(),
+				"getStakingMetrics() returns incorrect staked primordialAmount"
+			);
+			assert.equal(
+				metrics[2].toString(),
+				stakedContent[4].toString(),
+				"getStakingMetrics() returns incorrect staked primordialWeightedIndex"
+			);
+		});
+
+		it("AOLibrary - getEarningMetrics(), it should return the earning information of a stake ID", async function() {
+			var metrics = await library.getEarningMetrics(aoearning.address, "someid");
+			assert.equal(
+				metrics[0].toString(),
+				0,
+				"getEarningMetrics() returns incorrect total earning from staking content for a non-existing stake ID"
+			);
+			assert.equal(
+				metrics[1].toString(),
+				0,
+				"getEarningMetrics() returns incorrect total earning from hosting content for a non-existing stake ID"
+			);
+			assert.equal(
+				metrics[2].toString(),
+				0,
+				"getEarningMetrics() returns incorrect total earning for Foundation for a non-existing stake ID"
+			);
+
+			var metrics = await library.getEarningMetrics(aoearning.address, stakeId1);
+			var totalStakedContentStakeEarning = await aoearning.totalStakedContentStakeEarning(stakeId1);
+			var totalStakedContentHostEarning = await aoearning.totalStakedContentHostEarning(stakeId1);
+			var totalStakedContentFoundationEarning = await aoearning.totalStakedContentFoundationEarning(stakeId1);
+
+			assert.equal(
+				metrics[0].toString(),
+				totalStakedContentStakeEarning.toString(),
+				"getEarningMetrics() returns incorrect total earning from staking content"
+			);
+			assert.equal(
+				metrics[1].toString(),
+				totalStakedContentHostEarning.toString(),
+				"getEarningMetrics() returns incorrect total earning from hosting content"
+			);
+			assert.equal(
+				metrics[2].toString(),
+				totalStakedContentFoundationEarning.toString(),
+				"getEarningMetrics() returns incorrect total earning for Foundation"
+			);
 		});
 	});
 });

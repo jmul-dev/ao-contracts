@@ -555,7 +555,7 @@ contract AOContent is developed {
 		_hostContent(msg.sender, _stakeId, _encChallenge, _contentDatKey, _metadataDatKey);
 
 		// Release earning from escrow
-		require (_earning.releaseEarning(_purchaseId, _purchaseReceipt.networkAmount, _content.fileSize, stakedContents[stakedContentIndex[_stakeId]].stakeOwner, contentHosts[contentHostIndex[_purchaseReceipt.contentHostId]].host));
+		require (_earning.releaseEarning(_stakeId, _purchaseId, _purchaseReceipt.networkAmount, _content.fileSize, stakedContents[stakedContentIndex[_stakeId]].stakeOwner, contentHosts[contentHostIndex[_purchaseReceipt.contentHostId]].host));
 	}
 
 	/***** INTERNAL METHODS *****/

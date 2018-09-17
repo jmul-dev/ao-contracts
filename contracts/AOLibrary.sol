@@ -2,6 +2,8 @@ pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
 import './AOTreasury.sol';
+import './AOContent.sol';
+import './AOEarning.sol';
 
 /**
  * @title AOLibrary
@@ -151,5 +153,63 @@ library AOLibrary {
 	function checkSignature(address _callingContractAddress, string _message, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
 		bytes32 _hash = doHash(_callingContractAddress, _message);
 		return ecrecover(_hash, _v, _r, _s);
+	}
+
+	/**
+	 * @dev Return the staking and earning information of a stake ID
+	 * @param _contentAddress The address of AOContent
+	 * @param _earningAddress The address of AOEarning
+	 * @param _stakeId The ID of the staked content
+	 * @return the network base token amount staked for this content
+	 * @return the primordial token amount staked for this content
+	 * @return the primordial weighted index of the staked content
+	 * @return the total earning from staking this content
+	 * @return the total earning from hosting this content
+	 * @return the total foundation earning of this content
+	 */
+	function getContentMetrics(address _contentAddress, address _earningAddress, bytes32 _stakeId) public view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
+		(uint256 networkAmount, uint256 primordialAmount, uint256 primordialWeightedIndex) = getStakingMetrics(_contentAddress, _stakeId);
+		(uint256 totalStakeEarning, uint256 totalHostEarning, uint256 totalFoundationEarning) = getEarningMetrics(_earningAddress, _stakeId);
+		return (
+			networkAmount,
+			primordialAmount,
+			primordialWeightedIndex,
+			totalStakeEarning,
+			totalHostEarning,
+			totalFoundationEarning
+		);
+	}
+
+	/**
+	 * @dev Return the staking information of a stake ID
+	 * @param _contentAddress The address of AOContent
+	 * @param _stakeId The ID of the staked content
+	 * @return the network base token amount staked for this content
+	 * @return the primordial token amount staked for this content
+	 * @return the primordial weighted index of the staked content
+	 */
+	function getStakingMetrics(address _contentAddress, bytes32 _stakeId) public view returns (uint256, uint256, uint256) {
+		(,, uint256 networkAmount, uint256 primordialAmount, uint256 primordialWeightedIndex,,,,) = AOContent(_contentAddress).stakedContentById(_stakeId);
+		return (
+			networkAmount,
+			primordialAmount,
+			primordialWeightedIndex
+		);
+	}
+
+	/**
+	 * @dev Return the earning information of a stake ID
+	 * @param _earningAddress The address of AOEarning
+	 * @param _stakeId The ID of the staked content
+	 * @return the total earning from staking this content
+	 * @return the total earning from hosting this content
+	 * @return the total foundation earning of this content
+	 */
+	function getEarningMetrics(address _earningAddress, bytes32 _stakeId) public view returns (uint256, uint256, uint256) {
+		return (
+			AOEarning(_earningAddress).totalStakedContentStakeEarning(_stakeId),
+			AOEarning(_earningAddress).totalStakedContentHostEarning(_stakeId),
+			AOEarning(_earningAddress).totalStakedContentFoundationEarning(_stakeId)
+		);
 	}
 }
