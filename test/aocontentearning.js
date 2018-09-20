@@ -13,8 +13,6 @@ contract("AOContent & AOEarning", function(accounts) {
 	var account2 = accounts[2];
 	var account3 = accounts[3];
 	// Retrieve private keys from ganache
-	var account2PrivateKey = "0x6a35c58d0acad0ceca9c03d37aa2d2288d70afe0690f5e5f5e05aeab93b95dad";
-	var account3PrivateKey = "0xf4bab2d2f0c5119cc6aad0735bbf0a017d229cbf430c0041af382b93e713a1c3";
 	var baseChallenge = "basechallengestring";
 	var encChallenge = "encchallengestring";
 	var account2EncChallenge = "account2encchallengestring";
@@ -23,11 +21,12 @@ contract("AOContent & AOEarning", function(accounts) {
 	var metadataDatKey = "7bde24fb38d6e316ec48874c937f4582f3a494df1ecf387e6edb2e25bff700f7";
 	var account2ContentDatKey = "02bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 	var account2MetadataDatKey = "02bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
-	var account2PublicKey = "bf1cc3154424dc22191941d9f4f50b063a2b663a2337e5548abea633c1d06ece";
 	var account3ContentDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 	var account3MetadataDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
-	var account3PublicKey = "03a34d6aef3eb42335fb3cacb59478c0b44c0bbeb8bb4ca427dbc7044157a5d24b";
 	var extraData = "someextradata";
+
+	var account2LocalIdentity = EthCrypto.createIdentity();
+	var account3LocalIdentity = EthCrypto.createIdentity();
 
 	var fileSize = 1000000; // 1000000 bytes = min 1000000 AO
 	var profitPercentage = 600000; // 60%
@@ -1144,35 +1143,35 @@ contract("AOContent & AOEarning", function(accounts) {
 		});
 
 		it("buyContent() - should NOT be able to buy content if sent tokens < price", async function() {
-			var buyContent = async function(account, contentHostId, publicKey) {
+			var buyContent = async function(account, contentHostId, publicAddress) {
 				var canBuyContent;
 				try {
-					await aocontent.buyContent(contentHostId, 10, 0, "ao", publicKey, { from: account });
+					await aocontent.buyContent(contentHostId, 10, 0, "ao", publicAddress, { from: account });
 					canBuyContent = true;
 				} catch (e) {
 					canBuyContent = false;
 				}
 				assert.notEqual(canBuyContent, true, "Account can buy content even though sent tokens < price");
 			};
-			await buyContent(account2, contentHostId1, account2PublicKey);
-			await buyContent(account2, contentHostId2, account2PublicKey);
-			await buyContent(account2, contentHostId3, account2PublicKey);
+			await buyContent(account2, contentHostId1, account2LocalIdentity.address);
+			await buyContent(account2, contentHostId2, account2LocalIdentity.address);
+			await buyContent(account2, contentHostId3, account2LocalIdentity.address);
 		});
 
 		it("buyContent() - should NOT be able to buy content if account does not have enough balance", async function() {
-			var buyContent = async function(account, contentHostId, publicKey) {
+			var buyContent = async function(account, contentHostId, address) {
 				var canBuyContent;
 				try {
-					await aocontent.buyContent(contentHostId, 5, 0, "mega", publicKey, { from: account });
+					await aocontent.buyContent(contentHostId, 5, 0, "mega", address, { from: account });
 					canBuyContent = true;
 				} catch (e) {
 					canBuyContent = false;
 				}
 				assert.notEqual(canBuyContent, true, "Account can buy content even though account does not have enough balance");
 			};
-			await buyContent(account3, contentHostId1, account3PublicKey);
-			await buyContent(account3, contentHostId2, account3PublicKey);
-			await buyContent(account3, contentHostId3, account3PublicKey);
+			await buyContent(account3, contentHostId1, account3LocalIdentity.address);
+			await buyContent(account3, contentHostId2, account3LocalIdentity.address);
+			await buyContent(account3, contentHostId3, account3LocalIdentity.address);
 		});
 
 		it("buyContent() - should be able to buy content and store all of the earnings of stake owner (content creator)/host/foundation in escrow", async function() {
@@ -1195,7 +1194,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 			var canBuyContent, buyContentEvent, purchaseReceipt, stakeEarning, hostEarning, foundationEarning;
 			try {
-				var result = await aocontent.buyContent(contentHostId1, 3, 0, "mega", account2PublicKey, { from: account2 });
+				var result = await aocontent.buyContent(contentHostId1, 3, 0, "mega", account2LocalIdentity.address, { from: account2 });
 				canBuyContent = true;
 				buyContentEvent = result.logs[0];
 				purchaseId = buyContentEvent.args.purchaseId;
@@ -1218,7 +1217,11 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.equal(purchaseReceipt[0], contentHostId1, "Purchase receipt has incorrect content host ID");
 			assert.equal(purchaseReceipt[1], account2, "Purchase receipt has incorrect buyer address");
 			assert.equal(purchaseReceipt[2].toString(), contentHost1Price.toString(), "Purchase receipt has incorrect paid network amount");
-			assert.equal(purchaseReceipt[3], account2PublicKey, "Purchase receipt has incorrect public key");
+			assert.equal(
+				purchaseReceipt[3].toLowerCase(),
+				account2LocalIdentity.address.toLowerCase(),
+				"Purchase receipt has incorrect public address"
+			);
 
 			var accountBalanceAfter = await aotoken.balanceOf(account2);
 			var stakeOwnerBalanceAfter = await aotoken.balanceOf(account1);
@@ -1311,7 +1314,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.equal(foundationEscrowedBalance.toString(), foundationInflationBonus, "Foundation has incorrect escrowed balance");
 
 			try {
-				var result = await aocontent.buyContent(contentHostId1, 3, 0, "mega", account2PublicKey, { from: account2 });
+				var result = await aocontent.buyContent(contentHostId1, 3, 0, "mega", account2LocalIdentity.address, { from: account2 });
 				canBuyContent = true;
 			} catch (e) {
 				canBuyContent = false;
@@ -1332,7 +1335,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				}
 			]);
 
-			var signature = EthCrypto.sign(account2PrivateKey, signHash);
+			var signature = EthCrypto.sign(account2LocalIdentity.privateKey, signHash);
 
 			var vrs = EthCrypto.vrs.fromString(signature);
 
@@ -1480,7 +1483,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				}
 			]);
 
-			var signature = EthCrypto.sign(account2PrivateKey, signHash);
+			var signature = EthCrypto.sign(account2LocalIdentity.privateKey, signHash);
 
 			var vrs = EthCrypto.vrs.fromString(signature);
 
@@ -1713,7 +1716,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 			var canBuyContent, buyContentEvent;
 			try {
-				var result = await aocontent.buyContent(contentHostId4, 3, 0, "mega", account3PublicKey, { from: account3 });
+				var result = await aocontent.buyContent(contentHostId4, 3, 0, "mega", account3LocalIdentity.address, { from: account3 });
 				canBuyContent = true;
 				buyContentEvent = result.logs[0];
 				purchaseId = buyContentEvent.args.purchaseId;
@@ -1735,7 +1738,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				}
 			]);
 
-			var signature = EthCrypto.sign(account3PrivateKey, signHash);
+			var signature = EthCrypto.sign(account3LocalIdentity.privateKey, signHash);
 
 			var vrs = EthCrypto.vrs.fromString(signature);
 			var canBecomeHost, hostContentEvent, contentHostId, contentHost;
