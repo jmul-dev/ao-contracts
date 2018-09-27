@@ -12,11 +12,18 @@ var AOZetta = artifacts.require("./AOZetta.sol");
 var AOYotta = artifacts.require("./AOYotta.sol");
 var AOXona = artifacts.require("./AOXona.sol");
 
-var AOEarning = artifacts.require("./AOEarning.sol");
-
 // Contracts that interact with AO and its denominations contracts
 var AOTreasury = artifacts.require("./AOTreasury.sol");
 var AOContent = artifacts.require("./AOContent.sol");
+var AOEarning = artifacts.require("./AOEarning.sol");
+
+// Thought Currencies
+var Logos = artifacts.require("./Logos.sol");
+var Ethos = artifacts.require("./Ethos.sol");
+var Pathos = artifacts.require("./Pathos.sol");
+var AntiLogos = artifacts.require("./AntiLogos.sol");
+var AntiEthos = artifacts.require("./AntiEthos.sol");
+var AntiPathos = artifacts.require("./AntiPathos.sol");
 
 module.exports = function(deployer, network, accounts) {
 	var deployerAccount;
@@ -26,7 +33,26 @@ module.exports = function(deployer, network, accounts) {
 		deployerAccount = accounts[0];
 	}
 
-	var aotoken, aokilo, aomega, aogiga, aotera, aopeta, aoexa, aozetta, aoyotta, aoxona, aolibrary, aoearning, aotreasury, aocontent;
+	var aotoken,
+		aokilo,
+		aomega,
+		aogiga,
+		aotera,
+		aopeta,
+		aoexa,
+		aozetta,
+		aoyotta,
+		aoxona,
+		aolibrary,
+		aoearning,
+		aotreasury,
+		aocontent,
+		logos,
+		ethos,
+		pathos,
+		antilogos,
+		antiethos,
+		antipathos;
 	deployer.deploy(AOLibrary);
 	deployer.link(AOLibrary, AOToken);
 	deployer.link(AOLibrary, AOKilo);
@@ -51,7 +77,13 @@ module.exports = function(deployer, network, accounts) {
 		[AOZetta, 0, "AO Zetta", "AOZETTA"],
 		[AOYotta, 0, "AO Yotta", "AOYOTTA"],
 		[AOXona, 0, "AO Xona", "AOXONA"],
-		AOTreasury
+		AOTreasury,
+		[Logos, 0, "Logos", "LOGOS"],
+		[Ethos, 0, "Ethos", "ETHOS"],
+		[Pathos, 0, "Pathos", "PATHOS"],
+		[AntiLogos, 0, "Anti Logos", "ALOGOS"],
+		[AntiEthos, 0, "Anti Ethos", "AETHOS"],
+		[AntiPathos, 0, "Anti Pathos", "APATHOS"]
 	]);
 
 	deployer
@@ -68,7 +100,14 @@ module.exports = function(deployer, network, accounts) {
 			aoyotta = await AOYotta.deployed();
 			aoxona = await AOXona.deployed();
 			aotreasury = await AOTreasury.deployed();
-			return deployer.deploy(AOEarning, aotoken.address, aotreasury.address);
+			logos = await Logos.deployed();
+			ethos = await Ethos.deployed();
+			pathos = await Pathos.deployed();
+			antilogos = await AntiLogos.deployed();
+			antiethos = await AntiEthos.deployed();
+			antipathos = await AntiPathos.deployed();
+
+			return deployer.deploy(AOEarning, aotoken.address, aotreasury.address, pathos.address, antilogos.address);
 		})
 		.then(async function() {
 			aoearning = await AOEarning.deployed();
@@ -131,5 +170,11 @@ module.exports = function(deployer, network, accounts) {
 			// set inflation rate and foundation cut
 			await aoearning.setInflationRate(10000, { from: deployerAccount }); // inflation rate 1%
 			await aoearning.setFoundationCut(5000, { from: deployerAccount }); // foundation cut 0.5%
+
+			// pathos grant access to aoearning
+			await pathos.setWhitelist(aoearning.address, true, { from: deployerAccount });
+
+			// antilogos grant access to aoearning
+			await antilogos.setWhitelist(aoearning.address, true, { from: deployerAccount });
 		});
 };
