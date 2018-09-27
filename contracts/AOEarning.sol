@@ -4,6 +4,8 @@ import './SafeMath.sol';
 import './developed.sol';
 import './AOToken.sol';
 import './AOTreasury.sol';
+import './Pathos.sol';
+import './AntiLogos.sol';
 
 /**
  * @title AOEarning
@@ -18,9 +20,13 @@ contract AOEarning is developed {
 
 	address public baseDenominationAddress;
 	address public treasuryAddress;
+	address public pathosAddress;
+	address public antiLogosAddress;
 
 	AOToken internal _baseAO;
 	AOTreasury internal _treasury;
+	Pathos internal _pathos;
+	AntiLogos internal _antiLogos;
 
 	uint256 public inflationRate; // support up to 4 decimals, i.e 12.3456% = 123456
 	uint256 public foundationCut; // support up to 4 decimals, i.e 12.3456% = 123456
@@ -83,20 +89,26 @@ contract AOEarning is developed {
 	// 0 => Content Creator (Stake Owner)
 	// 1 => Node Host
 	// 2 => Foundation
-	event InflationBonusEscrowed(address indexed recipient, bytes32 purchaseId, uint256 totalInflationBonusAmount, uint256 recipientProfitPercentage, uint256 recipientInflationBonus, uint8 recipientType);
+	event InflationBonusEscrowed(address indexed recipient, bytes32 indexed purchaseId, uint256 totalInflationBonusAmount, uint256 recipientProfitPercentage, uint256 recipientInflationBonus, uint8 recipientType);
 
 	// Event to be broadcasted to public when content creator/host earns the payment split in escrow when request node buys the content
 	// recipientType:
 	// 0 => Content Creator (Stake Owner)
 	// 1 => Node Host
-	event PaymentEarningEscrowed(address indexed recipient, bytes32 purchaseId, uint256 totalPaymentAmount, uint256 recipientProfitPercentage, uint256 recipientPaymentEarning, uint8 recipientType);
+	event PaymentEarningEscrowed(address indexed recipient, bytes32 indexed purchaseId, uint256 totalPaymentAmount, uint256 recipientProfitPercentage, uint256 recipientPaymentEarning, uint8 recipientType);
 
 	// Event to be broadcasted to public when content creator/host/foundation earning is released from escrow
 	// recipientType:
 	// 0 => Content Creator (Stake Owner)
 	// 1 => Node Host
 	// 2 => Foundation
-	event EarningUnescrowed(address indexed recipient, bytes32 purchaseId, uint256 paymentEarning, uint256 inflationBonus, uint8 recipientType);
+	event EarningUnescrowed(address indexed recipient, bytes32 indexed purchaseId, uint256 paymentEarning, uint256 inflationBonus, uint8 recipientType);
+
+	// Event to be broadcasted to public when content creator earns Pathos when a node buys a content
+	event PathosEarned(address indexed stakeOwner, bytes32 indexed purchaseId, uint256 amount);
+
+	// Event to be broadcasted to public when host earns AntiLogos when a node buys a content
+	event AntiLogosEarned(address indexed host, bytes32 indexed purchaseId, uint256 amount);
 
 	// Event to be broadcasted to public when emergency mode is triggered
 	event EscapeHatch();
@@ -106,11 +118,15 @@ contract AOEarning is developed {
 	 * @param _baseDenominationAddress The address of AO base token
 	 * @param _treasuryAddress The address of AOTreasury
 	 */
-	constructor(address _baseDenominationAddress, address _treasuryAddress) public {
+	constructor(address _baseDenominationAddress, address _treasuryAddress, address _pathosAddress, address _antiLogosAddress) public {
 		baseDenominationAddress = _baseDenominationAddress;
 		treasuryAddress = _treasuryAddress;
+		pathosAddress = _pathosAddress;
+		antiLogosAddress = _antiLogosAddress;
 		_baseAO = AOToken(_baseDenominationAddress);
 		_treasury = AOTreasury(_treasuryAddress);
+		_pathos = Pathos(_pathosAddress);
+		_antiLogos = AntiLogos(_antiLogosAddress);
 		setMultiplierModifier(1000000); // multiplierModifier = 1
 	}
 
@@ -188,6 +204,7 @@ contract AOEarning is developed {
 	 * @param _primordialAmountStaked The amount of primordial tokens at stake
 	 * @param _primordialWeightedIndexStaked The weighted index of primordial tokens at stake
 	 * @param _profitPercentage The content creator's profit percentage
+	 * @param _fileSize The size of the file
 	 * @param _stakeOwner The address of the stake owner
 	 * @param _host The address of the host
 	 */
@@ -198,6 +215,7 @@ contract AOEarning is developed {
 		uint256 _primordialAmountStaked,
 		uint256 _primordialWeightedIndexStaked,
 		uint256 _profitPercentage,
+		uint256 _fileSize,
 		address _stakeOwner,
 		address _host) public isActive inWhitelist(msg.sender) returns (bool) {
 
@@ -206,6 +224,15 @@ contract AOEarning is developed {
 
 		// Calculate the inflation bonus earning for content creator/node/foundation in escrow
 		_escrowInflationBonus(_purchaseId, _calculateInflationBonus(_networkAmountStaked, _primordialAmountStaked, _primordialWeightedIndexStaked), _profitPercentage, _stakeOwner, _host);
+
+		// Reward the content creator/stake owner with some Pathos
+		require (_pathos.mintToken(_stakeOwner, _networkAmountStaked.add(_primordialAmountStaked)));
+		emit PathosEarned(_stakeOwner, _purchaseId, _networkAmountStaked.add(_primordialAmountStaked));
+
+		// Reward the host with some AntiLogos
+		require (_antiLogos.mintToken(_host, _fileSize));
+		emit AntiLogosEarned(_host, _purchaseId, _fileSize);
+
 		return true;
 	}
 

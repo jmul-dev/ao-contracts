@@ -508,6 +508,7 @@ contract AOContent is developed {
 			_stakedContent.primordialAmount,
 			_stakedContent.primordialWeightedIndex,
 			_stakedContent.profitPercentage,
+			contents[contentIndex[_stakedContent.contentId]].fileSize,
 			_stakedContent.stakeOwner,
 			_contentHost.host
 		));

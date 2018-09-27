@@ -3,10 +3,12 @@ var AOToken = artifacts.require("./AOToken.sol");
 var AOTreasury = artifacts.require("./AOTreasury.sol");
 var AOEarning = artifacts.require("./AOEarning.sol");
 var AOLibrary = artifacts.require("./AOLibrary.sol");
+var Pathos = artifacts.require("./Pathos.sol");
+var AntiLogos = artifacts.require("./AntiLogos.sol");
 var EthCrypto = require("eth-crypto");
 
 contract("AOContent & AOEarning", function(accounts) {
-	var aocontent, aotoken, aodecimals, aotreasury, aoearning, library;
+	var aocontent, aotoken, aodecimals, aotreasury, aoearning, library, pathos, antilogos;
 	var someAddress = "0x0694bdcab07b298e88a834a3c91602cb8f457bde";
 	var developer = accounts[0];
 	var account1 = accounts[1];
@@ -41,6 +43,9 @@ contract("AOContent & AOEarning", function(accounts) {
 		aodecimals = await aotoken.decimals();
 
 		library = await AOLibrary.deployed();
+
+		pathos = await Pathos.deployed();
+		antilogos = await AntiLogos.deployed();
 	});
 	contract("AOContent - Developer Only Function Tests", function() {
 		it("only developer can pause/unpause contract", async function() {
@@ -1180,6 +1185,9 @@ contract("AOContent & AOEarning", function(accounts) {
 			var hostBalanceBefore = await aotoken.balanceOf(account1);
 			var foundationBalanceBefore = await aotoken.balanceOf(developer);
 
+			var stakeOwnerPathosBalanceBefore = await pathos.balanceOf(account1);
+			var hostAntiLogosBalanceBefore = await antilogos.balanceOf(account1);
+
 			var price = await aocontent.contentHostPrice(contentHostId1);
 			var inflationRate = await aoearning.inflationRate();
 			var foundationCut = await aoearning.foundationCut();
@@ -1338,6 +1346,13 @@ contract("AOContent & AOEarning", function(accounts) {
 				canBuyContent = false;
 			}
 			assert.notEqual(canBuyContent, true, "Account can buy the same content more than once");
+
+			// Verify Thought Currencies balance
+			var stakeOwnerPathosBalanceAfter = await pathos.balanceOf(account1);
+			var hostAntiLogosBalanceAfter = await antilogos.balanceOf(account1);
+
+			assert.equal(stakeOwnerPathosBalanceAfter.toString(), stakeOwnerPathosBalanceBefore.plus(price).toString(), "Stake owner has incorrect Pathos balance");
+			assert.equal(hostAntiLogosBalanceAfter.toString(), hostAntiLogosBalanceBefore.plus(fileSize).toString(), "Host has incorrect AntiLogos balance");
 		});
 
 		it("becomeHost() - should NOT be able to become host if params provided are not valid", async function() {
