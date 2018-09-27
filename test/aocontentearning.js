@@ -1351,8 +1351,16 @@ contract("AOContent & AOEarning", function(accounts) {
 			var stakeOwnerPathosBalanceAfter = await pathos.balanceOf(account1);
 			var hostAntiLogosBalanceAfter = await antilogos.balanceOf(account1);
 
-			assert.equal(stakeOwnerPathosBalanceAfter.toString(), stakeOwnerPathosBalanceBefore.plus(price).toString(), "Stake owner has incorrect Pathos balance");
-			assert.equal(hostAntiLogosBalanceAfter.toString(), hostAntiLogosBalanceBefore.plus(fileSize).toString(), "Host has incorrect AntiLogos balance");
+			assert.equal(
+				stakeOwnerPathosBalanceAfter.toString(),
+				stakeOwnerPathosBalanceBefore.plus(price).toString(),
+				"Stake owner has incorrect Pathos balance"
+			);
+			assert.equal(
+				hostAntiLogosBalanceAfter.toString(),
+				hostAntiLogosBalanceBefore.plus(fileSize).toString(),
+				"Host has incorrect AntiLogos balance"
+			);
 		});
 
 		it("becomeHost() - should NOT be able to become host if params provided are not valid", async function() {
