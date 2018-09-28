@@ -78,12 +78,12 @@ module.exports = function(deployer, network, accounts) {
 		[AOYotta, 0, "AO Yotta", "AOYOTTA"],
 		[AOXona, 0, "AO Xona", "AOXONA"],
 		AOTreasury,
-		[Logos, 0, "Logos", "LOGOS"],
-		[Ethos, 0, "Ethos", "ETHOS"],
-		[Pathos, 0, "Pathos", "PATHOS"],
-		[AntiLogos, 0, "Anti Logos", "ALOGOS"],
-		[AntiEthos, 0, "Anti Ethos", "AETHOS"],
-		[AntiPathos, 0, "Anti Pathos", "APATHOS"]
+		[Logos, 0, "Logos", "LOGOS", "logos"],
+		[Ethos, 0, "Ethos", "ETHOS", "ethos"],
+		[Pathos, 0, "Pathos", "PATHOS", "antipathos"],
+		[AntiLogos, 0, "Anti Logos", "ALOGOS", "antilogos"],
+		[AntiEthos, 0, "Anti Ethos", "AETHOS", "antiethos"],
+		[AntiPathos, 0, "Anti Pathos", "APATHOS", "antipathos"]
 	]);
 
 	deployer

@@ -6,6 +6,6 @@ contract Pathos is ThoughtCurrency {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol)
-		ThoughtCurrency(initialSupply, tokenName, tokenSymbol) public {}
+	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, bytes32 tokenInternalName)
+		ThoughtCurrency(initialSupply, tokenName, tokenSymbol, tokenInternalName) public {}
 }
