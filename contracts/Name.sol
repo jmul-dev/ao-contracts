@@ -12,12 +12,12 @@ contract Name is Thought {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor (string _name, bytes32 _ethAddress, string _datHash, string _database, string _keyValue, bytes32 _contentId)
-		Thought (_name, _ethAddress, '', _datHash, _database, _keyValue, _contentId, _ethAddress) public {
+	constructor (string _originName, address _originNameId, string _datHash, string _database, string _keyValue, bytes32 _contentId)
+		Thought (_originName, _originNameId, address(0), _datHash, _database, _keyValue, _contentId, _originNameId) public {
 		// Creating Name
 		thoughtTypeId = 1;
 
-		advocateId = thoughtId;
+		advocateId = address(this);
 		listenerId = advocateId;
 		speakerId = advocateId;
 	}

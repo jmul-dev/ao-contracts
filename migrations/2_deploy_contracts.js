@@ -25,6 +25,8 @@ var AntiLogos = artifacts.require("./AntiLogos.sol");
 var AntiEthos = artifacts.require("./AntiEthos.sol");
 var AntiPathos = artifacts.require("./AntiPathos.sol");
 
+var Brain = artifacts.require("./Brain.sol");
+
 module.exports = function(deployer, network, accounts) {
 	var deployerAccount;
 	if (network === "rinkeby") {
@@ -52,7 +54,9 @@ module.exports = function(deployer, network, accounts) {
 		pathos,
 		antilogos,
 		antiethos,
-		antipathos;
+		antipathos,
+		brain;
+
 	deployer.deploy(AOLibrary);
 	deployer.link(AOLibrary, AOToken);
 	deployer.link(AOLibrary, AOKilo);
@@ -83,7 +87,8 @@ module.exports = function(deployer, network, accounts) {
 		[Pathos, 0, "Pathos", "PATHOS", "antipathos"],
 		[AntiLogos, 0, "Anti Logos", "ALOGOS", "antilogos"],
 		[AntiEthos, 0, "Anti Ethos", "AETHOS", "antiethos"],
-		[AntiPathos, 0, "Anti Pathos", "APATHOS", "antipathos"]
+		[AntiPathos, 0, "Anti Pathos", "APATHOS", "antipathos"],
+		Brain
 	]);
 
 	deployer
@@ -106,6 +111,7 @@ module.exports = function(deployer, network, accounts) {
 			antilogos = await AntiLogos.deployed();
 			antiethos = await AntiEthos.deployed();
 			antipathos = await AntiPathos.deployed();
+			brain = await Brain.deployed();
 
 			return deployer.deploy(AOEarning, aotoken.address, aotreasury.address, pathos.address, antilogos.address);
 		})

@@ -9,14 +9,13 @@ contract Thought {
 	using SafeMath for uint256;
 
 	// Public variables
-	bytes32 public thoughtId;
 	string public originName;
 	// If originNameId is an address, hash it
-	bytes32 public originNameId;
+	address public originNameId;
 
-	bytes32 public advocateId;
-	bytes32 public listenerId;
-	bytes32 public speakerId;
+	address public advocateId;
+	address public listenerId;
+	address public speakerId;
 
 	// Thought's data
 	string public datHash;
@@ -30,23 +29,22 @@ contract Thought {
 	 */
 	uint8 public thoughtTypeId;
 
-	bytes32 public fromId;
-	bytes32 public throughId;
-	bytes32 public toId;
+	address public fromId;
+	address public throughId;
+	address public toId;
 
 	struct ChildThought {
-		bytes32 fromThoughtId;
+		address fromThoughtId;
 		uint256 positionAmount;
 	}
 
 	ChildThought[] public childThoughts;
-	bytes32[] public orphanThoughts;
+	address[] public orphanThoughts;
 
 	/**
 	 * @dev Constructor function
 	 */
-	constructor (string _originName, bytes32 _originNameId, bytes32 _advocateId, string _datHash, string _database, string _keyValue, bytes32 _contentId, bytes32 _fromId) public {
-		thoughtId = keccak256(abi.encodePacked(msg.sender, _originName, _originNameId));
+	constructor (string _originName, address _originNameId, address _advocateId, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _fromId) public {
 		originName = _originName;
 		originNameId = _originNameId;
 		advocateId = _advocateId;
