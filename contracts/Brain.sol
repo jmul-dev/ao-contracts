@@ -21,8 +21,13 @@ contract Brain {
 	address[] internal taos;
 
 	mapping (string => bool) internal originNames;
+	mapping (address => address) internal advocateIdToEthAddress;
 
+	// Event to be broadcasted to public when a Name is created
 	event CreateName(address creator, address thoughtId, uint256 index, string name);
+
+	// Event to be broadcasted to public when current Advocate sets New Advocate for a Name
+	event SetNameAdvocate(address thoughtId, address oldAdvocateId, address newAdvocateId);
 
 	constructor() public {}
 
@@ -49,10 +54,13 @@ contract Brain {
 
 		originNames[_name] = true;
 
-		address newName = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId);
-		names.push(newName);
+		address newNameAddress = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId);
+		names.push(newNameAddress);
 
-		emit CreateName(msg.sender, newName, names.length.sub(1), _name);
+		Name newName = Name(newNameAddress);
+		advocateIdToEthAddress[newName.advocateId()] = msg.sender;
+
+		emit CreateName(msg.sender, newNameAddress, names.length.sub(1), _name);
 		return true;
 	}
 
@@ -110,5 +118,32 @@ contract Brain {
 			_names[i.sub(_from)] = names[i];
 		}
 		return _names;
+	}
+
+	/**
+	 * @dev Set Name's advocate
+	 * @param _thoughtId The thought ID of the Name
+	 * @param _newAdvocateId The new advocate ID to be set
+	 * @return true on success
+	 */
+	function setNameAdvocate(address _thoughtId, address _newAdvocateId) public returns (bool) {
+		Name _name = Name(_thoughtId);
+
+		// Make sure the Name exist
+		require (_name.originNameId() != address(0));
+
+		// Make sure the new Advocate ID is a Name
+		Name _newAdvocate = Name(_newAdvocateId);
+		require (_newAdvocate.originNameId() != address(0));
+
+		// Only Name's current advocate can set new advocate
+		address _currentAdvocateId = _name.advocateId();
+		require (advocateIdToEthAddress[_currentAdvocateId] == msg.sender);
+
+		// Set the new advocate
+		require (_name.setAdvocate(_newAdvocateId));
+
+		emit SetNameAdvocate(_thoughtId, _currentAdvocateId, _newAdvocateId);
+		return true;
 	}
 }

@@ -9,8 +9,8 @@ contract Thought {
 	using SafeMath for uint256;
 
 	// Public variables
+	address public brainAddress;
 	string public originName;
-	// If originNameId is an address, hash it
 	address public originNameId;
 
 	address public advocateId;
@@ -45,6 +45,7 @@ contract Thought {
 	 * @dev Constructor function
 	 */
 	constructor (string _originName, address _originNameId, address _advocateId, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _fromId) public {
+		brainAddress = msg.sender;
 		originName = _originName;
 		originNameId = _originNameId;
 		advocateId = _advocateId;
@@ -59,5 +60,24 @@ contract Thought {
 
 		// Creating Thought
 		thoughtTypeId = 0;
+	}
+
+	/**
+	 * @dev Check if calling address is Brain
+	 */
+	modifier onlyBrain {
+		require (msg.sender == brainAddress);
+		_;
+	}
+
+	/**
+	 * @dev Set advocate
+	 * @param _advocateId The advocate ID to be set
+	 * @return true on success
+	 */
+	function setAdvocate(address _advocateId) public onlyBrain returns (bool) {
+		require (_advocateId != address(0));
+		advocateId = _advocateId;
+		return true;
 	}
 }
