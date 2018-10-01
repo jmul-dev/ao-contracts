@@ -80,4 +80,26 @@ contract Thought {
 		advocateId = _advocateId;
 		return true;
 	}
+
+	/**
+	 * @dev Set listener
+	 * @param _listenerId The listener ID to be set
+	 * @return true on success
+	 */
+	function setListener(address _listenerId) public onlyBrain returns (bool) {
+		require (_listenerId != address(0));
+		listenerId = _listenerId;
+		return true;
+	}
+
+	/**
+	 * @dev Set speaker
+	 * @param _speakerId The speaker ID to be set
+	 * @return true on success
+	 */
+	function setSpeaker(address _speakerId) public onlyBrain returns (bool) {
+		require (_speakerId != address(0));
+		speakerId = _speakerId;
+		return true;
+	}
 }
