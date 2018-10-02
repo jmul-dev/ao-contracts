@@ -136,11 +136,11 @@ contract Brain {
 		Name _name = Name(_thoughtId);
 
 		// Make sure the Name exist
-		require (_name.originNameId() != address(0));
+		require (_name.originNameId() != address(0) && _name.thoughtTypeId() == 1);
 
 		// Make sure the new Advocate ID is a Name
 		Name _newAdvocate = Name(_newAdvocateId);
-		require (_newAdvocate.originNameId() != address(0));
+		require (_newAdvocate.originNameId() != address(0) && _newAdvocate.thoughtTypeId() == 1);
 
 		// Only Name's current advocate can set new advocate
 		address _currentAdvocateId = _name.advocateId();
@@ -163,11 +163,11 @@ contract Brain {
 		Name _name = Name(_thoughtId);
 
 		// Make sure the Name exist
-		require (_name.originNameId() != address(0));
+		require (_name.originNameId() != address(0) && _name.thoughtTypeId() == 1);
 
 		// Make sure the new Listener ID is a Name
 		Name _newListener = Name(_newListenerId);
-		require (_newListener.originNameId() != address(0));
+		require (_newListener.originNameId() != address(0) && _newListener.thoughtTypeId() == 1);
 
 		// Only Name's current advocate can set new advocate
 		require (advocateIdToEthAddress[_name.advocateId()] == msg.sender);
@@ -190,11 +190,11 @@ contract Brain {
 		Name _name = Name(_thoughtId);
 
 		// Make sure the Name exist
-		require (_name.originNameId() != address(0));
+		require (_name.originNameId() != address(0) && _name.thoughtTypeId() == 1);
 
 		// Make sure the new Speaker ID is a Name
 		Name _newSpeaker = Name(_newSpeakerId);
-		require (_newSpeaker.originNameId() != address(0));
+		require (_newSpeaker.originNameId() != address(0) && _newSpeaker.thoughtTypeId() == 1);
 
 		// Only Name's current advocate can set new advocate
 		require (advocateIdToEthAddress[_name.advocateId()] == msg.sender);
