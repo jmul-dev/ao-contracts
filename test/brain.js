@@ -132,7 +132,7 @@ contract("Brain", function(accounts) {
 				setNameAdvocateEvent = null;
 				canSetNameAdvocate = false;
 			}
-			assert.notEqual(canSetNameAdvocate, true, "Advocate can set non-existing Advocate to a Name");
+			assert.notEqual(canSetNameAdvocate, true, "Advocate can set non-existing Advocate on a Name");
 
 			try {
 				var result = await brain.setNameAdvocate(nameId1, _newAdvocateId, { from: account2 });
@@ -182,7 +182,7 @@ contract("Brain", function(accounts) {
 				setNameListenerEvent = null;
 				canSetNameListener = false;
 			}
-			assert.notEqual(canSetNameListener, true, "Advocate can set non-existing Listener to a Name");
+			assert.notEqual(canSetNameListener, true, "Advocate can set non-existing Listener on a Name");
 
 			try {
 				var result = await brain.setNameListener(nameId1, _newListenerId, { from: account3 });
@@ -232,7 +232,7 @@ contract("Brain", function(accounts) {
 				setNameSpeakerEvent = null;
 				canSetNameSpeaker = false;
 			}
-			assert.notEqual(canSetNameSpeaker, true, "Advocate can set non-existing Speaker to a Name");
+			assert.notEqual(canSetNameSpeaker, true, "Advocate can set non-existing Speaker on a Name");
 
 			try {
 				var result = await brain.setNameSpeaker(nameId1, _newSpeakerId, { from: account3 });
@@ -278,6 +278,150 @@ contract("Brain", function(accounts) {
 			assert.notEqual(canCreateThought, true, "Wallet can create a Thought on behalf of other Advocate");
 
 			thoughtId1 = await createThought(advocateId, account1);
+		});
+
+		it("setThoughtAdvocate()", async function() {
+			var _newAdvocateId = nameId2;
+
+			var canSetThoughtAdvocate, setThoughtAdvocateEvent;
+			try {
+				var result = await brain.setThoughtAdvocate("someid", _newAdvocateId, { from: account1 });
+				setThoughtAdvocateEvent = result.logs[0];
+				canSetThoughtAdvocate = true;
+			} catch (e) {
+				setThoughtAdvocateEvent = null;
+				canSetThoughtAdvocate = false;
+			}
+			assert.notEqual(canSetThoughtAdvocate, true, "Advocate can set new Advocate on non-existing Thought");
+
+			try {
+				var result = await brain.setThoughtAdvocate(thoughtId1, "someid", { from: account1 });
+				setThoughtAdvocateEvent = result.logs[0];
+				canSetThoughtAdvocate = true;
+			} catch (e) {
+				setThoughtAdvocateEvent = null;
+				canSetThoughtAdvocate = false;
+			}
+			assert.notEqual(canSetThoughtAdvocate, true, "Advocate can set non-existing Advocate on a Thought");
+
+			try {
+				var result = await brain.setThoughtAdvocate(thoughtId1, _newAdvocateId, { from: account2 });
+				setThoughtAdvocateEvent = result.logs[0];
+				canSetThoughtAdvocate = true;
+			} catch (e) {
+				setThoughtAdvocateEvent = null;
+				canSetThoughtAdvocate = false;
+			}
+			assert.notEqual(canSetThoughtAdvocate, true, "Non-Thought's advocate can set a new Advocate");
+
+			try {
+				var result = await brain.setThoughtAdvocate(thoughtId1, _newAdvocateId, { from: account1 });
+				setThoughtAdvocateEvent = result.logs[0];
+				canSetThoughtAdvocate = true;
+			} catch (e) {
+				setThoughtAdvocateEvent = null;
+				canSetThoughtAdvocate = false;
+			}
+			assert.equal(canSetThoughtAdvocate, true, "Thought's advocate can't set a new Advocate");
+
+			var _thought = await brain.getThought(thoughtId1);
+			assert.equal(_thought[2], _newAdvocateId, "Thought has incorrect advocateId after the update");
+		});
+
+		it("setThoughtListener()", async function() {
+			var _newListenerId = nameId3;
+
+			var canSetThoughtListener, setThoughtListenerEvent;
+			try {
+				var result = await brain.setThoughtListener("someid", _newListenerId, { from: account2 });
+				setThoughtListenerEvent = result.logs[0];
+				canSetThoughtListener = true;
+			} catch (e) {
+				setThoughtListenerEvent = null;
+				canSetThoughtListener = false;
+			}
+			assert.notEqual(canSetThoughtListener, true, "Advocate can set new Listener on non-existing Thought");
+
+			try {
+				var result = await brain.setThoughtListener(thoughtId1, "someid", { from: account2 });
+				setThoughtListenerEvent = result.logs[0];
+				canSetThoughtListener = true;
+			} catch (e) {
+				setThoughtListenerEvent = null;
+				canSetThoughtListener = false;
+			}
+			assert.notEqual(canSetThoughtListener, true, "Advocate can set non-existing Listener on a Thought");
+
+			try {
+				var result = await brain.setThoughtListener(thoughtId1, _newListenerId, { from: account3 });
+				setThoughtListenerEvent = result.logs[0];
+				canSetThoughtListener = true;
+			} catch (e) {
+				setThoughtListenerEvent = null;
+				canSetThoughtListener = false;
+			}
+			assert.notEqual(canSetThoughtListener, true, "Non-Thought's advocate can set a new Listener");
+
+			try {
+				var result = await brain.setThoughtListener(thoughtId1, _newListenerId, { from: account2 });
+				setThoughtListenerEvent = result.logs[0];
+				canSetThoughtListener = true;
+			} catch (e) {
+				setThoughtListenerEvent = null;
+				canSetThoughtListener = false;
+			}
+			assert.equal(canSetThoughtListener, true, "Thought's advocate can't set a new Listener");
+
+			var _thought = await brain.getThought(thoughtId1);
+			assert.equal(_thought[3], _newListenerId, "Thought has incorrect listenerId after the update");
+		});
+
+		it("setThoughtSpeaker()", async function() {
+			var _newSpeakerId = nameId4;
+
+			var canSetThoughtSpeaker, setThoughtSpeakerEvent;
+			try {
+				var result = await brain.setThoughtSpeaker("someid", _newSpeakerId, { from: account2 });
+				setThoughtSpeakerEvent = result.logs[0];
+				canSetThoughtSpeaker = true;
+			} catch (e) {
+				setThoughtSpeakerEvent = null;
+				canSetThoughtSpeaker = false;
+			}
+			assert.notEqual(canSetThoughtSpeaker, true, "Advocate can set new Speaker on non-existing Thought");
+
+			try {
+				var result = await brain.setThoughtSpeaker(thoughtId1, "someid", { from: account2 });
+				setThoughtSpeakerEvent = result.logs[0];
+				canSetThoughtSpeaker = true;
+			} catch (e) {
+				setThoughtSpeakerEvent = null;
+				canSetThoughtSpeaker = false;
+			}
+			assert.notEqual(canSetThoughtSpeaker, true, "Advocate can set non-existing Speaker on a Thought");
+
+			try {
+				var result = await brain.setThoughtSpeaker(thoughtId1, _newSpeakerId, { from: account3 });
+				setThoughtSpeakerEvent = result.logs[0];
+				canSetThoughtSpeaker = true;
+			} catch (e) {
+				setThoughtSpeakerEvent = null;
+				canSetThoughtSpeaker = false;
+			}
+			assert.notEqual(canSetThoughtSpeaker, true, "Non-Thought's advocate can set a new Speaker");
+
+			try {
+				var result = await brain.setThoughtSpeaker(thoughtId1, _newSpeakerId, { from: account2 });
+				setThoughtSpeakerEvent = result.logs[0];
+				canSetThoughtSpeaker = true;
+			} catch (e) {
+				setThoughtSpeakerEvent = null;
+				canSetThoughtSpeaker = false;
+			}
+			assert.equal(canSetThoughtSpeaker, true, "Thought's advocate can't set a new Speaker");
+
+			var _thought = await brain.getThought(thoughtId1);
+			assert.equal(_thought[4], _newSpeakerId, "Thought has incorrect speakerId after the update");
 		});
 	});
 });

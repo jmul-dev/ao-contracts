@@ -21,7 +21,6 @@ contract Brain {
 	address[] internal taos;
 
 	mapping (string => bool) internal originNames;
-	mapping (address => address) internal advocateIdToEthAddress;
 
 	// Event to be broadcasted to public when a Name is created
 	event CreateName(address creator, address nameId, uint256 index, string name);
@@ -37,6 +36,15 @@ contract Brain {
 
 	// Event to be broadcasted to public when Advocate creates a Thought
 	event CreateThought(address creator, address advocateId, address thoughtId, uint256 index);
+
+	// Event to be broadcasted to public when current Advocate sets New Advocate for a Thought
+	event SetThoughtAdvocate(address thoughtId, address oldAdvocateId, address newAdvocateId);
+
+	// Event to be broadcasted to public when current Advocate sets New Listener for a Thought
+	event SetThoughtListener(address thoughtId, address oldListenerId, address newListenerId);
+
+	// Event to be broadcasted to public when current Advocate sets New Speaker for a Thought
+	event SetThoughtSpeaker(address thoughtId, address oldSpeakerId, address newSpeakerId);
 
 	constructor() public {}
 
@@ -66,9 +74,6 @@ contract Brain {
 		// The address is the Name ID (which is also a Thought ID)
 		address nameId = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId);
 		names.push(nameId);
-
-		Name newName = Name(nameId);
-		advocateIdToEthAddress[newName.advocateId()] = msg.sender;
 
 		emit CreateName(msg.sender, nameId, names.length.sub(1), _name);
 		return true;
@@ -148,7 +153,7 @@ contract Brain {
 
 		// Only Name's current advocate can set new advocate
 		address _currentAdvocateId = _name.advocateId();
-		require (advocateIdToEthAddress[_currentAdvocateId] == msg.sender);
+		require (_name.originNameId() == msg.sender);
 
 		// Set the new advocate
 		require (_name.setAdvocate(_newAdvocateId));
@@ -174,7 +179,7 @@ contract Brain {
 		require (_newListener.originNameId() != address(0) && _newListener.thoughtTypeId() == 1);
 
 		// Only Name's current advocate can set new advocate
-		require (advocateIdToEthAddress[_name.advocateId()] == msg.sender);
+		require (Name(_name.advocateId()).originNameId() == msg.sender);
 
 		// Set the new listener
 		address _currentListenerId = _name.listenerId();
@@ -201,7 +206,7 @@ contract Brain {
 		require (_newSpeaker.originNameId() != address(0) && _newSpeaker.thoughtTypeId() == 1);
 
 		// Only Name's current advocate can set new advocate
-		require (advocateIdToEthAddress[_name.advocateId()] == msg.sender);
+		require (Name(_name.advocateId()).originNameId() == msg.sender);
 
 		// Set the new speaker
 		address _currentSpeakerId = _name.speakerId();
@@ -227,7 +232,7 @@ contract Brain {
 		require (_advocate.originNameId() != address(0) && _advocate.thoughtTypeId() == 1);
 
 		// Make sure Advocate is the msg.sender
-		require (advocateIdToEthAddress[_advocateId] == msg.sender);
+		require (_advocate.originNameId() == msg.sender);
 
 		address thoughtId = new Thought(_advocate.originName(), _advocateId, _advocateId, _datHash, _database, _keyValue, _contentId, _advocateId);
 		thoughts.push(thoughtId);
@@ -290,5 +295,86 @@ contract Brain {
 			_thoughts[i.sub(_from)] = thoughts[i];
 		}
 		return _thoughts;
+	}
+
+	/**
+	 * @dev Set Thought's advocate
+	 * @param _thoughtId The ID of the Thought
+	 * @param _newAdvocateId The new advocate ID to be set
+	 * @return true on success
+	 */
+	function setThoughtAdvocate(address _thoughtId, address _newAdvocateId) public returns (bool) {
+		Thought _thought = Thought(_thoughtId);
+
+		// Make sure the Thought exist
+		require (_thought.originNameId() != address(0) && _thought.thoughtTypeId() == 0);
+
+		// Make sure the new Advocate ID is a Name
+		Name _newAdvocate = Name(_newAdvocateId);
+		require (_newAdvocate.originNameId() != address(0) && _newAdvocate.thoughtTypeId() == 1);
+
+		// Only Thought's current advocate can set new advocate
+		address _currentAdvocateId = _thought.advocateId();
+		require (Name(_currentAdvocateId).originNameId() == msg.sender);
+
+		// Set the new advocate
+		require (_thought.setAdvocate(_newAdvocateId));
+
+		emit SetThoughtAdvocate(_thoughtId, _currentAdvocateId, _newAdvocateId);
+		return true;
+	}
+
+	/**
+	 * @dev Set Thought's listener
+	 * @param _thoughtId The ID of the Thought
+	 * @param _newListenerId The new listener ID to be set
+	 * @return true on success
+	 */
+	function setThoughtListener(address _thoughtId, address _newListenerId) public returns (bool) {
+		Thought _thought = Thought(_thoughtId);
+
+		// Make sure the Thought exist
+		require (_thought.originNameId() != address(0) && _thought.thoughtTypeId() == 0);
+
+		// Make sure the new Listener ID is a Name
+		Name _newListener = Name(_newListenerId);
+		require (_newListener.originNameId() != address(0) && _newListener.thoughtTypeId() == 1);
+
+		// Only Thought's current advocate can set new advocate
+		require (Name(_thought.advocateId()).originNameId() == msg.sender);
+
+		// Set the new listener
+		address _currentListenerId = _thought.listenerId();
+		require (_thought.setListener(_newListenerId));
+
+		emit SetThoughtListener(_thoughtId, _currentListenerId, _newListenerId);
+		return true;
+	}
+
+	/**
+	 * @dev Set Thought's speaker
+	 * @param _thoughtId The ID of the Thought
+	 * @param _newSpeakerId The new speaker ID to be set
+	 * @return true on success
+	 */
+	function setThoughtSpeaker(address _thoughtId, address _newSpeakerId) public returns (bool) {
+		Thought _thought = Thought(_thoughtId);
+
+		// Make sure the Thought exist
+		require (_thought.originNameId() != address(0) && _thought.thoughtTypeId() == 0);
+
+		// Make sure the new Speaker ID is a Name
+		Name _newSpeaker = Name(_newSpeakerId);
+		require (_newSpeaker.originNameId() != address(0) && _newSpeaker.thoughtTypeId() == 1);
+
+		// Only Thought's current advocate can set new advocate
+		require (Name(_thought.advocateId()).originNameId() == msg.sender);
+
+		// Set the new speaker
+		address _currentSpeakerId = _thought.speakerId();
+		require (_thought.setSpeaker(_newSpeakerId));
+
+		emit SetThoughtSpeaker(_thoughtId, _currentSpeakerId, _newSpeakerId);
+		return true;
 	}
 }
