@@ -9,7 +9,7 @@ contract Thought {
 	using SafeMath for uint256;
 
 	// Public variables
-	address public brainAddress;
+	address public factoryAddress;
 	string public originName;
 	address public originNameId;
 
@@ -45,7 +45,7 @@ contract Thought {
 	 * @dev Constructor function
 	 */
 	constructor (string _originName, address _originNameId, address _advocateId, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _fromId) public {
-		brainAddress = msg.sender;
+		factoryAddress = msg.sender;
 		originName = _originName;
 		originNameId = _originNameId;
 		advocateId = _advocateId;
@@ -63,10 +63,10 @@ contract Thought {
 	}
 
 	/**
-	 * @dev Check if calling address is Brain
+	 * @dev Check if calling address is Factory
 	 */
-	modifier onlyBrain {
-		require (msg.sender == brainAddress);
+	modifier onlyFactory {
+		require (msg.sender == factoryAddress);
 		_;
 	}
 
@@ -75,7 +75,7 @@ contract Thought {
 	 * @param _advocateId The advocate ID to be set
 	 * @return true on success
 	 */
-	function setAdvocate(address _advocateId) public onlyBrain returns (bool) {
+	function setAdvocate(address _advocateId) public onlyFactory returns (bool) {
 		require (_advocateId != address(0));
 		advocateId = _advocateId;
 		return true;
@@ -86,7 +86,7 @@ contract Thought {
 	 * @param _listenerId The listener ID to be set
 	 * @return true on success
 	 */
-	function setListener(address _listenerId) public onlyBrain returns (bool) {
+	function setListener(address _listenerId) public onlyFactory returns (bool) {
 		require (_listenerId != address(0));
 		listenerId = _listenerId;
 		return true;
@@ -97,7 +97,7 @@ contract Thought {
 	 * @param _speakerId The speaker ID to be set
 	 * @return true on success
 	 */
-	function setSpeaker(address _speakerId) public onlyBrain returns (bool) {
+	function setSpeaker(address _speakerId) public onlyFactory returns (bool) {
 		require (_speakerId != address(0));
 		speakerId = _speakerId;
 		return true;
