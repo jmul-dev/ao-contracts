@@ -24,16 +24,19 @@ contract Brain {
 	mapping (address => address) internal advocateIdToEthAddress;
 
 	// Event to be broadcasted to public when a Name is created
-	event CreateName(address creator, address thoughtId, uint256 index, string name);
+	event CreateName(address creator, address nameId, uint256 index, string name);
 
 	// Event to be broadcasted to public when current Advocate sets New Advocate for a Name
-	event SetNameAdvocate(address thoughtId, address oldAdvocateId, address newAdvocateId);
+	event SetNameAdvocate(address nameId, address oldAdvocateId, address newAdvocateId);
 
 	// Event to be broadcasted to public when current Advocate sets New Listener for a Name
-	event SetNameListener(address thoughtId, address oldListenerId, address newListenerId);
+	event SetNameListener(address nameId, address oldListenerId, address newListenerId);
 
 	// Event to be broadcasted to public when current Advocate sets New Speaker for a Name
-	event SetNameSpeaker(address thoughtId, address oldSpeakerId, address newSpeakerId);
+	event SetNameSpeaker(address nameId, address oldSpeakerId, address newSpeakerId);
+
+	// Event to be broadcasted to public when Advocate creates a Thought
+	event CreateThought(address creator, address advocateId, address thoughtId, uint256 index);
 
 	constructor() public {}
 
@@ -60,21 +63,22 @@ contract Brain {
 
 		originNames[_name] = true;
 
-		address newNameAddress = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId);
-		names.push(newNameAddress);
+		// The address is the Name ID (which is also a Thought ID)
+		address nameId = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId);
+		names.push(nameId);
 
-		Name newName = Name(newNameAddress);
+		Name newName = Name(nameId);
 		advocateIdToEthAddress[newName.advocateId()] = msg.sender;
 
-		emit CreateName(msg.sender, newNameAddress, names.length.sub(1), _name);
+		emit CreateName(msg.sender, nameId, names.length.sub(1), _name);
 		return true;
 	}
 
 	/**
 	 * @dev Get Name information
-	 * @param _thoughtId The thought ID of the Name to be queried
+	 * @param _nameId The ID of the Name to be queried
 	 * @return The name of the Name
-	 * @return The nameId of the Name (in this case, it's the creator ETH address)
+	 * @return The nameId of the Name (in this case, it's the creator node's ETH address)
 	 * @return The advocateId of the Name
 	 * @return The listenerId of the Name
 	 * @return The speakerId of the Name
@@ -84,8 +88,8 @@ contract Brain {
 	 * @return The contentId of the Name
 	 * @return The thoughtTypeId of the Name
 	 */
-	function getName(address _thoughtId) public view returns (string, address, address, address, address, string, string, string, bytes32, uint8) {
-		Name _name = Name(_thoughtId);
+	function getName(address _nameId) public view returns (string, address, address, address, address, string, string, string, bytes32, uint8) {
+		Name _name = Name(_nameId);
 		return (
 			_name.originName(),
 			_name.originNameId(),
@@ -102,19 +106,19 @@ contract Brain {
 
 	/**
 	 * @dev Get total Names
-	 * @return total oNames count
+	 * @return total Names count
 	 */
 	function getTotalNames() public view returns (uint256) {
 		return names.length;
 	}
 
 	/**
-	 * @dev Get list of Name's Thought IDs
+	 * @dev Get list of Name IDs (or Thought IDs)
 	 * @param _from The starting index
 	 * @param _to The ending index
-	 * @return list of Name's Thought Ids
+	 * @return list of Name IDs
 	 */
-	function getNamesThoughtIds(uint256 _from, uint256 _to) public view returns (address[]) {
+	function getNameIds(uint256 _from, uint256 _to) public view returns (address[]) {
 		require (_from >= 0 && _to >= _from);
 		address[] memory _names = new address[](_to.sub(_from).add(1));
 		if (_to > names.length.sub(1)) {
@@ -128,12 +132,12 @@ contract Brain {
 
 	/**
 	 * @dev Set Name's advocate
-	 * @param _thoughtId The thought ID of the Name
+	 * @param _nameId The ID of the Name
 	 * @param _newAdvocateId The new advocate ID to be set
 	 * @return true on success
 	 */
-	function setNameAdvocate(address _thoughtId, address _newAdvocateId) public returns (bool) {
-		Name _name = Name(_thoughtId);
+	function setNameAdvocate(address _nameId, address _newAdvocateId) public returns (bool) {
+		Name _name = Name(_nameId);
 
 		// Make sure the Name exist
 		require (_name.originNameId() != address(0) && _name.thoughtTypeId() == 1);
@@ -149,18 +153,18 @@ contract Brain {
 		// Set the new advocate
 		require (_name.setAdvocate(_newAdvocateId));
 
-		emit SetNameAdvocate(_thoughtId, _currentAdvocateId, _newAdvocateId);
+		emit SetNameAdvocate(_nameId, _currentAdvocateId, _newAdvocateId);
 		return true;
 	}
 
 	/**
 	 * @dev Set Name's listener
-	 * @param _thoughtId The thought ID of the Name
+	 * @param _nameId The ID of the Name
 	 * @param _newListenerId The new listener ID to be set
 	 * @return true on success
 	 */
-	function setNameListener(address _thoughtId, address _newListenerId) public returns (bool) {
-		Name _name = Name(_thoughtId);
+	function setNameListener(address _nameId, address _newListenerId) public returns (bool) {
+		Name _name = Name(_nameId);
 
 		// Make sure the Name exist
 		require (_name.originNameId() != address(0) && _name.thoughtTypeId() == 1);
@@ -176,18 +180,18 @@ contract Brain {
 		address _currentListenerId = _name.listenerId();
 		require (_name.setListener(_newListenerId));
 
-		emit SetNameListener(_thoughtId, _currentListenerId, _newListenerId);
+		emit SetNameListener(_nameId, _currentListenerId, _newListenerId);
 		return true;
 	}
 
 	/**
 	 * @dev Set Name's speaker
-	 * @param _thoughtId The thought ID of the Name
+	 * @param _nameId The ID of the Name
 	 * @param _newSpeakerId The new speaker ID to be set
 	 * @return true on success
 	 */
-	function setNameSpeaker(address _thoughtId, address _newSpeakerId) public returns (bool) {
-		Name _name = Name(_thoughtId);
+	function setNameSpeaker(address _nameId, address _newSpeakerId) public returns (bool) {
+		Name _name = Name(_nameId);
 
 		// Make sure the Name exist
 		require (_name.originNameId() != address(0) && _name.thoughtTypeId() == 1);
@@ -203,7 +207,88 @@ contract Brain {
 		address _currentSpeakerId = _name.speakerId();
 		require (_name.setSpeaker(_newSpeakerId));
 
-		emit SetNameSpeaker(_thoughtId, _currentSpeakerId, _newSpeakerId);
+		emit SetNameSpeaker(_nameId, _currentSpeakerId, _newSpeakerId);
 		return true;
+	}
+
+	/**
+	 * @dev Name creates a Thought
+	 * @param _advocateId The advocate ID that creates this Thought
+	 * @param _datHash The datHash of this Thought
+	 * @param _database The database for this Thought
+	 * @param _keyValue The key/value pair to be checked on the database
+	 * @param _contentId The contentId related to this Thought
+	 * @return true on success
+	 */
+	function createThought(address _advocateId, string _datHash, string _database, string _keyValue, bytes32 _contentId) public returns (bool) {
+		Name _advocate = Name(_advocateId);
+
+		// Make sure the Advocate exist
+		require (_advocate.originNameId() != address(0) && _advocate.thoughtTypeId() == 1);
+
+		// Make sure Advocate is the msg.sender
+		require (advocateIdToEthAddress[_advocateId] == msg.sender);
+
+		address thoughtId = new Thought(_advocate.originName(), _advocateId, _advocateId, _datHash, _database, _keyValue, _contentId, _advocateId);
+		thoughts.push(thoughtId);
+
+		emit CreateThought(msg.sender, _advocateId, thoughtId, thoughts.length.sub(1));
+		return true;
+	}
+
+	/**
+	 * @dev Get Thought information
+	 * @param _thoughtId The ID of the Thought to be queried
+	 * @return The origin name of the Thought
+	 * @return The origin Name ID of the Thought
+	 * @return The advocateId of the Thought
+	 * @return The listenerId of the Thought
+	 * @return The speakerId of the Thought
+	 * @return The datHash of the Thought
+	 * @return The database of the Thought
+	 * @return The keyValue of the Thought
+	 * @return The contentId of the Thought
+	 * @return The thoughtTypeId of the Thought
+	 */
+	function getThought(address _thoughtId) public view returns (string, address, address, address, address, string, string, string, bytes32, uint8) {
+		Thought _thought = Thought(_thoughtId);
+		return (
+			_thought.originName(),
+			_thought.originNameId(),
+			_thought.advocateId(),
+			_thought.listenerId(),
+			_thought.speakerId(),
+			_thought.datHash(),
+			_thought.database(),
+			_thought.keyValue(),
+			_thought.contentId(),
+			_thought.thoughtTypeId()
+		);
+	}
+
+	/**
+	 * @dev Get total Thoughts
+	 * @return total Thoughts count
+	 */
+	function getTotalThoughts() public view returns (uint256) {
+		return thoughts.length;
+	}
+
+	/**
+	 * @dev Get list of Thought IDs
+	 * @param _from The starting index
+	 * @param _to The ending index
+	 * @return list of Thought IDs
+	 */
+	function getThoughtIds(uint256 _from, uint256 _to) public view returns (address[]) {
+		require (_from >= 0 && _to >= _from);
+		address[] memory _thoughts = new address[](_to.sub(_from).add(1));
+		if (_to > thoughts.length.sub(1)) {
+			_to = thoughts.length.sub(1);
+		}
+		for (uint256 i = _from; i <= _to; i++) {
+			_thoughts[i.sub(_from)] = thoughts[i];
+		}
+		return _thoughts;
 	}
 }

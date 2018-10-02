@@ -17,47 +17,85 @@ contract("Brain", function(accounts) {
 	});
 
 	contract("Name Function Tests", function() {
-		var nameThoughtId1, nameThoughtId2, nameThoughtId3, nameThoughtId4;
+		var nameId1, nameId2, nameId3, nameId4, thoughtId1, thoughtId2, thoughtId3, thoughtId4;
 
 		var createName = async function(name, account) {
 			var totalNamesBefore = await brain.getTotalNames();
 
-			var canCreateName, createNameEvent, nameThoughtId;
+			var canCreateName, createNameEvent, nameId;
 			try {
 				var result = await brain.createName(name, datHash, database, keyValue, contentId, { from: account });
 				createNameEvent = result.logs[0];
 				canCreateName = true;
-				nameThoughtId = createNameEvent.args.thoughtId;
+				nameId = createNameEvent.args.nameId;
 			} catch (e) {
 				createNameEvent = null;
 				canCreateName = false;
-				nameThoughtId = null;
+				nameId = null;
 			}
 			assert.equal(canCreateName, true, "Contract is unable to create Name");
 
 			var totalNamesAfter = await brain.getTotalNames();
 			assert.equal(totalNamesAfter.toString(), totalNamesBefore.plus(1).toString(), "Contract has incorrect names length");
 
-			var names = await brain.getNamesThoughtIds(0, totalNamesAfter.toString());
-			assert.include(names, nameThoughtId, "Newly created Name's Thought ID is not in the list");
+			var names = await brain.getNameIds(0, totalNamesAfter.toString());
+			assert.include(names, nameId, "Newly created Name ID is not in the list");
 
-			var _name = await brain.getName(nameThoughtId);
+			var _name = await brain.getName(nameId);
 			assert.equal(_name[0], name, "Name has incorrect originName");
 			assert.equal(_name[1], account, "Name has incorrect originNameId");
-			assert.equal(_name[2], nameThoughtId, "Name has incorrect advocateId");
-			assert.equal(_name[3], nameThoughtId, "Name has incorrect listenerId");
-			assert.equal(_name[4], nameThoughtId, "Name has incorrect speakerId");
+			assert.equal(_name[2], nameId, "Name has incorrect advocateId");
+			assert.equal(_name[3], nameId, "Name has incorrect listenerId");
+			assert.equal(_name[4], nameId, "Name has incorrect speakerId");
 			assert.equal(_name[5], datHash, "Name has incorrect datHash");
 			assert.equal(_name[6], database, "Name has incorrect database");
 			assert.equal(_name[7], keyValue, "Name has incorrect keyValue");
 			assert.equal(web3.toAscii(_name[8]).replace(/\0/g, ""), contentId, "Name has incorrect contentId");
 			assert.equal(_name[9].toString(), 1, "Name has incorrect thoughtTypeId");
 
-			return nameThoughtId;
+			return nameId;
+		};
+
+		var createThought = async function(advocateId, account) {
+			var totalThoughtsBefore = await brain.getTotalThoughts();
+
+			var canCreateThought, createThoughtEvent, thoughtId;
+			try {
+				var result = await brain.createThought(advocateId, datHash, database, keyValue, contentId, { from: account });
+				createThoughtEvent = result.logs[0];
+				canCreateThought = true;
+				thoughtId = createThoughtEvent.args.thoughtId;
+			} catch (e) {
+				createThoughtEvent = null;
+				canCreateThought = false;
+				thoughtId = null;
+			}
+			assert.equal(canCreateThought, true, "Advocate is unable to create Thought");
+
+			var totalThoughtsAfter = await brain.getTotalThoughts();
+			assert.equal(totalThoughtsAfter.toString(), totalThoughtsBefore.plus(1).toString(), "Contract has incorrect thoughts length");
+
+			var thoughts = await brain.getThoughtIds(0, totalThoughtsAfter.toString());
+			assert.include(thoughts, thoughtId, "Newly created Thought ID is not in the list");
+
+			var _thought = await brain.getThought(thoughtId);
+			var _advocate = await brain.getName(advocateId);
+			assert.equal(_thought[0], _advocate[0], "Thought has incorrect originName");
+			assert.equal(_thought[1], advocateId, "Thought has incorrect originNameId");
+			assert.equal(_thought[2], advocateId, "Thought has incorrect advocateId");
+			assert.equal(_thought[3], advocateId, "Thought has incorrect listenerId");
+			assert.equal(_thought[4], advocateId, "Thought has incorrect speakerId");
+			assert.equal(_thought[5], datHash, "Thought has incorrect datHash");
+			assert.equal(_thought[6], database, "Thought has incorrect database");
+			assert.equal(_thought[7], keyValue, "Thought has incorrect keyValue");
+			assert.equal(web3.toAscii(_thought[8]).replace(/\0/g, ""), contentId, "Thought has incorrect contentId");
+			assert.equal(_thought[9].toString(), 0, "Thought has incorrect thoughtTypeId");
+
+			return thoughtId;
 		};
 
 		it("createName()", async function() {
-			nameThoughtId1 = await createName("account1", account1);
+			nameId1 = await createName("account1", account1);
 
 			try {
 				var result = await brain.createName("account1", datHash, database, keyValue, contentId, { from: account1 });
@@ -71,9 +109,9 @@ contract("Brain", function(accounts) {
 		});
 
 		it("setNameAdvocate()", async function() {
-			nameThoughtId2 = await createName("account2", account2);
+			nameId2 = await createName("account2", account2);
 
-			var _newAdvocateId = nameThoughtId2;
+			var _newAdvocateId = nameId2;
 
 			var canSetNameAdvocate, setNameAdvocateEvent;
 			try {
@@ -87,7 +125,7 @@ contract("Brain", function(accounts) {
 			assert.notEqual(canSetNameAdvocate, true, "Advocate can set new Advocate on non-existing Name");
 
 			try {
-				var result = await brain.setNameAdvocate(nameThoughtId1, "someid", { from: account1 });
+				var result = await brain.setNameAdvocate(nameId1, "someid", { from: account1 });
 				setNameAdvocateEvent = result.logs[0];
 				canSetNameAdvocate = true;
 			} catch (e) {
@@ -97,7 +135,7 @@ contract("Brain", function(accounts) {
 			assert.notEqual(canSetNameAdvocate, true, "Advocate can set non-existing Advocate to a Name");
 
 			try {
-				var result = await brain.setNameAdvocate(nameThoughtId1, _newAdvocateId, { from: account2 });
+				var result = await brain.setNameAdvocate(nameId1, _newAdvocateId, { from: account2 });
 				setNameAdvocateEvent = result.logs[0];
 				canSetNameAdvocate = true;
 			} catch (e) {
@@ -107,7 +145,7 @@ contract("Brain", function(accounts) {
 			assert.notEqual(canSetNameAdvocate, true, "Non-Name's advocate can set a new Advocate");
 
 			try {
-				var result = await brain.setNameAdvocate(nameThoughtId1, _newAdvocateId, { from: account1 });
+				var result = await brain.setNameAdvocate(nameId1, _newAdvocateId, { from: account1 });
 				setNameAdvocateEvent = result.logs[0];
 				canSetNameAdvocate = true;
 			} catch (e) {
@@ -116,14 +154,14 @@ contract("Brain", function(accounts) {
 			}
 			assert.equal(canSetNameAdvocate, true, "Name's advocate can't set a new Advocate");
 
-			var _name = await brain.getName(nameThoughtId1);
+			var _name = await brain.getName(nameId1);
 			assert.equal(_name[2], _newAdvocateId, "Name has incorrect advocateId after the update");
 		});
 
 		it("setNameListener()", async function() {
-			nameThoughtId3 = await createName("account3", account3);
+			nameId3 = await createName("account3", account3);
 
-			var _newListenerId = nameThoughtId3;
+			var _newListenerId = nameId3;
 
 			var canSetNameListener, setNameListenerEvent;
 			try {
@@ -137,7 +175,7 @@ contract("Brain", function(accounts) {
 			assert.notEqual(canSetNameListener, true, "Advocate can set new Listener on non-existing Name");
 
 			try {
-				var result = await brain.setNameListener(nameThoughtId1, "someid", { from: account2 });
+				var result = await brain.setNameListener(nameId1, "someid", { from: account2 });
 				setNameListenerEvent = result.logs[0];
 				canSetNameListener = true;
 			} catch (e) {
@@ -147,7 +185,7 @@ contract("Brain", function(accounts) {
 			assert.notEqual(canSetNameListener, true, "Advocate can set non-existing Listener to a Name");
 
 			try {
-				var result = await brain.setNameListener(nameThoughtId1, _newListenerId, { from: account3 });
+				var result = await brain.setNameListener(nameId1, _newListenerId, { from: account3 });
 				setNameListenerEvent = result.logs[0];
 				canSetNameListener = true;
 			} catch (e) {
@@ -157,7 +195,7 @@ contract("Brain", function(accounts) {
 			assert.notEqual(canSetNameListener, true, "Non-Name's advocate can set a new Listener");
 
 			try {
-				var result = await brain.setNameListener(nameThoughtId1, _newListenerId, { from: account2 });
+				var result = await brain.setNameListener(nameId1, _newListenerId, { from: account2 });
 				setNameListenerEvent = result.logs[0];
 				canSetNameListener = true;
 			} catch (e) {
@@ -166,14 +204,14 @@ contract("Brain", function(accounts) {
 			}
 			assert.equal(canSetNameListener, true, "Name's advocate can't set a new Listener");
 
-			var _name = await brain.getName(nameThoughtId1);
+			var _name = await brain.getName(nameId1);
 			assert.equal(_name[3], _newListenerId, "Name has incorrect listenerId after the update");
 		});
 
 		it("setNameSpeaker()", async function() {
-			nameThoughtId4 = await createName("account4", account4);
+			nameId4 = await createName("account4", account4);
 
-			var _newSpeakerId = nameThoughtId4;
+			var _newSpeakerId = nameId4;
 
 			var canSetNameSpeaker, setNameSpeakerEvent;
 			try {
@@ -187,7 +225,7 @@ contract("Brain", function(accounts) {
 			assert.notEqual(canSetNameSpeaker, true, "Advocate can set new Speaker on non-existing Name");
 
 			try {
-				var result = await brain.setNameSpeaker(nameThoughtId1, "someid", { from: account2 });
+				var result = await brain.setNameSpeaker(nameId1, "someid", { from: account2 });
 				setNameSpeakerEvent = result.logs[0];
 				canSetNameSpeaker = true;
 			} catch (e) {
@@ -197,7 +235,7 @@ contract("Brain", function(accounts) {
 			assert.notEqual(canSetNameSpeaker, true, "Advocate can set non-existing Speaker to a Name");
 
 			try {
-				var result = await brain.setNameSpeaker(nameThoughtId1, _newSpeakerId, { from: account3 });
+				var result = await brain.setNameSpeaker(nameId1, _newSpeakerId, { from: account3 });
 				setNameSpeakerEvent = result.logs[0];
 				canSetNameSpeaker = true;
 			} catch (e) {
@@ -207,7 +245,7 @@ contract("Brain", function(accounts) {
 			assert.notEqual(canSetNameSpeaker, true, "Non-Name's advocate can set a new Speaker");
 
 			try {
-				var result = await brain.setNameSpeaker(nameThoughtId1, _newSpeakerId, { from: account2 });
+				var result = await brain.setNameSpeaker(nameId1, _newSpeakerId, { from: account2 });
 				setNameSpeakerEvent = result.logs[0];
 				canSetNameSpeaker = true;
 			} catch (e) {
@@ -216,8 +254,30 @@ contract("Brain", function(accounts) {
 			}
 			assert.equal(canSetNameSpeaker, true, "Name's advocate can't set a new Speaker");
 
-			var _name = await brain.getName(nameThoughtId1);
+			var _name = await brain.getName(nameId1);
 			assert.equal(_name[4], _newSpeakerId, "Name has incorrect speakerId after the update");
+		});
+
+		it("createThought()", async function() {
+			var advocateId = nameId1;
+			var canCreateThought;
+			try {
+				await brain.createThought("someadvocateid", datHash, database, keyValue, contentId, { from: account1 });
+				canCreateThought = true;
+			} catch (e) {
+				canCreateThought = false;
+			}
+			assert.notEqual(canCreateThought, true, "Non-existing advocate ID can create a Thought");
+
+			try {
+				await brain.createThought(advocateId, datHash, database, keyValue, contentId, { from: account2 });
+				canCreateThought = true;
+			} catch (e) {
+				canCreateThought = false;
+			}
+			assert.notEqual(canCreateThought, true, "Wallet can create a Thought on behalf of other Advocate");
+
+			thoughtId1 = await createThought(advocateId, account1);
 		});
 	});
 });
