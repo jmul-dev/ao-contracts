@@ -13,7 +13,7 @@ contract NameFactory {
 
 	address[] internal names;
 
-	mapping (string => bool) internal originNames;
+	mapping (bytes32 => bool) internal originNames;
 
 	// Event to be broadcasted to public when a Name is created
 	event CreateName(address creator, address nameId, uint256 index, string name);
@@ -35,7 +35,7 @@ contract NameFactory {
 	 * @return true if taken, false otherwise
 	 */
 	function isNameTaken(string _name) public view returns (bool) {
-		return originNames[_name];
+		return originNames[keccak256(abi.encodePacked(_name))];
 	}
 
 	/**
@@ -50,7 +50,7 @@ contract NameFactory {
 	function createName(string _name, string _datHash, string _database, string _keyValue, bytes32 _contentId) public returns (bool) {
 		require (isNameTaken(_name) == false);
 
-		originNames[_name] = true;
+		originNames[keccak256(abi.encodePacked(_name))] = true;
 
 		// The address is the Name ID (which is also a Thought ID)
 		address nameId = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId);

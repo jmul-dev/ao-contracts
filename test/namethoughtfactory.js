@@ -110,6 +110,14 @@ contract("Name & Thought Factory", function(accounts) {
 			assert.notEqual(canCreateName, true, "Contract is able to create Name even though the `name` has been taken");
 		});
 
+		it("isNameTaken()", async function() {
+			var isNameTaken = await namefactory.isNameTaken("account2");
+			assert.equal(isNameTaken, false, "isNameTaken() returns true even though name is not taken");
+
+			isNameTaken = await namefactory.isNameTaken("account1");
+			assert.equal(isNameTaken, true, "isNameTaken() returns false even though name is taken");
+		});
+
 		it("setNameAdvocate()", async function() {
 			nameId2 = await createName("account2", account2);
 
