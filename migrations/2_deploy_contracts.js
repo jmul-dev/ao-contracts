@@ -56,8 +56,7 @@ module.exports = function(deployer, network, accounts) {
 		antilogos,
 		antiethos,
 		antipathos,
-		namefactory,
-		thoughtfactory;
+		namefactory;
 
 	deployer.deploy(AOLibrary);
 	deployer.link(AOLibrary, AOToken);
@@ -90,8 +89,7 @@ module.exports = function(deployer, network, accounts) {
 		[AntiLogos, 0, "Anti Logos", "ALOGOS", "antilogos"],
 		[AntiEthos, 0, "Anti Ethos", "AETHOS", "antiethos"],
 		[AntiPathos, 0, "Anti Pathos", "APATHOS", "antipathos"],
-		NameFactory,
-		ThoughtFactory
+		NameFactory
 	]);
 
 	deployer
@@ -115,8 +113,10 @@ module.exports = function(deployer, network, accounts) {
 			antiethos = await AntiEthos.deployed();
 			antipathos = await AntiPathos.deployed();
 			namefactory = await NameFactory.deployed();
+			return deployer.deploy(ThoughtFactory, namefactory.address);
+		})
+		.then(async function() {
 			thoughtfactory = await ThoughtFactory.deployed();
-
 			return deployer.deploy(AOEarning, aotoken.address, aotreasury.address, pathos.address, antilogos.address);
 		})
 		.then(async function() {
