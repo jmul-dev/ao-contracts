@@ -8,6 +8,7 @@ contract("Name & Thought Factory", function(accounts) {
 	var account2 = accounts[2];
 	var account3 = accounts[3];
 	var account4 = accounts[4];
+	var account5 = accounts[5];
 	var datHash = "somehash";
 	var database = "hyperdb";
 	var keyValue = "somevalue";
@@ -61,12 +62,12 @@ contract("Name & Thought Factory", function(accounts) {
 			return nameId;
 		};
 
-		var createThought = async function(advocateId, account) {
+		var createThought = async function(account) {
 			var totalThoughtsBefore = await thoughtfactory.getTotalThoughts();
 
 			var canCreateThought, createThoughtEvent, thoughtId;
 			try {
-				var result = await thoughtfactory.createThought(advocateId, datHash, database, keyValue, contentId, { from: account });
+				var result = await thoughtfactory.createThought(datHash, database, keyValue, contentId, { from: account });
 				createThoughtEvent = result.logs[0];
 				canCreateThought = true;
 				thoughtId = createThoughtEvent.args.thoughtId;
@@ -84,12 +85,13 @@ contract("Name & Thought Factory", function(accounts) {
 			assert.include(thoughts, thoughtId, "Newly created Thought ID is not in the list");
 
 			var _thought = await thoughtfactory.getThought(thoughtId);
-			var _advocate = await namefactory.getName(advocateId);
+			var _advocateId = await namefactory.ethAddressToNameId(account);
+			var _advocate = await namefactory.getName(_advocateId);
 			assert.equal(_thought[0], _advocate[0], "Thought has incorrect originName");
-			assert.equal(_thought[1], advocateId, "Thought has incorrect originNameId");
-			assert.equal(_thought[2], advocateId, "Thought has incorrect advocateId");
-			assert.equal(_thought[3], advocateId, "Thought has incorrect listenerId");
-			assert.equal(_thought[4], advocateId, "Thought has incorrect speakerId");
+			assert.equal(_thought[1], _advocateId, "Thought has incorrect originNameId");
+			assert.equal(_thought[2], _advocateId, "Thought has incorrect advocateId");
+			assert.equal(_thought[3], _advocateId, "Thought has incorrect listenerId");
+			assert.equal(_thought[4], _advocateId, "Thought has incorrect speakerId");
 			assert.equal(_thought[5], datHash, "Thought has incorrect datHash");
 			assert.equal(_thought[6], database, "Thought has incorrect database");
 			assert.equal(_thought[7], keyValue, "Thought has incorrect keyValue");
@@ -232,25 +234,16 @@ contract("Name & Thought Factory", function(accounts) {
 		});
 
 		it("createThought()", async function() {
-			var advocateId = nameId1;
 			var canCreateThought;
 			try {
-				await thoughtfactory.createThought("someadvocateid", datHash, database, keyValue, contentId, { from: account1 });
+				await thoughtfactory.createThought(datHash, database, keyValue, contentId, { from: account5 });
 				canCreateThought = true;
 			} catch (e) {
 				canCreateThought = false;
 			}
-			assert.notEqual(canCreateThought, true, "Non-existing advocate ID can create a Thought");
+			assert.notEqual(canCreateThought, true, "ETH address with no Name can create a Thought");
 
-			try {
-				await thoughtfactory.createThought(advocateId, datHash, database, keyValue, contentId, { from: account2 });
-				canCreateThought = true;
-			} catch (e) {
-				canCreateThought = false;
-			}
-			assert.notEqual(canCreateThought, true, "Wallet can create a Thought on behalf of other Advocate");
-
-			thoughtId1 = await createThought(advocateId, account1);
+			thoughtId1 = await createThought(account1);
 		});
 
 		it("setThoughtAdvocate()", async function() {
