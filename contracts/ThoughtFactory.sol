@@ -19,7 +19,7 @@ contract ThoughtFactory {
 	address[] internal thoughts;
 
 	// Event to be broadcasted to public when Advocate creates a Thought
-	event CreateThought(address ethAddress, address advocateId, address thoughtId, uint256 index);
+	event CreateThought(address ethAddress, address advocateId, address thoughtId, uint256 index, address from, uint8 fromThoughtTypeId);
 
 	// Event to be broadcasted to public when current Advocate sets New Advocate for a Thought
 	event SetThoughtAdvocate(address thoughtId, address oldAdvocateId, address newAdvocateId);
@@ -29,6 +29,9 @@ contract ThoughtFactory {
 
 	// Event to be broadcasted to public when current Advocate sets New Speaker for a Thought
 	event SetThoughtSpeaker(address thoughtId, address oldSpeakerId, address newSpeakerId);
+
+	// Event to be broadcasted to public when a parent Thought adds a child Thought
+	event AddChildThought(address parentThoughtId, address childThoughtId);
 
 	/**
 	 * @dev Constructor function
@@ -44,17 +47,28 @@ contract ThoughtFactory {
 	 * @param _database The database for this Thought
 	 * @param _keyValue The key/value pair to be checked on the database
 	 * @param _contentId The contentId related to this Thought
+	 * @param _from The origin of this Thought (has to be a Name or Thought)
 	 * @return true on success
 	 */
-	function createThought(string _datHash, string _database, string _keyValue, bytes32 _contentId) public returns (bool) {
+	function createThought(string _datHash, string _database, string _keyValue, bytes32 _contentId, address _from) public returns (bool) {
 		// Make sure the msg.sender has a Name
-		address _advocateId = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_advocateId != address(0));
+		address advocateId = _nameFactory.ethAddressToNameId(msg.sender);
+		require (advocateId != address(0));
 
-		address thoughtId = new Thought(Name(_advocateId).originName(), _advocateId, _advocateId, _datHash, _database, _keyValue, _contentId, _advocateId);
+		// Make sure _from is a Thought/Name
+		require (_from != address(0) && Thought(_from).originNameId() != address(0));
+
+		address thoughtId = new Thought(Name(advocateId).originName(), advocateId, _datHash, _database, _keyValue, _contentId, _from);
 		thoughts.push(thoughtId);
 
-		emit CreateThought(msg.sender, _advocateId, thoughtId, thoughts.length.sub(1));
+		emit CreateThought(msg.sender, advocateId, thoughtId, thoughts.length.sub(1), _from, Thought(_from).thoughtTypeId());
+
+		// If this Thought is created from another Thought from the same advocate,
+		// Want to add this Thought to its parent Thought as a ChildThought
+		if (Thought(_from).thoughtTypeId() == 0 && Thought(_from).advocateId() == advocateId) {
+			require (Thought(_from).addChildThought(thoughtId));
+			emit AddChildThought(_from, thoughtId);
+		}
 		return true;
 	}
 
@@ -89,10 +103,10 @@ contract ThoughtFactory {
 	}
 
 	/**
-	 * @dev Get total Thoughts
+	 * @dev Get total Thoughts count
 	 * @return total Thoughts count
 	 */
-	function getTotalThoughts() public view returns (uint256) {
+	function getTotalThoughtsCount() public view returns (uint256) {
 		return thoughts.length;
 	}
 
@@ -104,6 +118,8 @@ contract ThoughtFactory {
 	 */
 	function getThoughtIds(uint256 _from, uint256 _to) public view returns (address[]) {
 		require (_from >= 0 && _to >= _from);
+		require (thoughts.length > 0);
+
 		address[] memory _thoughts = new address[](_to.sub(_from).add(1));
 		if (_to > thoughts.length.sub(1)) {
 			_to = thoughts.length.sub(1);
@@ -190,5 +206,57 @@ contract ThoughtFactory {
 
 		emit SetThoughtSpeaker(_thoughtId, _currentSpeakerId, _newSpeakerId);
 		return true;
+	}
+
+	/**
+	 * @dev Get Thought's relationship
+	 * @param _thoughtId The ID of the Thought
+	 * @return fromId (Origin of the Thought)
+	 * @return throughId
+	 * @return toId (Destination of the Thought)
+	 */
+	function getThoughtRelationship(address _thoughtId) public view returns (address, address, address) {
+		Thought _thought = Thought(_thoughtId);
+
+		// Make sure the Thought exist
+		require (_thought.originNameId() != address(0) && _thought.thoughtTypeId() == 0);
+
+		return (
+			_thought.fromId(),
+			_thought.throughId(),
+			_thought.toId()
+		);
+	}
+
+	/**
+	 * @dev Get Thought's child Thoughts
+	 * @param _thoughtId The ID of the Thought
+	 * @param _from The starting index
+	 * @param _to The ending index
+	 * @return list of child Thought IDs
+	 */
+	function getChildThoughtIds(address _thoughtId, uint256 _from, uint256 _to) public view returns (address[]) {
+		require (_from >= 0 && _to >= _from);
+
+		Thought _thought = Thought(_thoughtId);
+
+		// Make sure the Thought exist
+		require (_thought.originNameId() != address(0) && _thought.thoughtTypeId() == 0);
+
+		return _thought.getChildThoughtIds(_from, _to);
+	}
+
+	/**
+	 * @dev Get Thought's child Thoughts total count
+	 * @param _thoughtId The ID of the Thought
+	 * @return total child Thoughts count
+	 */
+	function getTotalChildThoughtsCount(address _thoughtId) public view returns (uint256) {
+		Thought _thought = Thought(_thoughtId);
+
+		// Make sure the Thought exist
+		require (_thought.originNameId() != address(0) && _thought.thoughtTypeId() == 0);
+
+		return _thought.getTotalChildThoughtsCount();
 	}
 }

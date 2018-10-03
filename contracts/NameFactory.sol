@@ -92,10 +92,10 @@ contract NameFactory {
 	}
 
 	/**
-	 * @dev Get total Names
+	 * @dev Get total Names count
 	 * @return total Names count
 	 */
-	function getTotalNames() public view returns (uint256) {
+	function getTotalNamesCount() public view returns (uint256) {
 		return names.length;
 	}
 
@@ -107,6 +107,8 @@ contract NameFactory {
 	 */
 	function getNameIds(uint256 _from, uint256 _to) public view returns (address[]) {
 		require (_from >= 0 && _to >= _from);
+		require (names.length > 0);
+
 		address[] memory _names = new address[](_to.sub(_from).add(1));
 		if (_to > names.length.sub(1)) {
 			_to = names.length.sub(1);
@@ -169,5 +171,25 @@ contract NameFactory {
 
 		emit SetNameSpeaker(_nameId, _currentSpeakerId, _newSpeakerId);
 		return true;
+	}
+
+	/**
+	 * @dev Get Name's relationship
+	 * @param _nameId The ID of the Name
+	 * @return fromId (Origin of the Name)
+	 * @return throughId
+	 * @return toId (Destination of the Name)
+	 */
+	function getNameRelationship(address _nameId) public view returns (address, address, address) {
+		Name _name = Name(_nameId);
+
+		// Make sure the Name exist
+		require (_name.originNameId() != address(0) && _name.thoughtTypeId() == 1);
+
+		return (
+			_name.fromId(),
+			_name.throughId(),
+			_name.toId()
+		);
 	}
 }

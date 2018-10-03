@@ -13,7 +13,7 @@ contract Name is Thought {
 	 * @dev Constructor function
 	 */
 	constructor (string _originName, address _originNameId, string _datHash, string _database, string _keyValue, bytes32 _contentId)
-		Thought (_originName, _originNameId, address(0), _datHash, _database, _keyValue, _contentId, _originNameId) public {
+		Thought (_originName, _originNameId, _datHash, _database, _keyValue, _contentId, _originNameId) public {
 		// Creating Name
 		thoughtTypeId = 1;
 

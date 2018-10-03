@@ -13,6 +13,7 @@ contract("Name & Thought Factory", function(accounts) {
 	var database = "hyperdb";
 	var keyValue = "somevalue";
 	var contentId = "somecontentid";
+	var emptyAddress = "0x0000000000000000000000000000000000000000";
 
 	var nameId1, nameId2, nameId3, nameId4, thoughtId1, thoughtId2, thoughtId3, thoughtId4;
 
@@ -23,7 +24,7 @@ contract("Name & Thought Factory", function(accounts) {
 
 	contract("Public Function Tests", function() {
 		var createName = async function(name, account) {
-			var totalNamesBefore = await namefactory.getTotalNames();
+			var totalNamesBefore = await namefactory.getTotalNamesCount();
 
 			var canCreateName, createNameEvent, nameId;
 			try {
@@ -38,7 +39,7 @@ contract("Name & Thought Factory", function(accounts) {
 			}
 			assert.equal(canCreateName, true, "Contract is unable to create Name");
 
-			var totalNamesAfter = await namefactory.getTotalNames();
+			var totalNamesAfter = await namefactory.getTotalNamesCount();
 			assert.equal(totalNamesAfter.toString(), totalNamesBefore.plus(1).toString(), "Contract has incorrect names length");
 
 			var names = await namefactory.getNameIds(0, totalNamesAfter.toString());
@@ -59,26 +60,39 @@ contract("Name & Thought Factory", function(accounts) {
 			var ethAddressToNameId = await namefactory.ethAddressToNameId(account);
 			assert.equal(ethAddressToNameId, nameId, "Contract stores incorrect nameId for ETH address");
 
+			var nameRelationship = await namefactory.getNameRelationship(nameId);
+			assert.equal(nameRelationship[0], account, "Name has incorrect fromId");
+			assert.equal(nameRelationship[1], emptyAddress, "Name has incorrect fromId");
+			assert.equal(nameRelationship[2], emptyAddress, "Name has incorrect fromId");
+
 			return nameId;
 		};
 
-		var createThought = async function(account) {
-			var totalThoughtsBefore = await thoughtfactory.getTotalThoughts();
+		var createThought = async function(from, fromType, account) {
+			var totalThoughtsBefore = await thoughtfactory.getTotalThoughtsCount();
+			var totalChildThoughtsBefore, totalChildThoughtsAfter;
+			if (fromType == "thought") {
+				totalChildThoughtsBefore = await thoughtfactory.getTotalChildThoughtsCount(from);
+			}
 
-			var canCreateThought, createThoughtEvent, thoughtId;
+			var canCreateThought, createThoughtEvent, addChildThoughtEvent, thoughtId;
 			try {
-				var result = await thoughtfactory.createThought(datHash, database, keyValue, contentId, { from: account });
+				var result = await thoughtfactory.createThought(datHash, database, keyValue, contentId, from, { from: account });
 				createThoughtEvent = result.logs[0];
+				if (fromType == "thought") {
+					addChildThoughtEvent = result.logs[1];
+				}
 				canCreateThought = true;
 				thoughtId = createThoughtEvent.args.thoughtId;
 			} catch (e) {
 				createThoughtEvent = null;
+				addChildThoughtEvent = null;
 				canCreateThought = false;
 				thoughtId = null;
 			}
 			assert.equal(canCreateThought, true, "Advocate is unable to create Thought");
 
-			var totalThoughtsAfter = await thoughtfactory.getTotalThoughts();
+			var totalThoughtsAfter = await thoughtfactory.getTotalThoughtsCount();
 			assert.equal(totalThoughtsAfter.toString(), totalThoughtsBefore.plus(1).toString(), "Contract has incorrect thoughts length");
 
 			var thoughts = await thoughtfactory.getThoughtIds(0, totalThoughtsAfter.toString());
@@ -97,6 +111,28 @@ contract("Name & Thought Factory", function(accounts) {
 			assert.equal(_thought[7], keyValue, "Thought has incorrect keyValue");
 			assert.equal(web3.toAscii(_thought[8]).replace(/\0/g, ""), contentId, "Thought has incorrect contentId");
 			assert.equal(_thought[9].toString(), 0, "Thought has incorrect thoughtTypeId");
+
+			var thoughtRelationship = await thoughtfactory.getThoughtRelationship(thoughtId);
+			assert.equal(thoughtRelationship[0], from, "Thought has incorrect fromId");
+			assert.equal(thoughtRelationship[1], emptyAddress, "Thought has incorrect fromId");
+			assert.equal(thoughtRelationship[2], emptyAddress, "Thought has incorrect fromId");
+
+			if (fromType == "thought") {
+				assert.notEqual(addChildThoughtEvent, null, "Creating Thought didn't emit AddChildThought event");
+				assert.equal(addChildThoughtEvent.args.parentThoughtId, from, "AddChildThought event has incorrect parent Thought ID");
+				assert.equal(addChildThoughtEvent.args.childThoughtId, thoughtId, "AddChildThought event has incorrect child Thought ID");
+
+				totalChildThoughtsAfter = await thoughtfactory.getTotalChildThoughtsCount(from);
+
+				assert.equal(
+					totalChildThoughtsAfter.toString(),
+					totalChildThoughtsBefore.plus(1).toString(),
+					"Parent Thought has incorrect count of child Thoughts"
+				);
+
+				var childThoughts = await thoughtfactory.getChildThoughtIds(from, 0, totalChildThoughtsAfter.toString());
+				assert.include(childThoughts, thoughtId, "Newly created Thought ID is not in the parent's list of child Thoughts");
+			}
 
 			return thoughtId;
 		};
@@ -236,14 +272,16 @@ contract("Name & Thought Factory", function(accounts) {
 		it("createThought()", async function() {
 			var canCreateThought;
 			try {
-				await thoughtfactory.createThought(datHash, database, keyValue, contentId, { from: account5 });
+				await thoughtfactory.createThought(datHash, database, keyValue, contentId, nameId1, { from: account5 });
 				canCreateThought = true;
 			} catch (e) {
 				canCreateThought = false;
 			}
 			assert.notEqual(canCreateThought, true, "ETH address with no Name can create a Thought");
 
-			thoughtId1 = await createThought(account1);
+			thoughtId1 = await createThought(nameId1, "name", account1);
+
+			thoughtId2 = await createThought(thoughtId1, "thought", account1);
 		});
 
 		it("setThoughtAdvocate()", async function() {
