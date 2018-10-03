@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 import './Thought.sol';
 import './Name.sol';
 import './SafeMath.sol';
+import './NameFactory.sol';
 
 /**
  * @title ThoughtFactory
@@ -12,10 +13,13 @@ import './SafeMath.sol';
 contract ThoughtFactory {
 	using SafeMath for uint256;
 
+	address public nameFactoryAddress;
+	NameFactory internal _nameFactory;
+
 	address[] internal thoughts;
 
 	// Event to be broadcasted to public when Advocate creates a Thought
-	event CreateThought(address creator, address advocateId, address thoughtId, uint256 index);
+	event CreateThought(address ethAddress, address advocateId, address thoughtId, uint256 index);
 
 	// Event to be broadcasted to public when current Advocate sets New Advocate for a Thought
 	event SetThoughtAdvocate(address thoughtId, address oldAdvocateId, address newAdvocateId);
@@ -26,20 +30,26 @@ contract ThoughtFactory {
 	// Event to be broadcasted to public when current Advocate sets New Speaker for a Thought
 	event SetThoughtSpeaker(address thoughtId, address oldSpeakerId, address newSpeakerId);
 
-	constructor() public {}
+	/**
+	 * @dev Constructor function
+	 */
+	constructor(address _nameFactoryAddress) public {
+		nameFactoryAddress = _nameFactoryAddress;
+		_nameFactory = NameFactory(nameFactoryAddress);
+	}
 
 	/**
 	 * @dev Name creates a Thought
-	 * @param _advocateId The advocate ID that creates this Thought
 	 * @param _datHash The datHash of this Thought
 	 * @param _database The database for this Thought
 	 * @param _keyValue The key/value pair to be checked on the database
 	 * @param _contentId The contentId related to this Thought
 	 * @return true on success
 	 */
-	function createThought(address _advocateId, string _datHash, string _database, string _keyValue, bytes32 _contentId) public returns (bool) {
-		// Make sure the Advocate exist and is the msg.sender
-		require (Name(_advocateId).originNameId() == msg.sender && Name(_advocateId).thoughtTypeId() == 1);
+	function createThought(string _datHash, string _database, string _keyValue, bytes32 _contentId) public returns (bool) {
+		// Make sure the msg.sender has a Name
+		address _advocateId = _nameFactory.ethAddressToNameId(msg.sender);
+		require (_advocateId != address(0));
 
 		address thoughtId = new Thought(Name(_advocateId).originName(), _advocateId, _advocateId, _datHash, _database, _keyValue, _contentId, _advocateId);
 		thoughts.push(thoughtId);
@@ -121,7 +131,7 @@ contract ThoughtFactory {
 
 		// Only Thought's current advocate can set new advocate
 		address _currentAdvocateId = _thought.advocateId();
-		require (Name(_currentAdvocateId).originNameId() == msg.sender);
+		require (_nameFactory.ethAddressToNameId(msg.sender) != address(0) && Name(_currentAdvocateId).originNameId() == msg.sender);
 
 		// Set the new advocate
 		require (_thought.setAdvocate(_newAdvocateId));
@@ -146,7 +156,7 @@ contract ThoughtFactory {
 		require (Name(_newListenerId).originNameId() != address(0) && Name(_newListenerId).thoughtTypeId() == 1);
 
 		// Only Thought's current advocate can set new advocate
-		require (Name(_thought.advocateId()).originNameId() == msg.sender);
+		require (_nameFactory.ethAddressToNameId(msg.sender) != address(0) && Name(_thought.advocateId()).originNameId() == msg.sender);
 
 		// Set the new listener
 		address _currentListenerId = _thought.listenerId();
@@ -172,7 +182,7 @@ contract ThoughtFactory {
 		require (Name(_newSpeakerId).originNameId() != address(0) && Name(_newSpeakerId).thoughtTypeId() == 1);
 
 		// Only Thought's current advocate can set new advocate
-		require (Name(_thought.advocateId()).originNameId() == msg.sender);
+		require (_nameFactory.ethAddressToNameId(msg.sender) != address(0) && Name(_thought.advocateId()).originNameId() == msg.sender);
 
 		// Set the new speaker
 		address _currentSpeakerId = _thought.speakerId();
