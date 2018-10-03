@@ -68,25 +68,34 @@ contract("Name & Thought Factory", function(accounts) {
 			return nameId;
 		};
 
-		var createThought = async function(from, fromType, account) {
+		var createThought = async function(from, fromType, sameAdvocate, account) {
 			var totalThoughtsBefore = await thoughtfactory.getTotalThoughtsCount();
-			var totalChildThoughtsBefore, totalChildThoughtsAfter;
+			var totalChildThoughtsBefore, totalChildThoughtsAfter, totalOrphanThoughtsBefore, totalOrphanThoughtsAfter;
 			if (fromType == "thought") {
-				totalChildThoughtsBefore = await thoughtfactory.getTotalChildThoughtsCount(from);
+				if (sameAdvocate) {
+					totalChildThoughtsBefore = await thoughtfactory.getTotalChildThoughtsCount(from);
+				} else {
+					totalOrphanThoughtsBefore = await thoughtfactory.getTotalOrphanThoughtsCount(from);
+				}
 			}
 
-			var canCreateThought, createThoughtEvent, addChildThoughtEvent, thoughtId;
+			var canCreateThought, createThoughtEvent, addChildThoughtEvent, addOrphanThoughtEvent, thoughtId;
 			try {
 				var result = await thoughtfactory.createThought(datHash, database, keyValue, contentId, from, { from: account });
 				createThoughtEvent = result.logs[0];
 				if (fromType == "thought") {
-					addChildThoughtEvent = result.logs[1];
+					if (sameAdvocate) {
+						addChildThoughtEvent = result.logs[1];
+					} else {
+						addOrphanThoughtEvent = result.logs[1];
+					}
 				}
 				canCreateThought = true;
 				thoughtId = createThoughtEvent.args.thoughtId;
 			} catch (e) {
 				createThoughtEvent = null;
 				addChildThoughtEvent = null;
+				addOrphanThoughtEvent = null;
 				canCreateThought = false;
 				thoughtId = null;
 			}
@@ -113,25 +122,59 @@ contract("Name & Thought Factory", function(accounts) {
 			assert.equal(_thought[9].toString(), 0, "Thought has incorrect thoughtTypeId");
 
 			var thoughtRelationship = await thoughtfactory.getThoughtRelationship(thoughtId);
-			assert.equal(thoughtRelationship[0], from, "Thought has incorrect fromId");
-			assert.equal(thoughtRelationship[1], emptyAddress, "Thought has incorrect fromId");
-			assert.equal(thoughtRelationship[2], emptyAddress, "Thought has incorrect fromId");
+			if (fromType == "thought" && !sameAdvocate) {
+				assert.equal(thoughtRelationship[0], _advocateId, "Thought has incorrect fromId");
+				assert.equal(thoughtRelationship[2], from, "Thought has incorrect toId");
+			} else {
+				assert.equal(thoughtRelationship[0], from, "Thought has incorrect fromId");
+				assert.equal(thoughtRelationship[2], emptyAddress, "Thought has incorrect toId");
+			}
+			assert.equal(thoughtRelationship[1], emptyAddress, "Thought has incorrect throughId");
 
 			if (fromType == "thought") {
-				assert.notEqual(addChildThoughtEvent, null, "Creating Thought didn't emit AddChildThought event");
-				assert.equal(addChildThoughtEvent.args.parentThoughtId, from, "AddChildThought event has incorrect parent Thought ID");
-				assert.equal(addChildThoughtEvent.args.childThoughtId, thoughtId, "AddChildThought event has incorrect child Thought ID");
+				if (sameAdvocate) {
+					assert.notEqual(addChildThoughtEvent, null, "Creating Thought didn't emit AddChildThought event");
+					assert.equal(addChildThoughtEvent.args.parentThoughtId, from, "AddChildThought event has incorrect parent Thought ID");
+					assert.equal(
+						addChildThoughtEvent.args.childThoughtId,
+						thoughtId,
+						"AddChildThought event has incorrect child Thought ID"
+					);
 
-				totalChildThoughtsAfter = await thoughtfactory.getTotalChildThoughtsCount(from);
+					totalChildThoughtsAfter = await thoughtfactory.getTotalChildThoughtsCount(from);
 
-				assert.equal(
-					totalChildThoughtsAfter.toString(),
-					totalChildThoughtsBefore.plus(1).toString(),
-					"Parent Thought has incorrect count of child Thoughts"
-				);
+					assert.equal(
+						totalChildThoughtsAfter.toString(),
+						totalChildThoughtsBefore.plus(1).toString(),
+						"Parent Thought has incorrect count of child Thoughts"
+					);
 
-				var childThoughts = await thoughtfactory.getChildThoughtIds(from, 0, totalChildThoughtsAfter.toString());
-				assert.include(childThoughts, thoughtId, "Newly created Thought ID is not in the parent's list of child Thoughts");
+					var childThoughts = await thoughtfactory.getChildThoughtIds(from, 0, totalChildThoughtsAfter.toString());
+					assert.include(childThoughts, thoughtId, "Newly created Thought ID is not in the parent's list of child Thoughts");
+				} else {
+					assert.notEqual(addOrphanThoughtEvent, null, "Creating Thought didn't emit AddOrphanThought event");
+					assert.equal(
+						addOrphanThoughtEvent.args.parentThoughtId,
+						from,
+						"AddOrphanThought event has incorrect parent Thought ID"
+					);
+					assert.equal(
+						addOrphanThoughtEvent.args.orphanThoughtId,
+						thoughtId,
+						"AddOrphanThought event has incorrect orphan Thought ID"
+					);
+
+					totalOrphanThoughtsAfter = await thoughtfactory.getTotalOrphanThoughtsCount(from);
+
+					assert.equal(
+						totalOrphanThoughtsAfter.toString(),
+						totalOrphanThoughtsBefore.plus(1).toString(),
+						"Parent Thought has incorrect count of orphan Thoughts"
+					);
+
+					var orphanThoughts = await thoughtfactory.getOrphanThoughtIds(from, 0, totalOrphanThoughtsAfter.toString());
+					assert.include(orphanThoughts, thoughtId, "Newly created Thought ID is not in the parent's list of orphan Thoughts");
+				}
 			}
 
 			return thoughtId;
@@ -279,9 +322,14 @@ contract("Name & Thought Factory", function(accounts) {
 			}
 			assert.notEqual(canCreateThought, true, "ETH address with no Name can create a Thought");
 
-			thoughtId1 = await createThought(nameId1, "name", account1);
+			// Create primordial Thought
+			thoughtId1 = await createThought(nameId1, "name", true, account1);
 
-			thoughtId2 = await createThought(thoughtId1, "thought", account1);
+			// Create Thought2 from Thought1 by the same Advocate
+			thoughtId2 = await createThought(thoughtId1, "thought", true, account1);
+
+			// Create Thought3 to Thought1 by different Advocate
+			thoughtId3 = await createThought(thoughtId1, "thought", false, account2);
 		});
 
 		it("setThoughtAdvocate()", async function() {

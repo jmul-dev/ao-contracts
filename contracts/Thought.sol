@@ -39,7 +39,7 @@ contract Thought {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor (string _originName, address _originNameId, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _fromId) public {
+	constructor (string _originName, address _originNameId, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _fromId, address _toId) public {
 		factoryAddress = msg.sender;
 		originName = _originName;
 		originNameId = _originNameId;
@@ -49,6 +49,7 @@ contract Thought {
 		keyValue = _keyValue;
 		contentId = _contentId;
 		fromId = _fromId;
+		toId = _toId;
 
 		listenerId = advocateId;
 		speakerId = advocateId;
@@ -134,5 +135,43 @@ contract Thought {
 	 */
 	function getTotalChildThoughtsCount() public onlyFactory view returns (uint256) {
 		return childThoughts.length;
+	}
+
+	/**
+	 * @dev Add OrphanThought
+	 * @param _thoughtId The Thought to be added to as OrphanThought
+	 * @return true on success
+	 */
+	function addOrphanThought(address _thoughtId) public onlyFactory returns (bool) {
+		require (_thoughtId != address(0));
+		orphanThoughts.push(_thoughtId);
+		return true;
+	}
+
+	/**
+	 * @dev Get list of orphan Thought IDs
+	 * @param _from The starting index
+	 * @param _to The ending index
+	 * @return list of orphan Thought IDs
+	 */
+	function getOrphanThoughtIds(uint256 _from, uint256 _to) public onlyFactory view returns (address[]) {
+		require (_from >= 0 && _to >= _from);
+		require (orphanThoughts.length > 0);
+		address[] memory _orphanThoughtIds = new address[](_to.sub(_from).add(1));
+		if (_to > orphanThoughts.length.sub(1)) {
+			_to = orphanThoughts.length.sub(1);
+		}
+		for (uint256 i = _from; i <= _to; i++) {
+			_orphanThoughtIds[i.sub(_from)] = orphanThoughts[i];
+		}
+		return _orphanThoughtIds;
+	}
+
+	/**
+	 * @dev Get total orphan Thoughts count
+	 * @return total Orphan Thoughts count
+	 */
+	function getTotalOrphanThoughtsCount() public onlyFactory view returns (uint256) {
+		return orphanThoughts.length;
 	}
 }

@@ -19,7 +19,7 @@ contract ThoughtFactory {
 	address[] internal thoughts;
 
 	// Event to be broadcasted to public when Advocate creates a Thought
-	event CreateThought(address ethAddress, address advocateId, address thoughtId, uint256 index, address from, uint8 fromThoughtTypeId);
+	event CreateThought(address ethAddress, address advocateId, address thoughtId, uint256 index, address from, uint8 fromThoughtTypeId, address to);
 
 	// Event to be broadcasted to public when current Advocate sets New Advocate for a Thought
 	event SetThoughtAdvocate(address thoughtId, address oldAdvocateId, address newAdvocateId);
@@ -32,6 +32,9 @@ contract ThoughtFactory {
 
 	// Event to be broadcasted to public when a parent Thought adds a child Thought
 	event AddChildThought(address parentThoughtId, address childThoughtId);
+
+	// Event to be broadcasted to public when a parent Thought adds an orphan Thought
+	event AddOrphanThought(address parentThoughtId, address orphanThoughtId);
 
 	/**
 	 * @dev Constructor function
@@ -58,16 +61,41 @@ contract ThoughtFactory {
 		// Make sure _from is a Thought/Name
 		require (_from != address(0) && Thought(_from).originNameId() != address(0));
 
-		address thoughtId = new Thought(Name(advocateId).originName(), advocateId, _datHash, _database, _keyValue, _contentId, _from);
+		/**
+		 * If _from is a Thought (ThoughtTypeId == 0)
+		 * Decide what are the _from and _to IDs
+		 * 1. If the _from's advocateId is the same as msg.sender's advocateId, then
+		 *    the same advocateId is creating this new Thought from _from Thought.
+		 *    In this case, _from doesn't change, and _to is address(0).
+		 *
+		 * 2. If the _from's advocateId is different from msg.sender's advocateId, then
+		 *    another advocate is creating this new Thought and want to be part of
+		 *    _from Thought.
+		 *	  In this case, _from is the advocateId, and _to is _from
+		 */
+		address _revisedFrom = _from;
+		address _revisedTo = address(0);
+		if (Thought(_revisedFrom).thoughtTypeId() == 0 && Thought(_revisedFrom).advocateId() != advocateId) {
+			_revisedFrom = advocateId;
+			_revisedTo = _from;
+		}
+
+		address thoughtId = new Thought(Name(advocateId).originName(), advocateId, _datHash, _database, _keyValue, _contentId, _revisedFrom, _revisedTo);
 		thoughts.push(thoughtId);
 
-		emit CreateThought(msg.sender, advocateId, thoughtId, thoughts.length.sub(1), _from, Thought(_from).thoughtTypeId());
+		emit CreateThought(msg.sender, advocateId, thoughtId, thoughts.length.sub(1), _revisedFrom, Thought(_revisedFrom).thoughtTypeId(), _revisedTo);
 
-		// If this Thought is created from another Thought from the same advocate,
-		// Want to add this Thought to its parent Thought as a ChildThought
-		if (Thought(_from).thoughtTypeId() == 0 && Thought(_from).advocateId() == advocateId) {
-			require (Thought(_from).addChildThought(thoughtId));
-			emit AddChildThought(_from, thoughtId);
+		if (Thought(_from).thoughtTypeId() == 0) {
+			// If this Thought is created from another Thought from the same advocate,
+			// Want to add this Thought to its parent Thought as a ChildThought
+			if (Thought(_from).advocateId() == advocateId) {
+				require (Thought(_from).addChildThought(thoughtId));
+				emit AddChildThought(_from, thoughtId);
+			} else {
+				// Otherwise, add this Thought to its parent Thought as an OrphanThought
+				require (Thought(_from).addOrphanThought(thoughtId));
+				emit AddOrphanThought(_from, thoughtId);
+			}
 		}
 		return true;
 	}
@@ -258,5 +286,37 @@ contract ThoughtFactory {
 		require (_thought.originNameId() != address(0) && _thought.thoughtTypeId() == 0);
 
 		return _thought.getTotalChildThoughtsCount();
+	}
+
+	/**
+	 * @dev Get Thought's orphan Thoughts
+	 * @param _thoughtId The ID of the Thought
+	 * @param _from The starting index
+	 * @param _to The ending index
+	 * @return list of orphan Thought IDs
+	 */
+	function getOrphanThoughtIds(address _thoughtId, uint256 _from, uint256 _to) public view returns (address[]) {
+		require (_from >= 0 && _to >= _from);
+
+		Thought _thought = Thought(_thoughtId);
+
+		// Make sure the Thought exist
+		require (_thought.originNameId() != address(0) && _thought.thoughtTypeId() == 0);
+
+		return _thought.getOrphanThoughtIds(_from, _to);
+	}
+
+	/**
+	 * @dev Get Thought's orphan Thoughts total count
+	 * @param _thoughtId The ID of the Thought
+	 * @return total orphan Thoughts count
+	 */
+	function getTotalOrphanThoughtsCount(address _thoughtId) public view returns (uint256) {
+		Thought _thought = Thought(_thoughtId);
+
+		// Make sure the Thought exist
+		require (_thought.originNameId() != address(0) && _thought.thoughtTypeId() == 0);
+
+		return _thought.getTotalOrphanThoughtsCount();
 	}
 }
