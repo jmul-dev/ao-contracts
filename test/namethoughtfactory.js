@@ -55,6 +55,9 @@ contract("Name & Thought Factory", function(accounts) {
 			assert.equal(web3.toAscii(_name[8]).replace(/\0/g, ""), contentId, "Name has incorrect contentId");
 			assert.equal(_name[9].toString(), 1, "Name has incorrect thoughtTypeId");
 
+			var ethAddressToNameId = await namefactory.ethAddressToNameId(account);
+			assert.equal(ethAddressToNameId, nameId, "Contract stores incorrect nameId for ETH address");
+
 			return nameId;
 		};
 
@@ -100,7 +103,7 @@ contract("Name & Thought Factory", function(accounts) {
 			nameId1 = await createName("account1", account1);
 
 			try {
-				var result = await namefactory.createName("account1", datHash, database, keyValue, contentId, { from: account1 });
+				var result = await namefactory.createName("account1", datHash, database, keyValue, contentId, { from: account2 });
 				createNameEvent = result.logs[0];
 				canCreateName = true;
 			} catch (e) {
@@ -108,6 +111,16 @@ contract("Name & Thought Factory", function(accounts) {
 				canCreateName = false;
 			}
 			assert.notEqual(canCreateName, true, "Contract is able to create Name even though the `name` has been taken");
+
+			try {
+				var result = await namefactory.createName("account2", datHash, database, keyValue, contentId, { from: account1 });
+				createNameEvent = result.logs[0];
+				canCreateName = true;
+			} catch (e) {
+				createNameEvent = null;
+				canCreateName = false;
+			}
+			assert.notEqual(canCreateName, true, "ETH address is able to create Name even though it already has a Name");
 		});
 
 		it("isNameTaken()", async function() {
@@ -118,64 +131,14 @@ contract("Name & Thought Factory", function(accounts) {
 			assert.equal(isNameTaken, true, "isNameTaken() returns false even though name is taken");
 		});
 
-		it("setNameAdvocate()", async function() {
+		it("setNameListener()", async function() {
 			nameId2 = await createName("account2", account2);
 
-			var _newAdvocateId = nameId2;
-
-			var canSetNameAdvocate, setNameAdvocateEvent;
-			try {
-				var result = await namefactory.setNameAdvocate("someid", _newAdvocateId, { from: account1 });
-				setNameAdvocateEvent = result.logs[0];
-				canSetNameAdvocate = true;
-			} catch (e) {
-				setNameAdvocateEvent = null;
-				canSetNameAdvocate = false;
-			}
-			assert.notEqual(canSetNameAdvocate, true, "Advocate can set new Advocate on non-existing Name");
-
-			try {
-				var result = await namefactory.setNameAdvocate(nameId1, "someid", { from: account1 });
-				setNameAdvocateEvent = result.logs[0];
-				canSetNameAdvocate = true;
-			} catch (e) {
-				setNameAdvocateEvent = null;
-				canSetNameAdvocate = false;
-			}
-			assert.notEqual(canSetNameAdvocate, true, "Advocate can set non-existing Advocate on a Name");
-
-			try {
-				var result = await namefactory.setNameAdvocate(nameId1, _newAdvocateId, { from: account2 });
-				setNameAdvocateEvent = result.logs[0];
-				canSetNameAdvocate = true;
-			} catch (e) {
-				setNameAdvocateEvent = null;
-				canSetNameAdvocate = false;
-			}
-			assert.notEqual(canSetNameAdvocate, true, "Non-Name's advocate can set a new Advocate");
-
-			try {
-				var result = await namefactory.setNameAdvocate(nameId1, _newAdvocateId, { from: account1 });
-				setNameAdvocateEvent = result.logs[0];
-				canSetNameAdvocate = true;
-			} catch (e) {
-				setNameAdvocateEvent = null;
-				canSetNameAdvocate = false;
-			}
-			assert.equal(canSetNameAdvocate, true, "Name's advocate can't set a new Advocate");
-
-			var _name = await namefactory.getName(nameId1);
-			assert.equal(_name[2], _newAdvocateId, "Name has incorrect advocateId after the update");
-		});
-
-		it("setNameListener()", async function() {
-			nameId3 = await createName("account3", account3);
-
-			var _newListenerId = nameId3;
+			var _newListenerId = nameId2;
 
 			var canSetNameListener, setNameListenerEvent;
 			try {
-				var result = await namefactory.setNameListener("someid", _newListenerId, { from: account2 });
+				var result = await namefactory.setNameListener("someid", _newListenerId, { from: account1 });
 				setNameListenerEvent = result.logs[0];
 				canSetNameListener = true;
 			} catch (e) {
@@ -185,7 +148,7 @@ contract("Name & Thought Factory", function(accounts) {
 			assert.notEqual(canSetNameListener, true, "Advocate can set new Listener on non-existing Name");
 
 			try {
-				var result = await namefactory.setNameListener(nameId1, "someid", { from: account2 });
+				var result = await namefactory.setNameListener(nameId1, "someid", { from: account1 });
 				setNameListenerEvent = result.logs[0];
 				canSetNameListener = true;
 			} catch (e) {
@@ -195,7 +158,7 @@ contract("Name & Thought Factory", function(accounts) {
 			assert.notEqual(canSetNameListener, true, "Advocate can set non-existing Listener on a Name");
 
 			try {
-				var result = await namefactory.setNameListener(nameId1, _newListenerId, { from: account3 });
+				var result = await namefactory.setNameListener(nameId1, _newListenerId, { from: account2 });
 				setNameListenerEvent = result.logs[0];
 				canSetNameListener = true;
 			} catch (e) {
@@ -205,7 +168,7 @@ contract("Name & Thought Factory", function(accounts) {
 			assert.notEqual(canSetNameListener, true, "Non-Name's advocate can set a new Listener");
 
 			try {
-				var result = await namefactory.setNameListener(nameId1, _newListenerId, { from: account2 });
+				var result = await namefactory.setNameListener(nameId1, _newListenerId, { from: account1 });
 				setNameListenerEvent = result.logs[0];
 				canSetNameListener = true;
 			} catch (e) {
@@ -219,13 +182,13 @@ contract("Name & Thought Factory", function(accounts) {
 		});
 
 		it("setNameSpeaker()", async function() {
-			nameId4 = await createName("account4", account4);
+			nameId3 = await createName("account3", account3);
 
-			var _newSpeakerId = nameId4;
+			var _newSpeakerId = nameId3;
 
 			var canSetNameSpeaker, setNameSpeakerEvent;
 			try {
-				var result = await namefactory.setNameSpeaker("someid", _newSpeakerId, { from: account2 });
+				var result = await namefactory.setNameSpeaker("someid", _newSpeakerId, { from: account1 });
 				setNameSpeakerEvent = result.logs[0];
 				canSetNameSpeaker = true;
 			} catch (e) {
@@ -235,7 +198,7 @@ contract("Name & Thought Factory", function(accounts) {
 			assert.notEqual(canSetNameSpeaker, true, "Advocate can set new Speaker on non-existing Name");
 
 			try {
-				var result = await namefactory.setNameSpeaker(nameId1, "someid", { from: account2 });
+				var result = await namefactory.setNameSpeaker(nameId1, "someid", { from: account1 });
 				setNameSpeakerEvent = result.logs[0];
 				canSetNameSpeaker = true;
 			} catch (e) {
@@ -245,7 +208,7 @@ contract("Name & Thought Factory", function(accounts) {
 			assert.notEqual(canSetNameSpeaker, true, "Advocate can set non-existing Speaker on a Name");
 
 			try {
-				var result = await namefactory.setNameSpeaker(nameId1, _newSpeakerId, { from: account3 });
+				var result = await namefactory.setNameSpeaker(nameId1, _newSpeakerId, { from: account2 });
 				setNameSpeakerEvent = result.logs[0];
 				canSetNameSpeaker = true;
 			} catch (e) {
@@ -255,7 +218,7 @@ contract("Name & Thought Factory", function(accounts) {
 			assert.notEqual(canSetNameSpeaker, true, "Non-Name's advocate can set a new Speaker");
 
 			try {
-				var result = await namefactory.setNameSpeaker(nameId1, _newSpeakerId, { from: account2 });
+				var result = await namefactory.setNameSpeaker(nameId1, _newSpeakerId, { from: account1 });
 				setNameSpeakerEvent = result.logs[0];
 				canSetNameSpeaker = true;
 			} catch (e) {
@@ -387,6 +350,8 @@ contract("Name & Thought Factory", function(accounts) {
 		});
 
 		it("setThoughtSpeaker()", async function() {
+			nameId4 = await createName("account4", account4);
+
 			var _newSpeakerId = nameId4;
 
 			var canSetThoughtSpeaker, setThoughtSpeakerEvent;

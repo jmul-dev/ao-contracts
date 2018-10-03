@@ -14,6 +14,7 @@ contract NameFactory {
 	address[] internal names;
 
 	mapping (bytes32 => bool) internal originNames;
+	mapping (address => address) public ethAddressToNameId;
 
 	// Event to be broadcasted to public when a Name is created
 	event CreateName(address creator, address nameId, uint256 index, string name);
@@ -49,11 +50,14 @@ contract NameFactory {
 	 */
 	function createName(string _name, string _datHash, string _database, string _keyValue, bytes32 _contentId) public returns (bool) {
 		require (isNameTaken(_name) == false);
+		// Only one Name per ETH address
+		require (ethAddressToNameId[msg.sender] == address(0));
 
 		originNames[keccak256(abi.encodePacked(_name))] = true;
 
 		// The address is the Name ID (which is also a Thought ID)
 		address nameId = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId);
+		ethAddressToNameId[msg.sender] = nameId;
 		names.push(nameId);
 
 		emit CreateName(msg.sender, nameId, names.length.sub(1), _name);
@@ -114,33 +118,6 @@ contract NameFactory {
 			_names[i.sub(_from)] = names[i];
 		}
 		return _names;
-	}
-
-	/**
-	 * @dev Set Name's advocate
-	 * @param _nameId The ID of the Name
-	 * @param _newAdvocateId The new advocate ID to be set
-	 * @return true on success
-	 */
-	function setNameAdvocate(address _nameId, address _newAdvocateId) public returns (bool) {
-		Name _name = Name(_nameId);
-
-		// Make sure the Name exist
-		require (_name.originNameId() != address(0) && _name.thoughtTypeId() == 1);
-
-		// Make sure the new Advocate ID is a Name
-		Name _newAdvocate = Name(_newAdvocateId);
-		require (_newAdvocate.originNameId() != address(0) && _newAdvocate.thoughtTypeId() == 1);
-
-		// Only Name's current advocate can set new advocate
-		address _currentAdvocateId = _name.advocateId();
-		require (Name(_currentAdvocateId).originNameId() == msg.sender);
-
-		// Set the new advocate
-		require (_name.setAdvocate(_newAdvocateId));
-
-		emit SetNameAdvocate(_nameId, _currentAdvocateId, _newAdvocateId);
-		return true;
 	}
 
 	/**
