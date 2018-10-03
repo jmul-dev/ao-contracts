@@ -17,10 +17,7 @@ contract NameFactory {
 	mapping (address => address) public ethAddressToNameId;
 
 	// Event to be broadcasted to public when a Name is created
-	event CreateName(address creator, address nameId, uint256 index, string name);
-
-	// Event to be broadcasted to public when current Advocate sets New Advocate for a Name
-	event SetNameAdvocate(address nameId, address oldAdvocateId, address newAdvocateId);
+	event CreateName(address ethAddress, address nameId, uint256 index, string name);
 
 	// Event to be broadcasted to public when current Advocate sets New Listener for a Name
 	event SetNameListener(address nameId, address oldListenerId, address newListenerId);
@@ -137,7 +134,7 @@ contract NameFactory {
 		require (_newListener.originNameId() != address(0) && _newListener.thoughtTypeId() == 1);
 
 		// Only Name's current advocate can set new advocate
-		require (Name(_name.advocateId()).originNameId() == msg.sender);
+		require (ethAddressToNameId[msg.sender] != address(0) && Name(_name.advocateId()).originNameId() == msg.sender);
 
 		// Set the new listener
 		address _currentListenerId = _name.listenerId();
@@ -164,7 +161,7 @@ contract NameFactory {
 		require (_newSpeaker.originNameId() != address(0) && _newSpeaker.thoughtTypeId() == 1);
 
 		// Only Name's current advocate can set new advocate
-		require (Name(_name.advocateId()).originNameId() == msg.sender);
+		require (ethAddressToNameId[msg.sender] != address(0) && Name(_name.advocateId()).originNameId() == msg.sender);
 
 		// Set the new speaker
 		address _currentSpeakerId = _name.speakerId();
