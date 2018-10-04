@@ -27,6 +27,7 @@ var AntiPathos = artifacts.require("./AntiPathos.sol");
 
 var NameFactory = artifacts.require("./NameFactory.sol");
 var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
+var Position = artifacts.require("./Position.sol");
 
 module.exports = function(deployer, network, accounts) {
 	var deployerAccount;
@@ -56,7 +57,9 @@ module.exports = function(deployer, network, accounts) {
 		antilogos,
 		antiethos,
 		antipathos,
-		namefactory;
+		namefactory,
+		thoughtfactory,
+		position;
 
 	deployer.deploy(AOLibrary);
 	deployer.link(AOLibrary, AOToken);
@@ -89,7 +92,8 @@ module.exports = function(deployer, network, accounts) {
 		[AntiLogos, 0, "Anti Logos", "ALOGOS", "antilogos"],
 		[AntiEthos, 0, "Anti Ethos", "AETHOS", "antiethos"],
 		[AntiPathos, 0, "Anti Pathos", "APATHOS", "antipathos"],
-		NameFactory
+		NameFactory,
+		[Position, 0, "AO Position", "AOPOS"]
 	]);
 
 	deployer
@@ -113,6 +117,7 @@ module.exports = function(deployer, network, accounts) {
 			antiethos = await AntiEthos.deployed();
 			antipathos = await AntiPathos.deployed();
 			namefactory = await NameFactory.deployed();
+			position = await Position.deployed();
 			return deployer.deploy(ThoughtFactory, namefactory.address);
 		})
 		.then(async function() {
@@ -186,5 +191,9 @@ module.exports = function(deployer, network, accounts) {
 
 			// antilogos grant access to aoearning
 			await antilogos.setWhitelist(aoearning.address, true, { from: deployerAccount });
+
+			// position grant access to namefactory and thoughtfactory
+			await position.setWhitelist(namefactory.address, true, { from: deployerAccount });
+			await position.setWhitelist(thoughtfactory.address, true, { from: deployerAccount });
 		});
 };
