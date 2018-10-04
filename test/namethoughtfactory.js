@@ -1,8 +1,20 @@
 var NameFactory = artifacts.require("./NameFactory.sol");
 var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
+var Position = artifacts.require("./Position.sol");
 
 contract("Name & Thought Factory", function(accounts) {
-	var namefactory, thoughtfactory;
+	var namefactory,
+		thoughtfactory,
+		position,
+		maxSupplyPerName,
+		nameId1,
+		nameId2,
+		nameId3,
+		nameId4,
+		thoughtId1,
+		thoughtId2,
+		thoughtId3,
+		thoughtId4;
 	var developer = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
@@ -15,11 +27,12 @@ contract("Name & Thought Factory", function(accounts) {
 	var contentId = "somecontentid";
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 
-	var nameId1, nameId2, nameId3, nameId4, thoughtId1, thoughtId2, thoughtId3, thoughtId4;
-
 	before(async function() {
 		namefactory = await NameFactory.deployed();
 		thoughtfactory = await ThoughtFactory.deployed();
+		position = await Position.deployed();
+
+		maxSupplyPerName = await position.MAX_SUPPLY_PER_NAME();
 	});
 
 	contract("Public Function Tests", function() {
@@ -64,6 +77,13 @@ contract("Name & Thought Factory", function(accounts) {
 			assert.equal(nameRelationship[0], account, "Name has incorrect fromId");
 			assert.equal(nameRelationship[1], emptyAddress, "Name has incorrect fromId");
 			assert.equal(nameRelationship[2], emptyAddress, "Name has incorrect fromId");
+
+			var positionAmount = await position.balanceOf(nameId);
+			assert.equal(
+				positionAmount.toString(),
+				maxSupplyPerName.toString(),
+				"Name has incorrect Position token balance after creation"
+			);
 
 			return nameId;
 		};

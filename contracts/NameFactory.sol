@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import './Name.sol';
 import './SafeMath.sol';
+import './Position.sol';
 
 /**
  * @title NameFactory
@@ -10,6 +11,10 @@ import './SafeMath.sol';
  */
 contract NameFactory {
 	using SafeMath for uint256;
+
+	address public positionAddress;
+
+	Position internal _position;
 
 	address[] internal names;
 
@@ -25,7 +30,13 @@ contract NameFactory {
 	// Event to be broadcasted to public when current Advocate sets New Speaker for a Name
 	event SetNameSpeaker(address nameId, address oldSpeakerId, address newSpeakerId);
 
-	constructor() public {}
+	/**
+	 * @dev Constructor function
+	 */
+	constructor(address _positionAddress) public {
+		positionAddress = _positionAddress;
+		_position = Position(positionAddress);
+	}
 
 	/**
 	 * @dev Check whether or not `_name` is taken
@@ -56,6 +67,9 @@ contract NameFactory {
 		address nameId = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId);
 		ethAddressToNameId[msg.sender] = nameId;
 		names.push(nameId);
+
+		// Need to mint Position token for this Name
+		require (_position.mintToken(nameId));
 
 		emit CreateName(msg.sender, nameId, names.length.sub(1), _name);
 		return true;

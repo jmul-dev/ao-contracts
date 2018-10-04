@@ -92,7 +92,6 @@ module.exports = function(deployer, network, accounts) {
 		[AntiLogos, 0, "Anti Logos", "ALOGOS", "antilogos"],
 		[AntiEthos, 0, "Anti Ethos", "AETHOS", "antiethos"],
 		[AntiPathos, 0, "Anti Pathos", "APATHOS", "antipathos"],
-		NameFactory,
 		[Position, 0, "AO Position", "AOPOS"]
 	]);
 
@@ -116,8 +115,11 @@ module.exports = function(deployer, network, accounts) {
 			antilogos = await AntiLogos.deployed();
 			antiethos = await AntiEthos.deployed();
 			antipathos = await AntiPathos.deployed();
-			namefactory = await NameFactory.deployed();
 			position = await Position.deployed();
+			return deployer.deploy(NameFactory, position.address);
+		})
+		.then(async function() {
+			namefactory = await NameFactory.deployed();
 			return deployer.deploy(ThoughtFactory, namefactory.address);
 		})
 		.then(async function() {
