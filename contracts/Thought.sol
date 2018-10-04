@@ -33,8 +33,13 @@ contract Thought {
 	address public throughId;
 	address public toId;		// When this Thought wants to be part of a larger Thought but it's not coming from its Advocate
 
-	address[] internal childThoughts;
-	address[] internal orphanThoughts;
+	uint256 public totalChildThoughts;
+	mapping (uint256 => address) public childThoughts;
+	mapping (address => uint256) public childThoughtInternalIdLookup;
+
+	uint256 public totalOrphanThoughts;
+	mapping (uint256 => address) public orphanThoughts;
+	mapping (address => uint256) public orphanThoughtInternalIdLookup;
 
 	/**
 	 * @dev Constructor function
@@ -106,23 +111,27 @@ contract Thought {
 	 */
 	function addChildThought(address _thoughtId) public onlyFactory returns (bool) {
 		require (_thoughtId != address(0));
-		childThoughts.push(_thoughtId);
+		require (childThoughtInternalIdLookup[_thoughtId] == 0);
+
+		totalChildThoughts++;
+		childThoughts[totalChildThoughts] = _thoughtId;
+		childThoughtInternalIdLookup[_thoughtId] = totalChildThoughts;
 		return true;
 	}
 
 	/**
 	 * @dev Get list of child Thought IDs
-	 * @param _from The starting index
-	 * @param _to The ending index
+	 * @param _from The starting index (start from 1)
+	 * @param _to The ending index, (max is total child Thoughts count )
 	 * @return list of child Thought IDs
 	 */
 	function getChildThoughtIds(uint256 _from, uint256 _to) public onlyFactory view returns (address[]) {
-		require (_from >= 0 && _to >= _from);
-		require (childThoughts.length > 0);
-		address[] memory _childThoughtIds = new address[](_to.sub(_from).add(1));
-		if (_to > childThoughts.length.sub(1)) {
-			_to = childThoughts.length.sub(1);
+		require (_from >= 1 && _to >= _from);
+		require (totalChildThoughts > 0);
+		if (_to > totalChildThoughts) {
+			_to = totalChildThoughts;
 		}
+		address[] memory _childThoughtIds = new address[](_to.sub(_from).add(1));
 		for (uint256 i = _from; i <= _to; i++) {
 			_childThoughtIds[i.sub(_from)] = childThoughts[i];
 		}
@@ -134,7 +143,7 @@ contract Thought {
 	 * @return total Child Thoughts count
 	 */
 	function getTotalChildThoughtsCount() public onlyFactory view returns (uint256) {
-		return childThoughts.length;
+		return totalChildThoughts;
 	}
 
 	/**
@@ -144,34 +153,11 @@ contract Thought {
 	 */
 	function addOrphanThought(address _thoughtId) public onlyFactory returns (bool) {
 		require (_thoughtId != address(0));
-		orphanThoughts.push(_thoughtId);
+		require (orphanThoughtInternalIdLookup[_thoughtId] == 0);
+
+		totalOrphanThoughts++;
+		orphanThoughts[totalOrphanThoughts] = _thoughtId;
+		orphanThoughtInternalIdLookup[_thoughtId] = totalOrphanThoughts;
 		return true;
-	}
-
-	/**
-	 * @dev Get list of orphan Thought IDs
-	 * @param _from The starting index
-	 * @param _to The ending index
-	 * @return list of orphan Thought IDs
-	 */
-	function getOrphanThoughtIds(uint256 _from, uint256 _to) public onlyFactory view returns (address[]) {
-		require (_from >= 0 && _to >= _from);
-		require (orphanThoughts.length > 0);
-		address[] memory _orphanThoughtIds = new address[](_to.sub(_from).add(1));
-		if (_to > orphanThoughts.length.sub(1)) {
-			_to = orphanThoughts.length.sub(1);
-		}
-		for (uint256 i = _from; i <= _to; i++) {
-			_orphanThoughtIds[i.sub(_from)] = orphanThoughts[i];
-		}
-		return _orphanThoughtIds;
-	}
-
-	/**
-	 * @dev Get total orphan Thoughts count
-	 * @return total Orphan Thoughts count
-	 */
-	function getTotalOrphanThoughtsCount() public onlyFactory view returns (uint256) {
-		return orphanThoughts.length;
 	}
 }

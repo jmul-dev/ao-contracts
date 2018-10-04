@@ -90,13 +90,9 @@ contract("Name & Thought Factory", function(accounts) {
 
 		var createThought = async function(from, fromType, sameAdvocate, account) {
 			var totalThoughtsBefore = await thoughtfactory.getTotalThoughtsCount();
-			var totalChildThoughtsBefore, totalChildThoughtsAfter, totalOrphanThoughtsBefore, totalOrphanThoughtsAfter;
-			if (fromType == "thought") {
-				if (sameAdvocate) {
-					totalChildThoughtsBefore = await thoughtfactory.getTotalChildThoughtsCount(from);
-				} else {
-					totalOrphanThoughtsBefore = await thoughtfactory.getTotalOrphanThoughtsCount(from);
-				}
+			var totalChildThoughtsBefore, totalChildThoughtsAfter;
+			if (fromType == "thought" && sameAdvocate) {
+				totalChildThoughtsBefore = await thoughtfactory.getTotalChildThoughtsCount(from);
 			}
 
 			var canCreateThought, createThoughtEvent, addChildThoughtEvent, addOrphanThoughtEvent, thoughtId;
@@ -169,7 +165,10 @@ contract("Name & Thought Factory", function(accounts) {
 						"Parent Thought has incorrect count of child Thoughts"
 					);
 
-					var childThoughts = await thoughtfactory.getChildThoughtIds(from, 0, totalChildThoughtsAfter.toString());
+					var isChildThoughtOfThought = await thoughtfactory.isChildThoughtOfThought(from, thoughtId);
+					assert.equal(isChildThoughtOfThought, true, "Newly created Thought is not child Thought of `from`");
+
+					var childThoughts = await thoughtfactory.getChildThoughtIds(from, 1, totalChildThoughtsAfter.toString());
 					assert.include(childThoughts, thoughtId, "Newly created Thought ID is not in the parent's list of child Thoughts");
 				} else {
 					assert.notEqual(addOrphanThoughtEvent, null, "Creating Thought didn't emit AddOrphanThought event");
@@ -184,19 +183,10 @@ contract("Name & Thought Factory", function(accounts) {
 						"AddOrphanThought event has incorrect orphan Thought ID"
 					);
 
-					totalOrphanThoughtsAfter = await thoughtfactory.getTotalOrphanThoughtsCount(from);
-
-					assert.equal(
-						totalOrphanThoughtsAfter.toString(),
-						totalOrphanThoughtsBefore.plus(1).toString(),
-						"Parent Thought has incorrect count of orphan Thoughts"
-					);
-
-					var orphanThoughts = await thoughtfactory.getOrphanThoughtIds(from, 0, totalOrphanThoughtsAfter.toString());
-					assert.include(orphanThoughts, thoughtId, "Newly created Thought ID is not in the parent's list of orphan Thoughts");
+					var isOrphanThoughtOfThought = await thoughtfactory.isOrphanThoughtOfThought(from, thoughtId);
+					assert.equal(isOrphanThoughtOfThought, true, "Newly created Thought is not orphan Thought of `from`");
 				}
 			}
-
 			return thoughtId;
 		};
 

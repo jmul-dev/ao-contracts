@@ -289,34 +289,51 @@ contract ThoughtFactory {
 	}
 
 	/**
-	 * @dev Get Thought's orphan Thoughts
-	 * @param _thoughtId The ID of the Thought
-	 * @param _from The starting index
-	 * @param _to The ending index
-	 * @return list of orphan Thought IDs
+	 * @dev Check if `_childThoughtId` is child Thought of `_thoughtId`
+	 * @param _thoughtId The ID of the parent Thought
+	 * @param _childThoughtId The child Thought ID to check
+	 * @return return true if yes. Otherwise return false.
 	 */
-	function getOrphanThoughtIds(address _thoughtId, uint256 _from, uint256 _to) public view returns (address[]) {
-		require (_from >= 0 && _to >= _from);
-
+	function isChildThoughtOfThought(address _thoughtId, address _childThoughtId) public view returns (bool) {
 		Thought _thought = Thought(_thoughtId);
 
 		// Make sure the Thought exist
 		require (_thought.originNameId() != address(0) && _thought.thoughtTypeId() == 0);
 
-		return _thought.getOrphanThoughtIds(_from, _to);
+		Thought _childThought = Thought(_childThoughtId);
+
+		// Make sure the child Thought exist
+		require (_childThought.originNameId() != address(0) && _childThought.thoughtTypeId() == 0);
+
+		return (_thought.childThoughtInternalIdLookup(_childThoughtId) > 0);
 	}
 
 	/**
-	 * @dev Get Thought's orphan Thoughts total count
-	 * @param _thoughtId The ID of the Thought
-	 * @return total orphan Thoughts count
+	 * @dev Check if `_orphanThoughtId` is orphan Thought of `_thoughtId`
+	 * @param _thoughtId The ID of the parent Thought
+	 * @param _orphanThoughtId The orphan Thought ID to check
+	 * @return return true if yes. Otherwise return false.
 	 */
-	function getTotalOrphanThoughtsCount(address _thoughtId) public view returns (uint256) {
+	function isOrphanThoughtOfThought(address _thoughtId, address _orphanThoughtId) public view returns (bool) {
 		Thought _thought = Thought(_thoughtId);
 
 		// Make sure the Thought exist
 		require (_thought.originNameId() != address(0) && _thought.thoughtTypeId() == 0);
 
-		return _thought.getTotalOrphanThoughtsCount();
+		Thought _orphanThought = Thought(_orphanThoughtId);
+
+		// Make sure the orphan Thought exist
+		require (_orphanThought.originNameId() != address(0) && _orphanThought.thoughtTypeId() == 0);
+
+		return (_thought.orphanThoughtInternalIdLookup(_orphanThoughtId) > 0);
 	}
+
+	/**
+	 * @dev Listener approves orphan Thought.
+	 *		This will remove orphan Thought from the orphan Thoughts list and add it to the child Thoughts.
+	 * @param _thoughtId The ID of the Thought
+	 * @param _orphanThoughtId The orphan Thought ID to approve
+	 * @return true on success
+	 */
+
 }
