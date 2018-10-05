@@ -145,13 +145,9 @@ contract ThoughtFactory {
 	 * @return list of Thought IDs
 	 */
 	function getThoughtIds(uint256 _from, uint256 _to) public view returns (address[]) {
-		require (_from >= 0 && _to >= _from);
-		require (thoughts.length > 0);
+		require (_from >= 0 && _to >= _from && thoughts.length > _to);
 
 		address[] memory _thoughts = new address[](_to.sub(_from).add(1));
-		if (_to > thoughts.length.sub(1)) {
-			_to = thoughts.length.sub(1);
-		}
 		for (uint256 i = _from; i <= _to; i++) {
 			_thoughts[i.sub(_from)] = thoughts[i];
 		}

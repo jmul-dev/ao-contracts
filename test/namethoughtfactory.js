@@ -129,7 +129,7 @@ contract("Name & Thought Factory", function(accounts) {
 			var totalThoughtsAfter = await thoughtfactory.getTotalThoughtsCount();
 			assert.equal(totalThoughtsAfter.toString(), totalThoughtsBefore.plus(1).toString(), "Contract has incorrect thoughts length");
 
-			var thoughts = await thoughtfactory.getThoughtIds(0, totalThoughtsAfter.toString());
+			var thoughts = await thoughtfactory.getThoughtIds(0, totalThoughtsAfter.minus(1).toString());
 			assert.include(thoughts, thoughtId, "Newly created Thought ID is not in the list");
 
 			var _thought = await thoughtfactory.getThought(thoughtId);
@@ -165,6 +165,12 @@ contract("Name & Thought Factory", function(accounts) {
 					"Parent Thought has incorrect count of child/orphan Thoughts"
 				);
 
+				var childOrphanThoughts = await thoughtfactory.getChildOrphanThoughtIds(from, 1, totalChildOrphanThoughtsAfter.toString());
+				assert.include(
+					childOrphanThoughts,
+					thoughtId,
+					"Newly created Thought ID is not in the parent's list of child/orphan Thoughts"
+				);
 				if (sameAdvocate) {
 					assert.notEqual(addChildThoughtEvent, null, "Creating Thought didn't emit AddChildThought event");
 					assert.equal(addChildThoughtEvent.args.parentThoughtId, from, "AddChildThought event has incorrect parent Thought ID");
@@ -184,17 +190,6 @@ contract("Name & Thought Factory", function(accounts) {
 
 					var isChildThoughtOfThought = await thoughtfactory.isChildThoughtOfThought(from, thoughtId);
 					assert.equal(isChildThoughtOfThought, true, "Newly created Thought is not child Thought of `from`");
-
-					var childOrphanThoughts = await thoughtfactory.getChildOrphanThoughtIds(
-						from,
-						1,
-						totalChildOrphanThoughtsAfter.toString()
-					);
-					assert.include(
-						childOrphanThoughts,
-						thoughtId,
-						"Newly created Thought ID is not in the parent's list of child/orphan Thoughts"
-					);
 				} else {
 					assert.notEqual(addOrphanThoughtEvent, null, "Creating Thought didn't emit AddOrphanThought event");
 					assert.equal(

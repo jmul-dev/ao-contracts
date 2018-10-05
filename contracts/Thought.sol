@@ -140,11 +140,7 @@ contract Thought {
 	 * @return list of child/orphan Thought IDs
 	 */
 	function getChildOrphanThoughtIds(uint256 _from, uint256 _to) public view returns (address[]) {
-		require (_from >= 1 && _to >= _from);
-		require (totalChildOrphanThoughts > 0);
-		if (_to > totalChildOrphanThoughts) {
-			_to = totalChildOrphanThoughts;
-		}
+		require (_from >= 1 && _to >= _from && totalChildOrphanThoughts >= _to);
 		address[] memory _childOrphanThoughtIds = new address[](_to.sub(_from).add(1));
 		for (uint256 i = _from; i <= _to; i++) {
 			_childOrphanThoughtIds[i.sub(_from)] = childOrphanThoughts[i].connected ? childOrphanThoughts[i].thoughtId : address(0);
