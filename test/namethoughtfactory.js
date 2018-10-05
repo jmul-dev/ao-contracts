@@ -515,5 +515,70 @@ contract("Name & Thought Factory", function(accounts) {
 			var _thought = await thoughtfactory.getThought(thoughtId1);
 			assert.equal(_thought[4], _newSpeakerId, "Thought has incorrect speakerId after the update");
 		});
+
+		it("approveOrphanThought()", async function() {
+			var orphanThoughtId = thoughtId3;
+
+			var canApproveOrphanThought, approveOrphanThoughtEvent;
+			try {
+				var result = await thoughtfactory.approveOrphanThought("someid", orphanThoughtId, { from: account3 });
+				approveOrphanThoughtEvent = result.logs[0];
+				canApproveOrphanThought = true;
+			} catch (e) {
+				approveOrphanThoughtEvent = null;
+				canApproveOrphanThought = false;
+			}
+			assert.notEqual(canApproveOrphanThought, true, "Listener can approve orphan Thought of a non-existing parent Thought");
+
+			try {
+				var result = await thoughtfactory.approveOrphanThought(thoughtId1, "someid", { from: account3 });
+				approveOrphanThoughtEvent = result.logs[0];
+				canApproveOrphanThought = true;
+			} catch (e) {
+				approveOrphanThoughtEvent = null;
+				canApproveOrphanThought = false;
+			}
+			assert.notEqual(canApproveOrphanThought, true, "Listener can approve non-existing Thought of a parent Thought");
+
+			try {
+				var result = await thoughtfactory.approveOrphanThought(thoughtId1, thoughtId2, { from: account3 });
+				approveOrphanThoughtEvent = result.logs[0];
+				canApproveOrphanThought = true;
+			} catch (e) {
+				approveOrphanThoughtEvent = null;
+				canApproveOrphanThought = false;
+			}
+			assert.notEqual(canApproveOrphanThought, true, "Listener can approve non-orphan Thought of a parent Thought");
+
+			try {
+				var result = await thoughtfactory.approveOrphanThought(thoughtId1, orphanThoughtId, { from: account2 });
+				approveOrphanThoughtEvent = result.logs[0];
+				canApproveOrphanThought = true;
+			} catch (e) {
+				approveOrphanThoughtEvent = null;
+				canApproveOrphanThought = false;
+			}
+			assert.notEqual(canApproveOrphanThought, true, "Non-Listener can approve noorphan Thought of a parent Thought");
+
+			try {
+				var result = await thoughtfactory.approveOrphanThought(thoughtId1, orphanThoughtId, { from: account3 });
+				approveOrphanThoughtEvent = result.logs[0];
+				canApproveOrphanThought = true;
+			} catch (e) {
+				approveOrphanThoughtEvent = null;
+				canApproveOrphanThought = false;
+			}
+			assert.equal(canApproveOrphanThought, true, "Listener can't approve noorphan Thought of a parent Thought");
+
+			var isOrphanThoughtOfThought = await thoughtfactory.isOrphanThoughtOfThought(thoughtId1, orphanThoughtId);
+			assert.equal(isOrphanThoughtOfThought, false, "Thought is still listed as orphan Thought even though Listener has approved it");
+
+			var isChildThoughtOfThought = await thoughtfactory.isChildThoughtOfThought(thoughtId1, orphanThoughtId);
+			assert.equal(
+				isChildThoughtOfThought,
+				true,
+				"Orphan Thought is not listed as child Thought even though Listener has approved it"
+			);
+		});
 	});
 });

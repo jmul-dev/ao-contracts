@@ -36,6 +36,9 @@ contract ThoughtFactory {
 	// Event to be broadcasted to public when a parent Thought adds an orphan Thought
 	event AddOrphanThought(address parentThoughtId, address orphanThoughtId);
 
+	// Event to be broadcasted to public when a parent Thought's Listener approves an orphan Thought
+	event ApproveOrphanThought(address listenerId, address parentThoughtId, address orphanThoughtId);
+
 	/**
 	 * @dev Constructor function
 	 */
@@ -351,10 +354,22 @@ contract ThoughtFactory {
 
 	/**
 	 * @dev Listener approves orphan Thought.
-	 *		This will remove orphan Thought from the orphan Thoughts list and add it to the child Thoughts.
-	 * @param _thoughtId The ID of the Thought
+	 *		This will switch orphan Thought to becoming a child Thought.
+	 * @param _thoughtId The ID of the parent Thought
 	 * @param _orphanThoughtId The orphan Thought ID to approve
 	 * @return true on success
 	 */
+	function approveOrphanThought(address _thoughtId, address _orphanThoughtId) public returns (bool) {
+		require (isOrphanThoughtOfThought(_thoughtId, _orphanThoughtId));
 
+		Thought _thought = Thought(_thoughtId);
+
+		// Only Thought's current listener can approve orphan Thought
+		require (_nameFactory.ethAddressToNameId(msg.sender) != address(0) && Name(_thought.listenerId()).originNameId() == msg.sender);
+
+		_thought.approveOrphanThought(_orphanThoughtId);
+
+		emit ApproveOrphanThought(_thought.listenerId(), _thoughtId, _orphanThoughtId);
+		return true;
+	}
 }

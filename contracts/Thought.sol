@@ -175,7 +175,7 @@ contract Thought {
 	/**
 	 * @dev Check if `_childThoughtId` is a child Thought
 	 * @param _childThoughtId The child Thought ID to check
-	 * @return return true if yes. Otherwise return false.
+	 * @return true if yes. Otherwise return false.
 	 */
 	function isChildThought(address _childThoughtId) public view returns (bool) {
 		return (childOrphanThoughtInternalIdLookup[_childThoughtId] > 0 && childOrphanThoughts[childOrphanThoughtInternalIdLookup[_childThoughtId]].child && childOrphanThoughts[childOrphanThoughtInternalIdLookup[_childThoughtId]].connected);
@@ -184,9 +184,22 @@ contract Thought {
 	/**
 	 * @dev Check if `_orphanThoughtId` is an orphan Thought
 	 * @param _orphanThoughtId The orphan Thought ID to check
-	 * @return return true if yes. Otherwise return false.
+	 * @return true if yes. Otherwise return false.
 	 */
 	function isOrphanThought(address _orphanThoughtId) public view returns (bool) {
 		return (childOrphanThoughtInternalIdLookup[_orphanThoughtId] > 0 && !childOrphanThoughts[childOrphanThoughtInternalIdLookup[_orphanThoughtId]].child && childOrphanThoughts[childOrphanThoughtInternalIdLookup[_orphanThoughtId]].connected);
+	}
+
+	/**
+	 * @dev Approve orphan Thought and switch it to a child Thought
+	 * @param _orphanThoughtId The orphan Thought ID to approve
+	 * @return true on success
+	 */
+	function approveOrphanThought(address _orphanThoughtId) public onlyFactory returns (bool) {
+		ChildOrphanThought storage _childOrphanThought = childOrphanThoughts[childOrphanThoughtInternalIdLookup[_orphanThoughtId]];
+		_childOrphanThought.child = true;
+		totalChildThoughts++;
+		totalOrphanThoughts--;
+		return true;
 	}
 }
