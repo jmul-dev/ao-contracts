@@ -300,7 +300,7 @@ contract AOEarning is developed {
 	}
 
 	/**
-	 * @dev Given a weighted index, we want to calculate the multiplier
+	 * @dev Given a weighted index, calculate the multiplier
 	 * @param _weightedIndex The weighted index of the primordial token
 	 * @return multiplier in 6 decimals
 	 */
@@ -308,12 +308,12 @@ contract AOEarning is developed {
 		/**
 		 * Multiplier = 1 + (multiplierModifier * ((lastWeightedIndex - weightedIndex)/lastWeightedIndex))
 		 *
-		 * Since we are calculating in decimals, so 1 is actually 1000000 or WEIGHTED_INDEX_DIVISOR
+		 * Since the calculation is in decimals, so 1 is actually 1000000 or WEIGHTED_INDEX_DIVISOR
 		 * Multiplier = WEIGHTED_INDEX_DIVISOR + (multiplierModifier * ((lastWeightedIndex - weightedIndex)/lastWeightedIndex))
 		 * Let temp = (lastWeightedIndex - weightedIndex)/lastWeightedIndex
 		 * To account for decimal points,
 		 * temp = ((lastWeightedIndex - weightedIndex) * WEIGHTED_INDEX_DIVISOR)/lastWeightedIndex
-		 * We need to divide temp with WEIGHTED_INDEX_DIVISOR later
+		 * Need to divide temp with WEIGHTED_INDEX_DIVISOR later
 		 * Multiplier = WEIGHTED_INDEX_DIVISOR + ((multiplierModifier * temp) / WEIGHTED_INDEX_DIVISOR)
 		 */
 		uint256 _lastWeightedIndex = _baseAO.lotIndex().mul(WEIGHTED_INDEX_DIVISOR);

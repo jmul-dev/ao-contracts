@@ -53,7 +53,7 @@ contract AOToken is developed, TokenERC20 {
 
 	// Max supply of 1,125,899,906,842,620 AOTKN
 	uint256 constant public MAX_PRIMORDIAL_SUPPLY = 1125899906842620;
-	// The amount of tokens that we want to reserve for foundation
+	// The amount of tokens to be reserved for foundation
 	uint256 constant public TOKENS_RESERVED_FOR_FOUNDATION = 125899906842620;
 	// Account for 6 decimal points for weighted index
 	uint256 constant public WEIGHTED_INDEX_DIVISOR = 10 ** 6; // 1000000 = 1

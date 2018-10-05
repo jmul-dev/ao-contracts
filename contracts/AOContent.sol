@@ -36,8 +36,8 @@ contract AOContent is developed {
 		address creator;
 		/**
 		 * baseChallenge is the content's PUBLIC KEY
-		 * When a request node wants to be a host, we require it to send a signed base challenge (its content's PUBLIC KEY)
-		 * so that we can verify the authenticity of the content by comparing what the contract has and what the request node
+		 * When a request node wants to be a host, it is required to send a signed base challenge (its content's PUBLIC KEY)
+		 * so that the contract can verify the authenticity of the content by comparing what the contract has and what the request node
 		 * submit
 		 */
 		string baseChallenge;
@@ -406,8 +406,8 @@ contract AOContent is developed {
 		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
 		require (AOLibrary.canStakeExisting(treasuryAddress, _content.fileSize, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount));
 
-		// Make sure we can stake primordial token
-		// If we are currently staking an active staked content, then the stake owner's weighted index has to match `stakedContent.primordialWeightedIndex`
+		// Make sure node can stake primordial token
+		// If the node is currently staking an active staked content, then the stake owner's weighted index has to match `stakedContent.primordialWeightedIndex`
 		// i.e, can't use a combination of different weighted index. Stake owner has to call unstakeContent() to unstake all tokens first
 		if (_primordialAmount > 0 && _stakedContent.active && _stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedIndex > 0) {
 			require (_baseAO.weightedIndexByAddress(msg.sender) == _stakedContent.primordialWeightedIndex);
@@ -485,7 +485,7 @@ contract AOContent is developed {
 		bytes32 _purchaseId = keccak256(abi.encodePacked(this, msg.sender, _contentHostId));
 		PurchaseReceipt storage _purchaseReceipt = purchaseReceipts[totalPurchaseReceipts];
 
-		// Make sure we don't buy the same content twice
+		// Make sure the node doesn't buy the same content twice
 		require (_purchaseReceipt.buyer == address(0));
 
 		_purchaseReceipt.purchaseId = _purchaseId;
@@ -542,7 +542,7 @@ contract AOContent is developed {
 
 	/**
 	 * @dev Request node wants to become a distribution node after buying the content
-	 *		Also, if this transaction succeeds, we release all of the earnings that are
+	 *		Also, if this transaction succeeds, contract will release all of the earnings that are
 	 *		currently in escrow for content creator/host/foundation
 	 */
 	function becomeHost(bytes32 _purchaseId, uint8 _baseChallengeV, bytes32 _baseChallengeR, bytes32 _baseChallengeS, string _encChallenge, string _contentDatKey, string _metadataDatKey) public isActive {
@@ -583,7 +583,7 @@ contract AOContent is developed {
 		bytes32 _contentId = keccak256(abi.encodePacked(this, _creator, totalContents));
 		Content storage _content = contents[totalContents];
 
-		// Make sure we don't store the same content twice
+		// Make sure the node does't store the same content twice
 		require (_content.creator == address(0));
 
 		_content.contentId = _contentId;
@@ -619,7 +619,7 @@ contract AOContent is developed {
 
 		ContentHost storage _contentHost = contentHosts[totalContentHosts];
 
-		// Make sure we don't host the same content twice
+		// Make sure the node doesn't host the same content twice
 		require (_contentHost.host == address(0));
 
 		_contentHost.contentHostId = _contentHostId;
@@ -654,7 +654,7 @@ contract AOContent is developed {
 		bytes32 _stakeId = keccak256(abi.encodePacked(this, _stakeOwner, _contentId));
 		StakedContent storage _stakedContent = stakedContents[totalStakedContents];
 
-		// Make sure we don't stake the same content twice
+		// Make sure the node doesn't stake the same content twice
 		require (_stakedContent.stakeOwner == address(0));
 
 		_stakedContent.stakeId = _stakeId;
