@@ -34,12 +34,17 @@ contract Thought {
 	address public toId;		// When this Thought wants to be part of a larger Thought but it's not coming from its Advocate
 
 	uint256 public totalChildThoughts;
-	mapping (uint256 => address) public childThoughts;
-	mapping (address => uint256) public childThoughtInternalIdLookup;
-
 	uint256 public totalOrphanThoughts;
-	mapping (uint256 => address) public orphanThoughts;
-	mapping (address => uint256) public orphanThoughtInternalIdLookup;
+	uint256 public totalChildOrphanThoughts;
+
+	struct ChildOrphanThought {
+		address thoughtId;
+		bool child;			// If false, then it's an orphan Thought
+		bool connected;		// If false, then parent Thought want to remove this child/orphan Thought
+	}
+
+	mapping (uint256 => ChildOrphanThought) public childOrphanThoughts;
+	mapping (address => uint256) public childOrphanThoughtInternalIdLookup;
 
 	/**
 	 * @dev Constructor function
@@ -105,59 +110,87 @@ contract Thought {
 	}
 
 	/**
-	 * @dev Add ChildThought
-	 * @param _thoughtId The Thought to be added to as ChildThought
+	 * @dev Add Child/Orphan Thought
+	 * @param _thoughtId The Thought ID to be added to as Child/Orphan Thought
+	 * @param _child True if adding this as a child Thought. False if it's an orphan Thought.
 	 * @return true on success
 	 */
-	function addChildThought(address _thoughtId) public onlyFactory returns (bool) {
+	function addChildOrphanThought(address _thoughtId, bool _child) public onlyFactory returns (bool) {
 		require (_thoughtId != address(0));
-		require (childThoughtInternalIdLookup[_thoughtId] == 0);
+		require (childOrphanThoughtInternalIdLookup[_thoughtId] == 0);
 
-		totalChildThoughts++;
-		childThoughts[totalChildThoughts] = _thoughtId;
-		childThoughtInternalIdLookup[_thoughtId] = totalChildThoughts;
+		totalChildOrphanThoughts++;
+		if (_child) {
+			totalChildThoughts++;
+		} else {
+			totalOrphanThoughts++;
+		}
+		childOrphanThoughtInternalIdLookup[_thoughtId] = totalChildOrphanThoughts;
+		ChildOrphanThought storage _childOrphanThought = childOrphanThoughts[totalChildOrphanThoughts];
+		_childOrphanThought.thoughtId = _thoughtId;
+		_childOrphanThought.child = _child;
+		_childOrphanThought.connected = true;
 		return true;
 	}
 
 	/**
-	 * @dev Get list of child Thought IDs
+	 * @dev Get list of child/orphan Thought IDs
 	 * @param _from The starting index (start from 1)
-	 * @param _to The ending index, (max is total child Thoughts count )
-	 * @return list of child Thought IDs
+	 * @param _to The ending index, (max is totalChildOrphanThoughts count )
+	 * @return list of child/orphan Thought IDs
 	 */
-	function getChildThoughtIds(uint256 _from, uint256 _to) public onlyFactory view returns (address[]) {
+	function getChildOrphanThoughtIds(uint256 _from, uint256 _to) public view returns (address[]) {
 		require (_from >= 1 && _to >= _from);
-		require (totalChildThoughts > 0);
-		if (_to > totalChildThoughts) {
-			_to = totalChildThoughts;
+		require (totalChildOrphanThoughts > 0);
+		if (_to > totalChildOrphanThoughts) {
+			_to = totalChildOrphanThoughts;
 		}
-		address[] memory _childThoughtIds = new address[](_to.sub(_from).add(1));
+		address[] memory _childOrphanThoughtIds = new address[](_to.sub(_from).add(1));
 		for (uint256 i = _from; i <= _to; i++) {
-			_childThoughtIds[i.sub(_from)] = childThoughts[i];
+			_childOrphanThoughtIds[i.sub(_from)] = childOrphanThoughts[i].connected ? childOrphanThoughts[i].thoughtId : address(0);
 		}
-		return _childThoughtIds;
+		return _childOrphanThoughtIds;
+	}
+
+	/**
+	 * @dev Get total child/orphan Thoughts count
+	 * @return total Child/Orphan Thoughts count
+	 */
+	function getTotalChildOrphanThoughtsCount() public view returns (uint256) {
+		return totalChildOrphanThoughts;
 	}
 
 	/**
 	 * @dev Get total child Thoughts count
 	 * @return total Child Thoughts count
 	 */
-	function getTotalChildThoughtsCount() public onlyFactory view returns (uint256) {
+	function getTotalChildThoughtsCount() public view returns (uint256) {
 		return totalChildThoughts;
 	}
 
 	/**
-	 * @dev Add OrphanThought
-	 * @param _thoughtId The Thought to be added to as OrphanThought
-	 * @return true on success
+	 * @dev Get total orphan Thoughts count
+	 * @return total Orphan Thoughts count
 	 */
-	function addOrphanThought(address _thoughtId) public onlyFactory returns (bool) {
-		require (_thoughtId != address(0));
-		require (orphanThoughtInternalIdLookup[_thoughtId] == 0);
+	function getTotalOrphanThoughtsCount() public view returns (uint256) {
+		return totalOrphanThoughts;
+	}
 
-		totalOrphanThoughts++;
-		orphanThoughts[totalOrphanThoughts] = _thoughtId;
-		orphanThoughtInternalIdLookup[_thoughtId] = totalOrphanThoughts;
-		return true;
+	/**
+	 * @dev Check if `_childThoughtId` is a child Thought
+	 * @param _childThoughtId The child Thought ID to check
+	 * @return return true if yes. Otherwise return false.
+	 */
+	function isChildThought(address _childThoughtId) public view returns (bool) {
+		return (childOrphanThoughtInternalIdLookup[_childThoughtId] > 0 && childOrphanThoughts[childOrphanThoughtInternalIdLookup[_childThoughtId]].child && childOrphanThoughts[childOrphanThoughtInternalIdLookup[_childThoughtId]].connected);
+	}
+
+	/**
+	 * @dev Check if `_orphanThoughtId` is an orphan Thought
+	 * @param _orphanThoughtId The orphan Thought ID to check
+	 * @return return true if yes. Otherwise return false.
+	 */
+	function isOrphanThought(address _orphanThoughtId) public view returns (bool) {
+		return (childOrphanThoughtInternalIdLookup[_orphanThoughtId] > 0 && !childOrphanThoughts[childOrphanThoughtInternalIdLookup[_orphanThoughtId]].child && childOrphanThoughts[childOrphanThoughtInternalIdLookup[_orphanThoughtId]].connected);
 	}
 }
