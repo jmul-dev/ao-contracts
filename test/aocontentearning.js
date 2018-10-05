@@ -568,7 +568,7 @@ contract("AOContent & AOEarning", function(accounts) {
 		before(async function() {
 			// Let's give account1 some tokens
 			await aotoken.mintToken(account1, 10 ** 9, { from: developer }); // 1,000,000,000 AO Token
-			// Buy 2 lots so that we can test avg weighted index
+			// Buy 2 lots to test avg weighted index
 			await aotoken.buyPrimordialToken({ from: account1, value: 50000000000 });
 			await aotoken.buyPrimordialToken({ from: account1, value: 50000000000 });
 

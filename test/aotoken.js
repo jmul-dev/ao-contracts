@@ -564,7 +564,7 @@ contract("AOToken", function(accounts) {
 
 			var buySuccess;
 			try {
-				// Sending more ETH than we should to check whether or not the user receives the remainder ETH
+				// Sending more ETH than available to check whether or not the user receives the remainder ETH
 				await tokenMeta.buyPrimordialToken({ from: account2, value: web3.toWei(900, "ether") });
 				buySuccess = true;
 			} catch (e) {
