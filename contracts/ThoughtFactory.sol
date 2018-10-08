@@ -4,6 +4,7 @@ import './Thought.sol';
 import './Name.sol';
 import './SafeMath.sol';
 import './NameFactory.sol';
+import './Position.sol';
 
 /**
  * @title ThoughtFactory
@@ -14,7 +15,9 @@ contract ThoughtFactory {
 	using SafeMath for uint256;
 
 	address public nameFactoryAddress;
+	address public positionAddress;
 	NameFactory internal _nameFactory;
+	Position internal _position;
 
 	address[] internal thoughts;
 
@@ -42,9 +45,12 @@ contract ThoughtFactory {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress) public {
+	constructor(address _nameFactoryAddress, address _positionAddress) public {
 		nameFactoryAddress = _nameFactoryAddress;
+		positionAddress = _positionAddress;
+
 		_nameFactory = NameFactory(nameFactoryAddress);
+		_position = Position(positionAddress);
 	}
 
 	/**
@@ -131,6 +137,16 @@ contract ThoughtFactory {
 			_thought.contentId(),
 			_thought.thoughtTypeId()
 		);
+	}
+
+	/**
+	 * @dev Check whether or not a Thought is a TAO
+	 *		TAO is a Thought with Position that is not a Name
+	 * @param _thoughtId The ID of the Thought
+	 * @return true if it's a TAO, false otherwise.
+	 */
+	function isTAO(address _thoughtId) public view returns (bool) {
+		return (_position.totalThoughtStakedBalance(_thoughtId) > 0);
 	}
 
 	/**

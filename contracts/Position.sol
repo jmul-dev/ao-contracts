@@ -20,10 +20,15 @@ contract Position is developed {
 
 	// Mapping from Name ID to bool value whether or not it has received Position Token
 	mapping (address => bool) public receivedToken;
+
+	// Mapping from Name ID to its total available balance
 	mapping (address => uint256) public balanceOf;
 
 	// Mapping from Name's Thought ID to its staked amount
 	mapping (address => mapping(address => uint256)) public thoughtStakedBalance;
+
+	// Mapping from Thought ID to its total staked amount
+	mapping (address => uint256) public totalThoughtStakedBalance;
 
 	// This generates a public event on the blockchain that will notify clients
 	event Mint(address indexed nameId, uint256 value);
@@ -80,6 +85,7 @@ contract Position is developed {
 		require (balanceOf[_nameId] >= _value);							// Check if the targeted balance is enough
 		balanceOf[_nameId] = balanceOf[_nameId].sub(_value);			// Subtract from the targeted balance
 		thoughtStakedBalance[_nameId][_thoughtId] = thoughtStakedBalance[_nameId][_thoughtId].add(_value);	// Add to the targeted staked balance
+		totalThoughtStakedBalance[_thoughtId] = totalThoughtStakedBalance[_thoughtId].add(_value);
 		emit Stake(_nameId, _thoughtId, _value);
 		return true;
 	}
@@ -94,7 +100,9 @@ contract Position is developed {
 	function unstake(address _nameId, address _thoughtId, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
 		require (_value > 0 && _value <= MAX_SUPPLY_PER_NAME);
 		require (thoughtStakedBalance[_nameId][_thoughtId] >= _value);	// Check if the targeted staked balance is enough
+		require (totalThoughtStakedBalance[_thoughtId] >= _value);	// Check if the total targeted staked balance is enough
 		thoughtStakedBalance[_nameId][_thoughtId] = thoughtStakedBalance[_nameId][_thoughtId].sub(_value);	// Subtract from the targeted staked balance
+		totalThoughtStakedBalance[_thoughtId] = totalThoughtStakedBalance[_thoughtId].sub(_value);
 		balanceOf[_nameId] = balanceOf[_nameId].add(_value);			// Add to the targeted balance
 		emit Unstake(_nameId, _thoughtId, _value);
 		return true;

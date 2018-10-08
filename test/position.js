@@ -124,6 +124,9 @@ contract("Position", function(accounts) {
 
 			var thoughtStakedBalance = await position.thoughtStakedBalance(nameId, thoughtId);
 			assert.equal(thoughtStakedBalance.toString(), 800000, "Thought has incorrect staked balance");
+
+			var totalThoughtStakedBalance = await position.totalThoughtStakedBalance(thoughtId);
+			assert.equal(totalThoughtStakedBalance.toString(), 800000, "Thought has incorrect total staked balance");
 		});
 
 		it("stakedBalance()", async function() {
@@ -159,6 +162,7 @@ contract("Position", function(accounts) {
 
 			var balanceBefore = await position.balanceOf(nameId);
 			var thoughtStakedBalanceBefore = await position.thoughtStakedBalance(nameId, thoughtId);
+			var totalThoughtStakedBalanceBefore = await position.totalThoughtStakedBalance(thoughtId);
 			try {
 				await position.unstake(nameId, thoughtId, 300000, { from: whitelistedAccount });
 				canUnstake = true;
@@ -175,6 +179,12 @@ contract("Position", function(accounts) {
 				thoughtStakedBalanceAfter.toString(),
 				thoughtStakedBalanceBefore.minus(300000).toString(),
 				"Thought has incorrect staked balance after unstaking"
+			);
+			var totalThoughtStakedBalanceAfter = await position.totalThoughtStakedBalance(thoughtId);
+			assert.equal(
+				totalThoughtStakedBalanceAfter.toString(),
+				totalThoughtStakedBalanceBefore.minus(300000).toString(),
+				"Thought has incorrect total staked balance after unstaking"
 			);
 		});
 	});

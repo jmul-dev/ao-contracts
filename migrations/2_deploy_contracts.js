@@ -120,7 +120,7 @@ module.exports = function(deployer, network, accounts) {
 		})
 		.then(async function() {
 			namefactory = await NameFactory.deployed();
-			return deployer.deploy(ThoughtFactory, namefactory.address);
+			return deployer.deploy(ThoughtFactory, namefactory.address, position.address);
 		})
 		.then(async function() {
 			thoughtfactory = await ThoughtFactory.deployed();

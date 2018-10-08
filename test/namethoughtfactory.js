@@ -215,6 +215,9 @@ contract("Name & Thought Factory", function(accounts) {
 					assert.equal(isOrphanThoughtOfThought, true, "Newly created Thought is not orphan Thought of `from`");
 				}
 			}
+
+			var isTAO = await thoughtfactory.isTAO(thoughtId);
+			assert.equal(isTAO, false, "Thought has incorrect isTAO value");
 			return thoughtId;
 		};
 
