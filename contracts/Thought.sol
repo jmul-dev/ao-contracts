@@ -9,6 +9,9 @@ contract Thought {
 	using SafeMath for uint256;
 
 	// Public variables
+	bool public locked;
+	bool public closed;
+
 	address public factoryAddress;
 	string public originName;		// the name of the Name that created this Thought
 	address public originNameId;	// the ID of the Name that created this Thought
@@ -36,6 +39,8 @@ contract Thought {
 	uint256 public totalChildThoughts;
 	uint256 public totalOrphanThoughts;
 	uint256 public totalChildOrphanThoughts;
+
+	uint256 public balance;
 
 	struct ChildOrphanThought {
 		address thoughtId;
@@ -69,6 +74,14 @@ contract Thought {
 	}
 
 	/**
+	 * @dev Check if contract is active
+	 */
+	modifier isActive {
+		require (locked == false && closed == false);
+		_;
+	}
+
+	/**
 	 * @dev Check if calling address is Factory
 	 */
 	modifier onlyFactory {
@@ -81,7 +94,7 @@ contract Thought {
 	 * @param _advocateId The advocate ID to be set
 	 * @return true on success
 	 */
-	function setAdvocate(address _advocateId) public onlyFactory returns (bool) {
+	function setAdvocate(address _advocateId) public isActive onlyFactory returns (bool) {
 		require (_advocateId != address(0));
 		advocateId = _advocateId;
 		return true;
@@ -92,7 +105,7 @@ contract Thought {
 	 * @param _listenerId The listener ID to be set
 	 * @return true on success
 	 */
-	function setListener(address _listenerId) public onlyFactory returns (bool) {
+	function setListener(address _listenerId) public isActive onlyFactory returns (bool) {
 		require (_listenerId != address(0));
 		listenerId = _listenerId;
 		return true;
@@ -103,7 +116,7 @@ contract Thought {
 	 * @param _speakerId The speaker ID to be set
 	 * @return true on success
 	 */
-	function setSpeaker(address _speakerId) public onlyFactory returns (bool) {
+	function setSpeaker(address _speakerId) public isActive onlyFactory returns (bool) {
 		require (_speakerId != address(0));
 		speakerId = _speakerId;
 		return true;
@@ -115,7 +128,7 @@ contract Thought {
 	 * @param _child True if adding this as a child Thought. False if it's an orphan Thought.
 	 * @return true on success
 	 */
-	function addChildOrphanThought(address _thoughtId, bool _child) public onlyFactory returns (bool) {
+	function addChildOrphanThought(address _thoughtId, bool _child) public isActive onlyFactory returns (bool) {
 		require (_thoughtId != address(0));
 		require (childOrphanThoughtInternalIdLookup[_thoughtId] == 0);
 
@@ -195,11 +208,40 @@ contract Thought {
 	 * @param _orphanThoughtId The orphan Thought ID to approve
 	 * @return true on success
 	 */
-	function approveOrphanThought(address _orphanThoughtId) public onlyFactory returns (bool) {
+	function approveOrphanThought(address _orphanThoughtId) public isActive onlyFactory returns (bool) {
 		ChildOrphanThought storage _childOrphanThought = childOrphanThoughts[childOrphanThoughtInternalIdLookup[_orphanThoughtId]];
 		_childOrphanThought.child = true;
 		totalChildThoughts++;
 		totalOrphanThoughts--;
 		return true;
+	}
+
+	/**
+	 * @dev Lock/unlock Thought. If at "locked" state, no transaction can be executed on this Thought
+			until it's unlocked again.
+	 * @param _locked The bool value to set
+	 * @return true on success
+	 */
+	function setLocked(bool _locked) public onlyFactory returns (bool) {
+		require (closed == false);
+		locked = _locked;
+		return true;
+	}
+
+	/**
+	 * @dev Mark Thought as closed
+	 * @return true on success
+	 */
+	function closeThought() public onlyFactory returns (bool) {
+		require (closed == false);
+		closed = true;
+		return true;
+	}
+
+	/**
+	 * @dev Receive ETH
+	 */
+	function () public payable isActive {
+		balance = balance.add(msg.value);
 	}
 }

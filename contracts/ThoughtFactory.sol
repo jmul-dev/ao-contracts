@@ -31,6 +31,9 @@ contract ThoughtFactory is ThoughtController {
 	// Event to be broadcasted to public when a parent Thought's Listener approves an orphan Thought
 	event ApproveOrphanThought(address indexed listenerId, address parentThoughtId, address orphanThoughtId);
 
+	// Event to be broadcasted to public when a Thought is locked/unlocked
+	event SetThoughtLocked(address indexed thoughtId, bool locked);
+
 	/**
 	 * @dev Constructor function
 	 */
@@ -287,5 +290,20 @@ contract ThoughtFactory is ThoughtController {
 		require (_thought.approveOrphanThought(_orphanThoughtId));
 
 		emit ApproveOrphanThought(_thought.listenerId(), _thoughtId, _orphanThoughtId);
+	}
+
+	/**
+	 * @dev Advocate locks/unlocks a Thought.
+			When a Thought is locked, no transaction can happen on the Thought (i.e adding funds, adding child/orphan Thought, etc.)
+			until the Thought is unlocked again.
+	 * @param _thoughtId The ID of the Thought
+	 * @param _locked The bool value to be set
+	 */
+	function setThoughtLocked(address _thoughtId, bool _locked) public isThought(_thoughtId) senderIsName(msg.sender) onlyAdvocateOf(msg.sender, _thoughtId) {
+		Thought _thought = Thought(_thoughtId);
+
+		require (_thought.setLocked(_locked));
+
+		emit SetThoughtLocked(_thoughtId, _locked);
 	}
 }
