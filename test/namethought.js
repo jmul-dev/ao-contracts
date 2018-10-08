@@ -1,10 +1,12 @@
 var NameFactory = artifacts.require("./NameFactory.sol");
 var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
+var ThoughtPosition = artifacts.require("./ThoughtPosition.sol");
 var Position = artifacts.require("./Position.sol");
 
-contract("Name & Thought Factory", function(accounts) {
+contract("Name & Thought", function(accounts) {
 	var namefactory,
 		thoughtfactory,
+		thoughtposition,
 		position,
 		maxSupplyPerName,
 		nameId1,
@@ -30,6 +32,7 @@ contract("Name & Thought Factory", function(accounts) {
 	before(async function() {
 		namefactory = await NameFactory.deployed();
 		thoughtfactory = await ThoughtFactory.deployed();
+		thoughtposition = await ThoughtPosition.deployed();
 		position = await Position.deployed();
 
 		maxSupplyPerName = await position.MAX_SUPPLY_PER_NAME();
@@ -216,7 +219,7 @@ contract("Name & Thought Factory", function(accounts) {
 				}
 			}
 
-			var isTAO = await thoughtfactory.isTAO(thoughtId);
+			var isTAO = await thoughtposition.isTAO(thoughtId);
 			assert.equal(isTAO, false, "Thought has incorrect isTAO value");
 			return thoughtId;
 		};
