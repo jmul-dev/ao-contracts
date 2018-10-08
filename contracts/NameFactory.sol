@@ -54,9 +54,8 @@ contract NameFactory {
 	 * @param _database The database for this Name
 	 * @param _keyValue The key/value pair to be checked on the database
 	 * @param _contentId The contentId related to this Name
-	 * @return true on success
 	 */
-	function createName(string _name, string _datHash, string _database, string _keyValue, bytes32 _contentId) public returns (bool) {
+	function createName(string _name, string _datHash, string _database, string _keyValue, bytes32 _contentId) public {
 		require (isNameTaken(_name) == false);
 		// Only one Name per ETH address
 		require (ethAddressToNameId[msg.sender] == address(0));
@@ -72,7 +71,6 @@ contract NameFactory {
 		require (_position.mintToken(nameId));
 
 		emit CreateName(msg.sender, nameId, names.length.sub(1), _name);
-		return true;
 	}
 
 	/**
@@ -137,9 +135,8 @@ contract NameFactory {
 	 * @dev Set Name's listener
 	 * @param _nameId The ID of the Name
 	 * @param _newListenerId The new listener ID to be set
-	 * @return true on success
 	 */
-	function setNameListener(address _nameId, address _newListenerId) public returns (bool) {
+	function setNameListener(address _nameId, address _newListenerId) public {
 		Name _name = Name(_nameId);
 
 		// Make sure the Name exist
@@ -157,16 +154,14 @@ contract NameFactory {
 		require (_name.setListener(_newListenerId));
 
 		emit SetNameListener(_nameId, _currentListenerId, _newListenerId);
-		return true;
 	}
 
 	/**
 	 * @dev Set Name's speaker
 	 * @param _nameId The ID of the Name
 	 * @param _newSpeakerId The new speaker ID to be set
-	 * @return true on success
 	 */
-	function setNameSpeaker(address _nameId, address _newSpeakerId) public returns (bool) {
+	function setNameSpeaker(address _nameId, address _newSpeakerId) public {
 		Name _name = Name(_nameId);
 
 		// Make sure the Name exist
@@ -184,7 +179,6 @@ contract NameFactory {
 		require (_name.setSpeaker(_newSpeakerId));
 
 		emit SetNameSpeaker(_nameId, _currentSpeakerId, _newSpeakerId);
-		return true;
 	}
 
 	/**
@@ -196,10 +190,6 @@ contract NameFactory {
 	 */
 	function getNameRelationship(address _nameId) public view returns (address, address, address) {
 		Name _name = Name(_nameId);
-
-		// Make sure the Name exist
-		require (_name.originNameId() != address(0) && _name.thoughtTypeId() == 1);
-
 		return (
 			_name.fromId(),
 			_name.throughId(),
