@@ -586,5 +586,101 @@ contract("Name & Thought", function(accounts) {
 				"Orphan Thought is not listed as child Thought even though Listener has approved it"
 			);
 		});
+
+		it("stakePosition()", async function() {
+			var canStakePosition, isTaoEvent;
+			try {
+				var result = await thoughtposition.stakePosition("someid", 800000, { from: account1 });
+				isTaoEvent = result.logs[0];
+				canStakePosition = true;
+			} catch (e) {
+				isTaoEvent = null;
+				canStakePosition = false;
+			}
+			assert.notEqual(canStakePosition, true, "Name can stake Position on non-existing Thought");
+
+			try {
+				var result = await thoughtposition.stakePosition(thoughtId1, 800000, { from: account5 });
+				isTaoEvent = result.logs[0];
+				canStakePosition = true;
+			} catch (e) {
+				isTaoEvent = null;
+				canStakePosition = false;
+			}
+			assert.notEqual(canStakePosition, true, "Non-Name account can stake Position on a Thought");
+
+			try {
+				var result = await thoughtposition.stakePosition(thoughtId1, 800000, { from: account1 });
+				isTaoEvent = result.logs[0];
+				canStakePosition = true;
+			} catch (e) {
+				isTaoEvent = null;
+				canStakePosition = false;
+			}
+			assert.equal(canStakePosition, true, "Name can't stake Position on a Thought");
+			assert.notEqual(isTaoEvent, null, "Contract is not emitting IsTAO event");
+
+			var isTao = await thoughtposition.isTAO(thoughtId1);
+			assert.equal(isTao, true, "Thought is not a TAO even thought it has Position");
+
+			try {
+				var result = await thoughtposition.stakePosition(thoughtId1, 800000, { from: account2 });
+				isTaoEvent = result.logs[0];
+				canStakePosition = true;
+			} catch (e) {
+				isTaoEvent = null;
+				canStakePosition = false;
+			}
+			assert.equal(canStakePosition, true, "Name can't stake Position on a Thought");
+			assert.equal(isTaoEvent, null, "Contract is emitting IsTAO event even though Thought is already a TAO");
+		});
+
+		it("unstakePosition()", async function() {
+			var canUnstakePosition, isTaoEvent;
+			try {
+				var result = await thoughtposition.unstakePosition("someid", 800000, { from: account1 });
+				isTaoEvent = result.logs[0];
+				canUnstakePosition = true;
+			} catch (e) {
+				isTaoEvent = null;
+				canUnstakePosition = false;
+			}
+			assert.notEqual(canUnstakePosition, true, "Name can unstake Position on non-existing Thought");
+
+			try {
+				var result = await thoughtposition.unstakePosition(thoughtId1, 800000, { from: account5 });
+				isTaoEvent = result.logs[0];
+				canUnstakePosition = true;
+			} catch (e) {
+				isTaoEvent = null;
+				canUnstakePosition = false;
+			}
+			assert.notEqual(canUnstakePosition, true, "Non-Name account can unstake Position on a Thought");
+
+			try {
+				var result = await thoughtposition.unstakePosition(thoughtId1, 800000, { from: account1 });
+				isTaoEvent = result.logs[0];
+				canUnstakePosition = true;
+			} catch (e) {
+				isTaoEvent = null;
+				canUnstakePosition = false;
+			}
+			assert.equal(canUnstakePosition, true, "Name can't unstake Position on a Thought");
+			assert.equal(isTaoEvent, null, "Contract is emitting IsTAO event even thought there is no changes yet on the status");
+
+			try {
+				var result = await thoughtposition.unstakePosition(thoughtId1, 800000, { from: account2 });
+				isTaoEvent = result.logs[0];
+				canUnstakePosition = true;
+			} catch (e) {
+				isTaoEvent = null;
+				canUnstakePosition = false;
+			}
+			assert.equal(canUnstakePosition, true, "Name can't unstake Position on a Thought");
+			assert.notEqual(isTaoEvent, null, "Contract is not emitting IsTAO event");
+
+			var isTao = await thoughtposition.isTAO(thoughtId1);
+			assert.equal(isTao, false, "Thought is a TAO even thought it has no Position");
+		});
 	});
 });
