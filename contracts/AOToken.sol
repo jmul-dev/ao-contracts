@@ -12,6 +12,10 @@ import './AOLibrary.sol';
 contract AOToken is developed, TokenERC20 {
 	using SafeMath for uint256;
 
+	// Foundation addresses to receive Primordial/Network Tokens
+	address public foundationAddress1 = 0x5C63644D01Ba385eBAc5bcf2DDc1e6dBC1182b52;
+	address public foundationAddress2 = 0x156C79bf4347D1891da834Ea30662A14177CbF28;
+
 	// To differentiate denomination of AO
 	uint256 public powerOfTen;
 
@@ -35,35 +39,39 @@ contract AOToken is developed, TokenERC20 {
 	uint256 public primordialSellPrice;
 	uint256 public primordialBuyPrice;
 	bool public networkExchangeContract;
+	uint256 public startingMultiplier;
+	uint256 public endingMultiplier;
+	uint256 public startingNetworkTokenBonusMultiplier;
+	uint256 public endingNetworkTokenBonusMultiplier;
 
 	mapping (address => uint256) public primordialBalanceOf;
 	mapping (address => mapping (address => uint256)) public primordialAllowance;
 
-	// Mapping from owner's lot weighted index to the amount of staked tokens
+	// Mapping from owner's lot weighted multiplier to the amount of staked tokens
 	mapping (address => mapping (uint256 => uint256)) public primordialStakedBalance;
 
 	event PrimordialTransfer(address indexed from, address indexed to, uint256 value);
 	event PrimordialApproval(address indexed _owner, address indexed _spender, uint256 _value);
 	event PrimordialBurn(address indexed from, uint256 value);
-	event PrimordialStake(address indexed from, uint256 value, uint256 weightedIndex);
-	event PrimordialUnstake(address indexed from, uint256 value, uint256 weightedIndex);
+	event PrimordialStake(address indexed from, uint256 value, uint256 weightedMultiplier);
+	event PrimordialUnstake(address indexed from, uint256 value, uint256 weightedMultiplier);
 
 	uint256 public totalLots;
-	uint256 public lotIndex;
 
 	// Max supply of 1,125,899,906,842,620 AOTKN
 	uint256 constant public MAX_PRIMORDIAL_SUPPLY = 1125899906842620;
 	// The amount of tokens that we want to reserve for foundation
 	uint256 constant public TOKENS_RESERVED_FOR_FOUNDATION = 125899906842620;
-	// Account for 6 decimal points for weighted index
-	uint256 constant public WEIGHTED_INDEX_DIVISOR = 10 ** 6; // 1000000 = 1
+	// Account for 6 decimal points for multiplier
+	uint256 constant public MULTIPLIER_DIVISOR = 10 ** 6; // 1000000 = 1
+	uint256 constant public PERCENTAGE_DIVISOR = 10 ** 6; // 100% = 1000000
 
 	bool public foundationReserved;
 	bool public networkExchangeEnded;
 
 	struct Lot {
 		bytes32 lotId;
-		uint256 index;	// This value is in 10^6, so 1000000 = 1
+		uint256 multiplier;	// This value is in 10^6, so 1000000 = 1
 		address lotOwner;
 		uint256 tokenAmount;
 	}
@@ -74,15 +82,12 @@ contract AOToken is developed, TokenERC20 {
 	// Mapping from owner to list of owned lot IDs
 	mapping (address => bytes32[]) internal ownedLots;
 
-	// Mapping from owner's lot ID to index of the owner lots list
-	mapping (address => mapping (bytes32 => uint256)) internal ownedLotsIndex;
-
-	// Mapping from owner to his/her current weighted index
-	mapping (address => uint256) internal ownerWeightedIndex;
+	// Mapping from owner to his/her current weighted multiplier
+	mapping (address => uint256) internal ownerWeightedMultiplier;
 
 	// Event to be broadcasted to public when a lot is created
-	// index value is in 10^6 to account for decimal points
-	event LotCreation(address indexed lotOwner, bytes32 indexed lotId, uint256 index, uint256 tokenAmount);
+	// multiplier value is in 10^6 to account for 6 decimal points
+	event LotCreation(address indexed lotOwner, bytes32 indexed lotId, uint256 multiplier, uint256 primordialTokenAmount, uint256 networkTokenBonusAmount);
 
 	/**
 	 * @dev Constructor function
@@ -93,6 +98,10 @@ contract AOToken is developed, TokenERC20 {
 		decimals = 0;
 		networkExchangeContract = true;
 		setPrimordialPrices(0, 10000); // Set Primordial buy price to 10000 Wei/token
+		startingMultiplier = 50 * MULTIPLIER_DIVISOR;
+		endingMultiplier = 3 * MULTIPLIER_DIVISOR;
+		startingNetworkTokenBonusMultiplier = 1000000; // 100%
+		endingNetworkTokenBonusMultiplier = 250000; // 25%
 	}
 
 	/**
@@ -104,6 +113,40 @@ contract AOToken is developed, TokenERC20 {
 	}
 
 	/***** DEVELOPER ONLY METHODS *****/
+	/**
+	 * @dev Set starting/ending multiplier values that are used to calculate primordial multiplier
+	 * @param _startingMultiplier The new starting multiplier value
+	 * @param _endingMultiplier The new ending multiplier value
+	 */
+	function setStartingEndingMultiplier(uint256 _startingMultiplier, uint256 _endingMultiplier) public onlyDeveloper {
+		require (_startingMultiplier >= _endingMultiplier);
+		startingMultiplier = _startingMultiplier;
+		endingMultiplier = _endingMultiplier;
+	}
+
+	/**
+	 * @dev Set starting/ending network token bonus multiplier values that are used to calculate network token bonus amount
+	 * @param _startingNetworkTokenBonusMultiplier The new starting network token bonus multiplier value
+	 * @param _endingNetworkTokenBonusMultiplier The new ending network token bonus multiplier value
+	 */
+	function setStartingEndingNetworkTokenBonusMultiplier(uint256 _startingNetworkTokenBonusMultiplier, uint256 _endingNetworkTokenBonusMultiplier) public onlyDeveloper {
+		require (_startingNetworkTokenBonusMultiplier >= _endingNetworkTokenBonusMultiplier);
+		startingNetworkTokenBonusMultiplier = _startingNetworkTokenBonusMultiplier;
+		endingNetworkTokenBonusMultiplier = _endingNetworkTokenBonusMultiplier;
+	}
+
+	/**
+	 * @dev Set foundation addresses to receive Primordial/Network tokens during network exchange
+	 * @param _foundationAddress1 The first foundation address
+	 * @param _foundationAddress2 The second foundation address
+	 */
+	function setFoundationAddresses(address _foundationAddress1, address _foundationAddress2) public onlyDeveloper {
+		require (_foundationAddress1 != address(0));
+		require (_foundationAddress2 != address(0));
+		foundationAddress1 = _foundationAddress1;
+		foundationAddress2 = _foundationAddress2;
+	}
+
 	/***** NETWORK TOKEN DEVELOPER ONLY METHODS *****/
 	/**
 	 * @dev Prevent/Allow target from sending & receiving tokens
@@ -247,53 +290,44 @@ contract AOToken is developed, TokenERC20 {
 			networkExchangeEnded = true;
 		}
 
-		_createPrimordialLot(msg.sender, tokenAmount);
-
-		// Also mint equal network tokens for the foundation
-		_mintToken(msg.sender, tokenAmount);
+		//_createPrimordialLot(msg.sender, tokenAmount);
 	}
 
 	/**
-	 * @dev Stake `_value` Primordial tokens at `_weightedIndex ` index on behalf of `_from`
+	 * @dev Stake `_value` Primordial tokens at `_weightedMultiplier ` multiplier on behalf of `_from`
 	 * @param _from The address of the target
 	 * @param _value The amount of Primordial tokens to stake
-	 * @param _weightedIndex The weighted index of the Primordial tokens
+	 * @param _weightedMultiplier The weighted multiplier of the Primordial tokens
 	 * @return true on success
 	 */
-	function stakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedIndex) public inWhitelist(msg.sender) isNetworkExchange returns (bool) {
+	function stakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist(msg.sender) isNetworkExchange returns (bool) {
 		// Check if the targeted balance is enough
 		require (primordialBalanceOf[_from] >= _value);
-		// Make sure the weighted index is the same as account's current weighted index
-		require (_weightedIndex == ownerWeightedIndex[_from]);
+		// Make sure the weighted multiplier is the same as account's current weighted multiplier
+		require (_weightedMultiplier == ownerWeightedMultiplier[_from]);
 		// Subtract from the targeted balance
 		primordialBalanceOf[_from] = primordialBalanceOf[_from].sub(_value);
 		// Add to the targeted staked balance
-		primordialStakedBalance[_from][_weightedIndex] = primordialStakedBalance[_from][_weightedIndex].add(_value);
-		emit PrimordialStake(_from, _value, _weightedIndex);
+		primordialStakedBalance[_from][_weightedMultiplier] = primordialStakedBalance[_from][_weightedMultiplier].add(_value);
+		emit PrimordialStake(_from, _value, _weightedMultiplier);
 		return true;
 	}
 
 	/**
-	 * @dev Unstake `_value` Primordial tokens at `_weightedIndex` on behalf of `_from`
+	 * @dev Unstake `_value` Primordial tokens at `_weightedMultiplier` on behalf of `_from`
 	 * @param _from The address of the target
 	 * @param _value The amount to unstake
-	 * @param _weightedIndex The weighted index of the Primordial tokens
+	 * @param _weightedMultiplier The weighted multiplier of the Primordial tokens
 	 * @return true on success
 	 */
-	function unstakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedIndex) public inWhitelist(msg.sender) isNetworkExchange returns (bool) {
+	function unstakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist(msg.sender) isNetworkExchange returns (bool) {
 		// Check if the targeted staked balance is enough
-		require (primordialStakedBalance[_from][_weightedIndex] >= _value);
-
+		require (primordialStakedBalance[_from][_weightedMultiplier] >= _value);
 		// Subtract from the targeted staked balance
-		primordialStakedBalance[_from][_weightedIndex] = primordialStakedBalance[_from][_weightedIndex].sub(_value);
-
-		// Recalculate owner weighted index
-		ownerWeightedIndex[_from] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_from], primordialBalanceOf[_from], _weightedIndex, _value);
-
+		primordialStakedBalance[_from][_weightedMultiplier] = primordialStakedBalance[_from][_weightedMultiplier].sub(_value);
 		// Add to the targeted balance
 		primordialBalanceOf[_from] = primordialBalanceOf[_from].add(_value);
-
-		emit PrimordialUnstake(_from, _value, _weightedIndex);
+		emit PrimordialUnstake(_from, _value, _weightedMultiplier);
 		return true;
 	}
 
@@ -341,11 +375,25 @@ contract AOToken is developed, TokenERC20 {
 			networkExchangeEnded = true;
 			remainderEth = msg.value.sub(tokenAmount.mul(primordialBuyPrice));
 		}
+		require (tokenAmount > 0);
 
-		_createPrimordialLot(msg.sender, tokenAmount);
+		(uint256 multiplier, uint256 networkTokenBonusPercentage, uint256 networkTokenBonusAmount) = calculateMultiplierAndBonus(tokenAmount);
+		_createPrimordialLot(msg.sender, tokenAmount, multiplier, networkTokenBonusAmount);
 
-		// Also mint equal network tokens for the buyer
-		_mintToken(msg.sender, tokenAmount);
+		// Calculate foundation's portion of Primordial and Network Token Bonus
+
+		// Make sure primordialTotalSupply is not overflowing
+		if (primordialTotalSupply.add(tokenAmount) >= MAX_PRIMORDIAL_SUPPLY) {
+			tokenAmount = MAX_PRIMORDIAL_SUPPLY.sub(primordialTotalSupply);
+			networkExchangeEnded = true;
+		}
+
+		if (tokenAmount > 0) {
+			uint256 foundationMultiplier = startingMultiplier.sub(multiplier);
+			uint256 foundationNetworkTokenBonusAmount = (startingNetworkTokenBonusMultiplier.sub(networkTokenBonusPercentage).add(endingNetworkTokenBonusMultiplier)).mul(tokenAmount).div(PERCENTAGE_DIVISOR);
+			_createPrimordialLot(foundationAddress1, tokenAmount.div(2), foundationMultiplier, foundationNetworkTokenBonusAmount.div(2));
+			_createPrimordialLot(foundationAddress2, tokenAmount.sub(tokenAmount.div(2)), foundationMultiplier, foundationNetworkTokenBonusAmount.sub(foundationNetworkTokenBonusAmount.div(2)));
+		}
 
 		if (remainderEth > 0) {
 			msg.sender.transfer(remainderEth);
@@ -359,18 +407,18 @@ contract AOToken is developed, TokenERC20 {
 	 * @return true on success
 	 */
 	function transferPrimordialToken(address _to, uint256 _value) public isNetworkExchange returns (bool success) {
-		bytes32 _createdLotId = _createWeightedIndexLot(_to, _value, ownerWeightedIndex[msg.sender]);
+		bytes32 _createdLotId = _createWeightedMultiplierLot(_to, _value, ownerWeightedMultiplier[msg.sender]);
 		Lot memory _lot = lots[_createdLotId];
 
 		// Make sure the new lot is created successfully
 		require (_lot.lotOwner == _to);
 
-		// Update the weighted index of the recipient
-		ownerWeightedIndex[_to] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_to], primordialBalanceOf[_to], ownerWeightedIndex[msg.sender], _value);
+		// Update the weighted multiplier of the recipient
+		ownerWeightedMultiplier[_to] = AOLibrary.calculateWeightedMultiplier(ownerWeightedMultiplier[_to], primordialBalanceOf[_to], ownerWeightedMultiplier[msg.sender], _value);
 
 		// Transfer the Primordial tokens
 		require (_transferPrimordialToken(msg.sender, _to, _value));
-		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.index, _lot.tokenAmount);
+		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.multiplier, _lot.tokenAmount, 0);
 		return true;
 	}
 
@@ -385,18 +433,18 @@ contract AOToken is developed, TokenERC20 {
 		require (_value <= primordialAllowance[_from][msg.sender]);
 		primordialAllowance[_from][msg.sender] = primordialAllowance[_from][msg.sender].sub(_value);
 
-		bytes32 _createdLotId = _createWeightedIndexLot(_to, _value, ownerWeightedIndex[_from]);
+		bytes32 _createdLotId = _createWeightedMultiplierLot(_to, _value, ownerWeightedMultiplier[_from]);
 		Lot memory _lot = lots[_createdLotId];
 
 		// Make sure the new lot is created successfully
 		require (_lot.lotOwner == _to);
 
-		// Update the weighted index of the recipient
-		ownerWeightedIndex[_to] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_to], primordialBalanceOf[_to], ownerWeightedIndex[_from], _value);
+		// Update the weighted multiplier of the recipient
+		ownerWeightedMultiplier[_to] = AOLibrary.calculateWeightedMultiplier(ownerWeightedMultiplier[_to], primordialBalanceOf[_to], ownerWeightedMultiplier[_from], _value);
 
 		// Transfer the Primordial tokens
 		require (_transferPrimordialToken(_from, _to, _value));
-		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.index, _lot.tokenAmount);
+		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.multiplier, _lot.tokenAmount, 0);
 		return true;
 	}
 
@@ -461,7 +509,7 @@ contract AOToken is developed, TokenERC20 {
 	 * @param _lotOwner The address of the lot owner
 	 * @return array of lot IDs
 	 */
-	function lotsByAddress(address _lotOwner) public isNetworkExchange view returns (bytes32[]) {
+	function lotIdsByAddress(address _lotOwner) public isNetworkExchange view returns (bytes32[]) {
 		return ownedLots[_lotOwner];
 	}
 
@@ -479,34 +527,50 @@ contract AOToken is developed, TokenERC20 {
 	 * @param _lotOwner The address owning the lots list to be accessed
 	 * @param _index uint256 representing the index to be accessed of the requested lots list
 	 * @return id of the lot
-	 * @return index of the lot in (10 ** 6)
+	 * @return multiplier of the lot in (10 ** 6)
 	 * @return Primordial token amount in the lot
 	 */
 	function lotOfOwnerByIndex(address _lotOwner, uint256 _index) public isNetworkExchange view returns (bytes32, uint256, uint256) {
 		require (_index < ownedLots[_lotOwner].length);
 		Lot memory _lot = lots[ownedLots[_lotOwner][_index]];
-		return (_lot.lotId, _lot.index, _lot.tokenAmount);
+		return (_lot.lotId, _lot.multiplier, _lot.tokenAmount);
 	}
 
 	/**
 	 * @dev Return the lot information at a given ID
 	 * @param _lotId The lot ID in question
 	 * @return id of the lot
-	 * @return index of the lot in (10 ** 6)
+	 * @return multiplier of the lot in (10 ** 6)
 	 * @return Primordial token amount in the lot
 	 */
 	function lotById(bytes32 _lotId) public isNetworkExchange view returns (bytes32, uint256, uint256) {
 		Lot memory _lot = lots[_lotId];
-		return (_lot.lotId, _lot.index, _lot.tokenAmount);
+		return (_lot.lotId, _lot.multiplier, _lot.tokenAmount);
 	}
 
 	/**
-	 * @dev Return the average weighted index of all lots owned by an address
+	 * @dev Return the average weighted multiplier of all lots owned by an address
 	 * @param _lotOwner The address of the lot owner
-	 * @return the weighted index of the address (in 10 ** 6)
+	 * @return the weighted multiplier of the address (in 10 ** 6)
 	 */
-	function weightedIndexByAddress(address _lotOwner) public isNetworkExchange view returns (uint256) {
-		return ownerWeightedIndex[_lotOwner];
+	function weightedMultiplierByAddress(address _lotOwner) public isNetworkExchange view returns (uint256) {
+		return ownerWeightedMultiplier[_lotOwner];
+	}
+
+	/**
+	 * @dev Calculate the primordial token multiplier and the bonuse network token amount on a given lot
+	 *		when someone purchases primordial token during network exchange
+	 * @param _purchaseAmount The amount of primordial token intended to be purchased
+	 * @return The multiplier in (10 ** 6)
+	 * @return The bonus percentage
+	 * @return The amount of network token as bonus
+	 */
+	function calculateMultiplierAndBonus(uint256 _purchaseAmount) public isNetworkExchange view returns (uint256, uint256, uint256) {
+		return (
+			AOLibrary.calculatePrimordialMultiplier(_purchaseAmount, MAX_PRIMORDIAL_SUPPLY, primordialTotalSupply, startingMultiplier, endingMultiplier),
+			AOLibrary.calculateNetworkTokenBonusPercentage(_purchaseAmount, MAX_PRIMORDIAL_SUPPLY, primordialTotalSupply, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier),
+			AOLibrary.calculateNetworkTokenBonusAmount(_purchaseAmount, MAX_PRIMORDIAL_SUPPLY, primordialTotalSupply, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier)
+		);
 	}
 
 	/***** NETWORK TOKEN & PRIMORDIAL TOKEN METHODS *****/
@@ -624,16 +688,17 @@ contract AOToken is developed, TokenERC20 {
 
 	/***** PRIMORDIAL TOKEN INTERNAL METHODS *****/
 	/**
-	 * @dev Create a lot with `tokenAmount` of tokens for an `account` during Primordial
+	 * @dev Create a lot with `primordialTokenAmount` of primordial tokens with `_multiplier` for an `account`
+	 *		during network exchange, and reward `_networkTokenBonusAmount` if exist
 	 * @param _account Address of the lot owner
-	 * @param _tokenAmount The amount of tokens to be stored in the lot
+	 * @param _primordialTokenAmount The amount of primordial tokens to be stored in the lot
+	 * @param _multiplier The multiplier for this lot in (10 ** 6)
+	 * @param _networkTokenBonusAmount The network token bonus amount
 	 */
-	function _createPrimordialLot(address _account, uint256 _tokenAmount) internal {
+	function _createPrimordialLot(address _account, uint256 _primordialTokenAmount, uint256 _multiplier, uint256 _networkTokenBonusAmount) internal {
 		require (_account != address(0));
-		require (_tokenAmount > 0);
 
 		totalLots++;
-		lotIndex++;
 
 		// Generate lotId
 		bytes32 lotId = keccak256(abi.encodePacked(this, _account, totalLots));
@@ -643,15 +708,19 @@ contract AOToken is developed, TokenERC20 {
 
 		Lot storage lot = lots[lotId];
 		lot.lotId = lotId;
-		lot.index = lotIndex.mul(WEIGHTED_INDEX_DIVISOR);
+		lot.multiplier = _multiplier;
 		lot.lotOwner = _account;
-		lot.tokenAmount = _tokenAmount;
-		uint256 lotIdIndex = ownedLots[_account].length;
+		lot.tokenAmount = _primordialTokenAmount;
 		ownedLots[_account].push(lotId);
-		ownedLotsIndex[_account][lotId] = lotIdIndex;
-		ownerWeightedIndex[_account] = AOLibrary.calculateWeightedIndex(ownerWeightedIndex[_account], primordialBalanceOf[_account], lot.index, lot.tokenAmount);
-		require (_mintPrimordialToken(_account, _tokenAmount));
-		emit LotCreation(lot.lotOwner, lot.lotId, lot.index, lot.tokenAmount);
+		ownerWeightedMultiplier[_account] = AOLibrary.calculateWeightedMultiplier(ownerWeightedMultiplier[_account], primordialBalanceOf[_account], lot.multiplier, lot.tokenAmount);
+		require (_mintPrimordialToken(_account, _primordialTokenAmount));
+
+		// If there is network token bonus, mint them to the account
+		if (_networkTokenBonusAmount > 0) {
+			_mintToken(_account, _networkTokenBonusAmount);
+		}
+
+		emit LotCreation(lot.lotOwner, lot.lotId, lot.multiplier, lot.tokenAmount, _networkTokenBonusAmount);
 	}
 
 	/**
@@ -669,13 +738,13 @@ contract AOToken is developed, TokenERC20 {
 	}
 
 	/**
-	 * @dev Create a lot with `tokenAmount` of tokens at `weightedIndex` for an `account`
+	 * @dev Create a lot with `tokenAmount` of tokens at `weightedMultiplier` for an `account`
 	 * @param _account Address of lot owner
 	 * @param _tokenAmount The amount of tokens
-	 * @param _weightedIndex The index of the lot (in 10^6)
+	 * @param _weightedMultiplier The multiplier of the lot (in 10^6)
 	 * @return bytes32 of new created lot ID
 	 */
-	function _createWeightedIndexLot(address _account, uint256 _tokenAmount, uint256 _weightedIndex) internal returns (bytes32) {
+	function _createWeightedMultiplierLot(address _account, uint256 _tokenAmount, uint256 _weightedMultiplier) internal returns (bytes32) {
 		require (_account != address(0));
 		require (_tokenAmount > 0);
 
@@ -689,12 +758,10 @@ contract AOToken is developed, TokenERC20 {
 
 		Lot storage lot = lots[lotId];
 		lot.lotId = lotId;
-		lot.index = _weightedIndex;
+		lot.multiplier = _weightedMultiplier;
 		lot.lotOwner = _account;
 		lot.tokenAmount = _tokenAmount;
-		uint256 lotIdIndex = ownedLots[_account].length;
 		ownedLots[_account].push(lotId);
-		ownedLotsIndex[_account][lotId] = lotIdIndex;
 		return lotId;
 	}
 
