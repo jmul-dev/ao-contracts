@@ -260,23 +260,22 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Calculate the bonus amount of network token on a given lot
+	 * @dev Calculate the bonus percentage of network token on a given lot
 	 *		Total Primordial Mintable = T
 	 *		Total Primordial Minted = M
 	 *		Starting Network Token Bonus Multiplier = Bs
 	 *		Ending Network Token Bonus Multiplier = Be
 	 *		To Purchase = P
 	 *		AO Bonus % = B% = (1 - ((M + P/2) / T)) x (Bs-Be)
-	 *		AO Bonus Amount = B% x P
 	 *
 	 * @param _purchaseAmount The amount of primordial token intended to be purchased
 	 * @param _totalPrimordialMintable Total Primordial token intable
 	 * @param _totalPrimordialMinted Total Primordial token minted so far
 	 * @param _startingMultiplier The starting Network token bonus multiplier
 	 * @param _endingMultiplier The ending Network token bonus multiplier
-	 * @return The Network token bonus amount
+	 * @return The bonus percentage
 	 */
-	function calculateNetworkTokenBonusAmount(uint256 _purchaseAmount, uint256 _totalPrimordialMintable, uint256 _totalPrimordialMinted, uint256 _startingMultiplier, uint256 _endingMultiplier) public pure returns (uint256) {
+	function calculateNetworkTokenBonusPercentage(uint256 _purchaseAmount, uint256 _totalPrimordialMintable, uint256 _totalPrimordialMinted, uint256 _startingMultiplier, uint256 _endingMultiplier) public pure returns (uint256) {
 		if (_purchaseAmount > 0 && _purchaseAmount <= _totalPrimordialMintable.sub(_totalPrimordialMinted)) {
 			/**
 			 * Let temp = M + (P/2)
@@ -291,16 +290,34 @@ library AOLibrary {
 			 * B% = ((PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * TEMP) / T)) * (Bs-Be)) / PERCENTAGE_DIVISOR
 			 * Take out the division by PERCENTAGE_DIVISOR for now and include in later calculation
 			 * B% = (PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * TEMP) / T)) * (Bs-Be)
+			 * But since Bs and Be are in 6 decimals, need to divide by PERCENTAGE_DIVISOR
+			 * B% = (PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * TEMP) / T)) * (Bs-Be) / PERCENTAGE_DIVISOR
 			 */
-			uint256 bonusPercentage = (PERCENTAGE_DIVISOR.sub(PERCENTAGE_DIVISOR.mul(temp).div(_totalPrimordialMintable))).mul(_startingMultiplier.sub(_endingMultiplier));
-			/**
-			 * Since bonusPercentage is in 6 decimals, and both _startingMultiplier and _endingMultiplier are also in 6 decimals
-			 * Need to divide by PERCENTAGE_DIVISOR twice
-			 */
-			uint256 networkTokenBonus = bonusPercentage.mul(_purchaseAmount).div(PERCENTAGE_DIVISOR).div(PERCENTAGE_DIVISOR);
-			return networkTokenBonus;
+			uint256 bonusPercentage = (PERCENTAGE_DIVISOR.sub(PERCENTAGE_DIVISOR.mul(temp).div(_totalPrimordialMintable))).mul(_startingMultiplier.sub(_endingMultiplier)).div(PERCENTAGE_DIVISOR);
+			return bonusPercentage;
 		} else {
 			return 0;
 		}
+	}
+
+	/**
+	 * @dev Calculate the bonus amount of network token on a given lot
+	 *		AO Bonus Amount = B% x P
+	 *
+	 * @param _purchaseAmount The amount of primordial token intended to be purchased
+	 * @param _totalPrimordialMintable Total Primordial token intable
+	 * @param _totalPrimordialMinted Total Primordial token minted so far
+	 * @param _startingMultiplier The starting Network token bonus multiplier
+	 * @param _endingMultiplier The ending Network token bonus multiplier
+	 * @return The bonus percentage
+	 */
+	function calculateNetworkTokenBonusAmount(uint256 _purchaseAmount, uint256 _totalPrimordialMintable, uint256 _totalPrimordialMinted, uint256 _startingMultiplier, uint256 _endingMultiplier) public pure returns (uint256) {
+		uint256 bonusPercentage = calculateNetworkTokenBonusPercentage(_purchaseAmount, _totalPrimordialMintable, _totalPrimordialMinted, _startingMultiplier, _endingMultiplier);
+		/**
+		 * Since bonusPercentage is in PERCENTAGE_DIVISOR format, need to divide it with PERCENTAGE DIVISOR
+		 * when calculating the network token bonus amount
+		 */
+		uint256 networkTokenBonus = bonusPercentage.mul(_purchaseAmount).div(PERCENTAGE_DIVISOR);
+		return networkTokenBonus;
 	}
 }
