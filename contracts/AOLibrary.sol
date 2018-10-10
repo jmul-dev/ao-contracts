@@ -11,6 +11,9 @@ import './AOEarning.sol';
 library AOLibrary {
 	using SafeMath for uint256;
 
+	uint256 constant public MULTIPLIER_DIVISOR = 10 ** 6; // 1000000 = 1
+	uint256 constant public PERCENTAGE_DIVISOR = 10 ** 6; // 100% = 1000000
+
 	/**
 	 * @dev Check whether the network token and/or primordial token is adequate to pay for the filesize
 	 * @param _treasuryAddress AO treasury contract address
@@ -114,20 +117,20 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Calculate the new weighted index when adding `_additionalPrimordialAmount` at `_additionalWeightedIdex` to the current `_currentPrimordialBalance` at `_currentWeightedIndex`
-	 * @param _currentWeightedIndex Account's current weighted index
+	 * @dev Calculate the new weighted multiplier when adding `_additionalPrimordialAmount` at `_additionalWeightedMultiplier` to the current `_currentPrimordialBalance` at `_currentWeightedMultiplier`
+	 * @param _currentWeightedMultiplier Account's current weighted multiplier
 	 * @param _currentPrimordialBalance Account's current primordial token balance
-	 * @param _additionalWeightedIndex The weighted index to be added
+	 * @param _additionalWeightedMultiplier The weighted multiplier to be added
 	 * @param _additionalPrimordialAmount The primordial token amount to be added
-	 * @return the new primordial weighted index
+	 * @return the new primordial weighted multiplier
 	 */
-	function calculateWeightedIndex(uint256 _currentWeightedIndex, uint256 _currentPrimordialBalance, uint256 _additionalWeightedIndex, uint256 _additionalPrimordialAmount) public pure returns (uint256) {
-		if (_currentWeightedIndex > 0) {
-			uint256 _totalWeightedTokens = (_currentWeightedIndex.mul(_currentPrimordialBalance)).add(_additionalWeightedIndex.mul(_additionalPrimordialAmount));
+	function calculateWeightedMultiplier(uint256 _currentWeightedMultiplier, uint256 _currentPrimordialBalance, uint256 _additionalWeightedMultiplier, uint256 _additionalPrimordialAmount) public pure returns (uint256) {
+		if (_currentWeightedMultiplier > 0) {
+			uint256 _totalWeightedTokens = (_currentWeightedMultiplier.mul(_currentPrimordialBalance)).add(_additionalWeightedMultiplier.mul(_additionalPrimordialAmount));
 			uint256 _totalTokens = _currentPrimordialBalance.add(_additionalPrimordialAmount);
 			return _totalWeightedTokens.div(_totalTokens);
 		} else {
-			return _additionalWeightedIndex;
+			return _additionalWeightedMultiplier;
 		}
 	}
 
@@ -162,18 +165,18 @@ library AOLibrary {
 	 * @param _stakeId The ID of the staked content
 	 * @return the network base token amount staked for this content
 	 * @return the primordial token amount staked for this content
-	 * @return the primordial weighted index of the staked content
+	 * @return the primordial weighted multiplier of the staked content
 	 * @return the total earning from staking this content
 	 * @return the total earning from hosting this content
 	 * @return the total foundation earning of this content
 	 */
 	function getContentMetrics(address _contentAddress, address _earningAddress, bytes32 _stakeId) public view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
-		(uint256 networkAmount, uint256 primordialAmount, uint256 primordialWeightedIndex) = getStakingMetrics(_contentAddress, _stakeId);
+		(uint256 networkAmount, uint256 primordialAmount, uint256 primordialWeightedMultiplier) = getStakingMetrics(_contentAddress, _stakeId);
 		(uint256 totalStakeEarning, uint256 totalHostEarning, uint256 totalFoundationEarning) = getEarningMetrics(_earningAddress, _stakeId);
 		return (
 			networkAmount,
 			primordialAmount,
-			primordialWeightedIndex,
+			primordialWeightedMultiplier,
 			totalStakeEarning,
 			totalHostEarning,
 			totalFoundationEarning
@@ -186,14 +189,14 @@ library AOLibrary {
 	 * @param _stakeId The ID of the staked content
 	 * @return the network base token amount staked for this content
 	 * @return the primordial token amount staked for this content
-	 * @return the primordial weighted index of the staked content
+	 * @return the primordial weighted multiplier of the staked content
 	 */
 	function getStakingMetrics(address _contentAddress, bytes32 _stakeId) public view returns (uint256, uint256, uint256) {
-		(,, uint256 networkAmount, uint256 primordialAmount, uint256 primordialWeightedIndex,,,,) = AOContent(_contentAddress).stakedContentById(_stakeId);
+		(,, uint256 networkAmount, uint256 primordialAmount, uint256 primordialWeightedMultiplier,,,,) = AOContent(_contentAddress).stakedContentById(_stakeId);
 		return (
 			networkAmount,
 			primordialAmount,
-			primordialWeightedIndex
+			primordialWeightedMultiplier
 		);
 	}
 
@@ -211,5 +214,93 @@ library AOLibrary {
 			AOEarning(_earningAddress).totalStakedContentHostEarning(_stakeId),
 			AOEarning(_earningAddress).totalStakedContentFoundationEarning(_stakeId)
 		);
+	}
+
+	/**
+	 * @dev Calculate the primordial token multiplier on a given lot
+	 *		Total Primordial Mintable = T
+	 *		Total Primordial Minted = M
+	 *		Starting Multiplier = S
+	 *		Ending Multiplier = E
+	 *		To Purchase = P
+	 *		Multiplier for next Lot of Amount = (1 - ((M + P/2) / T)) x (S-E)
+	 *
+	 * @param _purchaseAmount The amount of primordial token intended to be purchased
+	 * @param _totalPrimordialMintable Total Primordial token intable
+	 * @param _totalPrimordialMinted Total Primordial token minted so far
+	 * @param _startingMultiplier The starting multiplier in (10 ** 6)
+	 * @param _endingMultiplier The ending multiplier in (10 ** 6)
+	 * @return The multiplier in (10 ** 6)
+	 */
+	function calculatePrimordialMultiplier(uint256 _purchaseAmount, uint256 _totalPrimordialMintable, uint256 _totalPrimordialMinted, uint256 _startingMultiplier, uint256 _endingMultiplier) public pure returns (uint256) {
+		if (_purchaseAmount > 0 && _purchaseAmount <= _totalPrimordialMintable.sub(_totalPrimordialMinted)) {
+			/**
+			 * Let temp = M + (P/2)
+			 * Multiplier = (1 - (temp / T)) x (S-E)
+			 */
+			uint256 temp = _totalPrimordialMinted.add(_purchaseAmount.div(2));
+
+			/**
+			 * Multiply multiplier with MULTIPLIER_DIVISOR/MULTIPLIER_DIVISOR to account for 6 decimals
+			 * so, Multiplier = (MULTIPLIER_DIVISOR/MULTIPLIER_DIVISOR) * (1 - (temp / T)) * (S-E)
+			 * Multiplier = ((MULTIPLIER_DIVISOR * (1 - (temp / T))) * (S-E)) / MULTIPLIER_DIVISOR
+			 * Multiplier = ((MULTIPLIER_DIVISOR - ((MULTIPLIER_DIVISOR * TEMP) / T)) * (S-E)) / MULTIPLIER_DIVISOR
+			 * Take out the division by MULTIPLIER_DIVISOR for now and include in later calculation
+			 * Multiplier = (MULTIPLIER_DIVISOR - ((MULTIPLIER_DIVISOR * TEMP) / T)) * (S-E)
+			 */
+			uint256 multiplier = (MULTIPLIER_DIVISOR.sub(MULTIPLIER_DIVISOR.mul(temp).div(_totalPrimordialMintable))).mul(_startingMultiplier.sub(_endingMultiplier));
+			/**
+			 * Since _startingMultiplier and _endingMultiplier are in 6 decimals
+			 * Need to divide multiplier by MULTIPLIER_DIVISOR
+			 */
+			return multiplier.div(MULTIPLIER_DIVISOR);
+		} else {
+			return 0;
+		}
+	}
+
+	/**
+	 * @dev Calculate the bonus amount of network token on a given lot
+	 *		Total Primordial Mintable = T
+	 *		Total Primordial Minted = M
+	 *		Starting Network Token Bonus Multiplier = Bs
+	 *		Ending Network Token Bonus Multiplier = Be
+	 *		To Purchase = P
+	 *		AO Bonus % = B% = (1 - ((M + P/2) / T)) x (Bs-Be)
+	 *		AO Bonus Amount = B% x P
+	 *
+	 * @param _purchaseAmount The amount of primordial token intended to be purchased
+	 * @param _totalPrimordialMintable Total Primordial token intable
+	 * @param _totalPrimordialMinted Total Primordial token minted so far
+	 * @param _startingMultiplier The starting Network token bonus multiplier
+	 * @param _endingMultiplier The ending Network token bonus multiplier
+	 * @return The bonus Network token amount
+	 */
+	function calculateBonusNetworkTokenAmount(uint256 _purchaseAmount, uint256 _totalPrimordialMintable, uint256 _totalPrimordialMinted, uint256 _startingMultiplier, uint256 _endingMultiplier) public pure returns (uint256) {
+		if (_purchaseAmount > 0 && _purchaseAmount <= _totalPrimordialMintable.sub(_totalPrimordialMinted)) {
+			/**
+			 * Let temp = M + (P/2)
+			 * B% = (1 - (temp / T)) x (Bs-Be)
+			 */
+			uint256 temp = _totalPrimordialMinted.add(_purchaseAmount.div(2));
+
+			/**
+			 * Multiply B% with PERCENTAGE_DIVISOR/PERCENTAGE_DIVISOR to account for 6 decimals
+			 * so, B% = (PERCENTAGE_DIVISOR/PERCENTAGE_DIVISOR) * (1 - (temp / T)) * (Bs-Be)
+			 * B% = ((PERCENTAGE_DIVISOR * (1 - (temp / T))) * (Bs-Be)) / PERCENTAGE_DIVISOR
+			 * B% = ((PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * TEMP) / T)) * (Bs-Be)) / PERCENTAGE_DIVISOR
+			 * Take out the division by PERCENTAGE_DIVISOR for now and include in later calculation
+			 * B% = (PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * TEMP) / T)) * (Bs-Be)
+			 */
+			uint256 bonusPercentage = (PERCENTAGE_DIVISOR.sub(PERCENTAGE_DIVISOR.mul(temp).div(_totalPrimordialMintable))).mul(_startingMultiplier.sub(_endingMultiplier));
+			/**
+			 * Since bonusPercentage is in 6 decimals, and both _startingMultiplier and _endingMultiplier are also in 6 decimals
+			 * Need to divide by PERCENTAGE_DIVISOR twice
+			 */
+			uint256 bonusNetworkToken = bonusPercentage.mul(_purchaseAmount).div(PERCENTAGE_DIVISOR).div(PERCENTAGE_DIVISOR);
+			return bonusNetworkToken;
+		} else {
+			return 0;
+		}
 	}
 }
