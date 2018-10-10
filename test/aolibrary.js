@@ -19,8 +19,8 @@ contract("AOLibrary", function(accounts) {
 		assert.equal(multiplier.toNumber(), 31725000, "Library returns incorrect multiplier for a given lot");
 	});
 
-	it("calculateBonusNetworkTokenAmount() - should calculate and return the correct bonus network token on a given lot", async function() {
-		var bonusAmount = await library.calculateBonusNetworkTokenAmount(50, 1000, 300, 1000000, 250000);
-		assert.equal(bonusAmount.toNumber(), 25, "Library returns incorrect bonus network token amount for a given lot");
+	it("calculateNetworkTokenBonusAmount() - should calculate and return the correct network token bonus amount on a given lot", async function() {
+		var bonusAmount = await library.calculateNetworkTokenBonusAmount(50, 1000, 300, 1000000, 250000);
+		assert.equal(bonusAmount.toNumber(), 25, "Library returns incorrect network token bonus amount for a given lot");
 	});
 });

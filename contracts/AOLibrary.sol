@@ -274,9 +274,9 @@ library AOLibrary {
 	 * @param _totalPrimordialMinted Total Primordial token minted so far
 	 * @param _startingMultiplier The starting Network token bonus multiplier
 	 * @param _endingMultiplier The ending Network token bonus multiplier
-	 * @return The bonus Network token amount
+	 * @return The Network token bonus amount
 	 */
-	function calculateBonusNetworkTokenAmount(uint256 _purchaseAmount, uint256 _totalPrimordialMintable, uint256 _totalPrimordialMinted, uint256 _startingMultiplier, uint256 _endingMultiplier) public pure returns (uint256) {
+	function calculateNetworkTokenBonusAmount(uint256 _purchaseAmount, uint256 _totalPrimordialMintable, uint256 _totalPrimordialMinted, uint256 _startingMultiplier, uint256 _endingMultiplier) public pure returns (uint256) {
 		if (_purchaseAmount > 0 && _purchaseAmount <= _totalPrimordialMintable.sub(_totalPrimordialMinted)) {
 			/**
 			 * Let temp = M + (P/2)
@@ -297,8 +297,8 @@ library AOLibrary {
 			 * Since bonusPercentage is in 6 decimals, and both _startingMultiplier and _endingMultiplier are also in 6 decimals
 			 * Need to divide by PERCENTAGE_DIVISOR twice
 			 */
-			uint256 bonusNetworkToken = bonusPercentage.mul(_purchaseAmount).div(PERCENTAGE_DIVISOR).div(PERCENTAGE_DIVISOR);
-			return bonusNetworkToken;
+			uint256 networkTokenBonus = bonusPercentage.mul(_purchaseAmount).div(PERCENTAGE_DIVISOR).div(PERCENTAGE_DIVISOR);
+			return networkTokenBonus;
 		} else {
 			return 0;
 		}
