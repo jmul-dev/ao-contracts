@@ -12,10 +12,6 @@ import './AOLibrary.sol';
 contract AOToken is developed, TokenERC20 {
 	using SafeMath for uint256;
 
-	// Foundation addresses to receive Primordial/Network Tokens
-	address public foundationAddress1 = 0x5C63644D01Ba385eBAc5bcf2DDc1e6dBC1182b52;
-	address public foundationAddress2 = 0x156C79bf4347D1891da834Ea30662A14177CbF28;
-
 	// To differentiate denomination of AO
 	uint256 public powerOfTen;
 
@@ -133,18 +129,6 @@ contract AOToken is developed, TokenERC20 {
 		require (_startingNetworkTokenBonusMultiplier >= _endingNetworkTokenBonusMultiplier);
 		startingNetworkTokenBonusMultiplier = _startingNetworkTokenBonusMultiplier;
 		endingNetworkTokenBonusMultiplier = _endingNetworkTokenBonusMultiplier;
-	}
-
-	/**
-	 * @dev Set foundation addresses to receive Primordial/Network tokens during network exchange
-	 * @param _foundationAddress1 The first foundation address
-	 * @param _foundationAddress2 The second foundation address
-	 */
-	function setFoundationAddresses(address _foundationAddress1, address _foundationAddress2) public onlyDeveloper {
-		require (_foundationAddress1 != address(0));
-		require (_foundationAddress2 != address(0));
-		foundationAddress1 = _foundationAddress1;
-		foundationAddress2 = _foundationAddress2;
 	}
 
 	/***** NETWORK TOKEN DEVELOPER ONLY METHODS *****/
