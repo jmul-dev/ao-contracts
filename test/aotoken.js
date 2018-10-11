@@ -12,8 +12,7 @@ contract("AOToken", function(accounts) {
 	var aoDevTeam1 = accounts[8];
 	var aoDevTeam2 = accounts[9];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
-	var maxPrimordialSupply;
-	var tokensReservedForFoundation;
+	var totalPrimordialForSale;
 	var multiplierDivisor;
 	var percentageDivisor;
 	var startingMultiplier, endingMultiplier, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier;
@@ -65,20 +64,10 @@ contract("AOToken", function(accounts) {
 				assert.equal(balance.toNumber(), 0, "Contract has incorrect initial supply");
 			});
 		});
-		it("should have max of 1125899906842620 Primordial tokens", function() {
-			return tokenMeta.MAX_PRIMORDIAL_SUPPLY.call().then(function(primordialSupply) {
-				maxPrimordialSupply = primordialSupply;
-				assert.equal(maxPrimordialSupply.toNumber(), 1125899906842620, "Contract has incorrect max primordial supply amount");
-			});
-		});
-		it("should set aside 125899906842620 tokens reserved for Foundation", function() {
-			return tokenMeta.TOKENS_RESERVED_FOR_FOUNDATION.call().then(function(reservedTokens) {
-				tokensReservedForFoundation = reservedTokens;
-				assert.equal(
-					tokensReservedForFoundation.toNumber(),
-					125899906842620,
-					"Contract has incorrect reserved amount for Foundation"
-				);
+		it("should have total of 1125899906842620 Primordial tokens for sale", function() {
+			return tokenMeta.TOTAL_PRIMORDIAL_FOR_SALE.call().then(function(primordialSupply) {
+				totalPrimordialForSale = primordialSupply;
+				assert.equal(totalPrimordialForSale.toNumber(), 1125899906842620, "Contract has incorrect total primordial for sale");
 			});
 		});
 		it("should have the correct multiplier divisor", function() {
@@ -427,6 +416,7 @@ contract("AOToken", function(accounts) {
 	contract("Primordial Token Function Tests", function() {
 		var buyPrimordialToken = async function(amount, account, accountLots) {
 			var totalLotsBefore = await tokenMeta.totalLots();
+			var primordialTotalBoughtBefore = await tokenMeta.primordialTotalBought();
 			var primordialTotalSupplyBefore = await tokenMeta.primordialTotalSupply();
 
 			var accountPrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(account);
@@ -439,30 +429,23 @@ contract("AOToken", function(accounts) {
 			var aoDevTeam2PrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(aoDevTeam2);
 			var aoDevTeam2NetworkBalanceBefore = await tokenMeta.balanceOf(aoDevTeam2);
 
+			var foundationPrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(developer);
+			var foundationNetworkBalanceBefore = await tokenMeta.balanceOf(developer);
+
 			var primordialBuyPrice = await tokenMeta.primordialBuyPrice();
 			var tokenAmount = new BigNumber(amount).div(primordialBuyPrice);
 
-			if (primordialTotalSupplyBefore.plus(tokenAmount).gte(maxPrimordialSupply)) {
-				tokenAmount = maxPrimordialSupply.minus(primordialTotalSupplyBefore);
+			if (primordialTotalBoughtBefore.plus(tokenAmount).gte(totalPrimordialForSale)) {
+				tokenAmount = totalPrimordialForSale.minus(primordialTotalBoughtBefore);
 			}
 
 			var bonus = await tokenMeta.calculateMultiplierAndBonus(tokenAmount.toNumber());
 
-			var aoDevTeamTokenAmount = tokenAmount;
-			if (
-				primordialTotalSupplyBefore
-					.plus(tokenAmount)
-					.plus(aoDevTeamTokenAmount)
-					.gte(maxPrimordialSupply)
-			) {
-				aoDevTeamTokenAmount = maxPrimordialSupply.minus(primordialTotalSupplyBefore.plus(tokenAmount));
-			}
-
-			var aoDevTeamMultiplier = startingMultiplier.minus(bonus[0]);
-			var aoDevTeamNetworkTokenBonusAmount = startingNetworkTokenBonusMultiplier
+			var inverseMultiplier = startingMultiplier.minus(bonus[0]);
+			var foundationNetworkTokenBonusAmount = startingNetworkTokenBonusMultiplier
 				.minus(bonus[1])
 				.plus(endingNetworkTokenBonusMultiplier)
-				.mul(aoDevTeamTokenAmount)
+				.mul(tokenAmount)
 				.div(percentageDivisor);
 
 			var canBuy, events;
@@ -503,34 +486,34 @@ contract("AOToken", function(accounts) {
 							aoDevTeam1LotId = _event.args.lotId;
 							assert.equal(
 								_event.args.multiplier.toString(),
-								aoDevTeamMultiplier.toString(),
+								inverseMultiplier.toString(),
 								"aoDevTeam1 Lot Creation has incorrect multiplier"
 							);
 							assert.equal(
 								_event.args.primordialTokenAmount.toString(),
-								aoDevTeamTokenAmount.div(2).toString(),
+								new BigNumber(tokenAmount).div(2).toString(),
 								"aoDevTeam1 Lot Creation has incorrect tokenAmount"
 							);
 							assert.equal(
 								_event.args.networkTokenBonusAmount.toString(),
-								aoDevTeamNetworkTokenBonusAmount.div(2).toString(),
+								new BigNumber(foundationNetworkTokenBonusAmount).div(2).toString(),
 								"aoDevTeam1 Lot Creation has incorrect networkTokenBonusAmount"
 							);
 						} else if (_event.args.lotOwner == aoDevTeam2) {
 							aoDevTeam2LotId = _event.args.lotId;
 							assert.equal(
 								_event.args.multiplier.toString(),
-								aoDevTeamMultiplier.toString(),
+								inverseMultiplier.toString(),
 								"aoDevTeam2 Lot Creation has incorrect multiplier"
 							);
 							assert.equal(
 								_event.args.primordialTokenAmount.toString(),
-								aoDevTeamTokenAmount.minus(aoDevTeamTokenAmount.div(2)).toString(),
+								new BigNumber(tokenAmount).div(2).toString(),
 								"aoDevTeam2 Lot Creation has incorrect tokenAmount"
 							);
 							assert.equal(
 								_event.args.networkTokenBonusAmount.toString(),
-								aoDevTeamNetworkTokenBonusAmount.minus(aoDevTeamNetworkTokenBonusAmount.div(2)).toString(),
+								new BigNumber(foundationNetworkTokenBonusAmount).div(2).toString(),
 								"aoDevTeam2 Lot Creation has incorrect networkTokenBonusAmount"
 							);
 						}
@@ -541,6 +524,7 @@ contract("AOToken", function(accounts) {
 			}
 
 			var totalLotsAfter = await tokenMeta.totalLots();
+			var primordialTotalBoughtAfter = await tokenMeta.primordialTotalBought();
 			var primordialTotalSupplyAfter = await tokenMeta.primordialTotalSupply();
 
 			var accountPrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(account);
@@ -553,16 +537,21 @@ contract("AOToken", function(accounts) {
 			var aoDevTeam2PrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(aoDevTeam2);
 			var aoDevTeam2NetworkBalanceAfter = await tokenMeta.balanceOf(aoDevTeam2);
 
-			if (aoDevTeamTokenAmount.gt(0)) {
-				assert.equal(totalLotsAfter.toString(), totalLotsBefore.plus(3).toString(), "Contract has incorrect totalLots");
-			} else {
-				assert.equal(totalLotsAfter.toString(), totalLotsBefore.plus(1).toString(), "Contract has incorrect totalLots");
-			}
+			var foundationPrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(developer);
+			var foundationNetworkBalanceAfter = await tokenMeta.balanceOf(developer);
+
+			assert.equal(totalLotsAfter.toString(), totalLotsBefore.plus(3).toString(), "Contract has incorrect totalLots");
+			assert.equal(
+				primordialTotalBoughtAfter.toString(),
+				primordialTotalBoughtBefore.plus(tokenAmount).toString(),
+				"Contract has incorrect primordialTotalBought"
+			);
 			assert.equal(
 				primordialTotalSupplyAfter.toString(),
 				primordialTotalSupplyBefore
 					.plus(tokenAmount)
-					.plus(aoDevTeamTokenAmount)
+					.plus(new BigNumber(tokenAmount).div(2))
+					.plus(new BigNumber(tokenAmount).div(2))
 					.toString(),
 				"Contract has incorrect primordialTotalSupply"
 			);
@@ -581,26 +570,35 @@ contract("AOToken", function(accounts) {
 
 			assert.equal(
 				aoDevTeam1PrimordialBalanceAfter.toString(),
-				aoDevTeam1PrimordialBalanceBefore.plus(aoDevTeamTokenAmount.div(2)).toString(),
+				aoDevTeam1PrimordialBalanceBefore.plus(new BigNumber(tokenAmount).div(2)).toString(),
 				"aoDevTeam1 has incorrect primordial balance"
 			);
 			assert.equal(
 				aoDevTeam1NetworkBalanceAfter.toString(),
-				aoDevTeam1NetworkBalanceBefore.plus(aoDevTeamNetworkTokenBonusAmount.div(2)).toString(),
+				aoDevTeam1NetworkBalanceBefore.plus(new BigNumber(foundationNetworkTokenBonusAmount).div(2)).toString(),
 				"aoDevTeam1 has incorrect network balance"
 			);
 
 			assert.equal(
 				aoDevTeam2PrimordialBalanceAfter.toString(),
-				aoDevTeam2PrimordialBalanceBefore.plus(aoDevTeamTokenAmount.minus(aoDevTeamTokenAmount.div(2))).toString(),
+				aoDevTeam2PrimordialBalanceBefore.plus(new BigNumber(tokenAmount).div(2)).toString(),
 				"aoDevTeam2 has incorrect primordial balance"
 			);
 			assert.equal(
 				aoDevTeam2NetworkBalanceAfter.toString(),
-				aoDevTeam2NetworkBalanceBefore
-					.plus(aoDevTeamNetworkTokenBonusAmount.minus(aoDevTeamNetworkTokenBonusAmount.div(2)))
-					.toString(),
+				aoDevTeam2NetworkBalanceBefore.plus(new BigNumber(foundationNetworkTokenBonusAmount).div(2)).toString(),
 				"aoDevTeam2 has incorrect network balance"
+			);
+
+			assert.equal(
+				foundationPrimordialBalanceAfter.toString(),
+				foundationPrimordialBalanceBefore.toString(),
+				"Foundation has incorrect primordial balance"
+			);
+			assert.equal(
+				foundationNetworkBalanceAfter.toString(),
+				foundationNetworkBalanceBefore.plus(foundationNetworkTokenBonusAmount).toString(),
+				"Foundation has incorrect network balance"
 			);
 
 			// Make sure the Lot is stored correctly
@@ -609,23 +607,15 @@ contract("AOToken", function(accounts) {
 			assert.equal(accountLot[1].toString(), bonus[0].toString(), "Lot has incorrect multiplier");
 			assert.equal(accountLot[2].toString(), tokenAmount.toString(), "Lot has incorrect tokenAmount");
 
-			if (aoDevTeam1LotId) {
-				var aoDevTeam1Lot = await tokenMeta.lotById(aoDevTeam1LotId);
-				assert.equal(aoDevTeam1Lot[0], aoDevTeam1LotId, "Lot has incorrect ID");
-				assert.equal(aoDevTeam1Lot[1].toString(), aoDevTeamMultiplier.toString(), "Lot has incorrect multiplier");
-				assert.equal(aoDevTeam1Lot[2].toString(), aoDevTeamTokenAmount.div(2).toString(), "Lot has incorrect tokenAmount");
-			}
+			var aoDevTeam1Lot = await tokenMeta.lotById(aoDevTeam1LotId);
+			assert.equal(aoDevTeam1Lot[0], aoDevTeam1LotId, "Lot has incorrect ID");
+			assert.equal(aoDevTeam1Lot[1].toString(), inverseMultiplier.toString(), "Lot has incorrect multiplier");
+			assert.equal(aoDevTeam1Lot[2].toString(), new BigNumber(tokenAmount).div(2).toString(), "Lot has incorrect tokenAmount");
 
-			if (aoDevTeam2LotId) {
-				var aoDevTeam2Lot = await tokenMeta.lotById(aoDevTeam2LotId);
-				assert.equal(aoDevTeam2Lot[0], aoDevTeam2LotId, "Lot has incorrect ID");
-				assert.equal(aoDevTeam2Lot[1].toString(), aoDevTeamMultiplier.toString(), "Lot has incorrect multiplier");
-				assert.equal(
-					aoDevTeam2Lot[2].toString(),
-					aoDevTeamTokenAmount.minus(aoDevTeamTokenAmount.div(2)).toString(),
-					"Lot has incorrect tokenAmount"
-				);
-			}
+			var aoDevTeam2Lot = await tokenMeta.lotById(aoDevTeam2LotId);
+			assert.equal(aoDevTeam2Lot[0], aoDevTeam2LotId, "Lot has incorrect ID");
+			assert.equal(aoDevTeam2Lot[1].toString(), inverseMultiplier.toString(), "Lot has incorrect multiplier");
+			assert.equal(aoDevTeam2Lot[2].toString(), new BigNumber(tokenAmount).div(2).toString(), "Lot has incorrect tokenAmount");
 
 			accountLots.push(accountLot);
 
@@ -637,6 +627,12 @@ contract("AOToken", function(accounts) {
 				newWeightedMultiplier.toString(),
 				"Account has incorrect weighted multiplier"
 			);
+
+			// Check max multiplier for the account
+			// should be the same as multiplier from account's lot #1
+			var maxMultiplier = await tokenMeta.maxMultiplierByAddress(account);
+			assert.equal(maxMultiplier.toString(), accountLots[0][1].toString(), "Account has incorrect maxMultiplier");
+
 			return accountLotId;
 		};
 
@@ -661,116 +657,6 @@ contract("AOToken", function(accounts) {
 			assert.equal(primordialSellPrice.toNumber(), 100, "Incorrect Primordial sell price");
 			assert.equal(primordialBuyPrice.toNumber(), 100, "Incorrect Primordial buy price");
 		});
-		/*
-		it("only developer can reserve Primordial tokens for the Foundation", async function() {
-			var canReserveForFoundation;
-			var foundationReserved = await tokenMeta.foundationReserved();
-			var totalLots = await tokenMeta.totalLots();
-			var lotIndex = await tokenMeta.lotIndex();
-			var developerPrimordialBalance = await tokenMeta.primordialBalanceOf(developer);
-			var developerTotalLots = await tokenMeta.totalLotsByAddress(developer);
-			var weightedIndexByAddress = await tokenMeta.weightedIndexByAddress(developer);
-			var primordialTotalSupply = await tokenMeta.primordialTotalSupply();
-			assert.equal(
-				foundationReserved,
-				false,
-				"foundationReserved bit is set incorrectly before the reserve for Foundation transaction is executed"
-			);
-			assert.equal(totalLots.toNumber(), 0, "Total lots is incorrect before reserve for Foundation transaction");
-			assert.equal(lotIndex.toNumber(), 0, "Lot index is incorrect before reserve for Foundation transaction");
-			assert.equal(
-				developerPrimordialBalance.toNumber(),
-				0,
-				"Developer has incorrect Primordial balance before reserve for Foundation transaction"
-			);
-			assert.equal(
-				developerTotalLots.toNumber(),
-				0,
-				"Developer has incorrect total lots amount before reserve for Foundation transaction"
-			);
-			assert.equal(
-				weightedIndexByAddress.toNumber(),
-				0,
-				"Developer has incorrect weighted index before reserve for Foundation transaction"
-			);
-			assert.equal(
-				primordialTotalSupply.toNumber(),
-				0,
-				"Contract has incorrect Primordial total supply before reserve for Foundation transaction"
-			);
-			try {
-				await tokenMeta.reserveForFoundation({ from: account1 });
-				canReserveForFoundation = true;
-			} catch (e) {
-				canReserveForFoundation = false;
-			}
-			assert.notEqual(canReserveForFoundation, true, "Others can reserve Primordial tokens for the Foundation");
-			try {
-				await tokenMeta.reserveForFoundation({ from: developer });
-				canReserveForFoundation = true;
-			} catch (e) {
-				canReserveForFoundation = false;
-			}
-			assert.equal(canReserveForFoundation, true, "Developer can't reserve Primordial tokens for the Foundation");
-			foundationReserved = await tokenMeta.foundationReserved();
-			totalLots = await tokenMeta.totalLots();
-			lotIndex = await tokenMeta.lotIndex();
-			var developerNetworkBalance = await tokenMeta.balanceOf(developer);
-			developerPrimordialBalance = await tokenMeta.primordialBalanceOf(developer);
-			developerTotalLots = await tokenMeta.totalLotsByAddress(developer);
-			weightedIndexByAddress = await tokenMeta.weightedIndexByAddress(developer);
-			primordialTotalSupply = await tokenMeta.primordialTotalSupply();
-			assert.equal(
-				foundationReserved,
-				true,
-				"foundationReserved bit is set incorrectly after the reserve for Foundation transaction is executed"
-			);
-			assert.equal(totalLots.toNumber(), 1, "Total lots is incorrect after reserve for Foundation transaction");
-			assert.equal(lotIndex.toNumber(), 1, "Lot index is incorrect after reserve for Foundation transaction");
-			assert.equal(
-				developerNetworkBalance.toNumber(),
-				tokensReservedForFoundation.toNumber(),
-				"Developer has incorrect network balance after reserve for Foundation transaction"
-			);
-			assert.equal(
-				developerPrimordialBalance.toNumber(),
-				tokensReservedForFoundation.toNumber(),
-				"Developer has incorrect Primordial balance after reserve for Foundation transaction"
-			);
-			assert.equal(
-				developerTotalLots.toNumber(),
-				1,
-				"Developer has incorrect total lots amount after reserve for Foundation transaction"
-			);
-			assert.equal(
-				weightedIndexByAddress.toNumber(),
-				1 * weightedIndexDivisor.toNumber(),
-				"Developer has incorrect weighted index after reserve for Foundation transaction"
-			);
-			assert.equal(
-				primordialTotalSupply.toNumber(),
-				tokensReservedForFoundation.toNumber(),
-				"Contract has incorrect Primordial total supply after reserve for Foundation transaction"
-			);
-			var developerLot = await tokenMeta.lotOfOwnerByIndex(developer, 0);
-			assert.equal(developerLot[1].toNumber(), 1 * weightedIndexDivisor.toNumber(), "Developer lot has incorrect global lot index");
-			assert.equal(
-				developerLot[2].toNumber(),
-				tokensReservedForFoundation.toNumber(),
-				"Developer lot has incorrect Primordial token amount"
-			);
-		});
-		it("can only reserve Primordial tokens for the Foundation once", async function() {
-			var canReserveForFoundation;
-			try {
-				await tokenMeta.reserveForFoundation({ from: developer });
-				canReserveForFoundation = true;
-			} catch (e) {
-				canReserveForFoundation = false;
-			}
-			assert.notEqual(canReserveForFoundation, true, "Developer can reserve Primordial tokens for the Foundation more than once");
-		});
-		*/
 		it("buyPrimordialToken() - buy Primordial tokens from contract by sending ETH", async function() {
 			var canBuy;
 			try {
@@ -786,10 +672,20 @@ contract("AOToken", function(accounts) {
 			await buyPrimordialToken(1000000, account1, account1Lots);
 			await buyPrimordialToken(800000, account1, account1Lots);
 		});
-		it("should NOT allow buy Primordial if max Primordial cap is reached (network exchange has ended)", async function() {
-			var primordialTotalSupply = await tokenMeta.primordialTotalSupply();
-			var remainingAvailablePrimordialTokens = maxPrimordialSupply.minus(primordialTotalSupply);
-			assert.isAbove(remainingAvailablePrimordialTokens.toNumber(), 0, "Contract has incorrect Primordial total supply amount");
+		it("should NOT allow buy Primordial if Total Primordial For Sale cap is reached (network exchange has ended)", async function() {
+			var primordialTotalBought = await tokenMeta.primordialTotalBought();
+			assert.isBelow(
+				primordialTotalBought.toNumber(),
+				totalPrimordialForSale.toNumber(),
+				"Contract has incorrect primordial total bought"
+			);
+
+			var remainingAvailablePrimordialTokens = totalPrimordialForSale.minus(primordialTotalBought);
+			assert.isAbove(
+				remainingAvailablePrimordialTokens.toNumber(),
+				0,
+				"Contract should have remaining available tokens for purchase"
+			);
 
 			// Sending more ETH than we should to check whether or not the user receives the remainder ETH
 			await buyPrimordialToken(web3.toWei(900, "ether"), account2, account2Lots);
@@ -810,7 +706,7 @@ contract("AOToken", function(accounts) {
 			);
 
 			var networkExchangeEnded = await tokenMeta.networkExchangeEnded();
-			assert.equal(networkExchangeEnded, true, "Network exchange is not ended when Primordial max supply is reached");
+			assert.equal(networkExchangeEnded, true, "Network exchange is not ended when total Primordial for sale cap is reached");
 
 			var canBuy;
 			try {

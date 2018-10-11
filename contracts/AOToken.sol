@@ -32,6 +32,7 @@ contract AOToken is developed, TokenERC20 {
 
 	/***** PRIMORDIAL TOKEN VARIABLES *****/
 	uint256 public primordialTotalSupply;
+	uint256 public primordialTotalBought;
 	uint256 public primordialSellPrice;
 	uint256 public primordialBuyPrice;
 	bool public networkExchangeContract;
@@ -55,14 +56,12 @@ contract AOToken is developed, TokenERC20 {
 	uint256 public totalLots;
 
 	// Max supply of 1,125,899,906,842,620 AOTKN
-	uint256 constant public MAX_PRIMORDIAL_SUPPLY = 1125899906842620;
-	// The amount of tokens that we want to reserve for foundation
-	uint256 constant public TOKENS_RESERVED_FOR_FOUNDATION = 125899906842620;
+	uint256 constant public TOTAL_PRIMORDIAL_FOR_SALE = 1125899906842620;
+
 	// Account for 6 decimal points for multiplier
 	uint256 constant public MULTIPLIER_DIVISOR = 10 ** 6; // 1000000 = 1
 	uint256 constant public PERCENTAGE_DIVISOR = 10 ** 6; // 100% = 1000000
 
-	bool public foundationReserved;
 	bool public networkExchangeEnded;
 
 	struct Lot {
@@ -80,6 +79,9 @@ contract AOToken is developed, TokenERC20 {
 
 	// Mapping from owner to his/her current weighted multiplier
 	mapping (address => uint256) internal ownerWeightedMultiplier;
+
+	// Mapping from owner to his/her max multiplier (multiplier of account's first Lot)
+	mapping (address => uint256) internal ownerMaxMultiplier;
 
 	// Event to be broadcasted to public when a lot is created
 	// multiplier value is in 10^6 to account for 6 decimal points
@@ -152,6 +154,7 @@ contract AOToken is developed, TokenERC20 {
 		buyPrice = newBuyPrice;
 	}
 
+	/***** NETWORK TOKEN WHITELISTED ADDRESS ONLY METHODS *****/
 	/**
 	 * @dev Create `mintedAmount` tokens and send it to `target`
 	 * @param target Address to receive the tokens
@@ -258,25 +261,7 @@ contract AOToken is developed, TokenERC20 {
 		primordialBuyPrice = newPrimordialBuyPrice;
 	}
 
-	/**
-	 * @dev Reserve some tokens for the Foundation
-	 */
-	function reserveForFoundation() public onlyDeveloper isNetworkExchange {
-		require (networkExchangeEnded == false);
-		require (foundationReserved == false);
-		require (primordialTotalSupply < MAX_PRIMORDIAL_SUPPLY);
-
-		foundationReserved = true;
-		uint256 tokenAmount = TOKENS_RESERVED_FOR_FOUNDATION;
-
-		if (primordialTotalSupply.add(tokenAmount) >= MAX_PRIMORDIAL_SUPPLY) {
-			tokenAmount = MAX_PRIMORDIAL_SUPPLY.sub(primordialTotalSupply);
-			networkExchangeEnded = true;
-		}
-
-		//_createPrimordialLot(msg.sender, tokenAmount);
-	}
-
+	/***** PRIMORDIAL TOKEN WHITELISTED ADDRESS ONLY METHODS *****/
 	/**
 	 * @dev Stake `_value` Primordial tokens at `_weightedMultiplier ` multiplier on behalf of `_from`
 	 * @param _from The address of the target
@@ -344,41 +329,42 @@ contract AOToken is developed, TokenERC20 {
 	 */
 	function buyPrimordialToken() public payable isNetworkExchange {
 		require (networkExchangeEnded == false);
-		require (primordialTotalSupply < MAX_PRIMORDIAL_SUPPLY);
+		require (primordialTotalBought < TOTAL_PRIMORDIAL_FOR_SALE);
 		require (primordialBuyPrice > 0);
 		require (msg.value > 0);
 
 		// Calculate the amount of tokens
 		uint256 tokenAmount = msg.value.div(primordialBuyPrice);
 
+		// If we need to return ETH to the buyer, in the case
+		// where the buyer sends more ETH than available primordial token to be purchased
 		uint256 remainderEth = 0;
 
-		// Make sure primordialTotalSupply is not overflowing
-		if (primordialTotalSupply.add(tokenAmount) >= MAX_PRIMORDIAL_SUPPLY) {
-			tokenAmount = MAX_PRIMORDIAL_SUPPLY.sub(primordialTotalSupply);
+		// Make sure primordialTotalBought is not overflowing
+		if (primordialTotalBought.add(tokenAmount) >= TOTAL_PRIMORDIAL_FOR_SALE) {
+			tokenAmount = TOTAL_PRIMORDIAL_FOR_SALE.sub(primordialTotalBought);
 			networkExchangeEnded = true;
 			remainderEth = msg.value.sub(tokenAmount.mul(primordialBuyPrice));
 		}
 		require (tokenAmount > 0);
 
+		// Update primordialTotalBought
 		(uint256 multiplier, uint256 networkTokenBonusPercentage, uint256 networkTokenBonusAmount) = calculateMultiplierAndBonus(tokenAmount);
+		primordialTotalBought = primordialTotalBought.add(tokenAmount);
 		_createPrimordialLot(msg.sender, tokenAmount, multiplier, networkTokenBonusAmount);
 
-		// Calculate foundation's portion of Primordial and Network Token Bonus
-
-		// Make sure primordialTotalSupply is not overflowing
-		if (primordialTotalSupply.add(tokenAmount) >= MAX_PRIMORDIAL_SUPPLY) {
-			tokenAmount = MAX_PRIMORDIAL_SUPPLY.sub(primordialTotalSupply);
-			networkExchangeEnded = true;
+		// Calculate Foundation and AO Dev Team's portion of Primordial and Network Token Bonus
+		uint256 inverseMultiplier = startingMultiplier.sub(multiplier); // Inverse of the buyer's multiplier
+		uint256 foundationNetworkTokenBonusAmount = (startingNetworkTokenBonusMultiplier.sub(networkTokenBonusPercentage).add(endingNetworkTokenBonusMultiplier)).mul(tokenAmount).div(PERCENTAGE_DIVISOR);
+		if (aoDevTeam1 != address(0)) {
+			_createPrimordialLot(aoDevTeam1, tokenAmount.div(2), inverseMultiplier, foundationNetworkTokenBonusAmount.div(2));
 		}
-
-		if (tokenAmount > 0) {
-			uint256 foundationMultiplier = startingMultiplier.sub(multiplier);
-			uint256 foundationNetworkTokenBonusAmount = (startingNetworkTokenBonusMultiplier.sub(networkTokenBonusPercentage).add(endingNetworkTokenBonusMultiplier)).mul(tokenAmount).div(PERCENTAGE_DIVISOR);
-			_createPrimordialLot(aoDevTeam1, tokenAmount.div(2), foundationMultiplier, foundationNetworkTokenBonusAmount.div(2));
-			_createPrimordialLot(aoDevTeam2, tokenAmount.sub(tokenAmount.div(2)), foundationMultiplier, foundationNetworkTokenBonusAmount.sub(foundationNetworkTokenBonusAmount.div(2)));
+		if (aoDevTeam2 != address(0)) {
+			_createPrimordialLot(aoDevTeam2, tokenAmount.div(2), inverseMultiplier, foundationNetworkTokenBonusAmount.div(2));
 		}
+		_mintToken(developer, foundationNetworkTokenBonusAmount);
 
+		// Send remainder ETH back to buyer if exist
 		if (remainderEth > 0) {
 			msg.sender.transfer(remainderEth);
 		}
@@ -542,6 +528,15 @@ contract AOToken is developed, TokenERC20 {
 	}
 
 	/**
+	 * @dev Return the max multiplier of an address
+	 * @param _target The address to query
+	 * @return the max multiplier of the address (in 10 ** 6)
+	 */
+	function maxMultiplierByAddress(address _target) public isNetworkExchange view returns (uint256) {
+		return (ownedLots[_target].length > 0) ? ownerMaxMultiplier[_target] : 0;
+	}
+
+	/**
 	 * @dev Calculate the primordial token multiplier and the bonuse network token amount on a given lot
 	 *		when someone purchases primordial token during network exchange
 	 * @param _purchaseAmount The amount of primordial token intended to be purchased
@@ -551,9 +546,9 @@ contract AOToken is developed, TokenERC20 {
 	 */
 	function calculateMultiplierAndBonus(uint256 _purchaseAmount) public isNetworkExchange view returns (uint256, uint256, uint256) {
 		return (
-			AOLibrary.calculatePrimordialMultiplier(_purchaseAmount, MAX_PRIMORDIAL_SUPPLY, primordialTotalSupply, startingMultiplier, endingMultiplier),
-			AOLibrary.calculateNetworkTokenBonusPercentage(_purchaseAmount, MAX_PRIMORDIAL_SUPPLY, primordialTotalSupply, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier),
-			AOLibrary.calculateNetworkTokenBonusAmount(_purchaseAmount, MAX_PRIMORDIAL_SUPPLY, primordialTotalSupply, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier)
+			AOLibrary.calculatePrimordialMultiplier(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingMultiplier, endingMultiplier),
+			AOLibrary.calculateNetworkTokenBonusPercentage(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier),
+			AOLibrary.calculateNetworkTokenBonusAmount(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier)
 		);
 	}
 
@@ -680,8 +675,6 @@ contract AOToken is developed, TokenERC20 {
 	 * @param _networkTokenBonusAmount The network token bonus amount
 	 */
 	function _createPrimordialLot(address _account, uint256 _primordialTokenAmount, uint256 _multiplier, uint256 _networkTokenBonusAmount) internal {
-		require (_account != address(0));
-
 		totalLots++;
 
 		// Generate lotId
@@ -697,12 +690,12 @@ contract AOToken is developed, TokenERC20 {
 		lot.tokenAmount = _primordialTokenAmount;
 		ownedLots[_account].push(lotId);
 		ownerWeightedMultiplier[_account] = AOLibrary.calculateWeightedMultiplier(ownerWeightedMultiplier[_account], primordialBalanceOf[_account], lot.multiplier, lot.tokenAmount);
-		require (_mintPrimordialToken(_account, _primordialTokenAmount));
-
-		// If there is network token bonus, mint them to the account
-		if (_networkTokenBonusAmount > 0) {
-			_mintToken(_account, _networkTokenBonusAmount);
+		// If this is the first lot, set this as the max multiplier of the account
+		if (ownedLots[_account].length == 1) {
+			ownerMaxMultiplier[_account] = lot.multiplier;
 		}
+		_mintPrimordialToken(_account, lot.tokenAmount);
+		_mintToken(_account, _networkTokenBonusAmount);
 
 		emit LotCreation(lot.lotOwner, lot.lotId, lot.multiplier, lot.tokenAmount, _networkTokenBonusAmount);
 	}
@@ -711,14 +704,12 @@ contract AOToken is developed, TokenERC20 {
 	 * @dev Create `mintedAmount` Primordial tokens and send it to `target`
 	 * @param target Address to receive the Primordial tokens
 	 * @param mintedAmount The amount of Primordial tokens it will receive
-	 * @return true on success
 	 */
-	function _mintPrimordialToken(address target, uint256 mintedAmount) internal returns (bool) {
+	function _mintPrimordialToken(address target, uint256 mintedAmount) internal {
 		primordialBalanceOf[target] = primordialBalanceOf[target].add(mintedAmount);
 		primordialTotalSupply = primordialTotalSupply.add(mintedAmount);
 		emit PrimordialTransfer(0, this, mintedAmount);
 		emit PrimordialTransfer(this, target, mintedAmount);
-		return true;
 	}
 
 	/**
