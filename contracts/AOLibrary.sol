@@ -244,9 +244,9 @@ library AOLibrary {
 			 * Multiply multiplier with MULTIPLIER_DIVISOR/MULTIPLIER_DIVISOR to account for 6 decimals
 			 * so, Multiplier = (MULTIPLIER_DIVISOR/MULTIPLIER_DIVISOR) * (1 - (temp / T)) * (S-E)
 			 * Multiplier = ((MULTIPLIER_DIVISOR * (1 - (temp / T))) * (S-E)) / MULTIPLIER_DIVISOR
-			 * Multiplier = ((MULTIPLIER_DIVISOR - ((MULTIPLIER_DIVISOR * TEMP) / T)) * (S-E)) / MULTIPLIER_DIVISOR
+			 * Multiplier = ((MULTIPLIER_DIVISOR - ((MULTIPLIER_DIVISOR * temp) / T)) * (S-E)) / MULTIPLIER_DIVISOR
 			 * Take out the division by MULTIPLIER_DIVISOR for now and include in later calculation
-			 * Multiplier = (MULTIPLIER_DIVISOR - ((MULTIPLIER_DIVISOR * TEMP) / T)) * (S-E)
+			 * Multiplier = (MULTIPLIER_DIVISOR - ((MULTIPLIER_DIVISOR * temp) / T)) * (S-E)
 			 */
 			uint256 multiplier = (MULTIPLIER_DIVISOR.sub(MULTIPLIER_DIVISOR.mul(temp).div(_totalPrimordialMintable))).mul(_startingMultiplier.sub(_endingMultiplier));
 			/**
@@ -287,11 +287,11 @@ library AOLibrary {
 			 * Multiply B% with PERCENTAGE_DIVISOR/PERCENTAGE_DIVISOR to account for 6 decimals
 			 * so, B% = (PERCENTAGE_DIVISOR/PERCENTAGE_DIVISOR) * (1 - (temp / T)) * (Bs-Be)
 			 * B% = ((PERCENTAGE_DIVISOR * (1 - (temp / T))) * (Bs-Be)) / PERCENTAGE_DIVISOR
-			 * B% = ((PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * TEMP) / T)) * (Bs-Be)) / PERCENTAGE_DIVISOR
+			 * B% = ((PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * temp) / T)) * (Bs-Be)) / PERCENTAGE_DIVISOR
 			 * Take out the division by PERCENTAGE_DIVISOR for now and include in later calculation
-			 * B% = (PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * TEMP) / T)) * (Bs-Be)
+			 * B% = (PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * temp) / T)) * (Bs-Be)
 			 * But since Bs and Be are in 6 decimals, need to divide by PERCENTAGE_DIVISOR
-			 * B% = (PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * TEMP) / T)) * (Bs-Be) / PERCENTAGE_DIVISOR
+			 * B% = (PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * temp) / T)) * (Bs-Be) / PERCENTAGE_DIVISOR
 			 */
 			uint256 bonusPercentage = (PERCENTAGE_DIVISOR.sub(PERCENTAGE_DIVISOR.mul(temp).div(_totalPrimordialMintable))).mul(_startingMultiplier.sub(_endingMultiplier)).div(PERCENTAGE_DIVISOR);
 			return bonusPercentage;
@@ -339,7 +339,7 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Calculate the new multiplier after burn
+	 * @dev Calculate the new multiplier after burning primordial token
 	 *		_primordialBalance = P
 	 *		_currentWeightedMultiplier = M
 	 *		_amountToBurn = B
@@ -353,5 +353,22 @@ library AOLibrary {
 	 */
 	function calculateMultiplierAfterBurn(uint256 _primordialBalance, uint256 _currentWeightedMultiplier, uint256 _amountToBurn) public pure returns (uint256) {
 		return _primordialBalance.mul(_currentWeightedMultiplier).div(_primordialBalance.sub(_amountToBurn));
+	}
+
+	/**
+	 * @dev Calculate the new multiplier after converting network token to primordial token
+	 *		_primordialBalance = P
+	 *		_currentWeightedMultiplier = M
+	 *		_amountToConvert = C
+	 *		_newMultiplier = E
+	 *		E = (P x M) / (P + C)
+	 *
+	 * @param _primordialBalance Account's primordial token balance
+	 * @param _currentWeightedMultiplier Account's current weighted multiplier
+	 * @param _amountToConvert The amount of network token to convert
+	 * @return The new multiplier
+	 */
+	function calculateMultiplierAfterConversion(uint256 _primordialBalance, uint256 _currentWeightedMultiplier, uint256 _amountToConvert) public pure returns (uint256) {
+		return _primordialBalance.mul(_currentWeightedMultiplier).div(_primordialBalance.add(_amountToConvert));
 	}
 }
