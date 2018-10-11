@@ -3,9 +3,9 @@ pragma solidity ^0.4.24;
 contract developed {
 	address public developer;
 
-	// Foundation addresses to receive Primordial/Network Tokens
-	address public foundationAddress1 = 0x5C63644D01Ba385eBAc5bcf2DDc1e6dBC1182b52;
-	address public foundationAddress2 = 0x156C79bf4347D1891da834Ea30662A14177CbF28;
+	// AO Dev Team addresses to receive Primordial/Network Tokens
+	address public aoDevTeam1 = 0x5C63644D01Ba385eBAc5bcf2DDc1e6dBC1182b52;
+	address public aoDevTeam2 = 0x156C79bf4347D1891da834Ea30662A14177CbF28;
 
 	// Check whether an address is whitelisted and granted access to transact
 	// on behalf of others
@@ -43,14 +43,12 @@ contract developed {
 	}
 
 	/**
-	 * @dev Set foundation addresses to receive Primordial/Network tokens during network exchange
-	 * @param _foundationAddress1 The first foundation address
-	 * @param _foundationAddress2 The second foundation address
+	 * @dev Set AO Dev team addresses to receive Primordial/Network tokens during network exchange
+	 * @param _aoDevTeam1 The first AO dev team address
+	 * @param _aoDevTeam2 The second AO dev team address
 	 */
-	function setFoundationAddresses(address _foundationAddress1, address _foundationAddress2) public onlyDeveloper {
-		require (_foundationAddress1 != address(0));
-		require (_foundationAddress2 != address(0));
-		foundationAddress1 = _foundationAddress1;
-		foundationAddress2 = _foundationAddress2;
+	function setAODevTeamAddresses(address _aoDevTeam1, address _aoDevTeam2) public onlyDeveloper {
+		aoDevTeam1 = _aoDevTeam1;
+		aoDevTeam2 = _aoDevTeam2;
 	}
 }

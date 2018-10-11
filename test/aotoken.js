@@ -9,8 +9,8 @@ contract("AOToken", function(accounts) {
 	var account2 = accounts[2];
 	var account3 = accounts[3];
 	var whitelistedAccount = accounts[4];
-	var foundationAddress1 = accounts[8];
-	var foundationAddress2 = accounts[9];
+	var aoDevTeam1 = accounts[8];
+	var aoDevTeam2 = accounts[9];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 	var maxPrimordialSupply;
 	var tokensReservedForFoundation;
@@ -96,13 +96,13 @@ contract("AOToken", function(accounts) {
 			percentageDivisor = await tokenMeta.PERCENTAGE_DIVISOR();
 			assert.equal(percentageDivisor.toNumber(), 10 ** 6, "Contract has incorrect percentage divisor");
 		});
-		it("should have the correct foundation 1 address", async function() {
-			var foundationAddress = await tokenMeta.foundationAddress1();
-			assert.equal(foundationAddress, foundationAddress1, "Contract has incorrect foundationAddress1");
+		it("should have the correct AO Dev team 1 address", async function() {
+			var aoDevTeam = await tokenMeta.aoDevTeam1();
+			assert.equal(aoDevTeam, aoDevTeam1, "Contract has incorrect aoDevTeam1");
 		});
-		it("should have the correct foundation 2 address", async function() {
-			var foundationAddress = await tokenMeta.foundationAddress2();
-			assert.equal(foundationAddress, foundationAddress2, "Contract has incorrect foundationAddress2");
+		it("should have the correct AO Dev team 2 address", async function() {
+			var aoDevTeam = await tokenMeta.aoDevTeam2();
+			assert.equal(aoDevTeam, aoDevTeam2, "Contract has incorrect aoDevTeam2");
 		});
 		it("should have the correct starting multiplier for calculating primordial multiplier", async function() {
 			startingMultiplier = await tokenMeta.startingMultiplier();
@@ -204,45 +204,29 @@ contract("AOToken", function(accounts) {
 			assert.equal(_endingNetworkTokenBonusMultiplier.toString(), 500, "Contract has incorrect endingNetworkTokenBonusMultiplier");
 		});
 
-		it("setFoundationAddress() - should update foundation addresses", async function() {
+		it("setAODevTeamAddresses() - should update AO Dev team addresses", async function() {
 			var canSet;
 			try {
-				await tokenMeta.setFoundationAddresses(account2, account3, { from: account1 });
+				await tokenMeta.setAODevTeamAddresses(account2, account3, { from: account1 });
 				canSet = true;
 			} catch (e) {
 				canSet = false;
 			}
-			assert.notEqual(canSet, true, "Non-developer account can set foundation addresses");
+			assert.notEqual(canSet, true, "Non-developer account can set AO Dev team addresses");
 
 			try {
-				await tokenMeta.setFoundationAddresses(emptyAddress, account3, { from: developer });
+				await tokenMeta.setAODevTeamAddresses(account2, account3, { from: developer });
 				canSet = true;
 			} catch (e) {
 				canSet = false;
 			}
-			assert.notEqual(canSet, true, "Developer account can set empty foundation addresses");
+			assert.equal(canSet, true, "Developer account can't set AO Dev team addresses");
 
-			try {
-				await tokenMeta.setFoundationAddresses(account2, emptyAddress, { from: developer });
-				canSet = true;
-			} catch (e) {
-				canSet = false;
-			}
-			assert.notEqual(canSet, true, "Developer account can set empty foundation addresses");
+			var _aoDevTeam1 = await tokenMeta.aoDevTeam1();
+			assert.equal(_aoDevTeam1, account2, "Contract has incorrect aoDevTeam1");
 
-			try {
-				await tokenMeta.setFoundationAddresses(account2, account3, { from: developer });
-				canSet = true;
-			} catch (e) {
-				canSet = false;
-			}
-			assert.equal(canSet, true, "Developer account can't set foundation addresses");
-
-			var _foundationAddress1 = await tokenMeta.foundationAddress1();
-			assert.equal(_foundationAddress1, account2, "Contract has incorrect foundationAddress1");
-
-			var _foundationAddress2 = await tokenMeta.foundationAddress2();
-			assert.equal(_foundationAddress2, account3, "Contract has incorrect foundationAddress2");
+			var _aoDevTeam2 = await tokenMeta.aoDevTeam2();
+			assert.equal(_aoDevTeam2, account3, "Contract has incorrect aoDevTeam2");
 		});
 	});
 	contract("Network Tokens Function Tests", function() {
@@ -449,11 +433,11 @@ contract("AOToken", function(accounts) {
 			var accountNetworkBalanceBefore = await tokenMeta.balanceOf(account);
 			var accountTotalLotsBefore = await tokenMeta.totalLotsByAddress(account);
 
-			var foundation1PrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(foundationAddress1);
-			var foundation1NetworkBalanceBefore = await tokenMeta.balanceOf(foundationAddress1);
+			var aoDevTeam1PrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(aoDevTeam1);
+			var aoDevTeam1NetworkBalanceBefore = await tokenMeta.balanceOf(aoDevTeam1);
 
-			var foundation2PrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(foundationAddress2);
-			var foundation2NetworkBalanceBefore = await tokenMeta.balanceOf(foundationAddress2);
+			var aoDevTeam2PrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(aoDevTeam2);
+			var aoDevTeam2NetworkBalanceBefore = await tokenMeta.balanceOf(aoDevTeam2);
 
 			var primordialBuyPrice = await tokenMeta.primordialBuyPrice();
 			var tokenAmount = new BigNumber(amount).div(primordialBuyPrice);
@@ -464,21 +448,21 @@ contract("AOToken", function(accounts) {
 
 			var bonus = await tokenMeta.calculateMultiplierAndBonus(tokenAmount.toNumber());
 
-			var foundationTokenAmount = tokenAmount;
+			var aoDevTeamTokenAmount = tokenAmount;
 			if (
 				primordialTotalSupplyBefore
 					.plus(tokenAmount)
-					.plus(foundationTokenAmount)
+					.plus(aoDevTeamTokenAmount)
 					.gte(maxPrimordialSupply)
 			) {
-				foundationTokenAmount = maxPrimordialSupply.minus(primordialTotalSupplyBefore.plus(tokenAmount));
+				aoDevTeamTokenAmount = maxPrimordialSupply.minus(primordialTotalSupplyBefore.plus(tokenAmount));
 			}
 
-			var foundationMultiplier = startingMultiplier.minus(bonus[0]);
-			var foundationNetworkTokenBonusAmount = startingNetworkTokenBonusMultiplier
+			var aoDevTeamMultiplier = startingMultiplier.minus(bonus[0]);
+			var aoDevTeamNetworkTokenBonusAmount = startingNetworkTokenBonusMultiplier
 				.minus(bonus[1])
 				.plus(endingNetworkTokenBonusMultiplier)
-				.mul(foundationTokenAmount)
+				.mul(aoDevTeamTokenAmount)
 				.div(percentageDivisor);
 
 			var canBuy, events;
@@ -493,7 +477,7 @@ contract("AOToken", function(accounts) {
 			assert.equal(canBuy, true, "Account can't buy primordial token");
 			assert.notEqual(events, null, "Contract didn't emit events during buy primordial token transaction");
 
-			var accountLotId, foundation1LotId, foundation2LotId;
+			var accountLotId, aoDevTeam1LotId, aoDevTeam2LotId;
 			for (var i = 0; i < events.length; i++) {
 				var _event = events[i];
 				switch (_event.event) {
@@ -515,39 +499,39 @@ contract("AOToken", function(accounts) {
 								bonus[2].toString(),
 								"Account Lot Creation has incorrect networkTokenBonusAmount"
 							);
-						} else if (_event.args.lotOwner == foundationAddress1) {
-							foundation1LotId = _event.args.lotId;
+						} else if (_event.args.lotOwner == aoDevTeam1) {
+							aoDevTeam1LotId = _event.args.lotId;
 							assert.equal(
 								_event.args.multiplier.toString(),
-								foundationMultiplier.toString(),
-								"Foundation1 Lot Creation has incorrect multiplier"
+								aoDevTeamMultiplier.toString(),
+								"aoDevTeam1 Lot Creation has incorrect multiplier"
 							);
 							assert.equal(
 								_event.args.primordialTokenAmount.toString(),
-								foundationTokenAmount.div(2).toString(),
-								"Foundation1 Lot Creation has incorrect tokenAmount"
+								aoDevTeamTokenAmount.div(2).toString(),
+								"aoDevTeam1 Lot Creation has incorrect tokenAmount"
 							);
 							assert.equal(
 								_event.args.networkTokenBonusAmount.toString(),
-								foundationNetworkTokenBonusAmount.div(2).toString(),
-								"Foundation1 Lot Creation has incorrect networkTokenBonusAmount"
+								aoDevTeamNetworkTokenBonusAmount.div(2).toString(),
+								"aoDevTeam1 Lot Creation has incorrect networkTokenBonusAmount"
 							);
-						} else if (_event.args.lotOwner == foundationAddress2) {
-							foundation2LotId = _event.args.lotId;
+						} else if (_event.args.lotOwner == aoDevTeam2) {
+							aoDevTeam2LotId = _event.args.lotId;
 							assert.equal(
 								_event.args.multiplier.toString(),
-								foundationMultiplier.toString(),
-								"Foundation2 Lot Creation has incorrect multiplier"
+								aoDevTeamMultiplier.toString(),
+								"aoDevTeam2 Lot Creation has incorrect multiplier"
 							);
 							assert.equal(
 								_event.args.primordialTokenAmount.toString(),
-								foundationTokenAmount.minus(foundationTokenAmount.div(2)).toString(),
-								"Foundation2 Lot Creation has incorrect tokenAmount"
+								aoDevTeamTokenAmount.minus(aoDevTeamTokenAmount.div(2)).toString(),
+								"aoDevTeam2 Lot Creation has incorrect tokenAmount"
 							);
 							assert.equal(
 								_event.args.networkTokenBonusAmount.toString(),
-								foundationNetworkTokenBonusAmount.minus(foundationNetworkTokenBonusAmount.div(2)).toString(),
-								"Foundation2 Lot Creation has incorrect networkTokenBonusAmount"
+								aoDevTeamNetworkTokenBonusAmount.minus(aoDevTeamNetworkTokenBonusAmount.div(2)).toString(),
+								"aoDevTeam2 Lot Creation has incorrect networkTokenBonusAmount"
 							);
 						}
 						break;
@@ -563,13 +547,13 @@ contract("AOToken", function(accounts) {
 			var accountNetworkBalanceAfter = await tokenMeta.balanceOf(account);
 			var accountTotalLotsAfter = await tokenMeta.totalLotsByAddress(account);
 
-			var foundation1PrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(foundationAddress1);
-			var foundation1NetworkBalanceAfter = await tokenMeta.balanceOf(foundationAddress1);
+			var aoDevTeam1PrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(aoDevTeam1);
+			var aoDevTeam1NetworkBalanceAfter = await tokenMeta.balanceOf(aoDevTeam1);
 
-			var foundation2PrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(foundationAddress2);
-			var foundation2NetworkBalanceAfter = await tokenMeta.balanceOf(foundationAddress2);
+			var aoDevTeam2PrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(aoDevTeam2);
+			var aoDevTeam2NetworkBalanceAfter = await tokenMeta.balanceOf(aoDevTeam2);
 
-			if (foundationTokenAmount.gt(0)) {
+			if (aoDevTeamTokenAmount.gt(0)) {
 				assert.equal(totalLotsAfter.toString(), totalLotsBefore.plus(3).toString(), "Contract has incorrect totalLots");
 			} else {
 				assert.equal(totalLotsAfter.toString(), totalLotsBefore.plus(1).toString(), "Contract has incorrect totalLots");
@@ -578,7 +562,7 @@ contract("AOToken", function(accounts) {
 				primordialTotalSupplyAfter.toString(),
 				primordialTotalSupplyBefore
 					.plus(tokenAmount)
-					.plus(foundationTokenAmount)
+					.plus(aoDevTeamTokenAmount)
 					.toString(),
 				"Contract has incorrect primordialTotalSupply"
 			);
@@ -596,27 +580,27 @@ contract("AOToken", function(accounts) {
 			assert.equal(accountTotalLotsAfter.toString(), accountTotalLotsBefore.plus(1).toString(), "Account has incorrect totalLots");
 
 			assert.equal(
-				foundation1PrimordialBalanceAfter.toString(),
-				foundation1PrimordialBalanceBefore.plus(foundationTokenAmount.div(2)).toString(),
-				"Foundation1 has incorrect primordial balance"
+				aoDevTeam1PrimordialBalanceAfter.toString(),
+				aoDevTeam1PrimordialBalanceBefore.plus(aoDevTeamTokenAmount.div(2)).toString(),
+				"aoDevTeam1 has incorrect primordial balance"
 			);
 			assert.equal(
-				foundation1NetworkBalanceAfter.toString(),
-				foundation1NetworkBalanceBefore.plus(foundationNetworkTokenBonusAmount.div(2)).toString(),
-				"Foundation1 has incorrect network balance"
+				aoDevTeam1NetworkBalanceAfter.toString(),
+				aoDevTeam1NetworkBalanceBefore.plus(aoDevTeamNetworkTokenBonusAmount.div(2)).toString(),
+				"aoDevTeam1 has incorrect network balance"
 			);
 
 			assert.equal(
-				foundation2PrimordialBalanceAfter.toString(),
-				foundation2PrimordialBalanceBefore.plus(foundationTokenAmount.minus(foundationTokenAmount.div(2))).toString(),
-				"Foundation2 has incorrect primordial balance"
+				aoDevTeam2PrimordialBalanceAfter.toString(),
+				aoDevTeam2PrimordialBalanceBefore.plus(aoDevTeamTokenAmount.minus(aoDevTeamTokenAmount.div(2))).toString(),
+				"aoDevTeam2 has incorrect primordial balance"
 			);
 			assert.equal(
-				foundation2NetworkBalanceAfter.toString(),
-				foundation2NetworkBalanceBefore
-					.plus(foundationNetworkTokenBonusAmount.minus(foundationNetworkTokenBonusAmount.div(2)))
+				aoDevTeam2NetworkBalanceAfter.toString(),
+				aoDevTeam2NetworkBalanceBefore
+					.plus(aoDevTeamNetworkTokenBonusAmount.minus(aoDevTeamNetworkTokenBonusAmount.div(2)))
 					.toString(),
-				"Foundation2 has incorrect network balance"
+				"aoDevTeam2 has incorrect network balance"
 			);
 
 			// Make sure the Lot is stored correctly
@@ -625,20 +609,20 @@ contract("AOToken", function(accounts) {
 			assert.equal(accountLot[1].toString(), bonus[0].toString(), "Lot has incorrect multiplier");
 			assert.equal(accountLot[2].toString(), tokenAmount.toString(), "Lot has incorrect tokenAmount");
 
-			if (foundation1LotId) {
-				var foundation1Lot = await tokenMeta.lotById(foundation1LotId);
-				assert.equal(foundation1Lot[0], foundation1LotId, "Lot has incorrect ID");
-				assert.equal(foundation1Lot[1].toString(), foundationMultiplier.toString(), "Lot has incorrect multiplier");
-				assert.equal(foundation1Lot[2].toString(), foundationTokenAmount.div(2).toString(), "Lot has incorrect tokenAmount");
+			if (aoDevTeam1LotId) {
+				var aoDevTeam1Lot = await tokenMeta.lotById(aoDevTeam1LotId);
+				assert.equal(aoDevTeam1Lot[0], aoDevTeam1LotId, "Lot has incorrect ID");
+				assert.equal(aoDevTeam1Lot[1].toString(), aoDevTeamMultiplier.toString(), "Lot has incorrect multiplier");
+				assert.equal(aoDevTeam1Lot[2].toString(), aoDevTeamTokenAmount.div(2).toString(), "Lot has incorrect tokenAmount");
 			}
 
-			if (foundation2LotId) {
-				var foundation2Lot = await tokenMeta.lotById(foundation2LotId);
-				assert.equal(foundation2Lot[0], foundation2LotId, "Lot has incorrect ID");
-				assert.equal(foundation2Lot[1].toString(), foundationMultiplier.toString(), "Lot has incorrect multiplier");
+			if (aoDevTeam2LotId) {
+				var aoDevTeam2Lot = await tokenMeta.lotById(aoDevTeam2LotId);
+				assert.equal(aoDevTeam2Lot[0], aoDevTeam2LotId, "Lot has incorrect ID");
+				assert.equal(aoDevTeam2Lot[1].toString(), aoDevTeamMultiplier.toString(), "Lot has incorrect multiplier");
 				assert.equal(
-					foundation2Lot[2].toString(),
-					foundationTokenAmount.minus(foundationTokenAmount.div(2)).toString(),
+					aoDevTeam2Lot[2].toString(),
+					aoDevTeamTokenAmount.minus(aoDevTeamTokenAmount.div(2)).toString(),
 					"Lot has incorrect tokenAmount"
 				);
 			}

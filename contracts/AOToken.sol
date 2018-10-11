@@ -375,8 +375,8 @@ contract AOToken is developed, TokenERC20 {
 		if (tokenAmount > 0) {
 			uint256 foundationMultiplier = startingMultiplier.sub(multiplier);
 			uint256 foundationNetworkTokenBonusAmount = (startingNetworkTokenBonusMultiplier.sub(networkTokenBonusPercentage).add(endingNetworkTokenBonusMultiplier)).mul(tokenAmount).div(PERCENTAGE_DIVISOR);
-			_createPrimordialLot(foundationAddress1, tokenAmount.div(2), foundationMultiplier, foundationNetworkTokenBonusAmount.div(2));
-			_createPrimordialLot(foundationAddress2, tokenAmount.sub(tokenAmount.div(2)), foundationMultiplier, foundationNetworkTokenBonusAmount.sub(foundationNetworkTokenBonusAmount.div(2)));
+			_createPrimordialLot(aoDevTeam1, tokenAmount.div(2), foundationMultiplier, foundationNetworkTokenBonusAmount.div(2));
+			_createPrimordialLot(aoDevTeam2, tokenAmount.sub(tokenAmount.div(2)), foundationMultiplier, foundationNetworkTokenBonusAmount.sub(foundationNetworkTokenBonusAmount.div(2)));
 		}
 
 		if (remainderEth > 0) {
