@@ -54,8 +54,10 @@ contract AOToken is developed, TokenERC20 {
 	event PrimordialUnstake(address indexed from, uint256 value, uint256 weightedMultiplier);
 
 	uint256 public totalLots;
+	uint256 public totalBurnLots;
+	uint256 public totalConvertLots;
 
-	// Max supply of 1,125,899,906,842,620 AOTKN
+	// Total available primordial token for sale 1,125,899,906,842,620 AO+
 	uint256 constant public TOTAL_PRIMORDIAL_FOR_SALE = 1125899906842620;
 
 	// Account for 6 decimal points for multiplier
@@ -64,6 +66,9 @@ contract AOToken is developed, TokenERC20 {
 
 	bool public networkExchangeEnded;
 
+	/**
+	 * Stores Lot creation data (during network exchange)
+	 */
 	struct Lot {
 		bytes32 lotId;
 		uint256 multiplier;	// This value is in 10^6, so 1000000 = 1
@@ -71,11 +76,41 @@ contract AOToken is developed, TokenERC20 {
 		uint256 tokenAmount;
 	}
 
-	// Mapping from lot ID to the lot object
+	/**
+	 * Struct to store info when account burns primordial token
+	 */
+	struct BurnLot {
+		bytes32 burnLotId;
+		address lotOwner;
+		uint256 tokenAmount;
+	}
+
+	/**
+	 * Struct to store info when account converts network token to primordial token
+	 */
+	struct ConvertLot {
+		bytes32 convertLotId;
+		address lotOwner;
+		uint256 tokenAmount;
+	}
+
+	// Mapping from Lot ID to Lot object
 	mapping (bytes32 => Lot) internal lots;
+
+	// Mapping from Burn Lot ID to BurnLot object
+	mapping (bytes32 => BurnLot) internal burnLots;
+
+	// Mapping from Convert Lot ID to ConvertLot object
+	mapping (bytes32 => ConvertLot) internal convertLots;
 
 	// Mapping from owner to list of owned lot IDs
 	mapping (address => bytes32[]) internal ownedLots;
+
+	// Mapping from owner to list of owned burn lot IDs
+	mapping (address => bytes32[]) internal ownedBurnLots;
+
+	// Mapping from owner to list of owned convert lot IDs
+	mapping (address => bytes32[]) internal ownedConvertLots;
 
 	// Mapping from owner to his/her current weighted multiplier
 	mapping (address => uint256) internal ownerWeightedMultiplier;
@@ -86,6 +121,12 @@ contract AOToken is developed, TokenERC20 {
 	// Event to be broadcasted to public when a lot is created
 	// multiplier value is in 10^6 to account for 6 decimal points
 	event LotCreation(address indexed lotOwner, bytes32 indexed lotId, uint256 multiplier, uint256 primordialTokenAmount, uint256 networkTokenBonusAmount);
+
+	// Event to be broadcasted to public when burn lot is created (when account burns primordial tokens)
+	event BurnLotCreation(address indexed lotOwner, bytes32 indexed burnLotId, uint256 burnTokenAmount, uint256 multiplierAfterBurn);
+
+	// Event to be broadcasted to public when convert lot is created (when account convert network tokens to primordial tokens)
+	event ConvertLotCreation(address indexed lotOwner, bytes32 indexed convertLotId, uint256 convertTokenAmount, uint256 multiplierAfterBurn);
 
 	/**
 	 * @dev Constructor function
@@ -447,29 +488,45 @@ contract AOToken is developed, TokenERC20 {
 
 	/**
 	 * @dev Remove `_value` Primordial tokens from the system irreversibly
+	 *		and re-weight the account's multiplier after burn
 	 * @param _value The amount to burn
 	 * @return true on success
 	 */
 	function burnPrimordialToken(uint256 _value) public isNetworkExchange returns (bool success) {
 		require (primordialBalanceOf[msg.sender] >= _value);
+		require (calculateMaximumBurnAmount(msg.sender) >= _value);
+
+		// Update the account's multiplier
+		ownerWeightedMultiplier[msg.sender] = calculateMultiplierAfterBurn(msg.sender, _value);
 		primordialBalanceOf[msg.sender] = primordialBalanceOf[msg.sender].sub(_value);
 		primordialTotalSupply = primordialTotalSupply.sub(_value);
+
+		// Store burn lot info
+		_createBurnLot(msg.sender, _value);
 		emit PrimordialBurn(msg.sender, _value);
 		return true;
 	}
 
 	/**
-	 * @dev Remove `_value` Primordial tokens from the system irreversibly on behsalf of `_from`
+	 * @dev Remove `_value` Primordial tokens from the system irreversibly on behalf of `_from`
+	 *		and re-weight `_from`'s multiplier after burn
 	 * @param _from The address of sender
 	 * @param _value The amount to burn
 	 * @return true on success
 	 */
 	function burnPrimordialTokenFrom(address _from, uint256 _value) public isNetworkExchange returns (bool success) {
 		require (primordialBalanceOf[_from] >= _value);
-		require (_value <= primordialAllowance[_from][msg.sender]);
+		require (primordialAllowance[_from][msg.sender] >= _value);
+		require (calculateMaximumBurnAmount(_from) >= _value);
+
+		// Update `_from`'s multiplier
+		ownerWeightedMultiplier[_from] = calculateMultiplierAfterBurn(_from, _value);
 		primordialBalanceOf[_from] = primordialBalanceOf[_from].sub(_value);
 		primordialAllowance[_from][msg.sender] = primordialAllowance[_from][msg.sender].sub(_value);
 		primordialTotalSupply = primordialTotalSupply.sub(_value);
+
+		// Store burn lot info
+		_createBurnLot(_from, _value);
 		emit PrimordialBurn(_from, _value);
 		return true;
 	}
@@ -497,25 +554,87 @@ contract AOToken is developed, TokenERC20 {
 	 * @param _lotOwner The address owning the lots list to be accessed
 	 * @param _index uint256 representing the index to be accessed of the requested lots list
 	 * @return id of the lot
+	 * @return The address of the lot owner
 	 * @return multiplier of the lot in (10 ** 6)
 	 * @return Primordial token amount in the lot
 	 */
-	function lotOfOwnerByIndex(address _lotOwner, uint256 _index) public isNetworkExchange view returns (bytes32, uint256, uint256) {
+	function lotOfOwnerByIndex(address _lotOwner, uint256 _index) public isNetworkExchange view returns (bytes32, address, uint256, uint256) {
 		require (_index < ownedLots[_lotOwner].length);
 		Lot memory _lot = lots[ownedLots[_lotOwner][_index]];
-		return (_lot.lotId, _lot.multiplier, _lot.tokenAmount);
+		return (_lot.lotId, _lot.lotOwner, _lot.multiplier, _lot.tokenAmount);
 	}
 
 	/**
 	 * @dev Return the lot information at a given ID
 	 * @param _lotId The lot ID in question
 	 * @return id of the lot
+	 * @return The lot owner address
 	 * @return multiplier of the lot in (10 ** 6)
 	 * @return Primordial token amount in the lot
 	 */
-	function lotById(bytes32 _lotId) public isNetworkExchange view returns (bytes32, uint256, uint256) {
+	function lotById(bytes32 _lotId) public isNetworkExchange view returns (bytes32, address, uint256, uint256) {
 		Lot memory _lot = lots[_lotId];
-		return (_lot.lotId, _lot.multiplier, _lot.tokenAmount);
+		return (_lot.lotId, _lot.lotOwner, _lot.multiplier, _lot.tokenAmount);
+	}
+
+	/**
+	 * @dev Return all Burn Lot IDs owned by an address
+	 * @param _lotOwner The address of the burn lot owner
+	 * @return array of Burn Lot IDs
+	 */
+	function burnLotIdsByAddress(address _lotOwner) public isNetworkExchange view returns (bytes32[]) {
+		return ownedBurnLots[_lotOwner];
+	}
+
+	/**
+	 * @dev Return the total burn lots owned by an address
+	 * @param _lotOwner The address of the burn lot owner
+	 * @return total burn lots owner by the address
+	 */
+	function totalBurnLotsByAddress(address _lotOwner) public isNetworkExchange view returns (uint256) {
+		return ownedBurnLots[_lotOwner].length;
+	}
+
+	/**
+	 * @dev Return the burn lot information at a given ID
+	 * @param _burnLotId The burn lot ID in question
+	 * @return id of the lot
+	 * @return The address of the burn lot owner
+	 * @return Primordial token amount in the burn lot
+	 */
+	function burnLotById(bytes32 _burnLotId) public isNetworkExchange view returns (bytes32, address, uint256) {
+		BurnLot memory _burnLot = burnLots[_burnLotId];
+		return (_burnLot.burnLotId, _burnLot.lotOwner, _burnLot.tokenAmount);
+	}
+
+	/**
+	 * @dev Return all Convert Lot IDs owned by an address
+	 * @param _lotOwner The address of the convert lot owner
+	 * @return array of Convert Lot IDs
+	 */
+	function convertLotIdsByAddress(address _lotOwner) public isNetworkExchange view returns (bytes32[]) {
+		return ownedConvertLots[_lotOwner];
+	}
+
+	/**
+	 * @dev Return the total convert lots owned by an address
+	 * @param _lotOwner The address of the convert lot owner
+	 * @return total convert lots owner by the address
+	 */
+	function totalConvertLotsByAddress(address _lotOwner) public isNetworkExchange view returns (uint256) {
+		return ownedConvertLots[_lotOwner].length;
+	}
+
+	/**
+	 * @dev Return the convert lot information at a given ID
+	 * @param _convertLotId The convert lot ID in question
+	 * @return id of the lot
+	 * @return The address of the convert lot owner
+	 * @return Primordial token amount in the convert lot
+	 */
+	function convertLotById(bytes32 _convertLotId) public isNetworkExchange view returns (bytes32, address, uint256) {
+		ConvertLot memory _convertLot = convertLots[_convertLotId];
+		return (_convertLot.convertLotId, _convertLot.lotOwner, _convertLot.tokenAmount);
 	}
 
 	/**
@@ -537,8 +656,9 @@ contract AOToken is developed, TokenERC20 {
 	}
 
 	/**
-	 * @dev Calculate the primordial token multiplier and the bonuse network token amount on a given lot
-	 *		when someone purchases primordial token during network exchange
+	 * @dev Calculate the primordial token multiplier, bonus network token percentage, and the
+	 *		bonus network token amount on a given lot when someone purchases primordial token
+	 *		during network exchange
 	 * @param _purchaseAmount The amount of primordial token intended to be purchased
 	 * @return The multiplier in (10 ** 6)
 	 * @return The bonus percentage
@@ -550,6 +670,70 @@ contract AOToken is developed, TokenERC20 {
 			AOLibrary.calculateNetworkTokenBonusPercentage(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier),
 			AOLibrary.calculateNetworkTokenBonusAmount(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier)
 		);
+	}
+
+	/**
+	 * @dev Calculate the maximum amount of Primordial an account can burn
+	 * @param _account The address of the account
+	 * @return The maximum primordial token amount to burn
+	 */
+	function calculateMaximumBurnAmount(address _account) public isNetworkExchange view returns (uint256) {
+		return AOLibrary.calculateMaximumBurnAmount(primordialBalanceOf[_account], ownerWeightedMultiplier[_account], ownerMaxMultiplier[_account]);
+	}
+
+	/**
+	 * @dev Calculate account's new multiplier after burn `_amountToBurn` primordial tokens
+	 * @param _account The address of the account
+	 * @param _amountToBurn The amount of primordial token to burn
+	 * @return The new multiplier in (10 ** 6)
+	 */
+	function calculateMultiplierAfterBurn(address _account, uint256 _amountToBurn) public isNetworkExchange view returns (uint256) {
+		require (calculateMaximumBurnAmount(_account) >= _amountToBurn);
+		return AOLibrary.calculateMultiplierAfterBurn(primordialBalanceOf[_account], ownerWeightedMultiplier[_account], _amountToBurn);
+	}
+
+	/**
+	 * @dev Calculate account's new multiplier after converting `amountToConvert` network token to primordial token
+	 * @param _account The address of the account
+	 * @param _amountToConvert The amount of network token to convert
+	 * @return The new multiplier in (10 ** 6)
+	 */
+	function calculateMultiplierAfterConversion(address _account, uint256 _amountToConvert) public isNetworkExchange view returns (uint256) {
+		return AOLibrary.calculateMultiplierAfterConversion(primordialBalanceOf[_account], ownerWeightedMultiplier[_account], _amountToConvert);
+	}
+
+	/**
+	 * @dev Convert `_value` of network tokens to primordial tokens
+	 *		and re-weight the account's multiplier after conversion
+	 * @param _value The amount to convert
+	 * @return true on success
+	 */
+	function convertToPrimordial(uint256 _value) public isNetworkExchange returns (bool success) {
+		require (balanceOf[msg.sender] >= _value);
+
+		// Update the account's multiplier
+		ownerWeightedMultiplier[msg.sender] = calculateMultiplierAfterConversion(msg.sender, _value);
+		// Burn network token
+		burn(_value);
+		// mint primordial token
+		_mintPrimordialToken(msg.sender, _value);
+
+		// Store convert lot info
+		totalConvertLots++;
+
+		// Generate convert lot Id
+		bytes32 convertLotId = keccak256(abi.encodePacked(this, msg.sender, totalConvertLots));
+
+		// Make sure no one owns this lot yet
+		require (convertLots[convertLotId].lotOwner == address(0));
+
+		ConvertLot storage convertLot = convertLots[convertLotId];
+		convertLot.convertLotId = convertLotId;
+		convertLot.lotOwner = msg.sender;
+		convertLot.tokenAmount = _value;
+		ownedConvertLots[msg.sender].push(convertLotId);
+		emit ConvertLotCreation(convertLot.lotOwner, convertLot.convertLotId, convertLot.tokenAmount, ownerWeightedMultiplier[convertLot.lotOwner]);
+		return true;
 	}
 
 	/***** NETWORK TOKEN & PRIMORDIAL TOKEN METHODS *****/
@@ -620,7 +804,7 @@ contract AOToken is developed, TokenERC20 {
 	}
 
 	/**
-	 * @dev Remove `_value` network tokens and `_primordialValue` Primordial tokens from the system irreversibly on behsalf of `_from`
+	 * @dev Remove `_value` network tokens and `_primordialValue` Primordial tokens from the system irreversibly on behalf of `_from`
 	 * @param _from The address of sender
 	 * @param _value The amount of network tokens to burn
 	 * @param _primordialValue The amount of Primordial tokens to burn
@@ -737,6 +921,10 @@ contract AOToken is developed, TokenERC20 {
 		lot.lotOwner = _account;
 		lot.tokenAmount = _tokenAmount;
 		ownedLots[_account].push(lotId);
+		// If this is the first lot, set this as the max multiplier of the account
+		if (ownedLots[_account].length == 1) {
+			ownerMaxMultiplier[_account] = lot.multiplier;
+		}
 		return lotId;
 	}
 
@@ -758,5 +946,27 @@ contract AOToken is developed, TokenERC20 {
 		emit PrimordialTransfer(_from, _to, _value);
 		assert(primordialBalanceOf[_from].add(primordialBalanceOf[_to]) == previousBalances);
 		return true;
+	}
+
+	/**
+	 * @dev Store burn lot information
+	 * @param _account The address of the account
+	 * @param _tokenAmount The amount of primordial tokens to burn
+	 */
+	function _createBurnLot(address _account, uint256 _tokenAmount) internal {
+		totalBurnLots++;
+
+		// Generate burn lot Id
+		bytes32 burnLotId = keccak256(abi.encodePacked(this, _account, totalBurnLots));
+
+		// Make sure no one owns this lot yet
+		require (burnLots[burnLotId].lotOwner == address(0));
+
+		BurnLot storage burnLot = burnLots[burnLotId];
+		burnLot.burnLotId = burnLotId;
+		burnLot.lotOwner = _account;
+		burnLot.tokenAmount = _tokenAmount;
+		ownedBurnLots[_account].push(burnLotId);
+		emit BurnLotCreation(burnLot.lotOwner, burnLot.burnLotId, burnLot.tokenAmount, ownerWeightedMultiplier[burnLot.lotOwner]);
 	}
 }

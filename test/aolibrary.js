@@ -1,6 +1,6 @@
 var AOLibrary = artifacts.require("./AOLibrary.sol");
 var BigNumber = require("bignumber.js");
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 8 }); // no rounding
+BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1 }); // no rounding
 
 contract("AOLibrary", function(accounts) {
 	var library;
@@ -142,6 +142,13 @@ contract("AOLibrary", function(accounts) {
 			.minus(P.times(M))
 			.div(S);
 		assert.equal(burnAmount.toString(), _burnAmount.toString(), "Library returns incorrect maximum burn amount");
+		assert.equal(
+			P.times(M)
+				.div(P.minus(burnAmount))
+				.toString(),
+			S.toString(),
+			"Burning max amount doesn't result in max multiplier"
+		);
 	});
 
 	it("calculateMultiplierAfterBurn() - should calculate and return the correct new multiplier after burning primordial token", async function() {

@@ -1,9 +1,10 @@
 var AOToken = artifacts.require("./AOToken.sol");
+var AOLibrary = artifacts.require("./AOLibrary.sol");
 var BigNumber = require("bignumber.js");
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 8 }); // no rounding
+BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
 contract("AOToken", function(accounts) {
-	var tokenMeta;
+	var tokenMeta, library;
 	var developer = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
@@ -26,17 +27,18 @@ contract("AOToken", function(accounts) {
 		var totalTokens = new BigNumber(0);
 		for (var i = 0; i < accountLots.length; i++) {
 			var lot = accountLots[i];
-			totalWeightedTokens = totalWeightedTokens.plus(lot[1].times(lot[2]));
-			totalTokens = totalTokens.plus(lot[2]);
+			lot[2] = new BigNumber(lot[2]);
+			lot[3] = new BigNumber(lot[3]);
+			totalWeightedTokens = totalWeightedTokens.plus(lot[2].times(lot[3]));
+			totalTokens = totalTokens.plus(lot[3]);
 		}
 		var newWeightedMultiplier = totalWeightedTokens.div(totalTokens);
 		return newWeightedMultiplier;
 	};
 
-	before(function() {
-		return AOToken.deployed().then(function(instance) {
-			tokenMeta = instance;
-		});
+	before(async function() {
+		tokenMeta = await AOToken.deployed();
+		library = await AOLibrary.deployed();
 	});
 	contract("Variable Setting Tests", function() {
 		it("should return correct name", function() {
@@ -72,7 +74,7 @@ contract("AOToken", function(accounts) {
 		});
 		it("should have the correct multiplier divisor", function() {
 			return tokenMeta.MULTIPLIER_DIVISOR.call().then(function(divisor) {
-				multiplierDivisor = divisor;
+				multiplierDivisor = new BigNumber(divisor);
 				assert.equal(divisor.toNumber(), 10 ** 6, "Contract has incorrect multiplier divisor");
 			});
 		});
@@ -82,7 +84,7 @@ contract("AOToken", function(accounts) {
 			});
 		});
 		it("should have the correct percentage divisor", async function() {
-			percentageDivisor = await tokenMeta.PERCENTAGE_DIVISOR();
+			percentageDivisor = new BigNumber(await tokenMeta.PERCENTAGE_DIVISOR());
 			assert.equal(percentageDivisor.toNumber(), 10 ** 6, "Contract has incorrect percentage divisor");
 		});
 		it("should have the correct AO Dev team 1 address", async function() {
@@ -94,15 +96,15 @@ contract("AOToken", function(accounts) {
 			assert.equal(aoDevTeam, aoDevTeam2, "Contract has incorrect aoDevTeam2");
 		});
 		it("should have the correct starting multiplier for calculating primordial multiplier", async function() {
-			startingMultiplier = await tokenMeta.startingMultiplier();
+			startingMultiplier = new BigNumber(await tokenMeta.startingMultiplier());
 			assert.equal(startingMultiplier.toNumber(), 50 * multiplierDivisor.toNumber(), "Contract has incorrect startingMultiplier");
 		});
 		it("should have the correct ending multiplier for calculating primordial multiplier", async function() {
-			endingMultiplier = await tokenMeta.endingMultiplier();
+			endingMultiplier = new BigNumber(await tokenMeta.endingMultiplier());
 			assert.equal(endingMultiplier.toNumber(), 3 * multiplierDivisor.toNumber(), "Contract has incorrect endingMultiplier");
 		});
 		it("should have the correct starting network token bonus multiplier for calculating network token bonus amount", async function() {
-			startingNetworkTokenBonusMultiplier = await tokenMeta.startingNetworkTokenBonusMultiplier();
+			startingNetworkTokenBonusMultiplier = new BigNumber(await tokenMeta.startingNetworkTokenBonusMultiplier());
 			assert.equal(
 				startingNetworkTokenBonusMultiplier.toNumber(),
 				1000000,
@@ -110,7 +112,7 @@ contract("AOToken", function(accounts) {
 			);
 		});
 		it("should have the correct ending network token bonus multiplier for calculating network token bonus amount", async function() {
-			endingNetworkTokenBonusMultiplier = await tokenMeta.endingNetworkTokenBonusMultiplier();
+			endingNetworkTokenBonusMultiplier = new BigNumber(await tokenMeta.endingNetworkTokenBonusMultiplier());
 			assert.equal(endingNetworkTokenBonusMultiplier.toNumber(), 250000, "Contract has incorrect endingNetworkTokenBonusMultiplier");
 		});
 	});
@@ -445,7 +447,7 @@ contract("AOToken", function(accounts) {
 			var foundationNetworkTokenBonusAmount = startingNetworkTokenBonusMultiplier
 				.minus(bonus[1])
 				.plus(endingNetworkTokenBonusMultiplier)
-				.mul(tokenAmount)
+				.times(tokenAmount)
 				.div(percentageDivisor);
 
 			var canBuy, events;
@@ -459,6 +461,9 @@ contract("AOToken", function(accounts) {
 			}
 			assert.equal(canBuy, true, "Account can't buy primordial token");
 			assert.notEqual(events, null, "Contract didn't emit events during buy primordial token transaction");
+
+			var halfTokenAmount = new BigNumber(tokenAmount).div(2);
+			var halfFoundationNetworkTokenBonusAmount = new BigNumber(foundationNetworkTokenBonusAmount).div(2);
 
 			var accountLotId, aoDevTeam1LotId, aoDevTeam2LotId;
 			for (var i = 0; i < events.length; i++) {
@@ -491,12 +496,12 @@ contract("AOToken", function(accounts) {
 							);
 							assert.equal(
 								_event.args.primordialTokenAmount.toString(),
-								new BigNumber(tokenAmount).div(2).toString(),
+								halfTokenAmount.toString(),
 								"aoDevTeam1 Lot Creation has incorrect tokenAmount"
 							);
 							assert.equal(
 								_event.args.networkTokenBonusAmount.toString(),
-								new BigNumber(foundationNetworkTokenBonusAmount).div(2).toString(),
+								halfFoundationNetworkTokenBonusAmount.toString(),
 								"aoDevTeam1 Lot Creation has incorrect networkTokenBonusAmount"
 							);
 						} else if (_event.args.lotOwner == aoDevTeam2) {
@@ -508,12 +513,12 @@ contract("AOToken", function(accounts) {
 							);
 							assert.equal(
 								_event.args.primordialTokenAmount.toString(),
-								new BigNumber(tokenAmount).div(2).toString(),
+								halfTokenAmount.toString(),
 								"aoDevTeam2 Lot Creation has incorrect tokenAmount"
 							);
 							assert.equal(
 								_event.args.networkTokenBonusAmount.toString(),
-								new BigNumber(foundationNetworkTokenBonusAmount).div(2).toString(),
+								halfFoundationNetworkTokenBonusAmount.toString(),
 								"aoDevTeam2 Lot Creation has incorrect networkTokenBonusAmount"
 							);
 						}
@@ -550,8 +555,8 @@ contract("AOToken", function(accounts) {
 				primordialTotalSupplyAfter.toString(),
 				primordialTotalSupplyBefore
 					.plus(tokenAmount)
-					.plus(new BigNumber(tokenAmount).div(2))
-					.plus(new BigNumber(tokenAmount).div(2))
+					.plus(halfTokenAmount)
+					.plus(halfTokenAmount)
 					.toString(),
 				"Contract has incorrect primordialTotalSupply"
 			);
@@ -570,23 +575,23 @@ contract("AOToken", function(accounts) {
 
 			assert.equal(
 				aoDevTeam1PrimordialBalanceAfter.toString(),
-				aoDevTeam1PrimordialBalanceBefore.plus(new BigNumber(tokenAmount).div(2)).toString(),
+				aoDevTeam1PrimordialBalanceBefore.plus(halfTokenAmount).toString(),
 				"aoDevTeam1 has incorrect primordial balance"
 			);
 			assert.equal(
 				aoDevTeam1NetworkBalanceAfter.toString(),
-				aoDevTeam1NetworkBalanceBefore.plus(new BigNumber(foundationNetworkTokenBonusAmount).div(2)).toString(),
+				aoDevTeam1NetworkBalanceBefore.plus(halfFoundationNetworkTokenBonusAmount).toString(),
 				"aoDevTeam1 has incorrect network balance"
 			);
 
 			assert.equal(
 				aoDevTeam2PrimordialBalanceAfter.toString(),
-				aoDevTeam2PrimordialBalanceBefore.plus(new BigNumber(tokenAmount).div(2)).toString(),
+				aoDevTeam2PrimordialBalanceBefore.plus(halfTokenAmount).toString(),
 				"aoDevTeam2 has incorrect primordial balance"
 			);
 			assert.equal(
 				aoDevTeam2NetworkBalanceAfter.toString(),
-				aoDevTeam2NetworkBalanceBefore.plus(new BigNumber(foundationNetworkTokenBonusAmount).div(2)).toString(),
+				aoDevTeam2NetworkBalanceBefore.plus(halfFoundationNetworkTokenBonusAmount).toString(),
 				"aoDevTeam2 has incorrect network balance"
 			);
 
@@ -604,18 +609,21 @@ contract("AOToken", function(accounts) {
 			// Make sure the Lot is stored correctly
 			var accountLot = await tokenMeta.lotById(accountLotId);
 			assert.equal(accountLot[0], accountLotId, "Lot has incorrect ID");
-			assert.equal(accountLot[1].toString(), bonus[0].toString(), "Lot has incorrect multiplier");
-			assert.equal(accountLot[2].toString(), tokenAmount.toString(), "Lot has incorrect tokenAmount");
+			assert.equal(accountLot[1], account, "Lot has incorrect lot owner");
+			assert.equal(accountLot[2].toString(), bonus[0].toString(), "Lot has incorrect multiplier");
+			assert.equal(accountLot[3].toString(), tokenAmount.toString(), "Lot has incorrect tokenAmount");
 
 			var aoDevTeam1Lot = await tokenMeta.lotById(aoDevTeam1LotId);
 			assert.equal(aoDevTeam1Lot[0], aoDevTeam1LotId, "Lot has incorrect ID");
-			assert.equal(aoDevTeam1Lot[1].toString(), inverseMultiplier.toString(), "Lot has incorrect multiplier");
-			assert.equal(aoDevTeam1Lot[2].toString(), new BigNumber(tokenAmount).div(2).toString(), "Lot has incorrect tokenAmount");
+			assert.equal(aoDevTeam1Lot[1], aoDevTeam1, "Lot has incorrect lot owner");
+			assert.equal(aoDevTeam1Lot[2].toString(), inverseMultiplier.toString(), "Lot has incorrect multiplier");
+			assert.equal(aoDevTeam1Lot[3].toString(), halfTokenAmount.toString(), "Lot has incorrect tokenAmount");
 
 			var aoDevTeam2Lot = await tokenMeta.lotById(aoDevTeam2LotId);
 			assert.equal(aoDevTeam2Lot[0], aoDevTeam2LotId, "Lot has incorrect ID");
-			assert.equal(aoDevTeam2Lot[1].toString(), inverseMultiplier.toString(), "Lot has incorrect multiplier");
-			assert.equal(aoDevTeam2Lot[2].toString(), new BigNumber(tokenAmount).div(2).toString(), "Lot has incorrect tokenAmount");
+			assert.equal(aoDevTeam2Lot[1], aoDevTeam2, "Lot has incorrect lot owner");
+			assert.equal(aoDevTeam2Lot[2].toString(), inverseMultiplier.toString(), "Lot has incorrect multiplier");
+			assert.equal(aoDevTeam2Lot[3].toString(), halfTokenAmount.toString(), "Lot has incorrect tokenAmount");
 
 			accountLots.push(accountLot);
 
@@ -631,7 +639,7 @@ contract("AOToken", function(accounts) {
 			// Check max multiplier for the account
 			// should be the same as multiplier from account's lot #1
 			var maxMultiplier = await tokenMeta.maxMultiplierByAddress(account);
-			assert.equal(maxMultiplier.toString(), accountLots[0][1].toString(), "Account has incorrect maxMultiplier");
+			assert.equal(maxMultiplier.toString(), accountLots[0][2].toString(), "Account has incorrect maxMultiplier");
 
 			return accountLotId;
 		};
@@ -656,6 +664,56 @@ contract("AOToken", function(accounts) {
 			var primordialBuyPrice = await tokenMeta.primordialBuyPrice();
 			assert.equal(primordialSellPrice.toNumber(), 100, "Incorrect Primordial sell price");
 			assert.equal(primordialBuyPrice.toNumber(), 100, "Incorrect Primordial buy price");
+
+			// reset primordial prices
+			await tokenMeta.setPrimordialPrices(0, 10000, { from: developer });
+		});
+		it("calculateMultiplierAndBonus() - should calculate the primordial token multiplier, bonus network token percentage and the bonus network token amount on a given lot when account purchases primordial token during network exchange", async function() {
+			var primordialTotalBought = await tokenMeta.primordialTotalBought();
+			var startingMultiplier = await tokenMeta.startingMultiplier();
+			var endingMultiplier = await tokenMeta.endingMultiplier();
+			var startingNetworkTokenBonusMultiplier = await tokenMeta.startingNetworkTokenBonusMultiplier();
+			var endingNetworkTokenBonusMultiplier = await tokenMeta.endingNetworkTokenBonusMultiplier();
+
+			var purchaseAmount = 10000;
+			var primordialMultiplier = await library.calculatePrimordialMultiplier(
+				purchaseAmount,
+				totalPrimordialForSale.toString(),
+				primordialTotalBought.toString(),
+				startingMultiplier.toString(),
+				endingMultiplier.toString()
+			);
+			var bonusPercentage = await library.calculateNetworkTokenBonusPercentage(
+				purchaseAmount,
+				totalPrimordialForSale.toString(),
+				primordialTotalBought.toString(),
+				startingNetworkTokenBonusMultiplier.toString(),
+				endingNetworkTokenBonusMultiplier.toString()
+			);
+			var bonusAmount = await library.calculateNetworkTokenBonusAmount(
+				purchaseAmount,
+				totalPrimordialForSale.toString(),
+				primordialTotalBought.toString(),
+				startingNetworkTokenBonusMultiplier.toString(),
+				endingNetworkTokenBonusMultiplier.toString()
+			);
+
+			var multiplierAndBonus = await tokenMeta.calculateMultiplierAndBonus(purchaseAmount);
+			assert.equal(
+				multiplierAndBonus[0].toString(),
+				primordialMultiplier.toString(),
+				"calculateMultiplierAndBonus() returns incorrect primordial multiplier"
+			);
+			assert.equal(
+				multiplierAndBonus[1].toString(),
+				bonusPercentage.toString(),
+				"calculateMultiplierAndBonus() returns incorrect bonus percentage"
+			);
+			assert.equal(
+				multiplierAndBonus[2].toString(),
+				bonusAmount.toString(),
+				"calculateMultiplierAndBonus() returns incorrect bonus amount"
+			);
 		});
 		it("buyPrimordialToken() - buy Primordial tokens from contract by sending ETH", async function() {
 			var canBuy;
@@ -666,11 +724,11 @@ contract("AOToken", function(accounts) {
 				canBuy = false;
 			}
 			assert.equal(canBuy, false, "Buy Primordial token succeeded even though user sent 0 ETH");
-			await buyPrimordialToken(10000, account1, account1Lots);
+			await buyPrimordialToken(web3.toWei(2, "ether"), account1, account1Lots);
 		});
 		it("Should re-calculate existing `account` lots' indexes and update his/her overall weighted index", async function() {
-			await buyPrimordialToken(1000000, account1, account1Lots);
-			await buyPrimordialToken(800000, account1, account1Lots);
+			await buyPrimordialToken(web3.toWei(3, "ether"), account1, account1Lots);
+			await buyPrimordialToken(web3.toWei(5, "ether"), account1, account1Lots);
 		});
 		it("should NOT allow buy Primordial if Total Primordial For Sale cap is reached (network exchange has ended)", async function() {
 			var primordialTotalBought = await tokenMeta.primordialTotalBought();
@@ -795,8 +853,9 @@ contract("AOToken", function(accounts) {
 			// Make sure the Lot is stored correctly
 			var accountLot = await tokenMeta.lotById(accountLotId);
 			assert.equal(accountLot[0], accountLotId, "Lot has incorrect ID");
-			assert.equal(accountLot[1].toString(), account1WeightedMultiplierAfter.toString(), "Lot has incorrect multiplier");
-			assert.equal(accountLot[2].toString(), 100, "Lot has incorrect tokenAmount");
+			assert.equal(accountLot[1], account3, "Lot has incorrect lot owner");
+			assert.equal(accountLot[2].toString(), account1WeightedMultiplierAfter.toString(), "Lot has incorrect multiplier");
+			assert.equal(accountLot[3].toString(), 100, "Lot has incorrect tokenAmount");
 
 			account3Lots.push(accountLot);
 
@@ -807,48 +866,141 @@ contract("AOToken", function(accounts) {
 				"Account3 has incorrect weighted multiplier"
 			);
 		});
-		/*
-		it("burnPrimordialToken() - should remove `_value` tokens from the system irreversibly", async function() {
-			var primordialTotalSupplyBefore = await tokenMeta.primordialTotalSupply();
-			var account1PrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(account1);
-			var account1WeightedIndexBefore = await tokenMeta.weightedIndexByAddress(account1);
-			var account1TotalLotsBefore = await tokenMeta.totalLotsByAddress(account1);
+		it("maxMultiplierByAddress() - should return the max multiplier of an address (the multiplier of the first lot of the account)", async function() {
+			var maxMultiplier = await tokenMeta.maxMultiplierByAddress(account1);
+			assert.equal(maxMultiplier.toString(), account1Lots[0][2].toString(), "Account1 has incorrect max multiplier");
 
-			await tokenMeta.burnPrimordialToken(10, { from: account1 });
+			maxMultiplier = await tokenMeta.maxMultiplierByAddress(account2);
+			assert.equal(maxMultiplier.toString(), account2Lots[0][2].toString(), "Account2 has incorrect max multiplier");
 
-			var account1PrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(account1);
-			var primordialTotalSupplyAfter = await tokenMeta.primordialTotalSupply();
-			var account1WeightedIndexAfter = await tokenMeta.weightedIndexByAddress(account1);
-			var account1TotalLotsAfter = await tokenMeta.totalLotsByAddress(account1);
+			maxMultiplier = await tokenMeta.maxMultiplierByAddress(account3);
+			assert.equal(maxMultiplier.toString(), account3Lots[0][2].toString(), "Account3 has incorrect max multiplier");
+		});
+		it("calculateMaximumBurnAmount() - should return the maximum amount of primordial an account can burn", async function() {
+			var accountPrimordialBalance = await tokenMeta.primordialBalanceOf(account1);
+			var accountWeightedMultiplier = await tokenMeta.weightedMultiplierByAddress(account1);
+			var accountMaxMultiplier = await tokenMeta.maxMultiplierByAddress(account1);
+			var _maxBurnAmount = await library.calculateMaximumBurnAmount(
+				accountPrimordialBalance.toString(),
+				accountWeightedMultiplier.toString(),
+				accountMaxMultiplier.toString()
+			);
+
+			var maxBurnAmount = await tokenMeta.calculateMaximumBurnAmount(account1);
 
 			assert.equal(
-				account1PrimordialBalanceAfter.toNumber(),
-				account1PrimordialBalanceBefore.toNumber() - 10,
-				"Account1 has incorrect Primordial balance after burn"
-			);
-			assert.equal(
-				primordialTotalSupplyAfter.toNumber(),
-				primordialTotalSupplyBefore.toNumber() - 10,
-				"Incorrect Primordial total supply after burn"
-			);
-			assert.equal(
-				account1WeightedIndexBefore.toNumber(),
-				account1WeightedIndexAfter.toNumber(),
-				"Account1 has incorrect weighted index after burn"
-			);
-			assert.equal(
-				account1TotalLotsBefore.toNumber(),
-				account1TotalLotsAfter.toNumber(),
-				"Account1 has incorrect total lots after burn"
+				maxBurnAmount.toString(),
+				_maxBurnAmount.toString(),
+				"calculateMaximumBurnAmount() returns incorrect max burn amount"
 			);
 		});
-		*/
+		it("calculateMultiplierAfterBurn() - should return the new multiplier after burn primordial tokens", async function() {
+			var accountPrimordialBalance = await tokenMeta.primordialBalanceOf(account1);
+			var accountWeightedMultiplier = await tokenMeta.weightedMultiplierByAddress(account1);
+			var maxBurnAmount = await tokenMeta.calculateMaximumBurnAmount(account1);
+			var accountMaxMultiplier = await tokenMeta.maxMultiplierByAddress(account1);
+			var canCalculate, multiplierAfterBurn;
+			try {
+				multiplierAfterBurn = await tokenMeta.calculateMultiplierAfterBurn(account1, maxBurnAmount.plus(100).toString());
+				canCalculate = true;
+			} catch (e) {
+				multiplierAfterBurn = null;
+				canCalculate = false;
+			}
+			assert.equal(canCalculate, false, "calculateMultiplierAfterBurn() returns result even though amount to burn > max burn amount");
+			var burnAmount = maxBurnAmount.minus(10);
+			try {
+				multiplierAfterBurn = await tokenMeta.calculateMultiplierAfterBurn(account1, burnAmount.toString());
+				canCalculate = true;
+			} catch (e) {
+				multiplierAfterBurn = null;
+				canCalculate = false;
+			}
+			assert.equal(canCalculate, true, "calculateMultiplierAfterBurn() failed even though amount to burn <= max burn amount");
+
+			var _multiplierAfterBurn = await library.calculateMultiplierAfterBurn(
+				accountPrimordialBalance.toString(),
+				accountWeightedMultiplier.toString(),
+				burnAmount.toString()
+			);
+
+			assert.equal(
+				multiplierAfterBurn.toString(),
+				_multiplierAfterBurn.toString(),
+				"calculateMultiplierAfterBurn() returns incorrect multiplier"
+			);
+		});
+		it("burnPrimordialToken() - should remove `_value` tokens from the system irreversibly and re-weight the multiplier", async function() {
+			var maxBurnAmount = await tokenMeta.calculateMaximumBurnAmount(account1);
+			var accountPrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(account1);
+			var accountWeightedMultiplierBefore = await tokenMeta.weightedMultiplierByAddress(account1);
+			var primordialTotalSupplyBefore = await tokenMeta.primordialTotalSupply();
+
+			var canBurn, burnLotCreationEvent, burnLotId;
+			try {
+				var result = await tokenMeta.burnPrimordialToken(maxBurnAmount.plus(10).toString(), { from: account1 });
+				burnLotCreationEvent = result.logs[0];
+				burnLotId = burnLotCreationEvent.args.burnLotId;
+				canBurn = true;
+			} catch (e) {
+				burnLotCreationEvent = null;
+				primordialBurnEvent = null;
+				burnLotId = null;
+				canBurn = false;
+			}
+			assert.equal(canBurn, false, "Account can burn more than maximum burn amount");
+
+			var burnAmount = new BigNumber(5);
+			var multiplierAfterBurn = await tokenMeta.calculateMultiplierAfterBurn(account1, burnAmount.toString());
+			try {
+				var result = await tokenMeta.burnPrimordialToken(burnAmount.toString(), { from: account1 });
+				burnLotCreationEvent = result.logs[0];
+				burnLotId = burnLotCreationEvent.args.burnLotId;
+				canBurn = true;
+			} catch (e) {
+				burnLotCreationEvent = null;
+				primordialBurnEvent = null;
+				burnLotId = null;
+				canBurn = false;
+			}
+			assert.equal(canBurn, true, "Account can't burn primordial token");
+
+			var accountPrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(account1);
+			var accountWeightedMultiplierAfter = await tokenMeta.weightedMultiplierByAddress(account1);
+			var primordialTotalSupplyAfter = await tokenMeta.primordialTotalSupply();
+
+			assert.equal(
+				accountPrimordialBalanceAfter.toString(),
+				accountPrimordialBalanceBefore.minus(burnAmount).toString(),
+				"Account has incorrect primordial balance after burn"
+			);
+			assert.equal(
+				accountWeightedMultiplierAfter.toString(),
+				multiplierAfterBurn.toString(),
+				"Account has incorrect weighted multiplier after burn"
+			);
+			assert.isAtLeast(
+				accountWeightedMultiplierAfter.toNumber(),
+				accountWeightedMultiplierBefore.toNumber(),
+				"New weighted multiplier should be greater than or equal to previous weighted multiplier"
+			);
+			assert.equal(
+				primordialTotalSupplyAfter.toString(),
+				primordialTotalSupplyBefore.minus(burnAmount).toString(),
+				"Contract has incorrect primordialTotalSupply after burn"
+			);
+
+			var burnLot = await tokenMeta.burnLotById(burnLotId);
+			assert.equal(burnLot[0], burnLotId, "Burn Lot has incorrect burnLotId");
+			assert.equal(burnLot[1], account1, "Burn Lot has incorrect burn lotOwner");
+			assert.equal(burnLot[2], burnAmount.toString(), "Burn Lot has incorrect tokenAmount");
+		});
 		it("approvePrimordialToken() - should set Primordial allowance for other address", async function() {
 			var account3PrimordialAllowance = await tokenMeta.primordialAllowance(account1, account3);
 			assert.equal(account3PrimordialAllowance.toNumber(), 0, "Account3 has incorrect Primordial allowance before approve");
-			await tokenMeta.approvePrimordialToken(account3, 10, { from: account1 });
+			await tokenMeta.approvePrimordialToken(account3, 20, { from: account1 });
 			account3PrimordialAllowance = await tokenMeta.primordialAllowance(account1, account3);
-			assert.equal(account3PrimordialAllowance.toNumber(), 10, "Account3 has incorrect Primordial allowance after approve");
+			assert.equal(account3PrimordialAllowance.toNumber(), 20, "Account3 has incorrect Primordial allowance after approve");
 		});
 		it("transferPrimordialTokenFrom() - should send `_value` Primordial tokens to `_to` in behalf of `_from`", async function() {
 			var account1PrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(account1);
@@ -957,8 +1109,9 @@ contract("AOToken", function(accounts) {
 			// Make sure the Lot is stored correctly
 			var accountLot = await tokenMeta.lotById(accountLotId);
 			assert.equal(accountLot[0], accountLotId, "Lot has incorrect ID");
-			assert.equal(accountLot[1].toString(), account1WeightedMultiplierAfter.toString(), "Lot has incorrect multiplier");
-			assert.equal(accountLot[2].toString(), 10, "Lot has incorrect tokenAmount");
+			assert.equal(accountLot[1], account3, "Lot has incorrect lot owner");
+			assert.equal(accountLot[2].toString(), account1WeightedMultiplierAfter.toString(), "Lot has incorrect multiplier");
+			assert.equal(accountLot[3].toString(), 10, "Lot has incorrect tokenAmount");
 
 			account3Lots.push(accountLot);
 
@@ -969,59 +1122,180 @@ contract("AOToken", function(accounts) {
 				"Account3 has incorrect weighted multiplier"
 			);
 		});
-		/*
-		it("burnPrimordialTokenFrom() - should remove `_value` Primordial tokens from the system irreversibly on behalf of `_from`", async function() {
-			var account1PrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(account1);
-			var account3AllowanceBefore = await tokenMeta.primordialAllowance(account1, account3);
+		it("burnPrimordialTokenFrom() - should remove `_value` Primordial tokens from the system irreversibly on behalf of `_from` and re-weight multiplier", async function() {
+			var maxBurnAmount = await tokenMeta.calculateMaximumBurnAmount(account1);
+			var accountPrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(account1);
+			var accountWeightedMultiplierBefore = await tokenMeta.weightedMultiplierByAddress(account1);
 			var primordialTotalSupplyBefore = await tokenMeta.primordialTotalSupply();
+			var account3PrimordialAllowanceBefore = await tokenMeta.primordialAllowance(account1, account3);
 
-			var canBurnPrimordialFrom;
+			var canBurn, burnLotCreationEvent, burnLotId;
 			try {
-				await tokenMeta.burnPrimordialTokenFrom(account1, 5, { from: developer });
-				canBurnPrimordialFrom = true;
+				var result = await tokenMeta.burnPrimordialTokenFrom(account1, maxBurnAmount.plus(10).toString(), { from: account3 });
+				burnLotCreationEvent = result.logs[0];
+				burnLotId = burnLotCreationEvent.args.burnLotId;
+				canBurn = true;
 			} catch (e) {
-				canBurnPrimordialFrom = false;
+				burnLotCreationEvent = null;
+				primordialBurnEvent = null;
+				burnLotId = null;
+				canBurn = false;
 			}
-			assert.notEqual(canBurnPrimordialFrom, true, "Account that was not approved is able to burn on behalf of other");
-			try {
-				await tokenMeta.burnPrimordialTokenFrom(account1, 10, { from: account3 });
-				canBurnPrimordialFrom = true;
-			} catch (e) {
-				canBurnPrimordialFrom = false;
-			}
-			assert.notEqual(
-				canBurnPrimordialFrom,
-				true,
-				"Account that was approved is able to burn more than it's allowance on behalf of other"
-			);
-			try {
-				await tokenMeta.burnPrimordialTokenFrom(account1, 5, { from: account3 });
-				canBurnPrimordialFrom = true;
-			} catch (e) {
-				canBurnPrimordialFrom = false;
-			}
-			assert.equal(canBurnPrimordialFrom, true, "Account that was approved is not able to burn on behalf of other");
-			var account1PrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(account1);
-			var account3AllowanceAfter = await tokenMeta.primordialAllowance(account1, account3);
-			assert.equal(
-				account1PrimordialBalanceAfter.toNumber(),
-				account1PrimordialBalanceBefore.toNumber() - 5,
-				"Account1 has incorrect Primordial balance after burnPrimordialTokenFrom"
-			);
-			assert.equal(
-				account3AllowanceAfter.toNumber(),
-				account3AllowanceBefore.toNumber() - 5,
-				"Account3 has incorrect Primordial allowance after burnPrimordialTokenFrom"
-			);
+			assert.equal(canBurn, false, "Account can burn more than maximum burn amount");
 
+			var burnAmount = new BigNumber(10);
+			var multiplierAfterBurn = await tokenMeta.calculateMultiplierAfterBurn(account1, burnAmount.toString());
+			try {
+				var result = await tokenMeta.burnPrimordialTokenFrom(account1, burnAmount.toString(), { from: account3 });
+				burnLotCreationEvent = result.logs[0];
+				burnLotId = burnLotCreationEvent.args.burnLotId;
+				canBurn = true;
+			} catch (e) {
+				burnLotCreationEvent = null;
+				primordialBurnEvent = null;
+				burnLotId = null;
+				canBurn = false;
+			}
+			assert.equal(canBurn, true, "Account can't burn primordial token");
+
+			var accountPrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(account1);
+			var accountWeightedMultiplierAfter = await tokenMeta.weightedMultiplierByAddress(account1);
 			var primordialTotalSupplyAfter = await tokenMeta.primordialTotalSupply();
+			var account3PrimordialAllowanceAfter = await tokenMeta.primordialAllowance(account1, account3);
+
 			assert.equal(
-				primordialTotalSupplyAfter.toNumber(),
-				primordialTotalSupplyBefore.toNumber() - 5,
-				"Contract has incorrect Primordial total supply after burnPrimordialTokenFrom"
+				accountPrimordialBalanceAfter.toString(),
+				accountPrimordialBalanceBefore.minus(burnAmount).toString(),
+				"Account has incorrect primordial balance after burn"
+			);
+			assert.equal(
+				accountWeightedMultiplierAfter.toString(),
+				multiplierAfterBurn.toString(),
+				"Account has incorrect weighted multiplier after burn"
+			);
+			assert.isAtLeast(
+				accountWeightedMultiplierAfter.toNumber(),
+				accountWeightedMultiplierBefore.toNumber(),
+				"New weighted multiplier should be greater than or equal to previous weighted multiplier"
+			);
+			assert.equal(
+				primordialTotalSupplyAfter.toString(),
+				primordialTotalSupplyBefore.minus(burnAmount).toString(),
+				"Contract has incorrect primordialTotalSupply after burn"
+			);
+			assert.equal(
+				account3PrimordialAllowanceAfter.toString(),
+				account3PrimordialAllowanceBefore.minus(burnAmount).toString(),
+				"Account3 has incorrect primordial allowance after burn"
+			);
+
+			var burnLot = await tokenMeta.burnLotById(burnLotId);
+			assert.equal(burnLot[0], burnLotId, "Burn Lot has incorrect burnLotId");
+			assert.equal(burnLot[1], account1, "Burn Lot has incorrect burn lotOwner");
+			assert.equal(burnLot[2], burnAmount.toString(), "Burn Lot has incorrect tokenAmount");
+		});
+		it("calculateMultiplierAfterConversion() - should return the new multiplier after converting network token to primordial tokens", async function() {
+			var accountPrimordialBalance = await tokenMeta.primordialBalanceOf(account1);
+			var accountWeightedMultiplier = await tokenMeta.weightedMultiplierByAddress(account1);
+			var convertAmount = new BigNumber(100);
+			var multiplierAfterConversion = await tokenMeta.calculateMultiplierAfterConversion(account1, convertAmount.toString());
+
+			var _multiplierAfterConversion = await library.calculateMultiplierAfterConversion(
+				accountPrimordialBalance.toString(),
+				accountWeightedMultiplier.toString(),
+				convertAmount.toString()
+			);
+
+			assert.equal(
+				multiplierAfterConversion.toString(),
+				_multiplierAfterConversion.toString(),
+				"calculateMultiplierAfterConversion() returns incorrect multiplier"
 			);
 		});
-		*/
+		it("convertToPrimordial() - should convert network token to primordial tokens and re-weight multiplier", async function() {
+			var accountNetworkBalanceBefore = await tokenMeta.balanceOf(account1);
+			var accountPrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(account1);
+			var accountWeightedMultiplierBefore = await tokenMeta.weightedMultiplierByAddress(account1);
+			var networkTotalSupplyBefore = await tokenMeta.totalSupply();
+			var primordialTotalSupplyBefore = await tokenMeta.primordialTotalSupply();
+
+			var canConvert, convertLotId;
+			try {
+				var result = await tokenMeta.convertToPrimordial(10 ** 30, { from: account1 });
+				for (var i = 0; i < result.logs.length; i++) {
+					var log = result.logs[i];
+					if (log.event == "ConvertLotCreation") {
+						convertLotId = log.args.convertLotId;
+						break;
+					}
+				}
+				canConvert = true;
+			} catch (e) {
+				convertLotId = null;
+				canConvert = false;
+			}
+			assert.equal(canConvert, false, "Account can convert more network tokens than available balance");
+
+			var convertAmount = new BigNumber(500);
+			var multiplierAfterConversion = await tokenMeta.calculateMultiplierAfterConversion(account1, convertAmount.toString());
+			try {
+				var result = await tokenMeta.convertToPrimordial(convertAmount.toString(), { from: account1 });
+				for (var i = 0; i < result.logs.length; i++) {
+					var log = result.logs[i];
+					if (log.event == "ConvertLotCreation") {
+						convertLotId = log.args.convertLotId;
+						break;
+					}
+				}
+				canConvert = true;
+			} catch (e) {
+				convertLotId = null;
+				canConvert = false;
+			}
+			assert.equal(canConvert, true, "Account can't convert network tokens to primordial tokens");
+
+			var accountNetworkBalanceAfter = await tokenMeta.balanceOf(account1);
+			var accountPrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(account1);
+			var accountWeightedMultiplierAfter = await tokenMeta.weightedMultiplierByAddress(account1);
+			var networkTotalSupplyAfter = await tokenMeta.totalSupply();
+			var primordialTotalSupplyAfter = await tokenMeta.primordialTotalSupply();
+
+			assert.equal(
+				accountNetworkBalanceAfter.toString(),
+				accountNetworkBalanceBefore.minus(convertAmount).toString(),
+				"Account has incorrect network balance after conversion"
+			);
+			assert.equal(
+				accountPrimordialBalanceAfter.toString(),
+				accountPrimordialBalanceBefore.plus(convertAmount).toString(),
+				"Account has incorrect primordial balance after conversion"
+			);
+			assert.equal(
+				accountWeightedMultiplierAfter.toString(),
+				multiplierAfterConversion.toString(),
+				"Account has incorrect multiplier after conversion"
+			);
+			assert.isAtMost(
+				accountWeightedMultiplierAfter.toNumber(),
+				accountWeightedMultiplierBefore.toNumber(),
+				"New multiplier should be less than or equal to previous multiplier after conversion"
+			);
+			assert.equal(
+				networkTotalSupplyAfter.toString(),
+				networkTotalSupplyBefore.minus(convertAmount).toString(),
+				"Contract has incorrect network total supply after conversion"
+			);
+			assert.equal(
+				primordialTotalSupplyAfter.toString(),
+				primordialTotalSupplyBefore.plus(convertAmount).toString(),
+				"Contract has incorrect primordial total supply after conversion"
+			);
+
+			var convertLot = await tokenMeta.convertLotById(convertLotId);
+			assert.equal(convertLot[0], convertLotId, "Convert Lot has incorrect convertLotId");
+			assert.equal(convertLot[1], account1, "Convert Lot has incorrect convert lotOwner");
+			assert.equal(convertLot[2], convertAmount.toString(), "Convert Lot has incorrect tokenAmount");
+		});
 		it("totalLotsByAddress() - should return the correct total lots owned by an address", async function() {
 			var account1TotalLots = await tokenMeta.totalLotsByAddress(account1);
 			var account2TotalLots = await tokenMeta.totalLotsByAddress(account2);
@@ -1083,6 +1357,7 @@ contract("AOToken", function(accounts) {
 		it("should return correct lot information at a given ID", async function() {
 			var lot = await tokenMeta.lotById(account1Lots[0][0]);
 			assert.equal(lot[0], account1Lots[0][0], "lotById() return incorrect lot ID");
+			assert.equal(lot[1], account1Lots[0][1], "lotById() return incorrect lot owner");
 			assert.equal(lot[1].toString(), account1Lots[0][1].toString(), "lotById() return incorrect multiplier");
 			assert.equal(lot[2].toString(), account1Lots[0][2].toString(), "lotById() return incorrect token amount");
 		});
@@ -1090,7 +1365,9 @@ contract("AOToken", function(accounts) {
 	contract("Token Combination Function Tests", function() {
 		before(async function() {
 			await tokenMeta.mintToken(account1, 1000, { from: developer });
-			await tokenMeta.buyPrimordialToken({ from: account1, value: 10000000 });
+			await tokenMeta.buyPrimordialToken({ from: account1, value: web3.toWei(2, "ether") });
+			await tokenMeta.buyPrimordialToken({ from: account1, value: web3.toWei(5, "ether") });
+			await tokenMeta.buyPrimordialToken({ from: account1, value: web3.toWei(3, "ether") });
 		});
 
 		it("transferTokens() - should send correct `_value` network tokens and `_primordialValue` Primordial tokens to `_to` from your account", async function() {
@@ -1138,42 +1415,107 @@ contract("AOToken", function(accounts) {
 				"Account2 has incorrect weighted multiplier after transfer"
 			);
 		});
-		/*
-		it("burnTokens() - should remove `_value` network tokens and `_primordialValue` Primordial tokens from the system irreversibly", async function() {
-			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
-			var account1PrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(account1);
-			var totalSupplyBefore = await tokenMeta.totalSupply();
+		it("burnTokens() - should remove `_value` network tokens and `_primordialValue` Primordial tokens from the system irreversibly and re-weight multiplier", async function() {
+			var maxBurnAmount = await tokenMeta.calculateMaximumBurnAmount(account1);
+			var accountNetworkBalanceBefore = await tokenMeta.balanceOf(account1);
+			var accountPrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(account1);
+			var accountWeightedMultiplierBefore = await tokenMeta.weightedMultiplierByAddress(account1);
+			var networkTotalSupplyBefore = await tokenMeta.totalSupply();
 			var primordialTotalSupplyBefore = await tokenMeta.primordialTotalSupply();
 
-			await tokenMeta.burnTokens(5, 5, { from: account1 });
+			var canBurn, burnLotId;
+			try {
+				var result = await tokenMeta.burnTokens(accountNetworkBalanceBefore.plus(10).toString(), 2, { from: account1 });
+				for (var i = 0; i < result.logs.length; i++) {
+					var log = result.logs[i];
+					if (log.event == "BurnLotCreation") {
+						burnLotId = log.args.burnLotId;
+						break;
+					}
+				}
+				canBurn = true;
+			} catch (e) {
+				burnLotId = null;
+				canBurn = false;
+			}
+			assert.equal(canBurn, false, "Account can burn more than maximum network balance");
 
-			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
-			var account1PrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(account1);
-			var totalSupplyAfter = await tokenMeta.totalSupply();
+			try {
+				var result = await tokenMeta.burnTokens(2, maxBurnAmount.plus(10).toString(), { from: account1 });
+				for (var i = 0; i < result.logs.length; i++) {
+					var log = result.logs[i];
+					if (log.event == "BurnLotCreation") {
+						burnLotId = log.args.burnLotId;
+						break;
+					}
+				}
+				canBurn = true;
+			} catch (e) {
+				burnLotId = null;
+				canBurn = false;
+			}
+			assert.equal(canBurn, false, "Account can burn more than maximum burn amount");
+
+			var burnAmount = new BigNumber(5);
+			var multiplierAfterBurn = await tokenMeta.calculateMultiplierAfterBurn(account1, burnAmount.toString());
+			try {
+				var result = await tokenMeta.burnTokens(burnAmount.toString(), burnAmount.toString(), { from: account1 });
+				for (var i = 0; i < result.logs.length; i++) {
+					var log = result.logs[i];
+					if (log.event == "BurnLotCreation") {
+						burnLotId = log.args.burnLotId;
+						break;
+					}
+				}
+				canBurn = true;
+			} catch (e) {
+				burnLotId = null;
+				canBurn = false;
+			}
+			assert.equal(canBurn, true, "Account can't burn network and primordial token");
+
+			var accountNetworkBalanceAfter = await tokenMeta.balanceOf(account1);
+			var accountPrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(account1);
+			var accountWeightedMultiplierAfter = await tokenMeta.weightedMultiplierByAddress(account1);
+			var networkTotalSupplyAfter = await tokenMeta.totalSupply();
 			var primordialTotalSupplyAfter = await tokenMeta.primordialTotalSupply();
 
 			assert.equal(
-				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.toNumber() - 5,
-				"Account1 has incorrect network tokens balance after burn"
+				accountNetworkBalanceAfter.toString(),
+				accountNetworkBalanceBefore.minus(burnAmount).toString(),
+				"Account has incorrect network balance after burn"
 			);
 			assert.equal(
-				account1PrimordialBalanceAfter.toNumber(),
-				account1PrimordialBalanceBefore.toNumber() - 5,
-				"Account1 has incorrect Primordial Tokens balance after burn"
+				accountPrimordialBalanceAfter.toString(),
+				accountPrimordialBalanceBefore.minus(burnAmount).toString(),
+				"Account has incorrect primordial balance after burn"
 			);
 			assert.equal(
-				totalSupplyAfter.toNumber(),
-				totalSupplyBefore.toNumber() - 5,
-				"Contract has incorrect network tokens total supply after burn"
+				accountWeightedMultiplierAfter.toString(),
+				multiplierAfterBurn.toString(),
+				"Account has incorrect weighted multiplier after burn"
+			);
+			assert.isAtLeast(
+				accountWeightedMultiplierAfter.toNumber(),
+				accountWeightedMultiplierBefore.toNumber(),
+				"New weighted multiplier should be greater than or equal to previous weighted multiplier"
 			);
 			assert.equal(
-				primordialTotalSupplyAfter.toNumber(),
-				primordialTotalSupplyBefore.toNumber() - 5,
-				"Contract has incorrect Primordial Tokens total supply after burn"
+				networkTotalSupplyAfter.toString(),
+				networkTotalSupplyBefore.minus(burnAmount).toString(),
+				"Contract has incorrect networkTotalSupply after burn"
 			);
+			assert.equal(
+				primordialTotalSupplyAfter.toString(),
+				primordialTotalSupplyBefore.minus(burnAmount).toString(),
+				"Contract has incorrect primordialTotalSupply after burn"
+			);
+
+			var burnLot = await tokenMeta.burnLotById(burnLotId);
+			assert.equal(burnLot[0], burnLotId, "Burn Lot has incorrect burnLotId");
+			assert.equal(burnLot[1], account1, "Burn Lot has incorrect burn lotOwner");
+			assert.equal(burnLot[2], burnAmount.toString(), "Burn Lot has incorrect tokenAmount");
 		});
-		*/
 		it("approveTokens() - should allow `_spender` to spend no more than `_value` network tokens and `_primordialValue` Primordial tokens in your behalf", async function() {
 			var account2AllowanceBefore = await tokenMeta.allowance(account1, account2);
 			var account2PrimordialAllowanceBefore = await tokenMeta.primordialAllowance(account1, account2);
@@ -1275,88 +1617,127 @@ contract("AOToken", function(accounts) {
 				"Account3 has incorrect weighted multiplier"
 			);
 		});
-		/*
-		it("burnTokensFrom() - should remove `_value` network tokens and `_primordialValue` Primordial Tokens from the system irreversibly on behalf of `_from`", async function() {
-			var canBurnTokensFrom;
-			try {
-				await tokenMeta.burnTokensFrom(account1, 5, 5, { from: developer });
-				canBurnTokensFrom = true;
-			} catch (e) {
-				canBurnTokensFrom = false;
-			}
-			assert.notEqual(canBurnTokensFrom, true, "Account that was not approved is able to burn tokens on behalf of other");
-			try {
-				await tokenMeta.burnTokensFrom(account1, 1000, 1000, { from: account2 });
-				canBurnTokensFrom = true;
-			} catch (e) {
-				canBurnTokensFrom = false;
-			}
-			assert.notEqual(
-				canBurnTokensFrom,
-				true,
-				"Account that was approved is able to burn more than it's allowance on behalf of other"
-			);
-
-			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
-			var account2AllowanceBefore = await tokenMeta.allowance(account1, account2);
-
-			var account1PrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(account1);
+		it("burnTokensFrom() - should remove `_value` network tokens and `_primordialValue` Primordial Tokens from the system irreversibly on behalf of `_from` and re-weight multiplier", async function() {
+			var maxBurnAmount = await tokenMeta.calculateMaximumBurnAmount(account1);
+			var accountNetworkBalanceBefore = await tokenMeta.balanceOf(account1);
+			var accountPrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(account1);
+			var accountWeightedMultiplierBefore = await tokenMeta.weightedMultiplierByAddress(account1);
+			var networkTotalSupplyBefore = await tokenMeta.totalSupply();
+			var primordialTotalSupplyBefore = await tokenMeta.primordialTotalSupply();
+			var account2NetworkAllowanceBefore = await tokenMeta.allowance(account1, account2);
 			var account2PrimordialAllowanceBefore = await tokenMeta.primordialAllowance(account1, account2);
 
-			var totalSupplyBefore = await tokenMeta.totalSupply();
-			var primordialTotalSupplyBefore = await tokenMeta.primordialTotalSupply();
+			var canBurn, burnLotId;
+			try {
+				var result = await tokenMeta.burnTokensFrom(account1, account2NetworkAllowanceBefore.plus(10).toString(), 2, {
+					from: account2
+				});
+				for (var i = 0; i < result.logs.length; i++) {
+					var log = result.logs[i];
+					if (log.event == "BurnLotCreation") {
+						burnLotId = log.args.burnLotId;
+						break;
+					}
+				}
+				canBurn = true;
+			} catch (e) {
+				burnLotId = null;
+				canBurn = false;
+			}
+			assert.equal(canBurn, false, "Account can burn more than network allowance");
 
 			try {
-				await tokenMeta.burnTokensFrom(account1, 10, 10, { from: account2 });
-				canBurnTokensFrom = true;
+				var result = await tokenMeta.burnTokensFrom(account1, 2, account2PrimordialAllowanceBefore.plus(10).toString(), {
+					from: account2
+				});
+
+				var result = await tokenMeta.burnTokens(2, maxBurnAmount.plus(10).toString(), { from: account1 });
+				for (var i = 0; i < result.logs.length; i++) {
+					var log = result.logs[i];
+					if (log.event == "BurnLotCreation") {
+						burnLotId = log.args.burnLotId;
+						break;
+					}
+				}
+				canBurn = true;
 			} catch (e) {
-				canBurnTokensFrom = false;
+				burnLotId = null;
+				canBurn = false;
 			}
-			assert.equal(canBurnTokensFrom, true, "Account that was approved is not able to burn on behalf of other");
+			assert.equal(canBurn, false, "Account can burn more than primordial allowance");
 
-			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
-			var account2AllowanceAfter = await tokenMeta.allowance(account1, account2);
+			var burnAmount = new BigNumber(5);
+			var multiplierAfterBurn = await tokenMeta.calculateMultiplierAfterBurn(account1, burnAmount.toString());
+			try {
+				var result = await tokenMeta.burnTokensFrom(account1, burnAmount.toString(), burnAmount.toString(), { from: account2 });
+				for (var i = 0; i < result.logs.length; i++) {
+					var log = result.logs[i];
+					if (log.event == "BurnLotCreation") {
+						burnLotId = log.args.burnLotId;
+						break;
+					}
+				}
+				canBurn = true;
+			} catch (e) {
+				burnLotId = null;
+				canBurn = false;
+			}
+			assert.equal(canBurn, true, "Account can't burn network and primordial token");
 
-			var account1PrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(account1);
+			var accountNetworkBalanceAfter = await tokenMeta.balanceOf(account1);
+			var accountPrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(account1);
+			var accountWeightedMultiplierAfter = await tokenMeta.weightedMultiplierByAddress(account1);
+			var networkTotalSupplyAfter = await tokenMeta.totalSupply();
+			var primordialTotalSupplyAfter = await tokenMeta.primordialTotalSupply();
+			var account2NetworkAllowanceAfter = await tokenMeta.allowance(account1, account2);
 			var account2PrimordialAllowanceAfter = await tokenMeta.primordialAllowance(account1, account2);
 
-			var totalSupplyAfter = await tokenMeta.totalSupply();
-			var primordialTotalSupplyAfter = await tokenMeta.primordialTotalSupply();
+			assert.equal(
+				accountNetworkBalanceAfter.toString(),
+				accountNetworkBalanceBefore.minus(burnAmount).toString(),
+				"Account has incorrect network balance after burn"
+			);
+			assert.equal(
+				accountPrimordialBalanceAfter.toString(),
+				accountPrimordialBalanceBefore.minus(burnAmount).toString(),
+				"Account has incorrect primordial balance after burn"
+			);
+			assert.equal(
+				accountWeightedMultiplierAfter.toString(),
+				multiplierAfterBurn.toString(),
+				"Account has incorrect weighted multiplier after burn"
+			);
+			assert.isAtLeast(
+				accountWeightedMultiplierAfter.toNumber(),
+				accountWeightedMultiplierBefore.toNumber(),
+				"New weighted multiplier should be greater than or equal to previous weighted multiplier"
+			);
+			assert.equal(
+				networkTotalSupplyAfter.toString(),
+				networkTotalSupplyBefore.minus(burnAmount).toString(),
+				"Contract has incorrect networkTotalSupply after burn"
+			);
+			assert.equal(
+				primordialTotalSupplyAfter.toString(),
+				primordialTotalSupplyBefore.minus(burnAmount).toString(),
+				"Contract has incorrect primordialTotalSupply after burn"
+			);
+			assert.equal(
+				account2NetworkAllowanceAfter.toString(),
+				account2NetworkAllowanceBefore.minus(burnAmount).toString(),
+				"Account has incorrect network allowance after burn"
+			);
+			assert.equal(
+				account2PrimordialAllowanceAfter.toString(),
+				account2PrimordialAllowanceBefore.minus(burnAmount).toString(),
+				"Account has incorrect primordial allowance after burn"
+			);
 
-			assert.equal(
-				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.toNumber() - 10,
-				"Account1 has incorrect network tokens balance after burnTokensFrom"
-			);
-			assert.equal(
-				account2AllowanceAfter.toNumber(),
-				account2AllowanceBefore.toNumber() - 10,
-				"Account2 has incorrect network tokens allowance after burnTokensFrom"
-			);
-
-			assert.equal(
-				account1PrimordialBalanceAfter.toNumber(),
-				account1PrimordialBalanceBefore.toNumber() - 10,
-				"Account1 has incorrect Primordial Tokens balance after burnTokensFrom"
-			);
-			assert.equal(
-				account2PrimordialAllowanceAfter.toNumber(),
-				account2PrimordialAllowanceBefore.toNumber() - 10,
-				"Account2 has incorrect Primordial Tokens allowance after burnTokensFrom"
-			);
-
-			assert.equal(
-				totalSupplyAfter.toNumber(),
-				totalSupplyBefore.toNumber() - 10,
-				"Contract has incorrect network tokens total suppy after burnTokensFrom"
-			);
-			assert.equal(
-				primordialTotalSupplyAfter.toNumber(),
-				primordialTotalSupplyBefore.toNumber() - 10,
-				"Contract has incorrect Primordial Tokens total suppy after burnTokensFrom"
-			);
+			var burnLot = await tokenMeta.burnLotById(burnLotId);
+			assert.equal(burnLot[0], burnLotId, "Burn Lot has incorrect burnLotId");
+			assert.equal(burnLot[1], account1, "Burn Lot has incorrect burn lotOwner");
+			assert.equal(burnLot[2], burnAmount.toString(), "Burn Lot has incorrect tokenAmount");
 		});
-		*/
 	});
 	contract("Whitelisted Address Function Tests", function() {
 		var stakedPrimordialWeightedMultiplier;
