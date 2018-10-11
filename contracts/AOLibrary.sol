@@ -320,4 +320,38 @@ library AOLibrary {
 		uint256 networkTokenBonus = bonusPercentage.mul(_purchaseAmount).div(PERCENTAGE_DIVISOR);
 		return networkTokenBonus;
 	}
+
+	/**
+	 * @dev Calculate the maximum amount of Primordial an account can burn
+	 *		_primordialBalance = P
+	 *		_currentWeightedMultiplier = M
+	 *		_maximumMultiplier = S
+	 *		_amountToBurn = B
+	 *		B = ((S x P) - (P x M)) / S
+	 *
+	 * @param _primordialBalance Account's primordial token balance
+	 * @param _currentWeightedMultiplier Account's current weighted multiplier
+	 * @param _maximumMultiplier The maximum multiplier of this account
+	 * @return The maximum burn amount
+	 */
+	function calculateMaximumBurnAmount(uint256 _primordialBalance, uint256 _currentWeightedMultiplier, uint256 _maximumMultiplier) public pure returns (uint256) {
+		return (_maximumMultiplier.mul(_primordialBalance).sub(_primordialBalance.mul(_currentWeightedMultiplier))).div(_maximumMultiplier);
+	}
+
+	/**
+	 * @dev Calculate the new multiplier after burn
+	 *		_primordialBalance = P
+	 *		_currentWeightedMultiplier = M
+	 *		_amountToBurn = B
+	 *		_newMultiplier = E
+	 *		E = (P x M) / (P - B)
+	 *
+	 * @param _primordialBalance Account's primordial token balance
+	 * @param _currentWeightedMultiplier Account's current weighted multiplier
+	 * @param _amountToBurn The amount of primordial token to burn
+	 * @return The new multiplier
+	 */
+	function calculateMultiplierAfterBurn(uint256 _primordialBalance, uint256 _currentWeightedMultiplier, uint256 _amountToBurn) public pure returns (uint256) {
+		return _primordialBalance.mul(_currentWeightedMultiplier).div(_primordialBalance.sub(_amountToBurn));
+	}
 }

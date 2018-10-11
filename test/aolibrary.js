@@ -23,4 +23,14 @@ contract("AOLibrary", function(accounts) {
 		var bonusAmount = await library.calculateNetworkTokenBonusAmount(50, 1000, 300, 1000000, 250000);
 		assert.equal(bonusAmount.toNumber(), 25, "Library returns incorrect network token bonus amount for a given lot");
 	});
+
+	it("calculateMaximumBurnAmount() - should calculate and return the correct maximum burn amount", async function() {
+		var burnAmount = await library.calculateMaximumBurnAmount(70, 40000000, 50000000);
+		assert.equal(burnAmount.toString(), 14, "Library returns incorrect maximum burn amount");
+	});
+
+	it("calculateMultiplierAfterBurn() - should calculate and return the correct new multiplier after burning primordial token", async function() {
+		var newMultiplier = await library.calculateMultiplierAfterBurn(70, 40000000, 14);
+		assert.equal(newMultiplier.toString(), 50000000, "Library returns incorrect maximum burn amount");
+	});
 });
