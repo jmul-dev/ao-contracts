@@ -24,9 +24,8 @@ contract AOEarning is developed {
 
 	uint256 public inflationRate; // support up to 4 decimals, i.e 12.3456% = 123456
 	uint256 public foundationCut; // support up to 4 decimals, i.e 12.3456% = 123456
-	uint256 public multiplierModifier; // support up to 2 decimals, 100 = 1
 	uint256 constant public PERCENTAGE_DIVISOR = 10 ** 6; // 100% = 1000000
-	uint256 constant public WEIGHTED_INDEX_DIVISOR = 10 ** 6; // 1000000 = 1
+	uint256 constant public MULTIPLIER_DIVISOR = 10 ** 6; // 1000000 = 1
 
 	// Total earning from staking content from all nodes
 	uint256 public totalStakeContentEarning;
@@ -111,7 +110,6 @@ contract AOEarning is developed {
 		treasuryAddress = _treasuryAddress;
 		_baseAO = AOToken(_baseDenominationAddress);
 		_treasury = AOTreasury(_treasuryAddress);
-		setMultiplierModifier(1000000); // multiplierModifier = 1
 	}
 
 	/**
@@ -159,15 +157,6 @@ contract AOEarning is developed {
 	}
 
 	/**
-	 * @dev Sets multiplier modifier
-	 * @param _multiplierModifier The new multiplier modifier value to be set (in 6 decimals)
-	 *			so 1000000 = 1
-	 */
-	function setMultiplierModifier(uint256 _multiplierModifier) public inWhitelist(msg.sender) {
-		multiplierModifier = _multiplierModifier;
-	}
-
-	/**
 	 * @dev Developer triggers emergency mode.
 	 *
 	 */
@@ -186,7 +175,7 @@ contract AOEarning is developed {
 	 * @param _purchaseId The ID of the purchase receipt object
 	 * @param _networkAmountStaked The amount of network tokens at stake
 	 * @param _primordialAmountStaked The amount of primordial tokens at stake
-	 * @param _primordialWeightedIndexStaked The weighted index of primordial tokens at stake
+	 * @param _primordialWeightedMultiplierStaked The weighted multiplier of primordial tokens at stake
 	 * @param _profitPercentage The content creator's profit percentage
 	 * @param _stakeOwner The address of the stake owner
 	 * @param _host The address of the host
@@ -196,7 +185,7 @@ contract AOEarning is developed {
 		bytes32 _purchaseId,
 		uint256 _networkAmountStaked,
 		uint256 _primordialAmountStaked,
-		uint256 _primordialWeightedIndexStaked,
+		uint256 _primordialWeightedMultiplierStaked,
 		uint256 _profitPercentage,
 		address _stakeOwner,
 		address _host) public isActive inWhitelist(msg.sender) returns (bool) {
@@ -205,7 +194,7 @@ contract AOEarning is developed {
 		_escrowPaymentEarning(_buyer, _purchaseId, _networkAmountStaked.add(_primordialAmountStaked), _profitPercentage, _stakeOwner, _host);
 
 		// Calculate the inflation bonus earning for content creator/node/foundation in escrow
-		_escrowInflationBonus(_purchaseId, _calculateInflationBonus(_networkAmountStaked, _primordialAmountStaked, _primordialWeightedIndexStaked), _profitPercentage, _stakeOwner, _host);
+		_escrowInflationBonus(_purchaseId, _calculateInflationBonus(_networkAmountStaked, _primordialAmountStaked, _primordialWeightedMultiplierStaked), _profitPercentage, _stakeOwner, _host);
 		return true;
 	}
 
@@ -262,37 +251,13 @@ contract AOEarning is developed {
 	 * @dev Calculate the inflation bonus amount
 	 * @param _networkAmountStaked The amount of network tokens at stake
 	 * @param _primordialAmountStaked The amount of primordial tokens at stake
-	 * @param _primordialWeightedIndexStaked The weighted index of primordial tokens at stake
+	 * @param _primordialWeightedMultiplierStaked The weighted multiplier of primordial tokens at stake
 	 * @return the bonus network amount
 	 */
-	function _calculateInflationBonus(uint256 _networkAmountStaked, uint256 _primordialAmountStaked, uint256 _primordialWeightedIndexStaked) internal view returns (uint256) {
+	function _calculateInflationBonus(uint256 _networkAmountStaked, uint256 _primordialAmountStaked, uint256 _primordialWeightedMultiplierStaked) internal view returns (uint256) {
 		uint256 _networkBonus = _networkAmountStaked.mul(inflationRate).div(PERCENTAGE_DIVISOR);
-		uint256 _multiplier = _calculateMultiplier(_primordialWeightedIndexStaked);
-		uint256 _primordialBonus = _primordialAmountStaked.mul(_multiplier).div(WEIGHTED_INDEX_DIVISOR).mul(inflationRate).div(PERCENTAGE_DIVISOR);
+		uint256 _primordialBonus = _primordialAmountStaked.mul(_primordialWeightedMultiplierStaked).div(MULTIPLIER_DIVISOR).mul(inflationRate).div(PERCENTAGE_DIVISOR);
 		return _networkBonus.add(_primordialBonus);
-	}
-
-	/**
-	 * @dev Given a weighted index, we want to calculate the multiplier
-	 * @param _weightedIndex The weighted index of the primordial token
-	 * @return multiplier in 6 decimals
-	 */
-	function _calculateMultiplier(uint256 _weightedIndex) internal view returns (uint256) {
-		/**
-		 * Multiplier = 1 + (multiplierModifier * ((lastWeightedIndex - weightedIndex)/lastWeightedIndex))
-		 *
-		 * Since we are calculating in decimals, so 1 is actually 1000000 or WEIGHTED_INDEX_DIVISOR
-		 * Multiplier = WEIGHTED_INDEX_DIVISOR + (multiplierModifier * ((lastWeightedIndex - weightedIndex)/lastWeightedIndex))
-		 * Let temp = (lastWeightedIndex - weightedIndex)/lastWeightedIndex
-		 * To account for decimal points,
-		 * temp = ((lastWeightedIndex - weightedIndex) * WEIGHTED_INDEX_DIVISOR)/lastWeightedIndex
-		 * We need to divide temp with WEIGHTED_INDEX_DIVISOR later
-		 * Multiplier = WEIGHTED_INDEX_DIVISOR + ((multiplierModifier * temp) / WEIGHTED_INDEX_DIVISOR)
-		 */
-		uint256 _lastWeightedIndex = _baseAO.lotIndex().mul(WEIGHTED_INDEX_DIVISOR);
-		require (_lastWeightedIndex >= _weightedIndex);
-		uint256 _temp = (_lastWeightedIndex.sub(_weightedIndex)).mul(WEIGHTED_INDEX_DIVISOR).div(_lastWeightedIndex);
-		return WEIGHTED_INDEX_DIVISOR.add(multiplierModifier.mul(_temp).div(WEIGHTED_INDEX_DIVISOR));
 	}
 
 	/**
