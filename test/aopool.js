@@ -1,6 +1,7 @@
 var AOPool = artifacts.require("./AOPool.sol");
 var AOToken = artifacts.require("./AOToken.sol");
 var BigNumber = require("bignumber.js");
+BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
 contract("AOPool", function(accounts) {
 	var aopool, aotoken, poolId1, poolId2, poolId3, poolId4, poolId5, poolId6;
