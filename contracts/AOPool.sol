@@ -69,7 +69,7 @@ contract AOPool is developed {
 		uint256 lotQuantity;				// Amount of AO being added to the Pool from this Lot
 		uint256 poolId;						// Identifier for the Pool this Lot is adding to
 		uint256 poolPreSellSnapshot;		// Amount of contributed to the Pool prior to this Lot Number
-		uint256 poolSellLotSnapshot;		// poolPreSellSnapshot + lotQuantity
+		uint256 poolSellLotSnapshot;		// poolPreSellSnapshot + lotQuantity - tokenWithdrawn
 		uint256 lotValueInCounterAsset;		// Amount of AO x Pool Price
 		uint256 counterAssetWithdrawn;		// Amount of Counter-Asset withdrawn from this Lot
 		uint256 tokenWithdrawn;				// Amount of AO withdrawn from this Lot
@@ -82,6 +82,7 @@ contract AOPool is developed {
 	uint256 public contractTotalSell;		// Quantity of AO that has been contributed to all Pools
 	uint256 public contractTotalBuy;		// Quantity of AO that has been bought from all Pools
 	uint256 public contractTotalQuantity;	// Quantity of AO available to buy from all Pools
+	uint256 public contractTotalWithdrawn;	// Quantity of AO that has been withdrawn from all Pools
 	uint256 public contractEthereumBalance;	// Total quantity of Ethereum in contract
 	uint256 public contractTotalEthereumWithdrawn; // Total Ethereum withdrawn from selling AO in contract
 
@@ -91,8 +92,14 @@ contract AOPool is developed {
 	// Mapping from Lot ID to Lot
 	mapping (bytes32 => Lot) public lots;
 
-	// Mapping from Pool ID to Lots in the Pool
-	mapping (uint256 => bytes32[]) public poolLots;
+	// Mapping from Pool ID to total Lots in the Pool
+	mapping (uint256 => uint256) public poolTotalLot;
+
+	// Mapping from Pool's Lot ID to Lot internal ID
+	mapping (uint256 => mapping (bytes32 => uint256)) internal poolLotInternalIdLookup;
+
+	// Mapping from Pool's Lot internal ID to total token withdrawn
+	mapping (uint256 => mapping (uint256 => uint256)) public poolLotTokenWithdrawn;
 
 	// Mapping from Pool ID to quantity of AO available to buy at `price`
 	mapping (uint256 => uint256) public poolTotalQuantity;
@@ -102,6 +109,9 @@ contract AOPool is developed {
 
 	// Mapping from Pool ID to quantity of AO that has been bought from the Pool
 	mapping (uint256 => uint256) public poolTotalBuy;
+
+	// Mapping from Pool ID to quantity of AO that has been withdrawn from the Pool
+	mapping (uint256 => uint256) public poolTotalWithdrawn;
 
 	// Mapping from Pool ID to quantity of Ethereum available to withdraw
 	mapping (uint256 => uint256) public poolEthereumBalance;
@@ -125,7 +135,7 @@ contract AOPool is developed {
 	mapping (address => uint256) public totalEthereumWithdrawn;
 
 	// Mapping from an address to its Lots
-	mapping (address => bytes32[]) public ownerLots;
+	mapping (address => bytes32[]) internal ownerLots;
 
 	/**
 	 * @dev Constructor function
@@ -159,6 +169,9 @@ contract AOPool is developed {
 
 	// Event to be broadcasted to public when a buyer withdraw ETH from Lot
 	event WithdrawEth(address indexed seller, bytes32 indexed lotId, uint256 indexed poolId, uint256 withdrawnAmount, uint256 currentLotValueInCounterAsset, uint256 currentLotCounterAssetWithdrawn);
+
+	// Event to be broadcasted to public when a seller withdraw token from Lot
+	event WithdrawToken(address indexed seller, bytes32 indexed lotId, uint256 indexed poolId, uint256 withdrawnAmount, uint256 currentlotValueInCounterAsset, uint256 currentLotTokenWithdrawn);
 
 	/***** Developer Only Methods *****/
 	/**
@@ -262,7 +275,7 @@ contract AOPool is developed {
 	 */
 	function sell(uint256 _poolId, uint256 _quantity, uint256 _price) public {
 		Pool memory _pool = pools[_poolId];
-		require (_pool.status == true && _pool.price == _price && _quantity > 0 && _quantity <= _baseAO.balanceOf(msg.sender));
+		require (_pool.status == true && _pool.price == _price && _quantity > 0 && _baseAO.balanceOf(msg.sender) > 0 && _quantity <= _baseAO.balanceOf(msg.sender));
 
 		// If there is a sell cap
 		if (_pool.sellCapStatus == true) {
@@ -276,6 +289,7 @@ contract AOPool is developed {
 
 		// Create Lot for this sell transaction
 		contractTotalLot++;
+		poolTotalLot[_poolId]++;
 
 		// Generate Lot ID
 		bytes32 _lotId = keccak256(abi.encodePacked(this, msg.sender, contractTotalLot));
@@ -289,7 +303,7 @@ contract AOPool is developed {
 		_lot.poolSellLotSnapshot = poolTotalSell[_poolId].add(_quantity);
 		_lot.lotValueInCounterAsset = _quantity.mul(_pool.price);
 		_lot.timestamp = now;
-		poolLots[_poolId].push(_lotId);
+		poolLotInternalIdLookup[_poolId][_lotId] = poolTotalLot[_poolId];
 		ownerLots[msg.sender].push(_lotId);
 
 		// Update contract variables
@@ -299,7 +313,34 @@ contract AOPool is developed {
 		contractTotalQuantity = contractTotalQuantity.add(_quantity);
 		contractTotalSell = contractTotalSell.add(_quantity);
 
+		require (_baseAO.whitelistTransferFrom(msg.sender, this, _quantity));
+
 		emit LotCreation(_lot.poolId, _lot.lotId, _lot.seller, _lot.lotQuantity, _pool.price, _lot.poolPreSellSnapshot, _lot.poolSellLotSnapshot, _lot.lotValueInCounterAsset, _pool.erc20CounterAsset, _lot.timestamp);
+	}
+
+	/**
+	 * @dev Retrieve number of Lots an `_account` has
+	 * @param _account The address of the Lot's owner
+	 * @return Total Lots the owner has
+	 */
+	function ownerTotalLot(address _account) public view returns (uint256) {
+		return ownerLots[_account].length;
+	}
+
+	/**
+	 * @dev Get list of owner's Lot IDs from `_from` to `_to` index
+	 * @param _account The address of the Lot's owner
+	 * @param _from The starting index, (i.e 0)
+	 * @param _to The ending index, (i.e total - 1)
+	 * @return list of owner's IDs
+	 */
+	function ownerLotIds(address _account, uint256 _from, uint256 _to) public view returns (bytes32[]) {
+		require (_from >= 0 && _to >= _from && ownerLots[_account].length > _to);
+		bytes32[] memory _lotIds = new bytes32[](_to.sub(_from).add(1));
+		for (uint256 i = _from; i <= _to; i++) {
+			_lotIds[i.sub(_from)] = ownerLots[_account][i];
+		}
+		return _lotIds;
 	}
 
 	/**
@@ -325,7 +366,8 @@ contract AOPool is developed {
 
 		totalBought[msg.sender] = totalBought[msg.sender].add(_quantity);
 
-		require (_baseAO.mintToken(msg.sender, _quantity));
+		require (_baseAO.whitelistTransferFrom(this, msg.sender, _quantity));
+
 		emit BuyWithEth(_poolId, msg.sender, _quantity, _price, poolTotalBuy[_poolId]);
 	}
 
@@ -336,8 +378,6 @@ contract AOPool is developed {
 	function withdrawEth(bytes32 _lotId) public {
 		Lot storage _lot = lots[_lotId];
 		require (_lot.seller == msg.sender && _lot.lotValueInCounterAsset > 0);
-		require (poolTotalBuy[_lot.poolId] > _lot.poolPreSellSnapshot);
-
 		(uint256 soldQuantity, uint256 ethAvailableToWithdraw,) = lotEthAvailableToWithdraw(_lotId);
 
 		require (ethAvailableToWithdraw > 0 && ethAvailableToWithdraw <= _lot.lotValueInCounterAsset && ethAvailableToWithdraw <= poolEthereumBalance[_lot.poolId] && ethAvailableToWithdraw <= contractEthereumBalance);
@@ -377,11 +417,67 @@ contract AOPool is developed {
 
 		uint256 soldQuantity = 0;
 		uint256 ethAvailableToWithdraw = 0;
-		if (poolTotalBuy[_lot.poolId] > _lot.poolPreSellSnapshot) {
-			soldQuantity = (poolTotalBuy[_lot.poolId] >= _lot.poolSellLotSnapshot) ? _lot.lotQuantity : poolTotalBuy[_lot.poolId].sub(_lot.poolPreSellSnapshot);
-			uint256 ethOwedToLot = soldQuantity.mul(_pool.price).sub(_lot.tokenWithdrawn.mul(_pool.price));
-			ethAvailableToWithdraw = ethOwedToLot.sub(_lot.counterAssetWithdrawn);
+		// Check whether or not there are tokens withdrawn from Lots before this Lot
+		uint256 lotAdjustment = totalTokenWithdrawnBeforeLot(_lotId);
+
+		if (poolTotalBuy[_lot.poolId] > _lot.poolPreSellSnapshot.sub(lotAdjustment) && _lot.lotValueInCounterAsset > 0) {
+			soldQuantity = (poolTotalBuy[_lot.poolId] >= _lot.poolSellLotSnapshot.sub(lotAdjustment)) ? _lot.lotQuantity : poolTotalBuy[_lot.poolId].sub(_lot.poolPreSellSnapshot.sub(lotAdjustment));
+			if (soldQuantity > 0) {
+				soldQuantity = soldQuantity.sub(_lot.counterAssetWithdrawn.div(_pool.price)).sub(_lot.tokenWithdrawn);
+				ethAvailableToWithdraw = soldQuantity.mul(_pool.price);
+			}
 		}
 		return (soldQuantity, ethAvailableToWithdraw, _lot.counterAssetWithdrawn);
+	}
+
+	/**
+	 * @dev Seller withdraw token from Lot `_lotId`
+	 * @param _lotId The ID of the Lot
+	 * @param _quantity The amount of token to withdraw
+	 */
+	function withdrawToken(bytes32 _lotId, uint256 _quantity) public {
+		Lot storage _lot = lots[_lotId];
+		require (_lot.seller == msg.sender && _lot.lotValueInCounterAsset > 0);
+
+		Pool memory _pool = pools[_lot.poolId];
+		require (_quantity > 0 && _quantity <= _lot.lotValueInCounterAsset.div(_pool.price));
+
+		// Update lot variables
+		_lot.tokenWithdrawn = _lot.tokenWithdrawn.add(_quantity);
+		_lot.lotValueInCounterAsset = _lot.lotValueInCounterAsset.sub(_quantity.mul(_pool.price));
+		_lot.poolSellLotSnapshot = _lot.poolSellLotSnapshot.sub(_quantity);
+		poolLotTokenWithdrawn[_lot.poolId][poolLotInternalIdLookup[_lot.poolId][_lotId]] = poolLotTokenWithdrawn[_lot.poolId][poolLotInternalIdLookup[_lot.poolId][_lotId]].add(_quantity);
+
+		// Update contract variables
+		poolTotalQuantity[_lot.poolId] = poolTotalQuantity[_lot.poolId].sub(_quantity);
+		contractTotalQuantity = contractTotalQuantity.sub(_quantity);
+		poolTotalWithdrawn[_lot.poolId] = poolTotalWithdrawn[_lot.poolId].add(_quantity);
+		contractTotalWithdrawn = contractTotalWithdrawn.add(_quantity);
+
+		totalPutOnSale[msg.sender] = totalPutOnSale[msg.sender].sub(_quantity);
+
+		assert (_lot.tokenWithdrawn.add(_lot.lotValueInCounterAsset.div(_pool.price)).add(_lot.counterAssetWithdrawn.div(_pool.price)) == _lot.lotQuantity);
+
+		require (_baseAO.whitelistTransferFrom(this, msg.sender, _quantity));
+
+		emit WithdrawToken(_lot.seller, _lot.lotId, _lot.poolId, _quantity, _lot.lotValueInCounterAsset, _lot.tokenWithdrawn);
+	}
+
+	/**
+	 * @dev Get total token withdrawn from all Lots before Lot `_lotId`
+	 * @param _lotId The ID of the Lot
+	 * @return Total token withdrawn from all Lots before Lot `_lotId`
+	 */
+	function totalTokenWithdrawnBeforeLot(bytes32 _lotId) public view returns (uint256) {
+		Lot memory _lot = lots[_lotId];
+		require (_lot.seller != address(0) && poolLotInternalIdLookup[_lot.poolId][_lotId] > 0);
+
+		uint256 totalTokenWithdrawn = 0;
+		for (uint256 i=1; i<poolLotInternalIdLookup[_lot.poolId][_lotId]; i++) {
+			if (poolLotTokenWithdrawn[_lot.poolId][i] > 0) {
+				totalTokenWithdrawn = totalTokenWithdrawn.add(poolLotTokenWithdrawn[_lot.poolId][i]);
+			}
+		}
+		return totalTokenWithdrawn;
 	}
 }
