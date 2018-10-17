@@ -291,6 +291,20 @@ contract AOToken is developed, TokenERC20 {
 		return true;
 	}
 
+	/**
+	 * @dev Whitelisted address transfer tokens from other address
+	 *
+	 * Send `_value` tokens to `_to` in behalf of `_from`
+	 *
+	 * @param _from The address of the sender
+	 * @param _to The address of the recipient
+	 * @param _value the amount to send
+	 */
+	function whitelistTransferFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool success) {
+		_transfer(_from, _to, _value);
+		return true;
+	}
+
 	/***** PRIMORDIAL TOKEN DEVELOPER ONLY METHODS *****/
 	/**
 	 * @dev Allow users to buy Primordial tokens for `newBuyPrice` eth and sell Primordial tokens for `newSellPrice` eth
