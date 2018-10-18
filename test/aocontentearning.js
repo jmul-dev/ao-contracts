@@ -1501,6 +1501,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			var totalStakedContentStakeEarningBefore = await aoearning.totalStakedContentStakeEarning(stakeId1);
 			var totalStakedContentHostEarningBefore = await aoearning.totalStakedContentHostEarning(stakeId1);
 			var totalStakedContentFoundationEarningBefore = await aoearning.totalStakedContentFoundationEarning(stakeId1);
+			var totalHostContentEarningByIdBefore = await aoearning.totalHostContentEarningById(contentHostId1);
 
 			var canBecomeHost, hostContentEvent, contentHost;
 			try {
@@ -1556,6 +1557,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			var totalStakedContentStakeEarningAfter = await aoearning.totalStakedContentStakeEarning(stakeId1);
 			var totalStakedContentHostEarningAfter = await aoearning.totalStakedContentHostEarning(stakeId1);
 			var totalStakedContentFoundationEarningAfter = await aoearning.totalStakedContentFoundationEarning(stakeId1);
+			var totalHostContentEarningByIdAfter = await aoearning.totalHostContentEarningById(contentHostId1);
 
 			// Verify the earning
 			assert.equal(stakeEarningAfter[0], purchaseId, "Stake earning has incorrect purchaseId");
@@ -1697,6 +1699,14 @@ contract("AOContent & AOEarning", function(accounts) {
 				totalStakedContentFoundationEarningAfter.toString(),
 				totalStakedContentFoundationEarningBefore.plus(foundationEarningBefore[2]).toString(),
 				"Staked content has incorrect totalStakedContentFoundationEarning value"
+			);
+			assert.equal(
+				totalHostContentEarningByIdAfter.toString(),
+				totalHostContentEarningByIdBefore
+					.plus(hostEarningBefore[1])
+					.plus(hostEarningBefore[2])
+					.toString(),
+				"Content Host ID has incorrect total earning value"
 			);
 		});
 

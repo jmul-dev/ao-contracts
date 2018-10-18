@@ -77,6 +77,9 @@ contract AOEarning is developed {
 	// Mapping from stake ID to it's total earning earned by Foundation
 	mapping (bytes32 => uint256) public totalStakedContentFoundationEarning;
 
+	// Mapping from content host ID to it's total earning
+	mapping (bytes32 => uint256) public totalHostContentEarningById;
+
 	// Event to be broadcasted to public when content creator/host/foundation earns inflation bonus in escrow when request node buys the content
 	// recipientType:
 	// 0 => Content Creator (Stake Owner)
@@ -201,6 +204,7 @@ contract AOEarning is developed {
 	/**
 	 * @dev Release the payment earning and inflation bonus that is in escrow for specific purchase ID
 	 * @param _stakeId The ID of the staked content
+	 * @param _contentHostId The ID of the hosted content
 	 * @param _purchaseId The purchase receipt ID to check
 	 * @param _buyerPaidAmount The request node paid amount when buying the content
 	 * @param _fileSize The size of the content
@@ -208,15 +212,15 @@ contract AOEarning is developed {
 	 * @param _host The address of the node that host the file
 	 * @return true on success
 	 */
-	function releaseEarning(bytes32 _stakeId, bytes32 _purchaseId, uint256 _buyerPaidAmount, uint256 _fileSize, address _stakeOwner, address _host) public isActive inWhitelist(msg.sender) returns (bool) {
+	function releaseEarning(bytes32 _stakeId, bytes32 _contentHostId, bytes32 _purchaseId, uint256 _buyerPaidAmount, uint256 _fileSize, address _stakeOwner, address _host) public isActive inWhitelist(msg.sender) returns (bool) {
 		// Release the earning in escrow for stake owner
-		_releaseEarning(_stakeId, _purchaseId, _buyerPaidAmount, _fileSize, _stakeOwner, 0);
+		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidAmount, _fileSize, _stakeOwner, 0);
 
 		// Release the earning in escrow for host
-		_releaseEarning(_stakeId, _purchaseId, _buyerPaidAmount, _fileSize, _host, 1);
+		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidAmount, _fileSize, _host, 1);
 
 		// Release the earning in escrow for foundation
-		_releaseEarning(_stakeId, _purchaseId, _buyerPaidAmount, _fileSize, developer, 2);
+		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidAmount, _fileSize, developer, 2);
 		return true;
 	}
 
@@ -305,13 +309,14 @@ contract AOEarning is developed {
 	/**
 	 * @dev Release the escrowed earning for a specific purchase ID for an account
 	 * @param _stakeId The ID of the staked content
+	 * @param _contentHostId The ID of the hosted content
 	 * @param _purchaseId The purchase receipt ID
 	 * @param _buyerPaidAmount The request node paid amount when buying the content
 	 * @param _fileSize The size of the content
 	 * @param _account The address of account that made the earning (content creator/host)
 	 * @param _recipientType The type of the earning recipient (0 => content creator. 1 => host. 2 => foundation)
 	 */
-	function _releaseEarning(bytes32 _stakeId, bytes32 _purchaseId, uint256 _buyerPaidAmount, uint256 _fileSize, address _account, uint8 _recipientType) internal {
+	function _releaseEarning(bytes32 _stakeId, bytes32 _contentHostId, bytes32 _purchaseId, uint256 _buyerPaidAmount, uint256 _fileSize, address _account, uint8 _recipientType) internal {
 		// Make sure the recipient type is valid
 		require (_recipientType >= 0 && _recipientType <= 2);
 
@@ -319,11 +324,11 @@ contract AOEarning is developed {
 		uint256 _inflationBonus;
 		uint256 _totalEarning;
 		if (_recipientType == 0) {
-			Earning storage _stakeEarning = stakeEarnings[_account][_purchaseId];
-			_paymentEarning = _stakeEarning.paymentEarning;
-			_inflationBonus = _stakeEarning.inflationBonus;
-			_stakeEarning.paymentEarning = 0;
-			_stakeEarning.inflationBonus = 0;
+			Earning storage _earning = stakeEarnings[_account][_purchaseId];
+			_paymentEarning = _earning.paymentEarning;
+			_inflationBonus = _earning.inflationBonus;
+			_earning.paymentEarning = 0;
+			_earning.inflationBonus = 0;
 			_totalEarning = _paymentEarning.add(_inflationBonus);
 
 			// Update the global var settings
@@ -337,17 +342,18 @@ contract AOEarning is developed {
 			}
 			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_inflationBonus);
 		} else if (_recipientType == 1) {
-			Earning storage _hostEarning = hostEarnings[_account][_purchaseId];
-			_paymentEarning = _hostEarning.paymentEarning;
-			_inflationBonus = _hostEarning.inflationBonus;
-			_hostEarning.paymentEarning = 0;
-			_hostEarning.inflationBonus = 0;
+			_earning = hostEarnings[_account][_purchaseId];
+			_paymentEarning = _earning.paymentEarning;
+			_inflationBonus = _earning.inflationBonus;
+			_earning.paymentEarning = 0;
+			_earning.inflationBonus = 0;
 			_totalEarning = _paymentEarning.add(_inflationBonus);
 
 			// Update the global var settings
 			totalHostContentEarning = totalHostContentEarning.add(_totalEarning);
 			hostContentEarning[_account] = hostContentEarning[_account].add(_totalEarning);
 			totalStakedContentHostEarning[_stakeId] = totalStakedContentHostEarning[_stakeId].add(_totalEarning);
+			totalHostContentEarningById[_contentHostId] = totalHostContentEarningById[_contentHostId].add(_totalEarning);
 			if (_buyerPaidAmount > _fileSize) {
 				contentPriceEarning[_account] = contentPriceEarning[_account].add(_totalEarning);
 			} else {
@@ -355,11 +361,11 @@ contract AOEarning is developed {
 			}
 			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_inflationBonus);
 		} else {
-			Earning storage _foundationEarning = foundationEarnings[_purchaseId];
-			_paymentEarning = _foundationEarning.paymentEarning;
-			_inflationBonus = _foundationEarning.inflationBonus;
-			_foundationEarning.paymentEarning = 0;
-			_foundationEarning.inflationBonus = 0;
+			_earning = foundationEarnings[_purchaseId];
+			_paymentEarning = _earning.paymentEarning;
+			_inflationBonus = _earning.inflationBonus;
+			_earning.paymentEarning = 0;
+			_earning.inflationBonus = 0;
 			_totalEarning = _paymentEarning.add(_inflationBonus);
 
 			// Update the global var settings
