@@ -95,12 +95,6 @@ contract AOPool is developed {
 	// Mapping from Pool ID to total Lots in the Pool
 	mapping (uint256 => uint256) public poolTotalLot;
 
-	// Mapping from Pool's Lot ID to Lot internal ID
-	mapping (uint256 => mapping (bytes32 => uint256)) internal poolLotInternalIdLookup;
-
-	// Mapping from Pool's Lot internal ID to total token withdrawn
-	mapping (uint256 => mapping (uint256 => uint256)) public poolLotTokenWithdrawn;
-
 	// Mapping from Pool ID to quantity of AO available to buy at `price`
 	mapping (uint256 => uint256) public poolTotalQuantity;
 
@@ -136,6 +130,36 @@ contract AOPool is developed {
 
 	// Mapping from an address to its Lots
 	mapping (address => bytes32[]) internal ownerLots;
+
+	// Mapping from Pool's Lot ID to Lot internal ID
+	mapping (uint256 => mapping (bytes32 => uint256)) internal poolLotInternalIdLookup;
+
+	// Mapping from Pool's Lot internal ID to total token withdrawn
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolLotTokenWithdrawn;
+
+	// Mapping from Pool's tenth Lot to total token withdrawn
+	// This is to help optimize calculating the total token withdrawn before certain Lot
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolTenthLotTokenWithdrawnSnapshot;
+
+	// Mapping from Pool's hundredth Lot to total token withdrawn
+	// This is to help optimize calculating the total token withdrawn before certain Lot
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolHundredthLotTokenWithdrawnSnapshot;
+
+	// Mapping from Pool's thousandth Lot to total token withdrawn
+	// This is to help optimize calculating the total token withdrawn before certain Lot
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolThousandthLotTokenWithdrawnSnapshot;
+
+	// Mapping from Pool's ten thousandth Lot to total token withdrawn
+	// This is to help optimize calculating the total token withdrawn before certain Lot
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolTenThousandthLotTokenWithdrawnSnapshot;
+
+	// Mapping from Pool's hundred thousandth Lot to total token withdrawn
+	// This is to help optimize calculating the total token withdrawn before certain Lot
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolHundredThousandthLotTokenWithdrawnSnapshot;
+
+	// Mapping from Pool's millionth Lot to total token withdrawn
+	// This is to help optimize calculating the total token withdrawn before certain Lot
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolMillionthLotTokenWithdrawnSnapshot;
 
 	/**
 	 * @dev Constructor function
@@ -417,8 +441,9 @@ contract AOPool is developed {
 
 		uint256 soldQuantity = 0;
 		uint256 ethAvailableToWithdraw = 0;
+
 		// Check whether or not there are tokens withdrawn from Lots before this Lot
-		uint256 lotAdjustment = totalTokenWithdrawnBeforeLot(_lotId);
+		uint256 lotAdjustment = _totalTokenWithdrawnBeforeLot(_lotId);
 
 		if (poolTotalBuy[_lot.poolId] > _lot.poolPreSellSnapshot.sub(lotAdjustment) && _lot.lotValueInCounterAsset > 0) {
 			soldQuantity = (poolTotalBuy[_lot.poolId] >= _lot.poolSellLotSnapshot.sub(lotAdjustment)) ? _lot.lotQuantity : poolTotalBuy[_lot.poolId].sub(_lot.poolPreSellSnapshot.sub(lotAdjustment));
@@ -448,6 +473,48 @@ contract AOPool is developed {
 		_lot.poolSellLotSnapshot = _lot.poolSellLotSnapshot.sub(_quantity);
 		poolLotTokenWithdrawn[_lot.poolId][poolLotInternalIdLookup[_lot.poolId][_lotId]] = poolLotTokenWithdrawn[_lot.poolId][poolLotInternalIdLookup[_lot.poolId][_lotId]].add(_quantity);
 
+		// Store Pool's millionth Lot snapshot
+		uint256 millionth = poolLotInternalIdLookup[_lot.poolId][_lotId].div(1000000);
+		if (poolLotInternalIdLookup[_lot.poolId][_lotId].sub(millionth.mul(1000000)) != 0) {
+			millionth++;
+		}
+		poolMillionthLotTokenWithdrawnSnapshot[_lot.poolId][millionth] = poolMillionthLotTokenWithdrawnSnapshot[_lot.poolId][millionth].add(_quantity);
+
+		// Store Pool's hundred thousandth Lot snapshot
+		uint256 hundredThousandth = poolLotInternalIdLookup[_lot.poolId][_lotId].div(100000);
+		if (poolLotInternalIdLookup[_lot.poolId][_lotId].sub(hundredThousandth.mul(100000)) != 0) {
+			hundredThousandth++;
+		}
+		poolHundredThousandthLotTokenWithdrawnSnapshot[_lot.poolId][hundredThousandth] = poolHundredThousandthLotTokenWithdrawnSnapshot[_lot.poolId][hundredThousandth].add(_quantity);
+
+		// Store Pool's ten thousandth Lot snapshot
+		uint256 tenThousandth = poolLotInternalIdLookup[_lot.poolId][_lotId].div(10000);
+		if (poolLotInternalIdLookup[_lot.poolId][_lotId].sub(tenThousandth.mul(10000)) != 0) {
+			tenThousandth++;
+		}
+		poolTenThousandthLotTokenWithdrawnSnapshot[_lot.poolId][tenThousandth] = poolTenThousandthLotTokenWithdrawnSnapshot[_lot.poolId][tenThousandth].add(_quantity);
+
+		// Store Pool's thousandth Lot snapshot
+		uint256 thousandth = poolLotInternalIdLookup[_lot.poolId][_lotId].div(1000);
+		if (poolLotInternalIdLookup[_lot.poolId][_lotId].sub(thousandth.mul(1000)) != 0) {
+			thousandth++;
+		}
+		poolThousandthLotTokenWithdrawnSnapshot[_lot.poolId][thousandth] = poolThousandthLotTokenWithdrawnSnapshot[_lot.poolId][thousandth].add(_quantity);
+
+		// Store Pool's hundredth Lot snapshot
+		uint256 hundredth = poolLotInternalIdLookup[_lot.poolId][_lotId].div(100);
+		if (poolLotInternalIdLookup[_lot.poolId][_lotId].sub(hundredth.mul(100)) != 0) {
+			hundredth++;
+		}
+		poolHundredthLotTokenWithdrawnSnapshot[_lot.poolId][hundredth] = poolHundredthLotTokenWithdrawnSnapshot[_lot.poolId][hundredth].add(_quantity);
+
+		// Store Pool's tenth Lot snapshot
+		uint256 tenth = poolLotInternalIdLookup[_lot.poolId][_lotId].div(10);
+		if (poolLotInternalIdLookup[_lot.poolId][_lotId].sub(tenth.mul(10)) != 0) {
+			tenth++;
+		}
+		poolTenthLotTokenWithdrawnSnapshot[_lot.poolId][tenth] = poolTenthLotTokenWithdrawnSnapshot[_lot.poolId][tenth].add(_quantity);
+
 		// Update contract variables
 		poolTotalQuantity[_lot.poolId] = poolTotalQuantity[_lot.poolId].sub(_quantity);
 		contractTotalQuantity = contractTotalQuantity.sub(_quantity);
@@ -463,17 +530,115 @@ contract AOPool is developed {
 		emit WithdrawToken(_lot.seller, _lot.lotId, _lot.poolId, _quantity, _lot.lotValueInCounterAsset, _lot.tokenWithdrawn);
 	}
 
+	/***** Internal Methods *****/
 	/**
 	 * @dev Get total token withdrawn from all Lots before Lot `_lotId`
 	 * @param _lotId The ID of the Lot
 	 * @return Total token withdrawn from all Lots before Lot `_lotId`
 	 */
-	function totalTokenWithdrawnBeforeLot(bytes32 _lotId) public view returns (uint256) {
+	function _totalTokenWithdrawnBeforeLot(bytes32 _lotId) internal view returns (uint256) {
 		Lot memory _lot = lots[_lotId];
 		require (_lot.seller != address(0) && poolLotInternalIdLookup[_lot.poolId][_lotId] > 0);
 
 		uint256 totalTokenWithdrawn = 0;
-		for (uint256 i=1; i<poolLotInternalIdLookup[_lot.poolId][_lotId]; i++) {
+		uint256 lotInternalId = poolLotInternalIdLookup[_lot.poolId][_lotId];
+		uint256 lowerBound = 0;
+
+		uint256 millionth = lotInternalId.div(1000000);
+		if (millionth > 0) {
+			for (uint256 i=1; i<=millionth; i++) {
+				if (poolMillionthLotTokenWithdrawnSnapshot[_lot.poolId][i] > 0) {
+					totalTokenWithdrawn = totalTokenWithdrawn.add(poolMillionthLotTokenWithdrawnSnapshot[_lot.poolId][i]);
+				}
+			}
+			lowerBound = millionth.mul(1000000);
+			if (lowerBound == lotInternalId) {
+				totalTokenWithdrawn = totalTokenWithdrawn.sub(poolLotTokenWithdrawn[_lot.poolId][lotInternalId]);
+				return totalTokenWithdrawn;
+			} else {
+				lowerBound = lowerBound.div(100000);
+			}
+		}
+
+		uint256 hundredThousandth = lotInternalId.div(100000);
+		if (hundredThousandth > 0) {
+			for (i=lowerBound.add(1); i<=hundredThousandth; i++) {
+				if (poolHundredThousandthLotTokenWithdrawnSnapshot[_lot.poolId][i] > 0) {
+					totalTokenWithdrawn = totalTokenWithdrawn.add(poolHundredThousandthLotTokenWithdrawnSnapshot[_lot.poolId][i]);
+				}
+			}
+			lowerBound = hundredThousandth.mul(100000);
+			if (lowerBound == lotInternalId) {
+				totalTokenWithdrawn = totalTokenWithdrawn.sub(poolLotTokenWithdrawn[_lot.poolId][lotInternalId]);
+				return totalTokenWithdrawn;
+			} else {
+				lowerBound = lowerBound.div(10000);
+			}
+		}
+
+		uint256 tenThousandth = lotInternalId.div(10000);
+		if (tenThousandth > 0) {
+			for (i=lowerBound.add(1); i<=tenThousandth; i++) {
+				if (poolTenThousandthLotTokenWithdrawnSnapshot[_lot.poolId][i] > 0) {
+					totalTokenWithdrawn = totalTokenWithdrawn.add(poolTenThousandthLotTokenWithdrawnSnapshot[_lot.poolId][i]);
+				}
+			}
+			lowerBound = tenThousandth.mul(10000);
+			if (lowerBound == lotInternalId) {
+				totalTokenWithdrawn = totalTokenWithdrawn.sub(poolLotTokenWithdrawn[_lot.poolId][lotInternalId]);
+				return totalTokenWithdrawn;
+			} else {
+				lowerBound = lowerBound.div(1000);
+			}
+		}
+
+		uint256 thousandth = lotInternalId.div(1000);
+		if (thousandth > 0) {
+			for (i=lowerBound.add(1); i<=thousandth; i++) {
+				if (poolThousandthLotTokenWithdrawnSnapshot[_lot.poolId][i] > 0) {
+					totalTokenWithdrawn = totalTokenWithdrawn.add(poolThousandthLotTokenWithdrawnSnapshot[_lot.poolId][i]);
+				}
+			}
+			lowerBound = thousandth.mul(1000);
+			if (lowerBound == lotInternalId) {
+				totalTokenWithdrawn = totalTokenWithdrawn.sub(poolLotTokenWithdrawn[_lot.poolId][lotInternalId]);
+				return totalTokenWithdrawn;
+			} else {
+				lowerBound = lowerBound.div(100);
+			}
+		}
+
+		uint256 hundredth = lotInternalId.div(100);
+		if (hundredth > 0) {
+			for (i=lowerBound.add(1); i<=hundredth; i++) {
+				if (poolHundredthLotTokenWithdrawnSnapshot[_lot.poolId][i] > 0) {
+					totalTokenWithdrawn = totalTokenWithdrawn.add(poolHundredthLotTokenWithdrawnSnapshot[_lot.poolId][i]);
+				}
+			}
+			lowerBound = hundredth.mul(100);
+			if (lowerBound == lotInternalId) {
+				totalTokenWithdrawn = totalTokenWithdrawn.sub(poolLotTokenWithdrawn[_lot.poolId][lotInternalId]);
+				return totalTokenWithdrawn;
+			} else {
+				lowerBound = lowerBound.div(10);
+			}
+		}
+
+		uint256 tenth = lotInternalId.div(10);
+		if (tenth > 0) {
+			for (i=lowerBound.add(1); i<=tenth; i++) {
+				if (poolTenthLotTokenWithdrawnSnapshot[_lot.poolId][i] > 0) {
+					totalTokenWithdrawn = totalTokenWithdrawn.add(poolTenthLotTokenWithdrawnSnapshot[_lot.poolId][i]);
+				}
+			}
+			lowerBound = tenth.mul(10);
+			if (lowerBound == lotInternalId) {
+				totalTokenWithdrawn = totalTokenWithdrawn.sub(poolLotTokenWithdrawn[_lot.poolId][lotInternalId]);
+				return totalTokenWithdrawn;
+			}
+		}
+
+		for (i=lowerBound.add(1); i<lotInternalId; i++) {
 			if (poolLotTokenWithdrawn[_lot.poolId][i] > 0) {
 				totalTokenWithdrawn = totalTokenWithdrawn.add(poolLotTokenWithdrawn[_lot.poolId][i]);
 			}

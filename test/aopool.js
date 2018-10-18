@@ -294,7 +294,7 @@ contract("AOPool", function(accounts) {
 		var canWithdrawEth, withdrawEthEvent;
 		try {
 			var result = await aopool.withdrawEth(lotId, { from: account });
-			console.log("Withdraw Gas", result.receipt.gasUsed);
+			//console.log("Withdraw Gas", result.receipt.gasUsed);
 			withdrawEthEvent = result.logs[0];
 			canWithdrawEth = true;
 		} catch (e) {
@@ -1161,32 +1161,6 @@ contract("AOPool", function(accounts) {
 		await withdrawToken(lotId6, 3, account1);
 	});
 
-	it("totalTokenWithdrawnBeforeLot() - should return correct total token withdrawn from all Lots before certain Lot ID", async function() {
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId1);
-		assert.equal(totalTokenWithdrawn.toString(), 0, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
-
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId2);
-		assert.equal(totalTokenWithdrawn.toString(), 0, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
-
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId3);
-		assert.equal(totalTokenWithdrawn.toString(), 5, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
-
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId4);
-		assert.equal(totalTokenWithdrawn.toString(), 5, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
-
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId5);
-		assert.equal(totalTokenWithdrawn.toString(), 25, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
-
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId6);
-		assert.equal(totalTokenWithdrawn.toString(), 29, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
-
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId7);
-		assert.equal(totalTokenWithdrawn.toString(), 32, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
-
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId8);
-		assert.equal(totalTokenWithdrawn.toString(), 32, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
-	});
-
 	it("should be able to buy token and reward the lot accordingly after some accounts withdraw tokens from their lots", async function() {
 		// Should buy 15 tokens from lotId2 and 5 tokens from lotId3
 		await buyWithEth(poolId6.toString(), 20, 10000, buyer2);
@@ -1274,15 +1248,11 @@ contract("AOPool", function(accounts) {
 	});
 
 	it("stress testing to calculate gas cost for withdrawing Eth on last Lot especially when there is token withdrawn from the Lots before the last Lot", async function() {
-		var getRandomInt = function(max) {
-			return Math.floor(Math.random() * Math.floor(max));
-		};
-
 		var poolId = await createPool(1000, true, false, "", false, "", false, "", "", developer);
 		var pool = await aopool.pools(poolId.toString());
 
 		var lots = [];
-		var totalLot = 500;
+		var totalLot = 432; // random big amount for testing
 		for (var i = 1; i <= totalLot; i++) {
 			console.log("Creating Lot " + i + " out of " + totalLot);
 			lotId = await sell(poolId.toString(), 10, 1000, account1, account1Lots);
@@ -1292,9 +1262,8 @@ contract("AOPool", function(accounts) {
 				await withdrawToken(lotId, 5, account1);
 			}
 		}
-
 		var poolTotalQuantity = await aopool.poolTotalQuantity(poolId.toString());
 		await buyWithEth(poolId.toString(), poolTotalQuantity.toString(), 1000, buyer1);
 		await withdrawEth(lots[lots.length - 1], account1);
-	}).timeout(100000000);
+	}).timeout(24 * 60 * 60 * 1000);
 });
