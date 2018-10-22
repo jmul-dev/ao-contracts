@@ -443,7 +443,7 @@ contract AOPool is developed {
 		uint256 ethAvailableToWithdraw = 0;
 
 		// Check whether or not there are tokens withdrawn from Lots before this Lot
-		uint256 lotAdjustment = _totalTokenWithdrawnBeforeLot(_lotId);
+		uint256 lotAdjustment = totalTokenWithdrawnBeforeLot(_lotId);
 
 		if (poolTotalBuy[_lot.poolId] > _lot.poolPreSellSnapshot.sub(lotAdjustment) && _lot.lotValueInCounterAsset > 0) {
 			soldQuantity = (poolTotalBuy[_lot.poolId] >= _lot.poolSellLotSnapshot.sub(lotAdjustment)) ? _lot.lotQuantity : poolTotalBuy[_lot.poolId].sub(_lot.poolPreSellSnapshot.sub(lotAdjustment));
@@ -530,13 +530,12 @@ contract AOPool is developed {
 		emit WithdrawToken(_lot.seller, _lot.lotId, _lot.poolId, _quantity, _lot.lotValueInCounterAsset, _lot.tokenWithdrawn);
 	}
 
-	/***** Internal Methods *****/
 	/**
 	 * @dev Get total token withdrawn from all Lots before Lot `_lotId`
 	 * @param _lotId The ID of the Lot
 	 * @return Total token withdrawn from all Lots before Lot `_lotId`
 	 */
-	function _totalTokenWithdrawnBeforeLot(bytes32 _lotId) internal view returns (uint256) {
+	function totalTokenWithdrawnBeforeLot(bytes32 _lotId) public view returns (uint256) {
 		Lot memory _lot = lots[_lotId];
 		require (_lot.seller != address(0) && poolLotInternalIdLookup[_lot.poolId][_lotId] > 0);
 

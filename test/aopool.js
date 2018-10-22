@@ -1161,6 +1161,32 @@ contract("AOPool", function(accounts) {
 		await withdrawToken(lotId6, 3, account1);
 	});
 
+	it("totalTokenWithdrawnBeforeLot() - should return correct total token withdrawn from all Lots before certain Lot ID", async function() {
+		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId1);
+		assert.equal(totalTokenWithdrawn.toString(), 0, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+
+		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId2);
+		assert.equal(totalTokenWithdrawn.toString(), 0, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+
+		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId3);
+		assert.equal(totalTokenWithdrawn.toString(), 5, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+
+		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId4);
+		assert.equal(totalTokenWithdrawn.toString(), 5, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+
+		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId5);
+		assert.equal(totalTokenWithdrawn.toString(), 25, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+
+		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId6);
+		assert.equal(totalTokenWithdrawn.toString(), 29, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+
+		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId7);
+		assert.equal(totalTokenWithdrawn.toString(), 32, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+
+		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId8);
+		assert.equal(totalTokenWithdrawn.toString(), 32, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+	});
+
 	it("should be able to buy token and reward the lot accordingly after some accounts withdraw tokens from their lots", async function() {
 		// Should buy 15 tokens from lotId2 and 5 tokens from lotId3
 		await buyWithEth(poolId6.toString(), 20, 10000, buyer2);
