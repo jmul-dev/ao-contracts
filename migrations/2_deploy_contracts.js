@@ -136,5 +136,52 @@ module.exports = function(deployer, network, accounts) {
 
 			// Grant access to aopool to transact on behalf of others on base denomination
 			await aotoken.setWhitelist(aopool.address, true, { from: deployerAccount });
+
+			// Create test pools for testing exchanges
+			// Pool #1
+			// price: 10000
+			// status: true (active)
+			// sellCapStatus: no
+			// quantityCapStatus: no
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, true, false, "", false, "", false, "", "", { from: deployerAccount });
+
+			// Pool #2
+			// price: 10000
+			// status: true (active)
+			// sellCapStatus: yes
+			// sellCapAmount: 10000000
+			// quantityCapStatus: no
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, true, true, 10000000, false, "", false, "", "", { from: deployerAccount });
+
+			// Pool #3
+			// price: 10000
+			// status: true (active)
+			// sellCapStatus: no
+			// quantityCapStatus: yes
+			// quantityCapAmount: 5000
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, true, false, "", true, 5000, false, "", "", { from: deployerAccount });
+
+			// Pool #4
+			// price: 10000
+			// status: true (active)
+			// sellCapStatus: yes
+			// sellCapAmount: 10000000
+			// quantityCapStatus: yes
+			// quantityCapAmount: 5000
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, true, true, 10000000, true, 5000, false, "", "", { from: deployerAccount });
+
+			// Pool #5
+			// price: 10000
+			// status: false (inactive)
+			// sellCapStatus: yes
+			// sellCapAmount: 10000000
+			// quantityCapStatus: yes
+			// quantityCapAmount: 5000
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, false, true, 10000000, true, 5000, false, "", "", { from: deployerAccount });
 		});
 };
