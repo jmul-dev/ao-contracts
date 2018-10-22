@@ -83,7 +83,7 @@ contract AOPool is developed {
 	uint256 public contractTotalBuy;		// Quantity of AO that has been bought from all Pools
 	uint256 public contractTotalQuantity;	// Quantity of AO available to buy from all Pools
 	uint256 public contractTotalWithdrawn;	// Quantity of AO that has been withdrawn from all Pools
-	uint256 public contractEthereumBalance;	// Total quantity of Ethereum in contract
+	uint256 public contractEthereumBalance;	// Total Ethereum in contract
 	uint256 public contractTotalEthereumWithdrawn; // Total Ethereum withdrawn from selling AO in contract
 
 	// Mapping from Pool ID to Pool
@@ -107,7 +107,7 @@ contract AOPool is developed {
 	// Mapping from Pool ID to quantity of AO that has been withdrawn from the Pool
 	mapping (uint256 => uint256) public poolTotalWithdrawn;
 
-	// Mapping from Pool ID to quantity of Ethereum available to withdraw
+	// Mapping from Pool ID to total Ethereum available to withdraw
 	mapping (uint256 => uint256) public poolEthereumBalance;
 
 	// Mapping from Pool ID to quantity of ERC20 token available to withdraw
@@ -356,7 +356,7 @@ contract AOPool is developed {
 	 * @param _account The address of the Lot's owner
 	 * @param _from The starting index, (i.e 0)
 	 * @param _to The ending index, (i.e total - 1)
-	 * @return list of owner's IDs
+	 * @return list of owner's Lot IDs
 	 */
 	function ownerLotIds(address _account, uint256 _from, uint256 _to) public view returns (bytes32[]) {
 		require (_from >= 0 && _to >= _from && ownerLots[_account].length > _to);
