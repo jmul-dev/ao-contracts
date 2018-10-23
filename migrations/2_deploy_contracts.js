@@ -30,6 +30,8 @@ var NameFactory = artifacts.require("./NameFactory.sol");
 var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
 var ThoughtPosition = artifacts.require("./ThoughtPosition.sol");
 
+var AOPool = artifacts.require("./AOPool.sol");
+
 module.exports = function(deployer, network, accounts) {
 	var deployerAccount;
 	if (network === "rinkeby") {
@@ -52,6 +54,7 @@ module.exports = function(deployer, network, accounts) {
 		aoearning,
 		aotreasury,
 		aocontent,
+		aopool,
 		logos,
 		ethos,
 		pathos,
@@ -138,6 +141,10 @@ module.exports = function(deployer, network, accounts) {
 		})
 		.then(async function() {
 			aocontent = await AOContent.deployed();
+			return deployer.deploy(AOPool, aotoken.address);
+		})
+		.then(async function() {
+			aopool = await AOPool.deployed();
 
 			// Store AO denominations in the treasury contract
 			await aotreasury.addDenomination("ao", aotoken.address, { from: deployerAccount });
@@ -153,15 +160,6 @@ module.exports = function(deployer, network, accounts) {
 
 			// Grant access to aocontent to transact on behalf of others on all AO Tokens denominations
 			await aotoken.setWhitelist(aocontent.address, true, { from: deployerAccount });
-			await aokilo.setWhitelist(aocontent.address, true, { from: deployerAccount });
-			await aomega.setWhitelist(aocontent.address, true, { from: deployerAccount });
-			await aogiga.setWhitelist(aocontent.address, true, { from: deployerAccount });
-			await aotera.setWhitelist(aocontent.address, true, { from: deployerAccount });
-			await aopeta.setWhitelist(aocontent.address, true, { from: deployerAccount });
-			await aoexa.setWhitelist(aocontent.address, true, { from: deployerAccount });
-			await aozetta.setWhitelist(aocontent.address, true, { from: deployerAccount });
-			await aoyotta.setWhitelist(aocontent.address, true, { from: deployerAccount });
-			await aoxona.setWhitelist(aocontent.address, true, { from: deployerAccount });
 
 			// Grant access to aotreasury to transact on behalf of others on all AO Tokens denominations
 			await aotoken.setWhitelist(aotreasury.address, true, { from: deployerAccount });
@@ -175,17 +173,8 @@ module.exports = function(deployer, network, accounts) {
 			await aoyotta.setWhitelist(aotreasury.address, true, { from: deployerAccount });
 			await aoxona.setWhitelist(aotreasury.address, true, { from: deployerAccount });
 
-			// Grant access to aoearning to transact on behalf of others on all AO Tokens denominations
+			// Grant access to aoearning to transact on behalf of others on base denomination
 			await aotoken.setWhitelist(aoearning.address, true, { from: deployerAccount });
-			await aokilo.setWhitelist(aoearning.address, true, { from: deployerAccount });
-			await aomega.setWhitelist(aoearning.address, true, { from: deployerAccount });
-			await aogiga.setWhitelist(aoearning.address, true, { from: deployerAccount });
-			await aotera.setWhitelist(aoearning.address, true, { from: deployerAccount });
-			await aopeta.setWhitelist(aoearning.address, true, { from: deployerAccount });
-			await aoexa.setWhitelist(aoearning.address, true, { from: deployerAccount });
-			await aozetta.setWhitelist(aoearning.address, true, { from: deployerAccount });
-			await aoyotta.setWhitelist(aoearning.address, true, { from: deployerAccount });
-			await aoxona.setWhitelist(aoearning.address, true, { from: deployerAccount });
 
 			// aoearning grant access to aocontent
 			await aoearning.setWhitelist(aocontent.address, true, { from: deployerAccount });
@@ -193,6 +182,56 @@ module.exports = function(deployer, network, accounts) {
 			// set inflation rate and foundation cut
 			await aoearning.setInflationRate(10000, { from: deployerAccount }); // inflation rate 1%
 			await aoearning.setFoundationCut(5000, { from: deployerAccount }); // foundation cut 0.5%
+
+			// Grant access to aopool to transact on behalf of others on base denomination
+			await aotoken.setWhitelist(aopool.address, true, { from: deployerAccount });
+
+			// Create test pools for testing exchanges
+			// Pool #1
+			// price: 10000
+			// status: true (active)
+			// sellCapStatus: no
+			// quantityCapStatus: no
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, true, false, "", false, "", false, "", "", { from: deployerAccount });
+
+			// Pool #2
+			// price: 10000
+			// status: true (active)
+			// sellCapStatus: yes
+			// sellCapAmount: 10000000
+			// quantityCapStatus: no
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, true, true, 10000000, false, "", false, "", "", { from: deployerAccount });
+
+			// Pool #3
+			// price: 10000
+			// status: true (active)
+			// sellCapStatus: no
+			// quantityCapStatus: yes
+			// quantityCapAmount: 5000
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, true, false, "", true, 5000, false, "", "", { from: deployerAccount });
+
+			// Pool #4
+			// price: 10000
+			// status: true (active)
+			// sellCapStatus: yes
+			// sellCapAmount: 10000000
+			// quantityCapStatus: yes
+			// quantityCapAmount: 5000
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, true, true, 10000000, true, 5000, false, "", "", { from: deployerAccount });
+
+			// Pool #5
+			// price: 10000
+			// status: false (inactive)
+			// sellCapStatus: yes
+			// sellCapAmount: 10000000
+			// quantityCapStatus: yes
+			// quantityCapAmount: 5000
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, false, true, 10000000, true, 5000, false, "", "", { from: deployerAccount });
 
 			// pathos grant access to aoearning
 			await pathos.setWhitelist(aoearning.address, true, { from: deployerAccount });

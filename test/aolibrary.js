@@ -1,14 +1,173 @@
 var AOLibrary = artifacts.require("./AOLibrary.sol");
+var BigNumber = require("bignumber.js");
+BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1 }); // no rounding
 
 contract("AOLibrary", function(accounts) {
 	var library;
+	var multiplierDivisor = new BigNumber(10 ** 6); // 1000000 = 1
+	var percentageDivisor = new BigNumber(10 ** 6); // 1000000 = 100%
+
 	before(function() {
 		return AOLibrary.deployed().then(function(instance) {
 			library = instance;
 		});
 	});
-	it("should calculate and return correct weighted index", async function() {
-		var weightedIndex = await library.calculateWeightedIndex(1500000, 200, 3000000, 100);
-		assert.equal(weightedIndex.toNumber(), 2000000, "Library returns incorrect weighted index");
+
+	it("calculateWeightedMultiplier() - should calculate and return correct weighted multiplier", async function() {
+		var M1 = new BigNumber(1500000);
+		var P1 = new BigNumber(200);
+		var M2 = new BigNumber(3000000);
+		var P2 = new BigNumber(100);
+		var weightedMultiplier = await library.calculateWeightedMultiplier(M1.toString(), P1.toString(), M2.toString(), P2.toString());
+		var _weightedMultiplier = M1.times(P1)
+			.plus(M2.times(P2))
+			.div(P1.plus(P2));
+		assert.equal(weightedMultiplier.toNumber(), _weightedMultiplier.toString(), "Library returns incorrect weighted multiplier");
+
+		var weightedMultiplier = await library.calculateWeightedMultiplier(0, 0, M2.toString(), P2.toString());
+		assert.equal(weightedMultiplier.toNumber(), M2.toString(), "Library returns incorrect weighted multiplier");
+	});
+
+	it("calculatePrimordialMultiplier() - should calculate and return the correct primoridial multiplier on a given lot", async function() {
+		var P = new BigNumber(50);
+		var T = new BigNumber(1000);
+		var M = new BigNumber(300);
+		var S = new BigNumber(50).times(multiplierDivisor);
+		var E = new BigNumber(3).times(multiplierDivisor);
+		var multiplier = await library.calculatePrimordialMultiplier(P.toString(), T.toString(), M.toString(), S.toString(), E.toString());
+
+		// Multiplier = (1 - ((M + P/2) / T)) x (S-E)
+		// Let temp = M + (P/2)
+		// Multiplier = (1 - (temp / T)) x (S-E)
+		var temp = M.plus(P.div(2));
+
+		/**
+		 * Multiply multiplier with multiplierDivisor/multiplierDivisor to account for 6 decimals
+		 * so, Multiplier = (multiplierDivisor/multiplierDivisor) * (1 - (temp / T)) * (S-E)
+		 * Multiplier = ((multiplierDivisor * (1 - (temp / T))) * (S-E)) / multiplierDivisor
+		 * Multiplier = ((multiplierDivisor - ((multiplierDivisor * temp) / T)) * (S-E)) / multiplierDivisor
+		 * Take out the division by multiplierDivisor for now and include in later calculation
+		 * Multiplier = (multiplierDivisor - ((multiplierDivisor * temp) / T)) * (S-E)
+		 */
+		var _multiplier = multiplierDivisor.minus(multiplierDivisor.times(temp).div(T)).times(S.minus(E));
+		/**
+		 * Since _startingMultiplier and _endingMultiplier are in 6 decimals
+		 * Need to divide multiplier by multiplierDivisor
+		 */
+		_multiplier = _multiplier.div(multiplierDivisor);
+
+		assert.equal(multiplier.toNumber(), _multiplier.toString(), "Library returns incorrect multiplier for a given lot");
+	});
+
+	it("calculateNetworkTokenBonusPercentage() - should calculate and return the correct network token bonus percentage on a given lot", async function() {
+		var P = new BigNumber(50);
+		var T = new BigNumber(1000);
+		var M = new BigNumber(300);
+		var Bs = new BigNumber(1000000);
+		var Be = new BigNumber(250000);
+		var bonusPercentage = await library.calculateNetworkTokenBonusPercentage(
+			P.toString(),
+			T.toString(),
+			M.toString(),
+			Bs.toString(),
+			Be.toString()
+		);
+
+		// B% = (1 - ((M + P/2) / T)) x (Bs-Be)
+		// Let temp = M + (P/2)
+		// B% = (1 - (temp / T)) x (Bs-Be)
+		var temp = M.plus(P.div(2));
+
+		/**
+		 * Multiply B% with percentageDivisor/percentageDivisor to account for 6 decimals
+		 * so, B% = (percentageDivisor/percentageDivisor) * (1 - (temp / T)) * (Bs-Be)
+		 * B% = ((percentageDivisor * (1 - (temp / T))) * (Bs-Be)) / percentageDivisor
+		 * B% = ((percentageDivisor - ((percentageDivisor * temp) / T)) * (Bs-Be)) / percentageDivisor
+		 * Take out the division by percentageDivisor for now and include in later calculation
+		 * B% = (percentageDivisor - ((percentageDivisor * temp) / T)) * (Bs-Be)
+		 * But since Bs and Be are in 6 decimlas, need to divide by percentageDivisor
+		 * B% = (percentageDivisor - ((percentageDivisor * temp) / T)) * (Bs-Be) / percentageDivisor
+		 */
+		var _bonusPercentage = percentageDivisor
+			.minus(percentageDivisor.times(temp).div(T))
+			.times(Bs.minus(Be))
+			.div(percentageDivisor);
+		assert.equal(
+			bonusPercentage.toString(),
+			_bonusPercentage.toString(),
+			"Library returns incorrect network token bonus percentage for a given lot"
+		);
+	});
+
+	it("calculateNetworkTokenBonusAmount() - should calculate and return the correct network token bonus amount on a given lot", async function() {
+		var P = new BigNumber(50);
+		var T = new BigNumber(1000);
+		var M = new BigNumber(300);
+		var Bs = new BigNumber(1000000);
+		var Be = new BigNumber(250000);
+
+		var bonusPercentage = await library.calculateNetworkTokenBonusPercentage(
+			P.toString(),
+			T.toString(),
+			M.toString(),
+			Bs.toString(),
+			Be.toString()
+		);
+		var bonusAmount = await library.calculateNetworkTokenBonusAmount(
+			P.toString(),
+			T.toString(),
+			M.toString(),
+			Bs.toString(),
+			Be.toString()
+		);
+
+		// Bonus Amount = B% * P
+		// But since B% is in percentageDivisor, need to divide it with percentageDivisor
+		// Bonus Amount = (B% * P) / percentageDivisor
+		var _bonusAmount = new BigNumber(bonusPercentage).times(P).div(percentageDivisor);
+		assert.equal(
+			bonusAmount.toNumber(),
+			_bonusAmount.toString(),
+			"Library returns incorrect network token bonus amount for a given lot"
+		);
+	});
+
+	it("calculateMaximumBurnAmount() - should calculate and return the correct maximum burn amount", async function() {
+		var P = new BigNumber(70);
+		var M = new BigNumber(40000000);
+		var S = new BigNumber(50000000);
+
+		var burnAmount = await library.calculateMaximumBurnAmount(P.toString(), M.toString(), S.toString());
+		var _burnAmount = S.times(P)
+			.minus(P.times(M))
+			.div(S);
+		assert.equal(burnAmount.toString(), _burnAmount.toString(), "Library returns incorrect maximum burn amount");
+		assert.equal(
+			P.times(M)
+				.div(P.minus(burnAmount))
+				.toString(),
+			S.toString(),
+			"Burning max amount doesn't result in max multiplier"
+		);
+	});
+
+	it("calculateMultiplierAfterBurn() - should calculate and return the correct new multiplier after burning primordial token", async function() {
+		var P = new BigNumber(70);
+		var M = new BigNumber(40000000);
+		var B = new BigNumber(14);
+
+		var newMultiplier = await library.calculateMultiplierAfterBurn(P.toString(), M.toString(), B.toString());
+		var _newMultiplier = P.times(M).div(P.minus(B));
+		assert.equal(newMultiplier.toString(), _newMultiplier.toString(), "Library returns incorrect new multiplier after burning");
+	});
+
+	it("calculateMultiplierAfterConversion() - should calculate and return the correct new multiplier after converting network token to primordial token", async function() {
+		var P = new BigNumber(70);
+		var M = new BigNumber(40000000);
+		var C = new BigNumber(14);
+
+		var newMultiplier = await library.calculateMultiplierAfterConversion(P.toString(), M.toString(), C.toString());
+		var _newMultiplier = P.times(M).div(P.plus(C));
+		assert.equal(newMultiplier.toString(), _newMultiplier.toString(), "Library returns incorrect new multiplier after conversion");
 	});
 });

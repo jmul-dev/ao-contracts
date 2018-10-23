@@ -50,7 +50,7 @@ contract AOContent is developed {
 		address stakeOwner;
 		uint256 networkAmount; // total network token staked in base denomination
 		uint256 primordialAmount;	// the amount of primordial AO Token to stake (always in base denomination)
-		uint256 primordialWeightedIndex;
+		uint256 primordialWeightedMultiplier;
 		uint256 profitPercentage; // support up to 4 decimals, 100% = 1000000
 		bool active; // true if currently staked, false when unstaked
 		uint256 createdOnTimestamp;
@@ -111,7 +111,7 @@ contract AOContent is developed {
 	event StoreContent(address indexed creator, bytes32 indexed contentId, uint256 fileSize);
 
 	// Event to be broadcasted to public when `stakeOwner` stakes a new content
-	event StakeContent(address indexed stakeOwner, bytes32 indexed stakeId, bytes32 indexed contentId, uint256 baseNetworkAmount, uint256 primordialAmount, uint256 primordialWeightedIndex, uint256 profitPercentage, uint256 createdOnTimestamp, string extraData);
+	event StakeContent(address indexed stakeOwner, bytes32 indexed stakeId, bytes32 indexed contentId, uint256 baseNetworkAmount, uint256 primordialAmount, uint256 primordialWeightedMultiplier, uint256 profitPercentage, uint256 createdOnTimestamp, string extraData);
 
 	// Event to be broadcasted to public when a node hosts a content
 	event HostContent(address indexed host, bytes32 indexed contentHostId, bytes32 stakeId, string contentDatKey, string metadataDatKey);
@@ -120,13 +120,13 @@ contract AOContent is developed {
 	event SetProfitPercentage(address indexed stakeOwner, bytes32 indexed stakeId, uint256 newProfitPercentage);
 
 	// Event to be broadcasted to public when `stakeOwner` unstakes some network/primordial token from an existing content
-	event UnstakePartialContent(address indexed stakeOwner, bytes32 indexed stakeId, bytes32 indexed contentId, uint256 remainingNetworkAmount, uint256 remainingPrimordialAmount, uint256 primordialWeightedIndex);
+	event UnstakePartialContent(address indexed stakeOwner, bytes32 indexed stakeId, bytes32 indexed contentId, uint256 remainingNetworkAmount, uint256 remainingPrimordialAmount, uint256 primordialWeightedMultiplier);
 
 	// Event to be broadcasted to public when `stakeOwner` unstakes all token amount on an existing content
 	event UnstakeContent(address indexed stakeOwner, bytes32 indexed stakeId);
 
 	// Event to be broadcasted to public when `stakeOwner` re-stakes an existing content
-	event StakeExistingContent(address indexed stakeOwner, bytes32 indexed stakeId, bytes32 indexed contentId, uint256 currentNetworkAmount, uint256 currentPrimordialAmount, uint256 currentPrimordialWeightedIndex);
+	event StakeExistingContent(address indexed stakeOwner, bytes32 indexed stakeId, bytes32 indexed contentId, uint256 currentNetworkAmount, uint256 currentPrimordialAmount, uint256 currentPrimordialWeightedMultiplier);
 
 	// Event to be broadcasted to public when a request node buys a content
 	event BuyContent(address indexed buyer, bytes32 indexed purchaseId, bytes32 indexed contentHostId, uint256 paidNetworkAmount, string publicKey, address publicAddress, uint256 createdOnTimestamp);
@@ -293,7 +293,7 @@ contract AOContent is developed {
 	 * @return address of the staked content's owner
 	 * @return the network base token amount staked for this content
 	 * @return the primordial token amount staked for this content
-	 * @return the primordial weighted index of the staked content
+	 * @return the primordial weighted multiplier of the staked content
 	 * @return the profit percentage of the content
 	 * @return status of the staked content
 	 * @return the timestamp when the staked content was created
@@ -309,7 +309,7 @@ contract AOContent is developed {
 			_stakedContent.stakeOwner,
 			_stakedContent.networkAmount,
 			_stakedContent.primordialAmount,
-			_stakedContent.primordialWeightedIndex,
+			_stakedContent.primordialWeightedMultiplier,
 			_stakedContent.profitPercentage,
 			_stakedContent.active,
 			_stakedContent.createdOnTimestamp,
@@ -338,7 +338,7 @@ contract AOContent is developed {
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 		// Make sure the staked content is currently active (staked) with some amounts
-		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedIndex > 0)));
+		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedMultiplier > 0)));
 		// Make sure the staked content has enough balance to unstake
 		require (AOLibrary.canUnstakePartial(treasuryAddress, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _stakedContent.networkAmount, _stakedContent.primordialAmount, _content.fileSize));
 
@@ -349,9 +349,9 @@ contract AOContent is developed {
 		}
 		if (_primordialAmount > 0) {
 			_stakedContent.primordialAmount = _stakedContent.primordialAmount.sub(_primordialAmount);
-			require (_baseAO.unstakePrimordialTokenFrom(msg.sender, _primordialAmount, _stakedContent.primordialWeightedIndex));
+			require (_baseAO.unstakePrimordialTokenFrom(msg.sender, _primordialAmount, _stakedContent.primordialWeightedMultiplier));
 		}
-		emit UnstakePartialContent(_stakedContent.stakeOwner, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedIndex);
+		emit UnstakePartialContent(_stakedContent.stakeOwner, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedMultiplier);
 	}
 
 	/**
@@ -366,7 +366,7 @@ contract AOContent is developed {
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 		// Make sure the staked content is currently active (staked) with some amounts
-		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedIndex > 0)));
+		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedMultiplier > 0)));
 
 		_stakedContent.active = false;
 
@@ -377,10 +377,10 @@ contract AOContent is developed {
 		}
 		if (_stakedContent.primordialAmount > 0) {
 			uint256 _primordialAmount = _stakedContent.primordialAmount;
-			uint256 _primordialWeightedIndex = _stakedContent.primordialWeightedIndex;
+			uint256 _primordialWeightedMultiplier = _stakedContent.primordialWeightedMultiplier;
 			_stakedContent.primordialAmount = 0;
-			_stakedContent.primordialWeightedIndex = 0;
-			require (_baseAO.unstakePrimordialTokenFrom(msg.sender, _primordialAmount, _primordialWeightedIndex));
+			_stakedContent.primordialWeightedMultiplier = 0;
+			require (_baseAO.unstakePrimordialTokenFrom(msg.sender, _primordialAmount, _primordialWeightedMultiplier));
 		}
 		emit UnstakeContent(_stakedContent.stakeOwner, _stakeId);
 	}
@@ -392,7 +392,7 @@ contract AOContent is developed {
 	 * @param _networkIntegerAmount The integer amount of network token to stake
 	 * @param _networkFractionAmount The fraction amount of network token to stake
 	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
-	 * @param _primordialAmount The amount of primordial Token to stake. (The primordial weighted index has to match the current staked weighted index)
+	 * @param _primordialAmount The amount of primordial Token to stake. (The primordial weighted multiplier has to match the current staked weighted multiplier)
 	 */
 	function stakeExistingContent(bytes32 _stakeId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount) public isActive {
 		// Make sure the staked content exist
@@ -406,11 +406,11 @@ contract AOContent is developed {
 		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
 		require (AOLibrary.canStakeExisting(treasuryAddress, _content.fileSize, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount));
 
-		// Make sure node can stake primordial token
-		// If the node is currently staking an active staked content, then the stake owner's weighted index has to match `stakedContent.primordialWeightedIndex`
-		// i.e, can't use a combination of different weighted index. Stake owner has to call unstakeContent() to unstake all tokens first
-		if (_primordialAmount > 0 && _stakedContent.active && _stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedIndex > 0) {
-			require (_baseAO.weightedIndexByAddress(msg.sender) == _stakedContent.primordialWeightedIndex);
+		// Make sure we can stake primordial token
+		// If we are currently staking an active staked content, then the stake owner's weighted multiplier has to match `stakedContent.primordialWeightedMultiplier`
+		// i.e, can't use a combination of different weighted multiplier. Stake owner has to call unstakeContent() to unstake all tokens first
+		if (_primordialAmount > 0 && _stakedContent.active && _stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedMultiplier > 0) {
+			require (_baseAO.weightedMultiplierByAddress(msg.sender) == _stakedContent.primordialWeightedMultiplier);
 		}
 
 		_stakedContent.active = true;
@@ -423,11 +423,11 @@ contract AOContent is developed {
 			_stakedContent.primordialAmount = _stakedContent.primordialAmount.add(_primordialAmount);
 
 			// Primordial Token is the base AO Token
-			_stakedContent.primordialWeightedIndex = _baseAO.weightedIndexByAddress(_stakedContent.stakeOwner);
-			require (_baseAO.stakePrimordialTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedIndex));
+			_stakedContent.primordialWeightedMultiplier = _baseAO.weightedMultiplierByAddress(_stakedContent.stakeOwner);
+			require (_baseAO.stakePrimordialTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedMultiplier));
 		}
 
-		emit StakeExistingContent(msg.sender, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedIndex);
+		emit StakeExistingContent(msg.sender, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedMultiplier);
 	}
 
 	/**
@@ -442,7 +442,7 @@ contract AOContent is developed {
 		ContentHost memory _contentHost = contentHosts[contentHostIndex[_contentHostId]];
 		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_contentHost.stakeId]];
 		// Make sure content is currently staked
-		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedIndex > 0)));
+		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedMultiplier > 0)));
 		return _stakedContent.networkAmount.add(_stakedContent.primordialAmount);
 	}
 
@@ -469,7 +469,7 @@ contract AOContent is developed {
 		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_contentHost.stakeId]];
 
 		// Make sure the content currently has stake
-		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedIndex > 0)));
+		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedMultiplier > 0)));
 
 		// Make sure the buyer has not bought this content previously
 		require (buyerPurchaseReceipts[msg.sender][_contentHostId][0] == 0);
@@ -506,7 +506,7 @@ contract AOContent is developed {
 			_purchaseId,
 			_stakedContent.networkAmount,
 			_stakedContent.primordialAmount,
-			_stakedContent.primordialWeightedIndex,
+			_stakedContent.primordialWeightedMultiplier,
 			_stakedContent.profitPercentage,
 			contents[contentIndex[_stakedContent.contentId]].fileSize,
 			_stakedContent.stakeOwner,
@@ -564,7 +564,7 @@ contract AOContent is developed {
 		_hostContent(msg.sender, _stakeId, _encChallenge, _contentDatKey, _metadataDatKey);
 
 		// Release earning from escrow
-		require (_earning.releaseEarning(_stakeId, _purchaseId, _purchaseReceipt.networkAmount, _content.fileSize, stakedContents[stakedContentIndex[_stakeId]].stakeOwner, contentHosts[contentHostIndex[_purchaseReceipt.contentHostId]].host));
+		require (_earning.releaseEarning(_stakeId, _purchaseReceipt.contentHostId, _purchaseId, _purchaseReceipt.networkAmount, _content.fileSize, stakedContents[stakedContentIndex[_stakeId]].stakeOwner, contentHosts[contentHostIndex[_purchaseReceipt.contentHostId]].host));
 	}
 
 	/***** INTERNAL METHODS *****/
@@ -675,11 +675,11 @@ contract AOContent is developed {
 			_stakedContent.primordialAmount = _primordialAmount;
 
 			// Primordial Token is the base AO Token
-			_stakedContent.primordialWeightedIndex = _baseAO.weightedIndexByAddress(_stakedContent.stakeOwner);
-			require (_baseAO.stakePrimordialTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedIndex));
+			_stakedContent.primordialWeightedMultiplier = _baseAO.weightedMultiplierByAddress(_stakedContent.stakeOwner);
+			require (_baseAO.stakePrimordialTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedMultiplier));
 		}
 
-		emit StakeContent(_stakedContent.stakeOwner, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedIndex, _stakedContent.profitPercentage, _stakedContent.createdOnTimestamp, _stakedContent.extraData);
+		emit StakeContent(_stakedContent.stakeOwner, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedMultiplier, _stakedContent.profitPercentage, _stakedContent.createdOnTimestamp, _stakedContent.extraData);
 
 		return _stakedContent.stakeId;
 	}
