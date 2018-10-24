@@ -169,11 +169,7 @@ contract("Name & Thought", function(accounts) {
 				);
 
 				var subThoughts = await thoughtfactory.getSubThoughtIds(from, 1, totalSubThoughtsAfter.toString());
-				assert.include(
-					subThoughts,
-					thoughtId,
-					"Newly created Thought ID is not in the parent's list of sub Thoughts"
-				);
+				assert.include(subThoughts, thoughtId, "Newly created Thought ID is not in the parent's list of sub Thoughts");
 				if (sameAdvocate) {
 					assert.notEqual(addChildThoughtEvent, null, "Creating Thought didn't emit AddChildThought event");
 					assert.equal(addChildThoughtEvent.args.parentThoughtId, from, "AddChildThought event has incorrect parent Thought ID");
