@@ -38,18 +38,18 @@ contract Thought {
 
 	uint256 public totalChildThoughts;
 	uint256 public totalOrphanThoughts;
-	uint256 public totalChildOrphanThoughts;
+	uint256 public totalSubThoughts;
 
 	uint256 public balance;
 
-	struct ChildOrphanThought {
+	struct SubThought {
 		address thoughtId;
 		bool child;			// If false, then it's an orphan Thought
-		bool connected;		// If false, then parent Thought want to remove this child/orphan Thought
+		bool connected;		// If false, then parent Thought want to remove this sub Thought
 	}
 
-	mapping (uint256 => ChildOrphanThought) public childOrphanThoughts;
-	mapping (address => uint256) public childOrphanThoughtInternalIdLookup;
+	mapping (uint256 => SubThought) public subThoughts;
+	mapping (address => uint256) public subThoughtInternalIdLookup;
 
 	/**
 	 * @dev Constructor function
@@ -123,66 +123,42 @@ contract Thought {
 	}
 
 	/**
-	 * @dev Add Child/Orphan Thought
-	 * @param _thoughtId The Thought ID to be added to as Child/Orphan Thought
+	 * @dev Add sub Thought
+	 * @param _thoughtId The Thought ID to be added to as sub Thought
 	 * @param _child True if adding this as a child Thought. False if it's an orphan Thought.
 	 * @return true on success
 	 */
-	function addChildOrphanThought(address _thoughtId, bool _child) public isActive onlyFactory returns (bool) {
+	function addSubThought(address _thoughtId, bool _child) public isActive onlyFactory returns (bool) {
 		require (_thoughtId != address(0));
-		require (childOrphanThoughtInternalIdLookup[_thoughtId] == 0);
+		require (subThoughtInternalIdLookup[_thoughtId] == 0);
 
-		totalChildOrphanThoughts++;
+		totalSubThoughts++;
 		if (_child) {
 			totalChildThoughts++;
 		} else {
 			totalOrphanThoughts++;
 		}
-		childOrphanThoughtInternalIdLookup[_thoughtId] = totalChildOrphanThoughts;
-		ChildOrphanThought storage _childOrphanThought = childOrphanThoughts[totalChildOrphanThoughts];
-		_childOrphanThought.thoughtId = _thoughtId;
-		_childOrphanThought.child = _child;
-		_childOrphanThought.connected = true;
+		subThoughtInternalIdLookup[_thoughtId] = totalSubThoughts;
+		SubThought storage _subThought = subThoughts[totalSubThoughts];
+		_subThought.thoughtId = _thoughtId;
+		_subThought.child = _child;
+		_subThought.connected = true;
 		return true;
 	}
 
 	/**
-	 * @dev Get list of child/orphan Thought IDs
+	 * @dev Get list of sub Thought IDs
 	 * @param _from The starting index (start from 1)
-	 * @param _to The ending index, (max is totalChildOrphanThoughts count )
-	 * @return list of child/orphan Thought IDs
+	 * @param _to The ending index, (max is totalSubThoughts count )
+	 * @return list of sub Thought IDs
 	 */
-	function getChildOrphanThoughtIds(uint256 _from, uint256 _to) public view returns (address[]) {
-		require (_from >= 1 && _to >= _from && totalChildOrphanThoughts >= _to);
-		address[] memory _childOrphanThoughtIds = new address[](_to.sub(_from).add(1));
+	function getSubThoughtIds(uint256 _from, uint256 _to) public view returns (address[]) {
+		require (_from >= 1 && _to >= _from && totalSubThoughts >= _to);
+		address[] memory _subThoughtIds = new address[](_to.sub(_from).add(1));
 		for (uint256 i = _from; i <= _to; i++) {
-			_childOrphanThoughtIds[i.sub(_from)] = childOrphanThoughts[i].connected ? childOrphanThoughts[i].thoughtId : address(0);
+			_subThoughtIds[i.sub(_from)] = subThoughts[i].connected ? subThoughts[i].thoughtId : address(0);
 		}
-		return _childOrphanThoughtIds;
-	}
-
-	/**
-	 * @dev Get total child/orphan Thoughts count
-	 * @return total Child/Orphan Thoughts count
-	 */
-	function getTotalChildOrphanThoughtsCount() public view returns (uint256) {
-		return totalChildOrphanThoughts;
-	}
-
-	/**
-	 * @dev Get total child Thoughts count
-	 * @return total Child Thoughts count
-	 */
-	function getTotalChildThoughtsCount() public view returns (uint256) {
-		return totalChildThoughts;
-	}
-
-	/**
-	 * @dev Get total orphan Thoughts count
-	 * @return total Orphan Thoughts count
-	 */
-	function getTotalOrphanThoughtsCount() public view returns (uint256) {
-		return totalOrphanThoughts;
+		return _subThoughtIds;
 	}
 
 	/**
@@ -191,7 +167,7 @@ contract Thought {
 	 * @return true if yes. Otherwise return false.
 	 */
 	function isChildThought(address _childThoughtId) public view returns (bool) {
-		return (childOrphanThoughtInternalIdLookup[_childThoughtId] > 0 && childOrphanThoughts[childOrphanThoughtInternalIdLookup[_childThoughtId]].child && childOrphanThoughts[childOrphanThoughtInternalIdLookup[_childThoughtId]].connected);
+		return (subThoughtInternalIdLookup[_childThoughtId] > 0 && subThoughts[subThoughtInternalIdLookup[_childThoughtId]].child && subThoughts[subThoughtInternalIdLookup[_childThoughtId]].connected);
 	}
 
 	/**
@@ -200,7 +176,7 @@ contract Thought {
 	 * @return true if yes. Otherwise return false.
 	 */
 	function isOrphanThought(address _orphanThoughtId) public view returns (bool) {
-		return (childOrphanThoughtInternalIdLookup[_orphanThoughtId] > 0 && !childOrphanThoughts[childOrphanThoughtInternalIdLookup[_orphanThoughtId]].child && childOrphanThoughts[childOrphanThoughtInternalIdLookup[_orphanThoughtId]].connected);
+		return (subThoughtInternalIdLookup[_orphanThoughtId] > 0 && !subThoughts[subThoughtInternalIdLookup[_orphanThoughtId]].child && subThoughts[subThoughtInternalIdLookup[_orphanThoughtId]].connected);
 	}
 
 	/**
@@ -209,8 +185,8 @@ contract Thought {
 	 * @return true on success
 	 */
 	function approveOrphanThought(address _orphanThoughtId) public isActive onlyFactory returns (bool) {
-		ChildOrphanThought storage _childOrphanThought = childOrphanThoughts[childOrphanThoughtInternalIdLookup[_orphanThoughtId]];
-		_childOrphanThought.child = true;
+		SubThought storage _subThought = subThoughts[subThoughtInternalIdLookup[_orphanThoughtId]];
+		_subThought.child = true;
 		totalChildThoughts++;
 		totalOrphanThoughts--;
 		return true;

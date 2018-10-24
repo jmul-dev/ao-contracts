@@ -82,11 +82,11 @@ contract ThoughtFactory is ThoughtController {
 			// If this Thought is created from another Thought from the same advocate,
 			// Want to add this Thought to its parent Thought as a ChildThought
 			if (Thought(_from).advocateId() == _nameId) {
-				require (Thought(_from).addChildOrphanThought(thoughtId, true));
+				require (Thought(_from).addSubThought(thoughtId, true));
 				emit AddChildThought(_from, thoughtId);
 			} else {
 				// Otherwise, add this Thought to its parent Thought as an OrphanThought
-				require (Thought(_from).addChildOrphanThought(thoughtId, false));
+				require (Thought(_from).addSubThought(thoughtId, false));
 				emit AddOrphanThought(_from, thoughtId);
 			}
 		}
@@ -209,26 +209,24 @@ contract ThoughtFactory is ThoughtController {
 	}
 
 	/**
-	 * @dev Get Thought's child/orphan Thought Ids
+	 * @dev Get Thought's sub Thought Ids
 	 * @param _thoughtId The ID of the Thought
 	 * @param _from The starting index
 	 * @param _to The ending index
-	 * @return list of child/orphan Thought IDs
+	 * @return list of sub Thought IDs
 	 */
-	function getChildOrphanThoughtIds(address _thoughtId, uint256 _from, uint256 _to) public isThought(_thoughtId) view returns (address[]) {
+	function getSubThoughtIds(address _thoughtId, uint256 _from, uint256 _to) public isThought(_thoughtId) view returns (address[]) {
 		require (_from >= 1 && _to >= _from);
-		Thought _thought = Thought(_thoughtId);
-		return _thought.getChildOrphanThoughtIds(_from, _to);
+		return Thought(_thoughtId).getSubThoughtIds(_from, _to);
 	}
 
 	/**
-	 * @dev Get Thought's child/orphan Thoughts total count
+	 * @dev Get Thought's sub Thoughts total count
 	 * @param _thoughtId The ID of the Thought
-	 * @return total child/orphan Thoughts count
+	 * @return total sub Thoughts count
 	 */
-	function getTotalChildOrphanThoughtsCount(address _thoughtId) public isThought(_thoughtId) view returns (uint256) {
-		Thought _thought = Thought(_thoughtId);
-		return _thought.getTotalChildOrphanThoughtsCount();
+	function getTotalSubThoughtsCount(address _thoughtId) public isThought(_thoughtId) view returns (uint256) {
+		return Thought(_thoughtId).totalSubThoughts();
 	}
 
 	/**
@@ -237,8 +235,7 @@ contract ThoughtFactory is ThoughtController {
 	 * @return total child Thoughts count
 	 */
 	function getTotalChildThoughtsCount(address _thoughtId) public isThought(_thoughtId) view returns (uint256) {
-		Thought _thought = Thought(_thoughtId);
-		return _thought.getTotalChildThoughtsCount();
+		return Thought(_thoughtId).totalChildThoughts();
 	}
 
 	/**
@@ -247,8 +244,7 @@ contract ThoughtFactory is ThoughtController {
 	 * @return total orphan Thoughts count
 	 */
 	function getTotalOrphanThoughtsCount(address _thoughtId) public isThought(_thoughtId) view returns (uint256) {
-		Thought _thought = Thought(_thoughtId);
-		return _thought.getTotalOrphanThoughtsCount();
+		return Thought(_thoughtId).totalOrphanThoughts();
 	}
 
 	/**
@@ -258,8 +254,7 @@ contract ThoughtFactory is ThoughtController {
 	 * @return return true if yes. Otherwise return false.
 	 */
 	function isChildThoughtOfThought(address _thoughtId, address _childThoughtId) public isThought(_thoughtId) isThought(_childThoughtId) view returns (bool) {
-		Thought _thought = Thought(_thoughtId);
-		return _thought.isChildThought(_childThoughtId);
+		return Thought(_thoughtId).isChildThought(_childThoughtId);
 	}
 
 	/**
@@ -269,8 +264,7 @@ contract ThoughtFactory is ThoughtController {
 	 * @return return true if yes. Otherwise return false.
 	 */
 	function isOrphanThoughtOfThought(address _thoughtId, address _orphanThoughtId) public isThought(_thoughtId) isThought(_orphanThoughtId) view returns (bool) {
-		Thought _thought = Thought(_thoughtId);
-		return _thought.isOrphanThought(_orphanThoughtId);
+		return Thought(_thoughtId).isOrphanThought(_orphanThoughtId);
 	}
 
 	/**
@@ -294,15 +288,13 @@ contract ThoughtFactory is ThoughtController {
 
 	/**
 	 * @dev Advocate locks/unlocks a Thought.
-			When a Thought is locked, no transaction can happen on the Thought (i.e adding funds, adding child/orphan Thought, etc.)
+			When a Thought is locked, no transaction can happen on the Thought (i.e adding funds, adding sub Thought, etc.)
 			until the Thought is unlocked again.
 	 * @param _thoughtId The ID of the Thought
 	 * @param _locked The bool value to be set
 	 */
 	function setThoughtLocked(address _thoughtId, bool _locked) public isThought(_thoughtId) senderIsName(msg.sender) onlyAdvocateOf(msg.sender, _thoughtId) {
-		Thought _thought = Thought(_thoughtId);
-
-		require (_thought.setLocked(_locked));
+		require (Thought(_thoughtId).setLocked(_locked));
 
 		emit SetThoughtLocked(_thoughtId, _locked);
 	}

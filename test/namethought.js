@@ -93,13 +93,13 @@ contract("Name & Thought", function(accounts) {
 
 		var createThought = async function(from, fromType, sameAdvocate, account) {
 			var totalThoughtsBefore = await thoughtfactory.getTotalThoughtsCount();
-			var totalChildOrphanThoughtsBefore,
+			var totalSubThoughtsBefore,
 				totalChildThoughtsBefore,
 				totalChildThoughtsAfter,
 				totalOrphanThoughtsBefore,
 				totalOrphanThoughtsAfter;
 			if (fromType == "thought") {
-				totalChildOrphanThoughtsBefore = await thoughtfactory.getTotalChildOrphanThoughtsCount(from);
+				totalSubThoughtsBefore = await thoughtfactory.getTotalSubThoughtsCount(from);
 				if (sameAdvocate) {
 					totalChildThoughtsBefore = await thoughtfactory.getTotalChildThoughtsCount(from);
 				} else {
@@ -160,19 +160,19 @@ contract("Name & Thought", function(accounts) {
 			assert.equal(thoughtRelationship[1], emptyAddress, "Thought has incorrect throughId");
 
 			if (fromType == "thought") {
-				totalChildOrphanThoughtsAfter = await thoughtfactory.getTotalChildOrphanThoughtsCount(from);
+				totalSubThoughtsAfter = await thoughtfactory.getTotalSubThoughtsCount(from);
 
 				assert.equal(
-					totalChildOrphanThoughtsAfter.toString(),
-					totalChildOrphanThoughtsBefore.plus(1).toString(),
-					"Parent Thought has incorrect count of child/orphan Thoughts"
+					totalSubThoughtsAfter.toString(),
+					totalSubThoughtsBefore.plus(1).toString(),
+					"Parent Thought has incorrect count of sub Thoughts"
 				);
 
-				var childOrphanThoughts = await thoughtfactory.getChildOrphanThoughtIds(from, 1, totalChildOrphanThoughtsAfter.toString());
+				var subThoughts = await thoughtfactory.getSubThoughtIds(from, 1, totalSubThoughtsAfter.toString());
 				assert.include(
-					childOrphanThoughts,
+					subThoughts,
 					thoughtId,
-					"Newly created Thought ID is not in the parent's list of child/orphan Thoughts"
+					"Newly created Thought ID is not in the parent's list of sub Thoughts"
 				);
 				if (sameAdvocate) {
 					assert.notEqual(addChildThoughtEvent, null, "Creating Thought didn't emit AddChildThought event");
@@ -370,9 +370,11 @@ contract("Name & Thought", function(accounts) {
 			thoughtId1 = await createThought(nameId1, "name", true, account1);
 
 			// Create Thought2 from Thought1 by the same Advocate
+			// thoughtId2 should be child Thought of thoughtId1
 			thoughtId2 = await createThought(thoughtId1, "thought", true, account1);
 
 			// Create Thought3 to Thought1 by different Advocate
+			// thoughtId3 should be orphan Thought of thoughtId1
 			thoughtId3 = await createThought(thoughtId1, "thought", false, account2);
 		});
 
