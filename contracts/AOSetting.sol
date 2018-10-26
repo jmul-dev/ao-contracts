@@ -13,69 +13,151 @@ contract AOSetting {
 	address public nameFactoryAddress;
 	NameFactory internal _nameFactory;
 
-	/***** Constant variables *****/
-	// Total available primordial token for sale 1,125,899,906,842,620 AO+
-	uint256 constant public TOTAL_PRIMORDIAL_FOR_SALE = 1125899906842620;
-	uint256 constant public PERCENTAGE_DIVISOR = 10 ** 6; // 1000000 = 100%
-	uint256 constant public MULTIPLIER_DIVISOR = 10 ** 6; // 1000000 = 1
+	uint256 public totalSetting;
 
-	struct UintData {
-		address nameId;		// The nameId who sets the key/value
-		uint256 value;		// The uint256 value of the setting
-		bool isSet;			// Indicates whether a key of a setting isset
-		bool locked;		// If true, no one can update this setting until the TAO unlocks it
+	struct SettingData {
+		uint256 settingId;				// Identifier of this setting
+		address creatorNameId;			// The nameId that created the setting
+		address creatorThoughtId;		// The thoughtId that created the setting
+		address associatedThoughtId;	// The thoughtId that the setting affects
+		string settingName;				// The human-readable name of the setting
+		/**
+		 * 1 => uint256
+		 * 2 => bool
+		 * 3 => address
+		 * 4 => bytes32
+		 * 5 => string (catch all)
+		 */
+		uint8 settingType;
+		string settingDataJSON;			// Catch-all
 	}
 
-	struct BoolData {
-		address nameId;		// The nameId who sets the key/value
-		bool value;			// The bool value of the setting
-		bool isSet;			// Indicates whether a key of a setting isset
-		bool locked;		// If true, no one can update this setting until the TAO unlocks it
+	struct SettingState {
+		uint256 settingId;				// Identifier of this setting
+		bool pendingAdvocateCreate;		// State when associatedThoughtId has not accepted setting
+		bool pendingUpdateThought;		// State when setting is in process of being updated
+		bool locked;					// State when pending anything (cannot change if locked)
+		address updateAdvocateNameId;	// The nameId of the Advocate that performed the update
+
+		/**
+		 * A child of the associatedThoughtId with the update Logos.
+		 * This tells the setting contract that there is a proposal Thought that is a Child Thought
+		 * of the associated Thought, which will be responsible for deciding if the update to the
+		 * setting is accepted or rejected.
+		 */
+		address proposalThoughtId;
+
+		/**
+		 * Signature of the proposalThoughtId and update value by the associatedThoughtId
+		 * Advocate's Name's Address.
+		 */
+		string updateSignature;
+
+		/**
+		 * The has of the update data (proposalThoughtId, values, newValues, data, settingId)
+		 */
+		bytes32 updateHashKey;
+
+		/**
+		 * The proposalThoughtId moves here when setting value changes successfully
+		 */
+		address lastUpdateThoughtId;
+
+		string settingStateJSON;		// Catch-all
 	}
 
-	// Mapping from bytes32 key to its UintData
-	mapping(bytes32 => UintData) public uintSetting;
+	struct SettingDeprecation {
+		uint256 settingId;				// Identifier of this setting
+		/**
+		 * 0 => no deprecation
+		 * 1 => marks if this setting is deprecated and re-routed
+		 * 2 => marks if the deprecation status is pending
+		 */
+		uint8 deprecationStatus;
 
-	// Mapping from bytes32 key to its BoolData
-	mapping(bytes32 => BoolData) public boolSetting;
+		// holds the new settingId that either is pending or replaced once the deprecation is set
+		uint256 newSettingId;
 
-	// Event to be broadcasted to public when a uint setting is added
-	// nameId is the ID of the Name that creates this transaction
-	// thoughtId is the ID of the Thought that supports this transaction
-	event AddUintSetting(address indexed nameId, bytes32 indexed key, uint256 value, address thoughtId);
+		/**
+		 * 0 => no migration to new contract address
+		 * 1 => marks if this setting is migrated to an entirely new address
+		 * 2 => marks if the migration status is pending
+		 */
+		uint8 migrationStatus;
 
-	// Event to be broadcasted to public when a bool setting is added
-	// nameId is the ID of the Name that creates this transaction
-	// thoughtId is the ID of the Thought that supports this transaction
-	event AddBoolSetting(address indexed nameId, bytes32 indexed key, bool value, address thoughtId);
+		// holds the new contract address for this setting
+		address newSettingContractAddress;
+	}
 
-	// Event to be broadcasted to public when a uint setting is updated
-	// nameId is the ID of the Name that creates this transaction
-	// thoughtId is the ID of the Thought that supports this transaction
-	event UpdateUintSetting(address indexed nameId, bytes32 indexed key, uint256 value, address thoughtId);
+	struct AssociatedThoughtSetting {
+		bytes32 associatedThoughtSettingId;		// Identifier
+		address associatedThoughtId;			// The Thought ID that the setting is associated to
+		uint256 settingId;						// The Setting ID that is associated with the Thought ID
+	}
 
-	// Event to be broadcasted to public when a bool setting is updated
-	// nameId is the ID of the Name that creates this transaction
-	// thoughtId is the ID of the Thought that supports this transaction
-	event UpdateBoolSetting(address indexed nameId, bytes32 indexed key, bool value, address thoughtId);
+	struct CreatorThoughtSetting {
+		bytes32 creatorThoughtSettingId;		// Identifier
+		address creatorThoughtId;				// The Thought ID that the setting was created from
+		uint256 settingId;						// The Setting ID created from the Thought ID
+	}
 
-	// Event to be broadcasted to public when a uint setting's ownership is transferred
-	// thoughtId is the ID of the Thought that supports this transaction
-	event TransferUintSettingOwnership(bytes32 indexed key, address oldNameId, address newNameId, address thoughtId);
+	// Mapping from settingId to it's data
+	mapping (uint256 => SettingData) public settingDatas;
 
-	// Event to be broadcasted to public when a bool setting's ownership is transferred
-	// thoughtId is the ID of the Thought that supports this transaction
-	event TransferBoolSettingOwnership(bytes32 indexed key, address oldNameId, address newNameId, address thoughtId);
+	// Mapping from settingId to it's state
+	mapping (uint256 => SettingState) public settingStates;
 
-	// Event to be broadcasted to public when a uint setting is unlocked
-	// nameId is the ID of the Name that unlocks this setting
-	// thoughtId is the ID of the Thought that supports this transaction
-	event UnlockUintSetting(bytes32 indexed key, address nameId, address thoughtId);
+	// Mapping from settingId to it's deprecation info
+	mapping (uint256 => SettingDeprecation) public settingDeprecations;
 
-	// Event to be broadcasted to public when a bool setting is unlocked
-	// nameId is the ID of the Name that unlocks this setting
-	// thoughtId is the ID of the Thought that supports this transaction
-	event UnlockBoolSetting(bytes32 indexed key, address nameId, address thoughtId);
+	// Mapping from settingId to it's actual uint256 value
+	mapping (uint256 => uint256) public settingUintValue;
+
+	// Mapping from settingId to it's actual bool value
+	mapping (uint256 => bool) public settingBoolValue;
+
+	// Mapping from settingId to it's actual address value
+	mapping (uint256 => address) public settingAddressValue;
+
+	// Mapping from settingId to it's actual bytes32 value
+	mapping (uint256 => bytes32) public settingBytesValue;
+
+	// Mapping from settingId to it's actual string value
+	mapping (uint256 => string) public settingStringValue;
+
+	// Mapping from settingId to it's potential uint256 value that is at pending state
+	mapping (uint256 => uint256) public pendingSettingUintValue;
+
+	// Mapping from settingId to it's potential bool value that is at pending state
+	mapping (uint256 => bool) public pendingSettingBoolValue;
+
+	// Mapping from settingId to it's potential address value that is at pending state
+	mapping (uint256 => address) public pendingSettingAddressValue;
+
+	// Mapping from settingId to it's potential bytes32 value that is at pending state
+	mapping (uint256 => bytes32) public pendingSettingBytesValue;
+
+	// Mapping from settingId to it's potential string value that is at pending state
+	mapping (uint256 => string) public pendingSettingStringValue;
+
+	// Mapping from associatedThoughtSettingId to AssociatedThoughtSetting
+	mapping (bytes32 => AssociatedThoughtSetting) public associatedThoughtSettings;
+
+	// Mapping from creatorThoughtSettingId to CreatorThoughtSetting
+	mapping (bytes32 => CreatorThoughtSetting) public creatorThoughtSettings;
+
+	/**
+	 * Mapping from associatedThoughtId's setting name to Setting ID.
+	 *
+	 * Instead of concatenating the associatedThoughtID and setting name to create a unique ID for lookup,
+	 * use nested mapping to achieve the same result.
+	 *
+	 * The setting's name needs to be converted to bytes32 since solidity does not support mapping by string.
+	 */
+	mapping (address => mapping (bytes32 => uint256)) public nameSettingLookup;
+
+	// Mapping from updateHashKey to it's settingId
+	mapping (bytes32 => uint256) public updateHashLookup;
 
 	/**
 	 * @dev Constructor function
@@ -83,226 +165,5 @@ contract AOSetting {
 	constructor(address _nameFactoryAddress) public {
 		nameFactoryAddress = _nameFactoryAddress;
 		_nameFactory = NameFactory(nameFactoryAddress);
-	}
-
-	/***** Public Methods *****/
-	/**
-	 * @dev Adds uint256 setting
-	 * @param _key The key to add
-	 * @param _value The value of the setting
-	 * @param _thoughtId The Thought ID that supports this transaction
-	 */
-	function addUintSetting(bytes32 _key, uint256 _value, address _thoughtId) public {
-		UintData storage _data = uintSetting[_key];
-		// Make sure this setting not yet exist
-		require (_data.isSet == false && _data.nameId == address(0));
-
-		/**
-		 * TODO: Need to figure out how to validate the _thoughtId
-		 *		 i.e, it is the one that prompts this transaction
-		 *
-		 * For now, check whether the Thought is closed and it is the `advocate` that
-		 * adds this setting
-		 */
-		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_nameId != address(0) && Thought(_thoughtId).closed() == true && _nameId == Thought(_thoughtId).advocateId());
-
-		// Store the setting data
-		_data.nameId = _nameId;
-		_data.value = _value;
-		_data.isSet = true;
-		_data.locked = true;
-		emit AddUintSetting(_nameId, _key, _value, _thoughtId);
-	}
-
-	/**
-	 * @dev Adds bool setting
-	 * @param _key The key to add
-	 * @param _value The value of the setting
-	 * @param _thoughtId The Thought ID that supports this transaction
-	 */
-	function addBoolSetting(bytes32 _key, bool _value, address _thoughtId) public {
-		BoolData storage _data = boolSetting[_key];
-		// Make sure this setting not yet exist
-		require (_data.isSet == false && _data.nameId == address(0));
-
-		/**
-		 * TODO: Need to figure out how to validate the _thoughtId
-		 *		 i.e, it is the one that prompts this transaction
-		 *
-		 * For now, check whether the Thought is closed and it is the `advocate` that
-		 * adds this setting
-		 */
-		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_nameId != address(0) && Thought(_thoughtId).closed() == true && _nameId == Thought(_thoughtId).advocateId());
-
-		// Store the setting data
-		_data.nameId = _nameId;
-		_data.value = _value;
-		_data.isSet = true;
-		_data.locked = true;
-		emit AddBoolSetting(_nameId, _key, _value, _thoughtId);
-	}
-
-	/**
-	 * @dev Updates existing uint256 setting
-	 * @param _key The key to update
-	 * @param _value The new value of the setting
-	 * @param _thoughtId The Thought ID that supports this transaction
-	 */
-	function updateUintSetting(bytes32 _key, uint256 _value, address _thoughtId) public {
-		UintData storage _data = uintSetting[_key];
-		// Make sure this setting can be updated
-		require (_data.isSet == true && _data.locked == false);
-
-		/**
-		 * TODO: Need to figure out how to validate the _thoughtId
-		 *		 i.e, it is the one that prompts this transaction
-		 *
-		 * For now, check whether the Thought is closed and it is the `advocate` that
-		 * updates this setting
-		 */
-		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_nameId != address(0) && _data.nameId == _nameId && Thought(_thoughtId).closed() == true && _nameId == Thought(_thoughtId).advocateId());
-
-		// Update the setting data
-		_data.value = _value;
-		_data.locked = true;
-		emit UpdateUintSetting(msg.sender, _key, _value, _thoughtId);
-	}
-
-	/**
-	 * @dev Updates existing bool setting
-	 * @param _key The key to update
-	 * @param _value The new value of the setting
-	 * @param _thoughtId The Thought ID that supports this transaction
-	 */
-	function updateBoolSetting(bytes32 _key, bool _value, address _thoughtId) public {
-		BoolData storage _data = boolSetting[_key];
-		// Make sure this setting can be updated
-		require (_data.isSet == true && _data.locked == false);
-
-		/**
-		 * TODO: Need to figure out how to validate the _thoughtId
-		 *		 i.e, it is the one that prompts this transaction
-		 *
-		 * For now, check whether the Thought is closed and it is the `advocate` that
-		 * updates this setting
-		 */
-		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_nameId != address(0) && _data.nameId == _nameId && Thought(_thoughtId).closed() == true && _nameId == Thought(_thoughtId).advocateId());
-
-		// Update the setting data
-		_data.value = _value;
-		_data.locked = true;
-		emit UpdateBoolSetting(msg.sender, _key, _value, _thoughtId);
-	}
-
-	/**
-	 * @dev Transfer ownership of existing uintSetting
-	 * @param _key The key to update
-	 * @param _newNameId The new nameId
-	 * @param _thoughtId The Thought ID that supports this transaction
-	 */
-	function transferUintSettingOwnership(bytes32 _key, address _newNameId, address _thoughtId) public {
-		UintData storage _data = uintSetting[_key];
-		// Make sure this setting exist
-		require (_data.isSet == true);
-
-		// Make sure the new _newNameId is a Name
-		require (Name(_newNameId).originNameId() != address(0) && Name(_newNameId).thoughtTypeId() == 1);
-
-		/**
-		 * TODO: Need to figure out how to validate the _thoughtId
-		 *		 i.e, it is the one that prompts this transaction
-		 *
-		 * For now, check whether the Thought is closed and it is the `advocate` that
-		 * triggers this transfer of ownership
-		 */
-		address _oldNameId = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_oldNameId != address(0) && _data.nameId == _oldNameId && Thought(_thoughtId).closed() == true && _oldNameId == Thought(_thoughtId).advocateId());
-
-		// Update the nameId
-		_data.nameId = _newNameId;
-		emit TransferUintSettingOwnership(_key, _oldNameId, _newNameId, _thoughtId);
-	}
-
-	/**
-	 * @dev Transfer ownership of existing boolSetting
-	 * @param _key The key to update
-	 * @param _newNameId The new nameId
-	 * @param _thoughtId The Thought ID that supports this transaction
-	 */
-	function transferBoolSettingOwnership(bytes32 _key, address _newNameId, address _thoughtId) public {
-		BoolData storage _data = boolSetting[_key];
-		// Make sure this setting exist
-		require (_data.isSet == true);
-
-		// Make sure the new _newNameId is a Name
-		require (Name(_newNameId).originNameId() != address(0) && Name(_newNameId).thoughtTypeId() == 1);
-
-		/**
-		 * TODO: Need to figure out how to validate the _thoughtId
-		 *		 i.e, it is the one that prompts this transaction
-		 *
-		 * For now, check whether the Thought is closed and it is the `advocate` that
-		 * triggers this transfer of ownership
-		 */
-		address _oldNameId = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_oldNameId != address(0) && _data.nameId == _oldNameId && Thought(_thoughtId).closed() == true && _oldNameId == Thought(_thoughtId).advocateId());
-
-		// Update the nameId
-		_data.nameId = _newNameId;
-		emit TransferBoolSettingOwnership(_key, _oldNameId, _newNameId, _thoughtId);
-	}
-
-	/**
-	 * @dev Unlock uintSetting key so that the nameId can update the value
-	 * @param _key The key to unlock
-	 * @param _thoughtId The Thought ID that supports this transaction
-	 */
-	function unlockUintSetting(bytes32 _key, address _thoughtId) public {
-		UintData storage _data = uintSetting[_key];
-		// Make sure this setting exist
-		require (_data.isSet == true && _data.locked == true);
-
-		/**
-		 * TODO: Need to figure out how to validate the _thoughtId
-		 *		 i.e, it is the one that prompts this transaction
-		 *
-		 * For now, check whether the Thought is closed and it is the `advocate` that
-		 * triggers unlock
-		 */
-		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_nameId != address(0) && _data.nameId == _nameId && Thought(_thoughtId).closed() == true && _nameId == Thought(_thoughtId).advocateId());
-
-		// Unlock the setting
-		_data.locked = false;
-		emit UnlockUintSetting(_key, _nameId, _thoughtId);
-	}
-
-	/**
-	 * @dev Unlock boolSetting key so that the nameId can update the value
-	 * @param _key The key to unlock
-	 * @param _thoughtId The Thought ID that supports this transaction
-	 */
-	function unlockBoolSetting(bytes32 _key, address _thoughtId) public {
-		BoolData storage _data = boolSetting[_key];
-		// Make sure this setting exist
-		require (_data.isSet == true && _data.locked == true);
-
-		/**
-		 * TODO: Need to figure out how to validate the _thoughtId
-		 *		 i.e, it is the one that prompts this transaction
-		 *
-		 * For now, check whether the Thought is closed and it is the `advocate` that
-		 * triggers unlock
-		 */
-		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_nameId != address(0) && _data.nameId == _nameId && Thought(_thoughtId).closed() == true && _nameId == Thought(_thoughtId).advocateId());
-
-		// Unlock the setting
-		_data.locked = false;
-		emit UnlockBoolSetting(_key, _nameId, _thoughtId);
 	}
 }
