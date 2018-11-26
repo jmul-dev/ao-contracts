@@ -151,7 +151,16 @@ module.exports = function(deployer, network, accounts) {
 		})
 		.then(async function() {
 			namefactory = await NameFactory.deployed();
-			return deployer.deploy(AOSetting, namefactory.address, aosettingdatastate.address, aouintsetting.address, aoboolsetting.addres, aoaddresssetting.address, aobytessetting.address, aostringsetting.address);
+			return deployer.deploy(
+				AOSetting,
+				namefactory.address,
+				aosettingdatastate.address,
+				aouintsetting.address,
+				aoboolsetting.addres,
+				aoaddresssetting.address,
+				aobytessetting.address,
+				aostringsetting.address
+			);
 		})
 		.then(async function() {
 			aosetting = await AOSetting.deployed();

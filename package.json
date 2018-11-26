@@ -18,7 +18,6 @@
 		"pretty-quick": "^1.6.0"
 	},
 	"scripts": {
-		"precommit": "pretty-quick --stage",
 		"chain": "ganache-cli -p 8545 -m 'stomach six rural battle middle jazz chalk camera grain render feed job' -g 10000000000 -e 1000 -l 6000000",
 		"compile": "truffle compile",
 		"migrate": "truffle migrate",
@@ -29,5 +28,10 @@
 		"ganache-cli": "^6.1.6",
 		"prettier": "1.13.7",
 		"truffle": "^4.1.13"
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "pretty-quick --staged"
+		}
 	}
 }
