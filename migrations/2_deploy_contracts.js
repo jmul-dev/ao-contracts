@@ -31,6 +31,13 @@ var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
 var ThoughtPosition = artifacts.require("./ThoughtPosition.sol");
 
 var AOPool = artifacts.require("./AOPool.sol");
+var AOSettingDataState = artifacts.require("./AOSettingDataState.sol");
+var AOUintSetting = artifacts.require("./AOUintSetting.sol");
+var AOBoolSetting = artifacts.require("./AOBoolSetting.sol");
+var AOAddressSetting = artifacts.require("./AOAddressSetting.sol");
+var AOBytesSetting = artifacts.require("./AOBytesSetting.sol");
+var AOStringSetting = artifacts.require("./AOStringSetting.sol");
+var AOSetting = artifacts.require("./AOSetting.sol");
 
 module.exports = function(deployer, network, accounts) {
 	var deployerAccount;
@@ -64,7 +71,14 @@ module.exports = function(deployer, network, accounts) {
 		position,
 		namefactory,
 		thoughtfactory,
-		thoughtposition;
+		thoughtposition,
+		aosettingdatastate,
+		aouintsetting,
+		aoboolsetting,
+		aoaddresssetting,
+		aobytessetting,
+		aostringsetting,
+		aosetting;
 
 	deployer.deploy(AOLibrary);
 	deployer.link(AOLibrary, AOToken);
@@ -97,7 +111,13 @@ module.exports = function(deployer, network, accounts) {
 		[AntiLogos, 0, "Anti Logos", "ALOGOS", "antilogos"],
 		[AntiEthos, 0, "Anti Ethos", "AETHOS", "antiethos"],
 		[AntiPathos, 0, "Anti Pathos", "APATHOS", "antipathos"],
-		[Position, 0, "AO Position", "AOPOS"]
+		[Position, 0, "AO Position", "AOPOS"],
+		AOSettingDataState,
+		AOUintSetting,
+		AOBoolSetting,
+		AOAddressSetting,
+		AOBytesSetting,
+		AOStringSetting
 	]);
 
 	deployer
@@ -121,10 +141,20 @@ module.exports = function(deployer, network, accounts) {
 			antiethos = await AntiEthos.deployed();
 			antipathos = await AntiPathos.deployed();
 			position = await Position.deployed();
+			aosettingdatastate = await AOSettingDataState.deployed();
+			aouintsetting = await AOUintSetting.deployed();
+			aoboolsetting = await AOBoolSetting.deployed();
+			aoaddresssetting = await AOAddressSetting.deployed();
+			aobytessetting = await AOBytesSetting.deployed();
+			aostringsetting = await AOStringSetting.deployed();
 			return deployer.deploy(NameFactory, position.address);
 		})
 		.then(async function() {
 			namefactory = await NameFactory.deployed();
+			return deployer.deploy(AOSetting, namefactory.address, aosettingdatastate.address, aouintsetting.address, aoboolsetting.addres, aoaddresssetting.address, aobytessetting.address, aostringsetting.address);
+		})
+		.then(async function() {
+			aosetting = await AOSetting.deployed();
 			return deployer.deploy(ThoughtFactory, namefactory.address, position.address);
 		})
 		.then(async function() {
@@ -242,5 +272,22 @@ module.exports = function(deployer, network, accounts) {
 			// position grant access to namefactory and thoughtposition
 			await position.setWhitelist(namefactory.address, true, { from: deployerAccount });
 			await position.setWhitelist(thoughtposition.address, true, { from: deployerAccount });
+
+			// Grant access to aosetting
+			await aouintsetting.setWhitelist(aosetting.address, true, { from: deployerAccount });
+			await aoboolsetting.setWhitelist(aosetting.address, true, { from: deployerAccount });
+			await aoaddresssetting.setWhitelist(aosetting.address, true, { from: deployerAccount });
+			await aobytessetting.setWhitelist(aosetting.address, true, { from: deployerAccount });
+			await aostringsetting.setWhitelist(aosetting.address, true, { from: deployerAccount });
+
+			/*
+			// create Primordial Name for the deployerAccount
+			await namefactory.createName("alpha", "", "", "", "", { from: deployerAccount });
+
+			var primordialNameId = await nameFactory.ethAddressToNameId(deployerAccount);
+
+			// create Primordial Thought
+			await thoughtFactory.createThought("somehash", "somedatabase", "somekeyvalue", "", primordialNameId, { from: deployerAccount});
+			*/
 		});
 };

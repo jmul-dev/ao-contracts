@@ -3,6 +3,12 @@ pragma solidity ^0.4.24;
 import './Thought.sol';
 import './Name.sol';
 import './NameFactory.sol';
+import './AOSettingDataState.sol';
+import './AOUintSetting.sol';
+import './AOBoolSetting.sol';
+import './AOAddressSetting.sol';
+import './AOBytesSetting.sol';
+import './AOStringSetting.sol';
 
 /**
  * @title AOSetting
@@ -10,80 +16,15 @@ import './NameFactory.sol';
  * This contract stores all AO setting variables
  */
 contract AOSetting {
-	address public nameFactoryAddress;
 	NameFactory internal _nameFactory;
+	AOSettingDataState internal _aoSettingDataState;
+	AOUintSetting internal _aoUintSetting;
+	AOBoolSetting internal _aoBoolSetting;
+	AOAddressSetting internal _aoAddressSetting;
+	AOBytesSetting internal _aoBytesSetting;
+	AOStringSetting internal _aoStringSetting;
 
 	uint256 public totalSetting;
-
-	struct SettingData {
-		uint256 settingId;				// Identifier of this setting
-		address creatorNameId;			// The nameId that created the setting
-		address creatorThoughtId;		// The thoughtId that created the setting
-		address associatedThoughtId;	// The thoughtId that the setting affects
-		string settingName;				// The human-readable name of the setting
-		/**
-		 * 1 => uint256
-		 * 2 => bool
-		 * 3 => address
-		 * 4 => bytes32
-		 * 5 => string (catch all)
-		 */
-		uint8 settingType;
-		bool pendingCreate;				// State when associatedThoughtId has not accepted setting
-		bool locked;					// State when pending anything (cannot change if locked)
-		bool rejected;					// State when associatedThoughtId rejected this setting
-		string settingDataJSON;			// Catch-all
-	}
-
-	struct SettingState {
-		uint256 settingId;				// Identifier of this setting
-		bool pendingUpdate;				// State when setting is in process of being updated
-		address updateAdvocateNameId;	// The nameId of the Advocate that performed the update
-
-		/**
-		 * A child of the associatedThoughtId with the update Logos.
-		 * This tells the setting contract that there is a proposal Thought that is a Child Thought
-		 * of the associated Thought, which will be responsible for deciding if the update to the
-		 * setting is accepted or rejected.
-		 */
-		address proposalThoughtId;
-
-		/**
-		 * Signature of the proposalThoughtId and update value by the associatedThoughtId
-		 * Advocate's Name's address.
-		 */
-		string updateSignature;
-
-		/**
-		 * The proposalThoughtId moves here when setting value changes successfully
-		 */
-		address lastUpdateThoughtId;
-
-		string settingStateJSON;		// Catch-all
-	}
-
-	struct SettingDeprecation {
-		uint256 settingId;				// Identifier of this setting
-		/**
-		 * 0 => no deprecation
-		 * 1 => marks if this setting is deprecated and re-routed
-		 * 2 => marks if the deprecation status is pending
-		 */
-		uint8 deprecationStatus;
-
-		// holds the new settingId that either is pending or replaced once the deprecation is set
-		uint256 newSettingId;
-
-		/**
-		 * 0 => no migration to new contract address
-		 * 1 => marks if this setting is migrated to an entirely new address
-		 * 2 => marks if the migration status is pending
-		 */
-		uint8 migrationStatus;
-
-		// holds the new contract address for this setting
-		address newSettingContractAddress;
-	}
 
 	struct AssociatedThoughtSetting {
 		bytes32 associatedThoughtSettingId;		// Identifier
@@ -96,45 +37,6 @@ contract AOSetting {
 		address creatorThoughtId;				// The Thought ID that the setting was created from
 		uint256 settingId;						// The Setting ID created from the Thought ID
 	}
-
-	// Mapping from settingId to it's data
-	mapping (uint256 => SettingData) public settingDatas;
-
-	// Mapping from settingId to it's state
-	mapping (uint256 => SettingState) public settingStates;
-
-	// Mapping from settingId to it's deprecation info
-	mapping (uint256 => SettingDeprecation) public settingDeprecations;
-
-	// Mapping from settingId to it's actual uint256 value
-	mapping (uint256 => uint256) public settingUintValue;
-
-	// Mapping from settingId to it's actual bool value
-	mapping (uint256 => bool) public settingBoolValue;
-
-	// Mapping from settingId to it's actual address value
-	mapping (uint256 => address) public settingAddressValue;
-
-	// Mapping from settingId to it's actual bytes32 value
-	mapping (uint256 => bytes32) public settingBytesValue;
-
-	// Mapping from settingId to it's actual string value
-	mapping (uint256 => string) public settingStringValue;
-
-	// Mapping from settingId to it's potential uint256 value that is at pending state
-	mapping (uint256 => uint256) public pendingSettingUintValue;
-
-	// Mapping from settingId to it's potential bool value that is at pending state
-	mapping (uint256 => bool) public pendingSettingBoolValue;
-
-	// Mapping from settingId to it's potential address value that is at pending state
-	mapping (uint256 => address) public pendingSettingAddressValue;
-
-	// Mapping from settingId to it's potential bytes32 value that is at pending state
-	mapping (uint256 => bytes32) public pendingSettingBytesValue;
-
-	// Mapping from settingId to it's potential string value that is at pending state
-	mapping (uint256 => string) public pendingSettingStringValue;
 
 	// Mapping from associatedThoughtSettingId to AssociatedThoughtSetting
 	mapping (bytes32 => AssociatedThoughtSetting) public associatedThoughtSettings;
@@ -158,23 +60,16 @@ contract AOSetting {
 	// Event to be broadcasted to public when a setting is created and waiting for approval
 	event SettingCreation(uint256 indexed settingId, address indexed creatorNameId, address creatorThoughtId, address associatedThoughtId, string settingName, uint8 settingType, bytes32 associatedThoughtSettingId, bytes32 creatorThoughtSettingId);
 
-	// Event to be broadcasted to public when setting creation is approved by the advocate of associatedThoughtId
-	event ApproveSettingCreation(uint256 indexed settingId, address associatedThoughtId, address associatedThoughtAdvocate);
-
-	// Event to be broadcasted to public when setting creation is rejected by the advocate of associatedThoughtId
-	event RejectSettingCreation(uint256 indexed settingId, address associatedThoughtId, address associatedThoughtAdvocate);
-
+	// Event to be broadcasted to public when setting creation is approved/rejected by the advocate of associatedThoughtId
+	event ApproveSettingCreation(uint256 indexed settingId, address associatedThoughtId, address associatedThoughtAdvocate, bool approved);
 	// Event to be broadcasted to public when setting creation is finalized by the advocate of creatorThoughtId
 	event FinalizeSettingCreation(uint256 indexed settingId, address creatorThoughtId, address creatorThoughtAdvocate);
 
 	// Event to be broadcasted to public when a proposed update for a setting is created
 	event SettingUpdate(uint256 indexed settingId, address indexed updateAdvocateNameId, address proposalThoughtId);
 
-	// Event to be broadcasted to public when setting update is approved by the advocate of proposalThoughtId
-	event ApproveSettingUpdate(uint256 indexed settingId, address proposalThoughtId, address proposalThoughtAdvocate);
-
-	// Event to be broadcasted to public when setting update is rejected by the advocate of proposalThoughtId
-	event RejectSettingUpdate(uint256 indexed settingId, address proposalThoughtId, address proposalThoughtAdvocate);
+	// Event to be broadcasted to public when setting update is approved/rejected by the advocate of proposalThoughtId
+	event ApproveSettingUpdate(uint256 indexed settingId, address proposalThoughtId, address proposalThoughtAdvocate, bool approved);
 
 	// Event to be broadcasted to public when setting update is finalized by the advocate of associatedThoughtId
 	event FinalizeSettingUpdate(uint256 indexed settingId, address associatedThoughtId, address associatedThoughtAdvocate);
@@ -182,9 +77,20 @@ contract AOSetting {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress) public {
-		nameFactoryAddress = _nameFactoryAddress;
-		_nameFactory = NameFactory(nameFactoryAddress);
+	constructor(address _nameFactoryAddress,
+		address _aoSettingDataStateAddress,
+		address _aoUintSettingAddress,
+		address _aoBoolSettingAddress,
+		address _aoAddressSettingAddress,
+		address _aoBytesSettingAddress,
+		address _aoStringSettingAddress) public {
+		_nameFactory = NameFactory(_nameFactoryAddress);
+		_aoSettingDataState = AOSettingDataState(_aoSettingDataStateAddress);
+		_aoUintSetting = AOUintSetting(_aoUintSettingAddress);
+		_aoBoolSetting = AOBoolSetting(_aoBoolSettingAddress);
+		_aoAddressSetting = AOAddressSetting(_aoAddressSettingAddress);
+		_aoBytesSetting = AOBytesSetting(_aoBytesSettingAddress);
+		_aoStringSetting = AOStringSetting(_aoStringSettingAddress);
 	}
 
 	/**
@@ -215,10 +121,7 @@ contract AOSetting {
 	 * @dev Check if sender can update settingId
 	 */
 	modifier canUpdateSetting(uint256 _settingId, address _sender) {
-		// Make sure setting is created
-		SettingData memory _settingData = settingDatas[_settingId];
-		address _associatedThoughtAdvocate = _nameFactory.ethAddressToNameId(_sender);
-		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == true && _settingData.rejected == false && _associatedThoughtAdvocate != address(0) && _associatedThoughtAdvocate == Thought(_settingData.associatedThoughtId).advocateId());
+		require (_aoSettingDataState.canUpdateSetting(_settingId, _nameFactory.ethAddressToNameId(_sender)));
 		_;
 	}
 
@@ -246,7 +149,7 @@ contract AOSetting {
 		totalSetting++;
 
 		// Store the value as pending value
-		pendingSettingUintValue[totalSetting] = _value;
+		_aoUintSetting.setPendingValue(totalSetting, _value);
 
 		// Store setting creation data
 		_storeSettingCreation(_nameFactory.ethAddressToNameId(msg.sender), 1, _settingName, _creatorThoughtId, _associatedThoughtId, _extraData);
@@ -265,7 +168,7 @@ contract AOSetting {
 		totalSetting++;
 
 		// Store the value as pending value
-		pendingSettingBoolValue[totalSetting] = _value;
+		_aoBoolSetting.setPendingValue(totalSetting, _value);
 
 		// Store setting creation data
 		_storeSettingCreation(_nameFactory.ethAddressToNameId(msg.sender), 2, _settingName, _creatorThoughtId, _associatedThoughtId, _extraData);
@@ -284,7 +187,7 @@ contract AOSetting {
 		totalSetting++;
 
 		// Store the value as pending value
-		pendingSettingAddressValue[totalSetting] = _value;
+		_aoAddressSetting.setPendingValue(totalSetting, _value);
 
 		// Store setting creation data
 		_storeSettingCreation(_nameFactory.ethAddressToNameId(msg.sender), 3, _settingName, _creatorThoughtId, _associatedThoughtId, _extraData);
@@ -303,7 +206,7 @@ contract AOSetting {
 		totalSetting++;
 
 		// Store the value as pending value
-		pendingSettingBytesValue[totalSetting] = _value;
+		_aoBytesSetting.setPendingValue(totalSetting, _value);
 
 		// Store setting creation data
 		_storeSettingCreation(_nameFactory.ethAddressToNameId(msg.sender), 4, _settingName, _creatorThoughtId, _associatedThoughtId, _extraData);
@@ -322,7 +225,7 @@ contract AOSetting {
 		totalSetting++;
 
 		// Store the value as pending value
-		pendingSettingStringValue[totalSetting] = _value;
+		_aoStringSetting.setPendingValue(totalSetting, _value);
 
 		// Store setting creation data
 		_storeSettingCreation(_nameFactory.ethAddressToNameId(msg.sender), 5, _settingName, _creatorThoughtId, _associatedThoughtId, _extraData);
@@ -331,37 +234,18 @@ contract AOSetting {
 	/**
 	 * @dev Advocate of Setting's _associatedThoughtId approves setting creation
 	 * @param _settingId The ID of the setting to approve
+	 * @param _approved Whether to approve or reject
 	 */
-	function approveSettingCreation(uint256 _settingId) public {
-		// Make sure setting exists and needs approval
-		SettingData storage _settingData = settingDatas[_settingId];
+	function approveSettingCreation(uint256 _settingId, bool _approved) public {
 		address _associatedThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_settingData.settingId == _settingId && _settingData.pendingCreate == true && _settingData.locked == true && _settingData.rejected == false && _associatedThoughtAdvocate != address(0) && _associatedThoughtAdvocate == Thought(_settingData.associatedThoughtId).advocateId());
+		require (_aoSettingDataState.approveAdd(_settingId, _associatedThoughtAdvocate, _approved));
 
-		// Unlock the setting so that advocate of creatorThoughtId can finalize the creation
-		_settingData.locked = false;
-
-		emit ApproveSettingCreation(_settingData.settingId, _settingData.associatedThoughtId, _associatedThoughtAdvocate);
-	}
-
-	/**
-	 * @dev Advocate of Setting's _associatedThoughtId rejects setting creation
-	 * @param _settingId The ID of the setting to reject
-	 */
-	function rejectSettingCreation(uint256 _settingId) public {
-		// Make sure setting exists and needs approval
-		SettingData storage _settingData = settingDatas[_settingId];
-		address _associatedThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_settingData.settingId == _settingId && _settingData.pendingCreate == true && _settingData.locked == true && _settingData.rejected == false && _associatedThoughtAdvocate != address(0) && _associatedThoughtAdvocate == Thought(_settingData.associatedThoughtId).advocateId());
-
-		// Reject the setting
-		_settingData.pendingCreate = false;
-		_settingData.rejected = true;
-
-		// Clear the settingName from nameSettingLookup so it can be added again in the future
-		nameSettingLookup[_settingData.associatedThoughtId][keccak256(abi.encodePacked(this, _settingData.settingName))] = 0;
-
-		emit RejectSettingCreation(_settingData.settingId, _settingData.associatedThoughtId, _associatedThoughtAdvocate);
+		(,,,address _associatedThoughtId, string memory _settingName,,,,,) = _aoSettingDataState.getSettingData(_settingId);
+		if (!_approved) {
+			// Clear the settingName from nameSettingLookup so it can be added again in the future
+			delete nameSettingLookup[_associatedThoughtId][keccak256(abi.encodePacked(this, _settingName))];
+		}
+		emit ApproveSettingCreation(_settingId, _associatedThoughtId, _associatedThoughtAdvocate, _approved);
 	}
 
 	/**
@@ -369,18 +253,14 @@ contract AOSetting {
 	 * @param _settingId The ID of the setting to be finalized
 	 */
 	function finalizeSettingCreation(uint256 _settingId) public {
-		// Make sure setting exists and needs approval
-		SettingData storage _settingData = settingDatas[_settingId];
 		address _creatorThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_settingData.settingId == _settingId && _settingData.pendingCreate == true && _settingData.locked == false && _settingData.rejected == false && _creatorThoughtAdvocate != address(0) && _creatorThoughtAdvocate == Thought(_settingData.creatorThoughtId).advocateId());
+		require (_aoSettingDataState.finalizeAdd(_settingId, _creatorThoughtAdvocate));
 
-		// Update the setting data
-		_settingData.pendingCreate = false;
-		_settingData.locked = true;
+		(,,address _creatorThoughtId,,, uint8 _settingType,,,,) = _aoSettingDataState.getSettingData(_settingId);
 
-		_movePendingToSetting(_settingId);
+		_movePendingToSetting(_settingId, _settingType);
 
-		emit FinalizeSettingCreation(_settingData.settingId, _settingData.creatorThoughtId, _creatorThoughtAdvocate);
+		emit FinalizeSettingCreation(_settingId, _creatorThoughtId, _creatorThoughtAdvocate);
 	}
 
 	/**
@@ -392,11 +272,15 @@ contract AOSetting {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function updateUintSetting(uint256 _settingId, uint256 _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) canUpdateSetting(_settingId, msg.sender) {
-		// Store the value in pending variable
-		_storePendingSettingUpdateUintValue(_settingId, _newValue, _proposalThoughtId, _extraData);
+		// Store the value as pending value
+		_aoUintSetting.setPendingValue(_settingId, _newValue);
+
+		// Store the update hash key lookup
+		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoUintSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
 		// Store the setting state data
-		_storeSettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData);
+		require (_aoSettingDataState.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
 	/**
@@ -408,11 +292,15 @@ contract AOSetting {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function updateBoolSetting(uint256 _settingId, bool _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) canUpdateSetting(_settingId, msg.sender) {
-		// Store the value in pending variable
-		_storePendingSettingUpdateBoolValue(_settingId, _newValue, _proposalThoughtId, _extraData);
+		// Store the value as pending value
+		_aoBoolSetting.setPendingValue(_settingId, _newValue);
+
+		// Store the update hash key lookup
+		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoBoolSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
 		// Store the setting state data
-		_storeSettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData);
+		require (_aoSettingDataState.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
 	/**
@@ -424,11 +312,15 @@ contract AOSetting {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function updateAddressSetting(uint256 _settingId, address _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) canUpdateSetting(_settingId, msg.sender) {
-		// Store the value in pending variable
-		_storePendingSettingUpdateAddressValue(_settingId, _newValue, _proposalThoughtId, _extraData);
+		// Store the value as pending value
+		_aoAddressSetting.setPendingValue(_settingId, _newValue);
+
+		// Store the update hash key lookup
+		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoAddressSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
 		// Store the setting state data
-		_storeSettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData);
+		require (_aoSettingDataState.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
 	/**
@@ -440,11 +332,15 @@ contract AOSetting {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function updateBytesSetting(uint256 _settingId, bytes32 _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) canUpdateSetting(_settingId, msg.sender) {
-		// Store the value in pending variable
-		_storePendingSettingUpdateBytesValue(_settingId, _newValue, _proposalThoughtId, _extraData);
+		// Store the value as pending value
+		_aoBytesSetting.setPendingValue(_settingId, _newValue);
+
+		// Store the update hash key lookup
+		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoBytesSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
 		// Store the setting state data
-		_storeSettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData);
+		require (_aoSettingDataState.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
 	/**
@@ -456,53 +352,29 @@ contract AOSetting {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function updateStringSetting(uint256 _settingId, string _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) canUpdateSetting(_settingId, msg.sender) {
-		// Store the value in pending variable
-		_storePendingSettingUpdateStringValue(_settingId, _newValue, _proposalThoughtId, _extraData);
+		// Store the value as pending value
+		_aoStringSetting.setPendingValue(_settingId, _newValue);
+
+		// Store the update hash key lookup
+		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoStringSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
 		// Store the setting state data
-		_storeSettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData);
+		require (_aoSettingDataState.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
 	/**
 	 * @dev Advocate of Setting's proposalThoughtId approves the setting update
 	 * @param _settingId The ID of the setting to be approved
+	 * @param _approved Whether to approve or reject
 	 */
-	function approveSettingUpdate(uint256 _settingId) public {
-		// Make sure setting is created
-		SettingData storage _settingData = settingDatas[_settingId];
-		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == true && _settingData.rejected == false);
-
-		// Make sure setting update exists and needs approval
-		SettingState memory _settingState = settingStates[_settingId];
+	function approveSettingUpdate(uint256 _settingId, bool _approved) public {
 		address _proposalThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_settingState.settingId == _settingId && _settingState.pendingUpdate == true && _proposalThoughtAdvocate != address(0) && _proposalThoughtAdvocate == Thought(_settingState.proposalThoughtId).advocateId());
+		(,,, address _proposalThoughtId,,,) = _aoSettingDataState.getSettingState(_settingId);
 
-		// Unlock the setting so that advocate of associatedThoughtId can finalize the update
-		_settingData.locked = false;
+		require (_aoSettingDataState.approveUpdate(_settingId, _proposalThoughtAdvocate, _approved));
 
-		emit ApproveSettingUpdate(_settingData.settingId, _settingState.proposalThoughtId, _proposalThoughtAdvocate);
-	}
-
-	/**
-	 * @dev Advocate of Setting's proposalThoughtId rejects the setting update
-	 * @param _settingId The ID of the setting to be rejected
-	 */
-	function rejectSettingUpdate(uint256 _settingId) public {
-		// Make sure setting is created
-		SettingData memory _settingData = settingDatas[_settingId];
-		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == true && _settingData.rejected == false);
-
-		// Make sure setting update exists and needs approval
-		SettingState storage _settingState = settingStates[_settingId];
-		address _proposalThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_settingState.settingId == _settingId && _settingState.pendingUpdate == true && _proposalThoughtAdvocate != address(0) && _proposalThoughtAdvocate == Thought(_settingState.proposalThoughtId).advocateId());
-
-		// Set pendingUpdate to false
-		_settingState.pendingUpdate = false;
-		address _proposalThoughtId = _settingState.proposalThoughtId;
-		_settingState.proposalThoughtId = address(0);
-
-		emit RejectSettingUpdate(_settingData.settingId, _proposalThoughtId, _proposalThoughtAdvocate);
+		emit ApproveSettingUpdate(_settingId, _proposalThoughtId, _proposalThoughtAdvocate, _approved);
 	}
 
 	/**
@@ -510,28 +382,14 @@ contract AOSetting {
 	 * @param _settingId The ID of the setting to be finalized
 	 */
 	function finalizeSettingUpdate(uint256 _settingId) public {
-		// Make sure setting is created
-		SettingData storage _settingData = settingDatas[_settingId];
 		address _associatedThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == false && _settingData.rejected == false && _associatedThoughtAdvocate != address(0) && _associatedThoughtAdvocate == Thought(_settingData.associatedThoughtId).advocateId());
+		require (_aoSettingDataState.finalizeUpdate(_settingId, _associatedThoughtAdvocate));
 
-		// Make sure setting update exists and needs approval
-		SettingState storage _settingState = settingStates[_settingId];
-		require (_settingState.settingId == _settingId && _settingState.pendingUpdate == true && _settingState.proposalThoughtId != address(0));
+		(,,, address _associatedThoughtId,, uint8 _settingType,,,,) = _aoSettingDataState.getSettingData(_settingId);
 
-		// Update the setting data
-		_settingData.locked = true;
+		_movePendingToSetting(_settingId, _settingType);
 
-		// Update the setting state
-		_settingState.pendingUpdate = false;
-		_settingState.updateAdvocateNameId = _associatedThoughtAdvocate;
-		address _proposalThoughtId = _settingState.proposalThoughtId;
-		_settingState.proposalThoughtId = address(0);
-		_settingState.lastUpdateThoughtId = _proposalThoughtId;
-
-		_movePendingToSetting(_settingId);
-
-		emit FinalizeSettingUpdate(_settingData.settingId, _settingData.associatedThoughtId, _associatedThoughtAdvocate);
+		emit FinalizeSettingUpdate(_settingId, _associatedThoughtId, _associatedThoughtAdvocate);
 	}
 
 	/***** Internal Method *****/
@@ -551,21 +409,8 @@ contract AOSetting {
 		// Store nameSettingLookup
 		nameSettingLookup[_associatedThoughtId][keccak256(abi.encodePacked(this, _settingName))] = totalSetting;
 
-		// Store setting data
-		SettingData storage _settingData = settingDatas[totalSetting];
-		_settingData.settingId = totalSetting;
-		_settingData.creatorNameId = _creatorNameId;
-		_settingData.creatorThoughtId = _creatorThoughtId;
-		_settingData.associatedThoughtId = _associatedThoughtId;
-		_settingData.settingName = _settingName;
-		_settingData.settingType = _settingType;
-		_settingData.pendingCreate = true;
-		_settingData.locked = true;
-		_settingData.settingDataJSON = _extraData;
-
-		// Store setting state
-		SettingState storage _settingState = settingStates[totalSetting];
-		_settingState.settingId = totalSetting;
+		// Store setting data/state
+		_aoSettingDataState.add(totalSetting, _creatorNameId, _settingType, _settingName, _creatorThoughtId, _associatedThoughtId, _extraData);
 
 		// Store the associatedThoughtSetting info
 		bytes32 _associatedThoughtSettingId = keccak256(abi.encodePacked(this, _associatedThoughtId, totalSetting));
@@ -581,139 +426,30 @@ contract AOSetting {
 		_creatorThoughtSetting.creatorThoughtId = _creatorThoughtId;
 		_creatorThoughtSetting.settingId = totalSetting;
 
-		emit SettingCreation(_settingData.settingId, _settingData.creatorNameId, _settingData.creatorThoughtId, _settingData.associatedThoughtId, _settingData.settingName, _settingData.settingType, _associatedThoughtSettingId, _creatorThoughtSettingId);
+		emit SettingCreation(totalSetting, _creatorNameId, _creatorThoughtId, _associatedThoughtId, _settingName, _settingType, _associatedThoughtSettingId, _creatorThoughtSettingId);
 	}
 
 	/**
 	 * @dev Move value of _settingId from pending variable to setting variable
 	 * @param _settingId The ID of the setting
+	 * @param _settingType The type of the setting
 	 */
-	function _movePendingToSetting(uint256 _settingId) internal {
-		SettingData memory _settingData = settingDatas[_settingId];
-
+	function _movePendingToSetting(uint256 _settingId, uint8 _settingType) internal {
 		// If settingType == uint256
-		if (_settingData.settingType == 1) {
-			uint256 _uintValue = pendingSettingUintValue[_settingData.settingId];
-			pendingSettingUintValue[_settingData.settingId] = 0;
-			settingUintValue[_settingData.settingId] = _uintValue;
-		} else if (_settingData.settingType == 2) {
+		if (_settingType == 1) {
+			_aoUintSetting.movePendingToSetting(_settingId);
+		} else if (_settingType == 2) {
 			// Else if settingType == bool
-			bool _boolValue = pendingSettingBoolValue[_settingData.settingId];
-			pendingSettingBoolValue[_settingData.settingId] = false;
-			settingBoolValue[_settingData.settingId] = _boolValue;
-		} else if (_settingData.settingType == 3) {
+			_aoBoolSetting.movePendingToSetting(_settingId);
+		} else if (_settingType == 3) {
 			// Else if settingType == address
-			address _addressValue = pendingSettingAddressValue[_settingData.settingId];
-			pendingSettingAddressValue[_settingData.settingId] = address(0);
-			settingAddressValue[_settingData.settingId] = _addressValue;
-		} else if (_settingData.settingType == 4) {
+			_aoAddressSetting.movePendingToSetting(_settingId);
+		} else if (_settingType == 4) {
 			// Else if settingType == bytes32
-			bytes32 _bytesValue = pendingSettingBytesValue[_settingData.settingId];
-			pendingSettingBytesValue[_settingData.settingId] = '';
-			settingBytesValue[_settingData.settingId] = _bytesValue;
+			_aoBytesSetting.movePendingToSetting(_settingId);
 		} else {
 			// Else if settingType == string
-			string memory _stringValue = pendingSettingStringValue[_settingData.settingId];
-			pendingSettingStringValue[_settingData.settingId] = '';
-			settingStringValue[_settingData.settingId] = _stringValue;
+			_aoStringSetting.movePendingToSetting(_settingId);
 		}
-	}
-
-	/**
-	 * @dev Store the pending update uint256 value and the update hash lookup for this transaction
-	 * @param _settingId The ID of the setting to be updated
-	 * @param _newValue The new uint256 value for this setting
-	 * @param _proposalThoughtId The child of the associatedThoughtId with the update Logos
-	 * @param _extraData Catch-all string value to be stored if exist
-	 */
-	function _storePendingSettingUpdateUintValue(uint256 _settingId, uint256 _newValue, address _proposalThoughtId, string _extraData) internal {
-		// Store the value as pending value
-		pendingSettingUintValue[_settingId] = _newValue;
-
-		// Store the update hash key lookup
-		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, settingUintValue[_settingId], _newValue, _extraData, _settingId))] = _settingId;
-	}
-
-	/**
-	 * @dev Store the pending update bool value and the update hash lookup for this transaction
-	 * @param _settingId The ID of the setting to be updated
-	 * @param _newValue The new bool value for this setting
-	 * @param _proposalThoughtId The child of the associatedThoughtId with the update Logos
-	 * @param _extraData Catch-all string value to be stored if exist
-	 */
-	function _storePendingSettingUpdateBoolValue(uint256 _settingId, bool _newValue, address _proposalThoughtId, string _extraData) internal {
-		// Store the value as pending value
-		pendingSettingBoolValue[_settingId] = _newValue;
-
-		// Store the update hash key lookup
-		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, settingBoolValue[_settingId], _newValue, _extraData, _settingId))] = _settingId;
-	}
-
-	/**
-	 * @dev Store the pending update address value and the update hash lookup for this transaction
-	 * @param _settingId The ID of the setting to be updated
-	 * @param _newValue The new address value for this setting
-	 * @param _proposalThoughtId The child of the associatedThoughtId with the update Logos
-	 * @param _extraData Catch-all string value to be stored if exist
-	 */
-	function _storePendingSettingUpdateAddressValue(uint256 _settingId, address _newValue, address _proposalThoughtId, string _extraData) internal {
-		// Store the value as pending value
-		pendingSettingAddressValue[_settingId] = _newValue;
-
-		// Store the update hash key lookup
-		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, settingAddressValue[_settingId], _newValue, _extraData, _settingId))] = _settingId;
-	}
-
-	/**
-	 * @dev Store the pending update bytes32 value and the update hash lookup for this transaction
-	 * @param _settingId The ID of the setting to be updated
-	 * @param _newValue The new bytes32 value for this setting
-	 * @param _proposalThoughtId The child of the associatedThoughtId with the update Logos
-	 * @param _extraData Catch-all string value to be stored if exist
-	 */
-	function _storePendingSettingUpdateBytesValue(uint256 _settingId, bytes32 _newValue, address _proposalThoughtId, string _extraData) internal {
-		// Store the value as pending value
-		pendingSettingBytesValue[_settingId] = _newValue;
-
-		// Store the update hash key lookup
-		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, settingBytesValue[_settingId], _newValue, _extraData, _settingId))] = _settingId;
-	}
-
-	/**
-	 * @dev Store the pending update string value and the update hash lookup for this transaction
-	 * @param _settingId The ID of the setting to be updated
-	 * @param _newValue The new string value for this setting
-	 * @param _proposalThoughtId The child of the associatedThoughtId with the update Logos
-	 * @param _extraData Catch-all string value to be stored if exist
-	 */
-	function _storePendingSettingUpdateStringValue(uint256 _settingId, string _newValue, address _proposalThoughtId, string _extraData) internal {
-		// Store the value as pending value
-		pendingSettingStringValue[_settingId] = _newValue;
-
-		// Store the update hash key lookup
-		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, settingStringValue[_settingId], _newValue, _extraData, _settingId))] = _settingId;
-	}
-
-	/**
-	 * @dev Store setting update data
-	 * @param _settingId The ID of the setting to be updated
-	 * @param _associatedThoughtAdvocate The setting's associatedThoughtId's advocate's name address
-	 * @param _proposalThoughtId The child of the associatedThoughtId with the update Logos
-	 * @param _updateSignature A signature of the proposalThoughtId and update value by _associatedThoughtAdvocate
-	 * @param _extraData Catch-all string value to be stored if exist
-	 */
-	function _storeSettingUpdate(uint256 _settingId, address _associatedThoughtAdvocate, address _proposalThoughtId, string _updateSignature, string _extraData) internal {
-		// Make sure setting is not in the middle of updating
-		SettingState storage _settingState = settingStates[_settingId];
-		require (_settingState.pendingUpdate == false);
-
-		// Store the SettingState data
-		_settingState.pendingUpdate = true;
-		_settingState.updateAdvocateNameId = _associatedThoughtAdvocate;
-		_settingState.proposalThoughtId = _proposalThoughtId;
-		_settingState.updateSignature = _updateSignature;
-		_settingState.settingStateJSON = _extraData;
-
-		emit SettingUpdate(_settingState.settingId, _settingState.updateAdvocateNameId, _settingState.proposalThoughtId);
 	}
 }
