@@ -83,10 +83,10 @@ contract AOSettingDataState is developed {
 	mapping (uint256 => SettingData) internal settingDatas;
 
 	// Mapping from settingId to it's state
-	mapping (uint256 => SettingState) public settingStates;
+	mapping (uint256 => SettingState) internal settingStates;
 
 	// Mapping from settingId to it's deprecation info
-	mapping (uint256 => SettingDeprecation) public settingDeprecations;
+	mapping (uint256 => SettingDeprecation) internal settingDeprecations;
 
 	/**
 	 * @dev Constructor function
@@ -103,7 +103,7 @@ contract AOSettingDataState is developed {
 	 * @param _associatedThoughtId The thoughtId that the setting affects
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
-	function add(uint256 _settingId, address _creatorNameId, uint8 _settingType, string _settingName, address _creatorThoughtId, address _associatedThoughtId, string _extraData) public {
+	function add(uint256 _settingId, address _creatorNameId, uint8 _settingType, string _settingName, address _creatorThoughtId, address _associatedThoughtId, string _extraData) public inWhitelist(msg.sender) {
 		// Store setting data
 		SettingData storage _settingData = settingDatas[_settingId];
 		_settingData.settingId = _settingId;
@@ -148,7 +148,7 @@ contract AOSettingDataState is developed {
 	 * @param _approved Whether to approve or reject
 	 * @return true on success
 	 */
-	function approveAdd(uint256 _settingId, address _associatedThoughtAdvocate, bool _approved) public returns (bool) {
+	function approveAdd(uint256 _settingId, address _associatedThoughtAdvocate, bool _approved) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingData storage _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId && _settingData.pendingCreate == true && _settingData.locked == true && _settingData.rejected == false && _associatedThoughtAdvocate != address(0) && _associatedThoughtAdvocate == Thought(_settingData.associatedThoughtId).advocateId());
@@ -171,7 +171,7 @@ contract AOSettingDataState is developed {
 	 * @param _creatorThoughtAdvocate The advocate of the creator Thought
 	 * @return true on success
 	 */
-	function finalizeAdd(uint256 _settingId, address _creatorThoughtAdvocate) public returns (bool) {
+	function finalizeAdd(uint256 _settingId, address _creatorThoughtAdvocate) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingData storage _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId && _settingData.pendingCreate == true && _settingData.locked == false && _settingData.rejected == false && _creatorThoughtAdvocate != address(0) && _creatorThoughtAdvocate == Thought(_settingData.creatorThoughtId).advocateId());
@@ -204,7 +204,7 @@ contract AOSettingDataState is developed {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 * @return true on success
 	 */
-	function update(uint256 _settingId, address _associatedThoughtAdvocate, address _proposalThoughtId, string _updateSignature, string _extraData) public returns (bool) {
+	function update(uint256 _settingId, address _associatedThoughtAdvocate, address _proposalThoughtId, string _updateSignature, string _extraData) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting is not in the middle of updating
 		SettingState storage _settingState = settingStates[_settingId];
 		require (_settingState.pendingUpdate == false);
@@ -243,7 +243,7 @@ contract AOSettingDataState is developed {
 	 * @param _approved Whether to approve or reject
 	 * @return true on success
 	 */
-	function approveUpdate(uint256 _settingId, address _proposalThoughtAdvocate, bool _approved) public returns (bool) {
+	function approveUpdate(uint256 _settingId, address _proposalThoughtAdvocate, bool _approved) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting is created
 		SettingData storage _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == true && _settingData.rejected == false);
@@ -269,7 +269,7 @@ contract AOSettingDataState is developed {
 	 * @param _associatedThoughtAdvocate The advocate of the associated Thought
 	 * @return true on success
 	 */
-	function finalizeUpdate(uint256 _settingId, address _associatedThoughtAdvocate) public returns (bool) {
+	function finalizeUpdate(uint256 _settingId, address _associatedThoughtAdvocate) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting is created
 		SettingData storage _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == false && _settingData.rejected == false && _associatedThoughtAdvocate != address(0) && _associatedThoughtAdvocate == Thought(_settingData.associatedThoughtId).advocateId());
@@ -290,5 +290,4 @@ contract AOSettingDataState is developed {
 
 		return true;
 	}
-
 }

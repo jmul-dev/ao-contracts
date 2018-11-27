@@ -283,6 +283,7 @@ module.exports = function(deployer, network, accounts) {
 			await position.setWhitelist(thoughtposition.address, true, { from: deployerAccount });
 
 			// Grant access to aosetting
+			await aosettingdatastate.setWhitelist(aosetting.address, true, { from: deployerAccount });
 			await aouintsetting.setWhitelist(aosetting.address, true, { from: deployerAccount });
 			await aoboolsetting.setWhitelist(aosetting.address, true, { from: deployerAccount });
 			await aoaddresssetting.setWhitelist(aosetting.address, true, { from: deployerAccount });
