@@ -26,24 +26,6 @@ contract AOSetting {
 
 	uint256 public totalSetting;
 
-	struct AssociatedThoughtSetting {
-		bytes32 associatedThoughtSettingId;		// Identifier
-		address associatedThoughtId;			// The Thought ID that the setting is associated to
-		uint256 settingId;						// The Setting ID that is associated with the Thought ID
-	}
-
-	struct CreatorThoughtSetting {
-		bytes32 creatorThoughtSettingId;		// Identifier
-		address creatorThoughtId;				// The Thought ID that the setting was created from
-		uint256 settingId;						// The Setting ID created from the Thought ID
-	}
-
-	// Mapping from associatedThoughtSettingId to AssociatedThoughtSetting
-	mapping (bytes32 => AssociatedThoughtSetting) public associatedThoughtSettings;
-
-	// Mapping from creatorThoughtSettingId to CreatorThoughtSetting
-	mapping (bytes32 => CreatorThoughtSetting) public creatorThoughtSettings;
-
 	/**
 	 * Mapping from associatedThoughtId's setting name to Setting ID.
 	 *
@@ -73,6 +55,15 @@ contract AOSetting {
 
 	// Event to be broadcasted to public when setting update is finalized by the advocate of associatedThoughtId
 	event FinalizeSettingUpdate(uint256 indexed settingId, address associatedThoughtId, address associatedThoughtAdvocate);
+
+	// Event to be broadcasted to public when a setting deprecation is created and waiting for approval
+	event SettingDeprecation(uint256 indexed settingId, address indexed creatorNameId, address creatorThoughtId, address associatedThoughtId, uint256 newSettingId, address newSettingContractAddress, bytes32 associatedThoughtSettingDeprecationId, bytes32 creatorThoughtSettingDeprecationId);
+
+	// Event to be broadcasted to public when setting deprecation is approved/rejected by the advocate of associatedThoughtId
+	event ApproveSettingDeprecation(uint256 indexed settingId, address associatedThoughtId, address associatedThoughtAdvocate, bool approved);
+
+	// Event to be broadcasted to public when setting deprecation is finalized by the advocate of creatorThoughtId
+	event FinalizeSettingDeprecation(uint256 indexed settingId, address creatorThoughtId, address creatorThoughtAdvocate);
 
 	/**
 	 * @dev Constructor function
@@ -392,6 +383,45 @@ contract AOSetting {
 		emit FinalizeSettingUpdate(_settingId, _associatedThoughtId, _associatedThoughtAdvocate);
 	}
 
+	/**
+	 * @dev Advocate of _creatorThoughtId adds a setting deprecation
+	 * @param _settingId The ID of the setting to be deprecated
+	 * @param _newSettingId The new setting ID to route
+	 * @param _newSettingContractAddress The new setting contract address to route
+	 * @param _creatorThoughtId The thoughtId that created the setting
+	 * @param _associatedThoughtId The thoughtId that the setting affects
+	 */
+	function addSettingDeprecation(uint256 _settingId, uint256 _newSettingId, address _newSettingContractAddress, address _creatorThoughtId, address _associatedThoughtId) public isThought(_creatorThoughtId) isThought(_associatedThoughtId) isAdvocate(msg.sender, _creatorThoughtId) {
+		(bytes32 _associatedThoughtSettingDeprecationId, bytes32 _creatorThoughtSettingDeprecationId) = _aoSettingDataState.addDeprecation(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _creatorThoughtId, _associatedThoughtId, _newSettingId, _newSettingContractAddress);
+
+		emit SettingDeprecation(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _creatorThoughtId, _associatedThoughtId, _newSettingId, _newSettingContractAddress, _associatedThoughtSettingDeprecationId, _creatorThoughtSettingDeprecationId);
+	}
+
+	/**
+	 * @dev Advocate of SettingDeprecation's _associatedThoughtId approves setting deprecation
+	 * @param _settingId The ID of the setting to approve
+	 * @param _approved Whether to approve or reject
+	 */
+	function approveSettingDeprecation(uint256 _settingId, bool _approved) public {
+		address _associatedThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
+		require (_aoSettingDataState.approveDeprecation(_settingId, _associatedThoughtAdvocate, _approved));
+
+		(,,, address _associatedThoughtId,,,,,,,,) = _aoSettingDataState.getSettingDeprecation(_settingId);
+		emit ApproveSettingDeprecation(_settingId, _associatedThoughtId, _associatedThoughtAdvocate, _approved);
+	}
+
+	/**
+	 * @dev Advocate of SettingDeprecation's _creatorThoughtId finalizes the setting deprecation once the setting deprecation is approved
+	 * @param _settingId The ID of the setting to be finalized
+	 */
+	function finalizeSettingDeprecation(uint256 _settingId) public {
+		address _creatorThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
+		require (_aoSettingDataState.finalizeDeprecation(_settingId, _creatorThoughtAdvocate));
+
+		(,, address _creatorThoughtId,,,,,,,,,) = _aoSettingDataState.getSettingDeprecation(_settingId);
+		emit FinalizeSettingDeprecation(_settingId, _creatorThoughtId, _creatorThoughtAdvocate);
+	}
+
 	/***** Internal Method *****/
 	/**
 	 * @dev Store setting creation data
@@ -410,21 +440,7 @@ contract AOSetting {
 		nameSettingLookup[_associatedThoughtId][keccak256(abi.encodePacked(this, _settingName))] = totalSetting;
 
 		// Store setting data/state
-		_aoSettingDataState.add(totalSetting, _creatorNameId, _settingType, _settingName, _creatorThoughtId, _associatedThoughtId, _extraData);
-
-		// Store the associatedThoughtSetting info
-		bytes32 _associatedThoughtSettingId = keccak256(abi.encodePacked(this, _associatedThoughtId, totalSetting));
-		AssociatedThoughtSetting storage _associatedThoughtSetting = associatedThoughtSettings[_associatedThoughtSettingId];
-		_associatedThoughtSetting.associatedThoughtSettingId = _associatedThoughtSettingId;
-		_associatedThoughtSetting.associatedThoughtId = _associatedThoughtId;
-		_associatedThoughtSetting.settingId = totalSetting;
-
-		// Store the creatorThoughtSetting info
-		bytes32 _creatorThoughtSettingId = keccak256(abi.encodePacked(this, _creatorThoughtId, totalSetting));
-		CreatorThoughtSetting storage _creatorThoughtSetting = creatorThoughtSettings[_creatorThoughtSettingId];
-		_creatorThoughtSetting.creatorThoughtSettingId = _creatorThoughtSettingId;
-		_creatorThoughtSetting.creatorThoughtId = _creatorThoughtId;
-		_creatorThoughtSetting.settingId = totalSetting;
+		(bytes32 _associatedThoughtSettingId, bytes32 _creatorThoughtSettingId) = _aoSettingDataState.add(totalSetting, _creatorNameId, _settingType, _settingName, _creatorThoughtId, _associatedThoughtId, _extraData);
 
 		emit SettingCreation(totalSetting, _creatorNameId, _creatorThoughtId, _associatedThoughtId, _settingName, _settingType, _associatedThoughtSettingId, _creatorThoughtSettingId);
 	}
