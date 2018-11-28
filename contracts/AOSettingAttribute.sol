@@ -308,7 +308,7 @@ contract AOSettingAttribute is developed {
 		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == true && _settingData.rejected == false);
 
 		// Make sure setting update exists and needs approval
-		SettingState memory _settingState = settingStates[_settingId];
+		SettingState storage _settingState = settingStates[_settingId];
 		require (_settingState.settingId == _settingId && _settingState.pendingUpdate == true && _proposalThoughtAdvocate != address(0) && _proposalThoughtAdvocate == Thought(_settingState.proposalThoughtId).advocateId());
 
 		if (_approved) {
