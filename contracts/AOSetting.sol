@@ -108,14 +108,6 @@ contract AOSetting {
 		_;
 	}
 
-	/**
-	 * @dev Check if sender can update settingId
-	 */
-	modifier canUpdateSetting(uint256 _settingId, address _sender) {
-		require (_aoSettingAttribute.canUpdateSetting(_settingId, _nameFactory.ethAddressToNameId(_sender)));
-		_;
-	}
-
 	/***** Public Methods *****/
 	/**
 	 * @dev Check whether or not a setting name of an associatedThoughtId is taken
@@ -262,15 +254,16 @@ contract AOSetting {
 	 * @param _updateSignature A signature of the proposalThoughtId and update value by associatedThoughtId's advocate's name address
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
-	function updateUintSetting(uint256 _settingId, uint256 _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) canUpdateSetting(_settingId, msg.sender) {
+	function updateUintSetting(uint256 _settingId, uint256 _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) {
+		// Store the setting state data
+		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+
 		// Store the value as pending value
 		_aoUintSetting.setPendingValue(_settingId, _newValue);
 
 		// Store the update hash key lookup
 		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoUintSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
-		// Store the setting state data
-		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
@@ -282,15 +275,16 @@ contract AOSetting {
 	 * @param _updateSignature A signature of the proposalThoughtId and update value by associatedThoughtId's advocate's name address
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
-	function updateBoolSetting(uint256 _settingId, bool _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) canUpdateSetting(_settingId, msg.sender) {
+	function updateBoolSetting(uint256 _settingId, bool _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) {
+		// Store the setting state data
+		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+
 		// Store the value as pending value
 		_aoBoolSetting.setPendingValue(_settingId, _newValue);
 
 		// Store the update hash key lookup
 		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoBoolSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
-		// Store the setting state data
-		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
@@ -302,15 +296,16 @@ contract AOSetting {
 	 * @param _updateSignature A signature of the proposalThoughtId and update value by associatedThoughtId's advocate's name address
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
-	function updateAddressSetting(uint256 _settingId, address _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) canUpdateSetting(_settingId, msg.sender) {
+	function updateAddressSetting(uint256 _settingId, address _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) {
+		// Store the setting state data
+		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+
 		// Store the value as pending value
 		_aoAddressSetting.setPendingValue(_settingId, _newValue);
 
 		// Store the update hash key lookup
 		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoAddressSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
-		// Store the setting state data
-		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
@@ -322,15 +317,16 @@ contract AOSetting {
 	 * @param _updateSignature A signature of the proposalThoughtId and update value by associatedThoughtId's advocate's name address
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
-	function updateBytesSetting(uint256 _settingId, bytes32 _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) canUpdateSetting(_settingId, msg.sender) {
+	function updateBytesSetting(uint256 _settingId, bytes32 _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) {
+		// Store the setting state data
+		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+
 		// Store the value as pending value
 		_aoBytesSetting.setPendingValue(_settingId, _newValue);
 
 		// Store the update hash key lookup
 		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoBytesSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
-		// Store the setting state data
-		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
@@ -342,15 +338,16 @@ contract AOSetting {
 	 * @param _updateSignature A signature of the proposalThoughtId and update value by associatedThoughtId's advocate's name address
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
-	function updateStringSetting(uint256 _settingId, string _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) canUpdateSetting(_settingId, msg.sender) {
+	function updateStringSetting(uint256 _settingId, string _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) {
+		// Store the setting state data
+		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+
 		// Store the value as pending value
 		_aoStringSetting.setPendingValue(_settingId, _newValue);
 
 		// Store the update hash key lookup
 		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoStringSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
-		// Store the setting state data
-		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 

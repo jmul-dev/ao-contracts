@@ -251,18 +251,6 @@ contract AOSettingAttribute is developed {
 	}
 
 	/**
-	 * @dev Check if sender can update settingId
-	 * @param _settingId The ID of the setting
-	 * @param _associatedThoughtAdvocate The Advocate of the associated Thought
-	 * @return true if yes, false otherwise
-	 */
-	function canUpdateSetting(uint256 _settingId, address _associatedThoughtAdvocate) public view returns (bool) {
-		// Make sure setting is created
-		SettingData memory _settingData = settingDatas[_settingId];
-		return (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == true && _settingData.rejected == false && _associatedThoughtAdvocate != address(0) && _associatedThoughtAdvocate == Thought(_settingData.associatedThoughtId).advocateId());
-	}
-
-	/**
 	 * @dev Store setting update data
 	 * @param _settingId The ID of the setting to be updated
 	 * @param _associatedThoughtAdvocate The setting's associatedThoughtId's advocate's name address
@@ -272,6 +260,10 @@ contract AOSettingAttribute is developed {
 	 * @return true on success
 	 */
 	function update(uint256 _settingId, address _associatedThoughtAdvocate, address _proposalThoughtId, string _updateSignature, string _extraData) public inWhitelist(msg.sender) returns (bool) {
+		// Make sure setting is created
+		SettingData memory _settingData = settingDatas[_settingId];
+		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == true && _settingData.rejected == false && _associatedThoughtAdvocate != address(0) && _associatedThoughtAdvocate == Thought(_settingData.associatedThoughtId).advocateId());
+
 		// Make sure setting is not in the middle of updating
 		SettingState storage _settingState = settingStates[_settingId];
 		require (_settingState.pendingUpdate == false);
