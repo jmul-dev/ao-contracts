@@ -268,6 +268,12 @@ contract AOSettingAttribute is developed {
 		SettingState storage _settingState = settingStates[_settingId];
 		require (_settingState.pendingUpdate == false);
 
+		// Make sure setting is not yet deprecated
+		SettingDeprecation memory _settingDeprecation = settingDeprecations[_settingId];
+		if (_settingDeprecation.settingId == _settingId) {
+			require (_settingDeprecation.migrated == false);
+		}
+
 		// Store the SettingState data
 		_settingState.pendingUpdate = true;
 		_settingState.updateAdvocateNameId = _associatedThoughtAdvocate;
