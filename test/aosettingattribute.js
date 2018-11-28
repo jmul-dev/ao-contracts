@@ -11,12 +11,15 @@ contract("AOSettingAttribute", function(accounts) {
 	var whitelistedAccount = accounts[9];
 	var settingId1 = 1;
 	var settingId2 = 2;
+	var settingId3 = 3;
 	var creatorThoughtNameId, creatorThoughtId, associatedThoughtNameId, associatedThoughtId, proposalThoughtNameId, proposalThoughtId;
 	var settingType = 1;
 	var settingName = "someSettingName";
 	var extraData = JSON.stringify({ extraVariable: "someValue" });
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 	var updateSignature = "somesignature";
+	var newSettingId = 4;
+	var newSettingContractAddress = accounts[4];
 
 	before(async function() {
 		aosettingattribute = await AOSettingAttribute.deployed();
@@ -382,4 +385,297 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canFinalize, false, "Setting's Associated Thought's Advocate can finalize rejected setting update");
 	});
 
+	it("only whitelisted account can add setting deprecation", async function() {
+		var canAdd;
+		try {
+			var result = await aosettingattribute.addDeprecation(
+				settingId1,
+				creatorThoughtNameId,
+				creatorThoughtId,
+				associatedThoughtId,
+				newSettingId,
+				newSettingContractAddress,
+				{ from: account1 }
+			);
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Non-whitelisted account can add setting deprecation");
+
+		try {
+			var result = await aosettingattribute.addDeprecation(
+				99,
+				creatorThoughtNameId,
+				creatorThoughtId,
+				associatedThoughtId,
+				newSettingId,
+				newSettingContractAddress,
+				{ from: whitelistedAccount }
+			);
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Whitelisted account can add setting deprecation for non-existing setting");
+
+		try {
+			var result = await aosettingattribute.addDeprecation(
+				settingId1,
+				creatorThoughtNameId,
+				creatorThoughtId,
+				associatedThoughtId,
+				99,
+				newSettingContractAddress,
+				{ from: whitelistedAccount }
+			);
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Whitelisted account can deprecate existing setting to a non-existing setting");
+
+		// Add new setting
+		try {
+			var result = await aosettingattribute.add(
+				newSettingId,
+				creatorThoughtNameId,
+				settingType,
+				settingName,
+				creatorThoughtId,
+				associatedThoughtId,
+				extraData,
+				{ from: whitelistedAccount }
+			);
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, true, "Whitelisted account can't add setting attribute");
+
+		try {
+			var result = await aosettingattribute.addDeprecation(
+				settingId1,
+				creatorThoughtNameId,
+				creatorThoughtId,
+				associatedThoughtId,
+				newSettingId,
+				newSettingContractAddress,
+				{ from: whitelistedAccount }
+			);
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Whitelisted account can route setting to a new non-approved setting");
+
+		try {
+			await aosettingattribute.approveAdd(newSettingId, associatedThoughtNameId, true, { from: whitelistedAccount });
+			canApprove = true;
+		} catch (e) {
+			canApprove = false;
+		}
+		assert.equal(canApprove, true, "Setting's Associated Thought's Advocate can't approve setting creation");
+
+		try {
+			await aosettingattribute.finalizeAdd(newSettingId, creatorThoughtNameId, { from: whitelistedAccount });
+			canFinalize = true;
+		} catch (e) {
+			canFinalize = false;
+		}
+		assert.equal(canFinalize, true, "Setting's Creator Thought's Advocate can't finalize setting creation");
+
+		try {
+			var result = await aosettingattribute.addDeprecation(
+				settingId1,
+				creatorThoughtNameId,
+				creatorThoughtId,
+				associatedThoughtId,
+				newSettingId,
+				newSettingContractAddress,
+				{ from: whitelistedAccount }
+			);
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, true, "Whitelisted account can't add setting deprecation");
+
+		var settingDeprecation = await aosettingattribute.getSettingDeprecation(settingId1);
+		assert.equal(settingDeprecation[0].toNumber(), settingId1, "SettingDeprecation has incorrect settingId");
+		assert.equal(settingDeprecation[1], creatorThoughtNameId, "SettingDeprecation has incorrect creatorNameId");
+		assert.equal(settingDeprecation[2], creatorThoughtId, "SettingDeprecation has incorrect creatorThoughtId");
+		assert.equal(settingDeprecation[3], associatedThoughtId, "SettingDeprecation has incorrect associatedThoughtId");
+		assert.equal(settingDeprecation[4], true, "SettingDeprecation has incorrect pendingDeprecated");
+		assert.equal(settingDeprecation[5], true, "SettingDeprecation has incorrect locked");
+		assert.equal(settingDeprecation[6], false, "SettingDeprecation has incorrect rejected");
+		assert.equal(settingDeprecation[7], false, "SettingDeprecation has incorrect migrated");
+		assert.equal(settingDeprecation[8].toNumber(), newSettingId, "SettingDeprecation has incorrect pendingNewSettingId");
+		assert.equal(settingDeprecation[9].toNumber(), 0, "SettingDeprecation has incorrect newSettingId");
+		assert.equal(settingDeprecation[10], newSettingContractAddress, "SettingDeprecation has incorrect pendingNewSettingContractAddress");
+		assert.equal(settingDeprecation[11], emptyAddress, "SettingDeprecation has incorrect newSettingContractAddress");
+	});
+
+	it("non-approved setting deprecation can not be finalized", async function() {
+		var canFinalize;
+		try {
+			await aosettingattribute.finalizeDeprecation(settingId1, creatorThoughtNameId, { from: whitelistedAccount });
+			canFinalize = true;
+		} catch (e) {
+			canFinalize = false;
+		}
+		assert.equal(canFinalize, false, "Non-approved setting deprecation can be finalized");
+	});
+
+	it("only whitelisted account and setting's Associated Thought's advocate can approve setting deprecation", async function() {
+		var canApprove;
+		try {
+			await aosettingattribute.approveDeprecation(settingId1, associatedThoughtNameId, true, { from: account1 });
+			canApprove = true;
+		} catch (e) {
+			canApprove = false;
+		}
+		assert.equal(canApprove, false, "Non-whitelisted account can approve setting deprecation");
+
+		try {
+			await aosettingattribute.approveDeprecation(settingId1, proposalThoughtNameId, true, { from: whitelistedAccount });
+			canApprove = true;
+		} catch (e) {
+			canApprove = false;
+		}
+		assert.equal(canApprove, false, "Non-setting's Associated Thought's Advocate can approve setting deprecation");
+
+		// approve this setting deprecation
+		try {
+			await aosettingattribute.approveDeprecation(settingId1, associatedThoughtNameId, true, { from: whitelistedAccount });
+			canApprove = true;
+		} catch (e) {
+			canApprove = false;
+		}
+		assert.equal(canApprove, true, "Setting's Associated Thought's Advocate can't approve setting deprecation");
+
+		var settingDeprecation = await aosettingattribute.getSettingDeprecation(settingId1);
+		assert.equal(settingDeprecation[5], false, "SettingDeprecation has incorrect locked");
+	});
+
+	it("only whitelisted account and setting's Creator Thought's Advocate can finalize setting deprecation", async function() {
+		var canFinalize;
+		try {
+			await aosettingattribute.finalizeDeprecation(settingId1, creatorThoughtNameId, { from: account1 });
+			canFinalize = true;
+		} catch (e) {
+			canFinalize = false;
+		}
+		assert.equal(canFinalize, false, "Non-whitelisted account can finalize setting deprecation");
+
+		try {
+			await aosettingattribute.finalizeDeprecation(settingId1, proposalThoughtNameId, { from: whitelistedAccount });
+			canFinalize = true;
+		} catch (e) {
+			canFinalize = false;
+		}
+		assert.equal(canFinalize, false, "Non-setting's Creator Thought's Advocate can finalize setting deprecation");
+
+		try {
+			await aosettingattribute.finalizeDeprecation(settingId1, creatorThoughtNameId, { from: whitelistedAccount });
+			canFinalize = true;
+		} catch (e) {
+			canFinalize = false;
+		}
+		assert.equal(canFinalize, true, "Setting's Creator Thought's Advocate can't finalize setting deprecation");
+
+		var settingDeprecation = await aosettingattribute.getSettingDeprecation(settingId1);
+		assert.equal(settingDeprecation[4], false, "SettingDeprecation has incorrect pendingDeprecated");
+		assert.equal(settingDeprecation[5], true, "SettingDeprecation has incorrect locked");
+		assert.equal(settingDeprecation[6], false, "SettingDeprecation has incorrect rejected");
+		assert.equal(settingDeprecation[7], true, "SettingDeprecation has incorrect migrated");
+		assert.equal(settingDeprecation[8].toNumber(), 0, "SettingDeprecation has incorrect pendingNewSettingId");
+		assert.equal(settingDeprecation[9].toNumber(), newSettingId, "SettingDeprecation has incorrect newSettingId");
+		assert.equal(settingDeprecation[10], emptyAddress, "SettingDeprecation has incorrect pendingNewSettingContractAddress");
+		assert.equal(settingDeprecation[11], newSettingContractAddress, "SettingDeprecation has incorrect newSettingContractAddress");
+	});
+
+	it("rejected deprecation can not be finalized", async function() {
+		// Add new setting
+		try {
+			var result = await aosettingattribute.add(
+				settingId3,
+				creatorThoughtNameId,
+				settingType,
+				settingName,
+				creatorThoughtId,
+				associatedThoughtId,
+				extraData,
+				{ from: whitelistedAccount }
+			);
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, true, "Whitelisted account can't add setting attribute");
+
+		try {
+			await aosettingattribute.approveAdd(settingId3, associatedThoughtNameId, true, { from: whitelistedAccount });
+			canApprove = true;
+		} catch (e) {
+			canApprove = false;
+		}
+		assert.equal(canApprove, true, "Setting's Associated Thought's Advocate can't approve setting creation");
+
+		try {
+			await aosettingattribute.finalizeAdd(settingId3, creatorThoughtNameId, { from: whitelistedAccount });
+			canFinalize = true;
+		} catch (e) {
+			canFinalize = false;
+		}
+		assert.equal(canFinalize, true, "Setting's Creator Thought's Advocate can't finalize setting creation");
+
+		try {
+			var result = await aosettingattribute.addDeprecation(
+				settingId3,
+				creatorThoughtNameId,
+				creatorThoughtId,
+				associatedThoughtId,
+				newSettingId,
+				newSettingContractAddress,
+				{ from: whitelistedAccount }
+			);
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, true, "Whitelisted account can't add setting deprecation");
+
+		// reject the deprecation
+		try {
+			await aosettingattribute.approveDeprecation(settingId3, associatedThoughtNameId, false, { from: whitelistedAccount });
+			canApprove = true;
+		} catch (e) {
+			canApprove = false;
+		}
+		assert.equal(canApprove, true, "Setting's Associated Thought's Advocate can't approve setting deprecation");
+
+		var settingDeprecation = await aosettingattribute.getSettingDeprecation(settingId3);
+		assert.equal(settingDeprecation[4], false, "SettingDeprecation has incorrect pendingDeprecated");
+		assert.equal(settingDeprecation[6], true, "SettingDeprecation has incorrect rejected");
+
+		try {
+			await aosettingattribute.finalizeDeprecation(settingId3, creatorThoughtNameId, { from: whitelistedAccount });
+			canFinalize = true;
+		} catch (e) {
+			canFinalize = false;
+		}
+		assert.equal(canFinalize, false, "Setting's Creator Thought's Advocate can finalize rejected setting deprecation");
+	});
+
+	it("deprecated setting can't be updated", async function() {
+		var canUpdate
+		try {
+			await aosettingattribute.update(settingId1, associatedThoughtNameId, proposalThoughtId, updateSignature, extraData, {from: whitelistedAccount});
+			canUpdate = true;
+		} catch (e) {
+			canUpdate = false;
+		}
+		assert.equal(canUpdate, false, "Deprecated setting can be updated");
+	});
 });
