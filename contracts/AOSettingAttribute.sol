@@ -4,11 +4,11 @@ import "./developed.sol";
 import './Thought.sol';
 
 /**
- * @title AOSettingDataState
+ * @title AOSettingAttribute
  *
  * This contract stores all AO setting data/state
  */
-contract AOSettingDataState is developed {
+contract AOSettingAttribute is developed {
 	struct SettingData {
 		uint256 settingId;				// Identifier of this setting
 		address creatorNameId;			// The nameId that created the setting

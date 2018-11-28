@@ -31,7 +31,7 @@ var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
 var ThoughtPosition = artifacts.require("./ThoughtPosition.sol");
 
 var AOPool = artifacts.require("./AOPool.sol");
-var AOSettingDataState = artifacts.require("./AOSettingDataState.sol");
+var AOSettingAttribute = artifacts.require("./AOSettingAttribute.sol");
 var AOUintSetting = artifacts.require("./AOUintSetting.sol");
 var AOBoolSetting = artifacts.require("./AOBoolSetting.sol");
 var AOAddressSetting = artifacts.require("./AOAddressSetting.sol");
@@ -72,7 +72,7 @@ module.exports = function(deployer, network, accounts) {
 		namefactory,
 		thoughtfactory,
 		thoughtposition,
-		aosettingdatastate,
+		aosettingattribute,
 		aouintsetting,
 		aoboolsetting,
 		aoaddresssetting,
@@ -112,7 +112,7 @@ module.exports = function(deployer, network, accounts) {
 		[AntiEthos, 0, "Anti Ethos", "AETHOS", "antiethos"],
 		[AntiPathos, 0, "Anti Pathos", "APATHOS", "antipathos"],
 		[Position, 0, "AO Position", "AOPOS"],
-		AOSettingDataState,
+		AOSettingAttribute,
 		AOUintSetting,
 		AOBoolSetting,
 		AOAddressSetting,
@@ -141,7 +141,7 @@ module.exports = function(deployer, network, accounts) {
 			antiethos = await AntiEthos.deployed();
 			antipathos = await AntiPathos.deployed();
 			position = await Position.deployed();
-			aosettingdatastate = await AOSettingDataState.deployed();
+			aosettingattribute = await AOSettingAttribute.deployed();
 			aouintsetting = await AOUintSetting.deployed();
 			aoboolsetting = await AOBoolSetting.deployed();
 			aoaddresssetting = await AOAddressSetting.deployed();
@@ -154,7 +154,7 @@ module.exports = function(deployer, network, accounts) {
 			return deployer.deploy(
 				AOSetting,
 				namefactory.address,
-				aosettingdatastate.address,
+				aosettingattribute.address,
 				aouintsetting.address,
 				aoboolsetting.addres,
 				aoaddresssetting.address,
@@ -283,7 +283,7 @@ module.exports = function(deployer, network, accounts) {
 			await position.setWhitelist(thoughtposition.address, true, { from: deployerAccount });
 
 			// Grant access to aosetting
-			await aosettingdatastate.setWhitelist(aosetting.address, true, { from: deployerAccount });
+			await aosettingattribute.setWhitelist(aosetting.address, true, { from: deployerAccount });
 			await aouintsetting.setWhitelist(aosetting.address, true, { from: deployerAccount });
 			await aoboolsetting.setWhitelist(aosetting.address, true, { from: deployerAccount });
 			await aoaddresssetting.setWhitelist(aosetting.address, true, { from: deployerAccount });

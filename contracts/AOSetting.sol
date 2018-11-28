@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import './Thought.sol';
 import './Name.sol';
 import './NameFactory.sol';
-import './AOSettingDataState.sol';
+import './AOSettingAttribute.sol';
 import './AOUintSetting.sol';
 import './AOBoolSetting.sol';
 import './AOAddressSetting.sol';
@@ -17,7 +17,7 @@ import './AOStringSetting.sol';
  */
 contract AOSetting {
 	NameFactory internal _nameFactory;
-	AOSettingDataState internal _aoSettingDataState;
+	AOSettingAttribute internal _aoSettingAttribute;
 	AOUintSetting internal _aoUintSetting;
 	AOBoolSetting internal _aoBoolSetting;
 	AOAddressSetting internal _aoAddressSetting;
@@ -69,14 +69,14 @@ contract AOSetting {
 	 * @dev Constructor function
 	 */
 	constructor(address _nameFactoryAddress,
-		address _aoSettingDataStateAddress,
+		address _aoSettingAttributeAddress,
 		address _aoUintSettingAddress,
 		address _aoBoolSettingAddress,
 		address _aoAddressSettingAddress,
 		address _aoBytesSettingAddress,
 		address _aoStringSettingAddress) public {
 		_nameFactory = NameFactory(_nameFactoryAddress);
-		_aoSettingDataState = AOSettingDataState(_aoSettingDataStateAddress);
+		_aoSettingAttribute = AOSettingAttribute(_aoSettingAttributeAddress);
 		_aoUintSetting = AOUintSetting(_aoUintSettingAddress);
 		_aoBoolSetting = AOBoolSetting(_aoBoolSettingAddress);
 		_aoAddressSetting = AOAddressSetting(_aoAddressSettingAddress);
@@ -112,7 +112,7 @@ contract AOSetting {
 	 * @dev Check if sender can update settingId
 	 */
 	modifier canUpdateSetting(uint256 _settingId, address _sender) {
-		require (_aoSettingDataState.canUpdateSetting(_settingId, _nameFactory.ethAddressToNameId(_sender)));
+		require (_aoSettingAttribute.canUpdateSetting(_settingId, _nameFactory.ethAddressToNameId(_sender)));
 		_;
 	}
 
@@ -229,9 +229,9 @@ contract AOSetting {
 	 */
 	function approveSettingCreation(uint256 _settingId, bool _approved) public {
 		address _associatedThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_aoSettingDataState.approveAdd(_settingId, _associatedThoughtAdvocate, _approved));
+		require (_aoSettingAttribute.approveAdd(_settingId, _associatedThoughtAdvocate, _approved));
 
-		(,,,address _associatedThoughtId, string memory _settingName,,,,,) = _aoSettingDataState.getSettingData(_settingId);
+		(,,,address _associatedThoughtId, string memory _settingName,,,,,) = _aoSettingAttribute.getSettingData(_settingId);
 		if (!_approved) {
 			// Clear the settingName from nameSettingLookup so it can be added again in the future
 			delete nameSettingLookup[_associatedThoughtId][keccak256(abi.encodePacked(this, _settingName))];
@@ -245,9 +245,9 @@ contract AOSetting {
 	 */
 	function finalizeSettingCreation(uint256 _settingId) public {
 		address _creatorThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_aoSettingDataState.finalizeAdd(_settingId, _creatorThoughtAdvocate));
+		require (_aoSettingAttribute.finalizeAdd(_settingId, _creatorThoughtAdvocate));
 
-		(,,address _creatorThoughtId,,, uint8 _settingType,,,,) = _aoSettingDataState.getSettingData(_settingId);
+		(,,address _creatorThoughtId,,, uint8 _settingType,,,,) = _aoSettingAttribute.getSettingData(_settingId);
 
 		_movePendingToSetting(_settingId, _settingType);
 
@@ -270,7 +270,7 @@ contract AOSetting {
 		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoUintSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
 		// Store the setting state data
-		require (_aoSettingDataState.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
@@ -290,7 +290,7 @@ contract AOSetting {
 		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoBoolSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
 		// Store the setting state data
-		require (_aoSettingDataState.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
@@ -310,7 +310,7 @@ contract AOSetting {
 		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoAddressSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
 		// Store the setting state data
-		require (_aoSettingDataState.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
@@ -330,7 +330,7 @@ contract AOSetting {
 		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoBytesSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
 		// Store the setting state data
-		require (_aoSettingDataState.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
@@ -350,7 +350,7 @@ contract AOSetting {
 		updateHashLookup[keccak256(abi.encodePacked(this, _proposalThoughtId, _aoStringSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
 
 		// Store the setting state data
-		require (_aoSettingDataState.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId);
 	}
 
@@ -361,9 +361,9 @@ contract AOSetting {
 	 */
 	function approveSettingUpdate(uint256 _settingId, bool _approved) public {
 		address _proposalThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
-		(,,, address _proposalThoughtId,,,) = _aoSettingDataState.getSettingState(_settingId);
+		(,,, address _proposalThoughtId,,,) = _aoSettingAttribute.getSettingState(_settingId);
 
-		require (_aoSettingDataState.approveUpdate(_settingId, _proposalThoughtAdvocate, _approved));
+		require (_aoSettingAttribute.approveUpdate(_settingId, _proposalThoughtAdvocate, _approved));
 
 		emit ApproveSettingUpdate(_settingId, _proposalThoughtId, _proposalThoughtAdvocate, _approved);
 	}
@@ -374,9 +374,9 @@ contract AOSetting {
 	 */
 	function finalizeSettingUpdate(uint256 _settingId) public {
 		address _associatedThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_aoSettingDataState.finalizeUpdate(_settingId, _associatedThoughtAdvocate));
+		require (_aoSettingAttribute.finalizeUpdate(_settingId, _associatedThoughtAdvocate));
 
-		(,,, address _associatedThoughtId,, uint8 _settingType,,,,) = _aoSettingDataState.getSettingData(_settingId);
+		(,,, address _associatedThoughtId,, uint8 _settingType,,,,) = _aoSettingAttribute.getSettingData(_settingId);
 
 		_movePendingToSetting(_settingId, _settingType);
 
@@ -392,7 +392,7 @@ contract AOSetting {
 	 * @param _associatedThoughtId The thoughtId that the setting affects
 	 */
 	function addSettingDeprecation(uint256 _settingId, uint256 _newSettingId, address _newSettingContractAddress, address _creatorThoughtId, address _associatedThoughtId) public isThought(_creatorThoughtId) isThought(_associatedThoughtId) isAdvocate(msg.sender, _creatorThoughtId) {
-		(bytes32 _associatedThoughtSettingDeprecationId, bytes32 _creatorThoughtSettingDeprecationId) = _aoSettingDataState.addDeprecation(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _creatorThoughtId, _associatedThoughtId, _newSettingId, _newSettingContractAddress);
+		(bytes32 _associatedThoughtSettingDeprecationId, bytes32 _creatorThoughtSettingDeprecationId) = _aoSettingAttribute.addDeprecation(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _creatorThoughtId, _associatedThoughtId, _newSettingId, _newSettingContractAddress);
 
 		emit SettingDeprecation(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _creatorThoughtId, _associatedThoughtId, _newSettingId, _newSettingContractAddress, _associatedThoughtSettingDeprecationId, _creatorThoughtSettingDeprecationId);
 	}
@@ -404,9 +404,9 @@ contract AOSetting {
 	 */
 	function approveSettingDeprecation(uint256 _settingId, bool _approved) public {
 		address _associatedThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_aoSettingDataState.approveDeprecation(_settingId, _associatedThoughtAdvocate, _approved));
+		require (_aoSettingAttribute.approveDeprecation(_settingId, _associatedThoughtAdvocate, _approved));
 
-		(,,, address _associatedThoughtId,,,,,,,,) = _aoSettingDataState.getSettingDeprecation(_settingId);
+		(,,, address _associatedThoughtId,,,,,,,,) = _aoSettingAttribute.getSettingDeprecation(_settingId);
 		emit ApproveSettingDeprecation(_settingId, _associatedThoughtId, _associatedThoughtAdvocate, _approved);
 	}
 
@@ -416,9 +416,9 @@ contract AOSetting {
 	 */
 	function finalizeSettingDeprecation(uint256 _settingId) public {
 		address _creatorThoughtAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_aoSettingDataState.finalizeDeprecation(_settingId, _creatorThoughtAdvocate));
+		require (_aoSettingAttribute.finalizeDeprecation(_settingId, _creatorThoughtAdvocate));
 
-		(,, address _creatorThoughtId,,,,,,,,,) = _aoSettingDataState.getSettingDeprecation(_settingId);
+		(,, address _creatorThoughtId,,,,,,,,,) = _aoSettingAttribute.getSettingDeprecation(_settingId);
 		emit FinalizeSettingDeprecation(_settingId, _creatorThoughtId, _creatorThoughtAdvocate);
 	}
 
@@ -440,7 +440,7 @@ contract AOSetting {
 		nameSettingLookup[_associatedThoughtId][keccak256(abi.encodePacked(this, _settingName))] = totalSetting;
 
 		// Store setting data/state
-		(bytes32 _associatedThoughtSettingId, bytes32 _creatorThoughtSettingId) = _aoSettingDataState.add(totalSetting, _creatorNameId, _settingType, _settingName, _creatorThoughtId, _associatedThoughtId, _extraData);
+		(bytes32 _associatedThoughtSettingId, bytes32 _creatorThoughtSettingId) = _aoSettingAttribute.add(totalSetting, _creatorNameId, _settingType, _settingName, _creatorThoughtId, _associatedThoughtId, _extraData);
 
 		emit SettingCreation(totalSetting, _creatorNameId, _creatorThoughtId, _associatedThoughtId, _settingName, _settingType, _associatedThoughtSettingId, _creatorThoughtSettingId);
 	}
