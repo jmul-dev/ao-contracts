@@ -526,13 +526,13 @@ contract AOSettingAttribute is developed {
 	 */
 	function _storeSettingDeprecation(uint256 _settingId, address _creatorNameId, address _creatorThoughtId, address _associatedThoughtId, uint256 _newSettingId, address _newSettingContractAddress) internal returns (bool) {
 		// Make sure this setting exists
-		require (settingDatas[_settingId].creatorNameId != address(0) && settingDatas[_settingId].rejected == false);
+		require (settingDatas[_settingId].creatorNameId != address(0) && settingDatas[_settingId].rejected == false && settingDatas[_settingId].pendingCreate == false);
 
 		// Make sure deprecation is not yet exist for this setting Id
 		require (settingDeprecations[_settingId].creatorNameId == address(0));
 
 		// Make sure newSettingId exists
-		require (settingDatas[_newSettingId].creatorNameId != address(0) && settingDatas[_newSettingId].rejected == false);
+		require (settingDatas[_newSettingId].creatorNameId != address(0) && settingDatas[_newSettingId].rejected == false && settingDatas[_newSettingId].pendingCreate == false);
 
 		// Store setting deprecation info
 		SettingDeprecation storage _settingDeprecation = settingDeprecations[_settingId];
