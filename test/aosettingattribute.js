@@ -28,7 +28,7 @@ contract("AOSettingAttribute", function(accounts) {
 
 		await aosettingattribute.setWhitelist(whitelistedAccount, true, { from: developer });
 
-		// Create a name
+		// Create Names
 		var result = await namefactory.createName("beta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
 			from: account1
 		});
@@ -42,7 +42,7 @@ contract("AOSettingAttribute", function(accounts) {
 		result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", { from: account3 });
 		proposalThoughtNameId = await namefactory.ethAddressToNameId(account3);
 
-		// Create a thought
+		// Create Thoughts
 		result = await thoughtfactory.createThought("somedathash", "somedatabase", "somekeyvalue", "somecontentid", creatorThoughtNameId, {
 			from: account1
 		});
