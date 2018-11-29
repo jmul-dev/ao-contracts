@@ -37,6 +37,8 @@ contract("AOSetting", function(accounts) {
 	var uintValue = 10;
 	var boolValue = true;
 	var addressValue = accounts[8];
+	var bytesValue = "somebytesvalue";
+	var nullBytesValue = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 	before(async function() {
 		aosetting = await AOSetting.deployed();
@@ -476,6 +478,145 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(settingCreationEvent.args.settingName, settingName, "SettingCreation event has incorrect settingName");
 		assert.equal(settingCreationEvent.args.settingType.toNumber(), 3, "SettingCreation event has incorrect settingType");
+
+		var associatedThoughtSetting = await aosettingattribute.getAssociatedThoughtSetting(associatedThoughtSettingId);
+		assert.equal(
+			associatedThoughtSetting[0],
+			associatedThoughtSettingId,
+			"getAssociatedThoughtSetting returns incorrect associatedThoughtSettingId"
+		);
+		assert.equal(associatedThoughtSetting[1], associatedThoughtId, "getAssociatedThoughtSetting returns incorrect associatedThoughtId");
+		assert.equal(
+			associatedThoughtSetting[2].toNumber(),
+			settingId.toNumber(),
+			"getAssociatedThoughtSetting returns incorrect settingId"
+		);
+
+		var creatorThoughtSetting = await aosettingattribute.getCreatorThoughtSetting(creatorThoughtSettingId);
+		assert.equal(
+			creatorThoughtSetting[0],
+			creatorThoughtSettingId,
+			"getCreatorThoughtSetting returns incorrect creatorThoughtSettingId"
+		);
+		assert.equal(creatorThoughtSetting[1], creatorThoughtId, "getCreatorThoughtSetting returns incorrect creatorThoughtId");
+		assert.equal(creatorThoughtSetting[2].toNumber(), settingId.toNumber(), "getCreatorThoughtSetting returns incorrect settingId");
+	});
+
+	it("should be able to add bytes setting", async function() {
+		settingName = "bytesSetting";
+		var settingNameExist = await aosetting.settingNameExist(settingName, associatedThoughtId);
+		assert.equal(settingNameExist, false, "settingNameExist returns incorrect value");
+
+		var totalSettingBefore = await aosetting.totalSetting();
+
+		var canAdd, settingCreationEvent, associatedThoughtSettingId, creatorThoughtSettingId;
+		try {
+			var result = await aosetting.addBytesSetting(settingName, bytesValue, nonThoughtId, associatedThoughtId, extraData, {
+				from: account1
+			});
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId4 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId4 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, false, "Can create setting using invalid Creator Thought");
+
+		try {
+			var result = await aosetting.addBytesSetting(settingName, bytesValue, creatorThoughtId, nonThoughtId, extraData, {
+				from: account1
+			});
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId4 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId4 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, false, "Can create setting using invalid Associated Thought");
+
+		try {
+			var result = await aosetting.addBytesSetting(settingName, bytesValue, creatorThoughtId, associatedThoughtId, extraData, {
+				from: account2
+			});
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId4 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId4 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, false, "Non-Advocate of Creator Thought can create setting");
+
+		try {
+			var result = await aosetting.addBytesSetting(settingName, bytesValue, creatorThoughtId, associatedThoughtId, extraData, {
+				from: account1
+			});
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId4 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId4 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
+
+		var totalSettingAfter = await aosetting.totalSetting();
+		assert.equal(
+			totalSettingAfter.toNumber(),
+			totalSettingBefore.plus(1).toNumber(),
+			"Contract has incorrect totalSetting after adding setting"
+		);
+
+		var pendingValue = await aobytessetting.pendingValue(settingId4.toNumber());
+		assert.notEqual(pendingValue, nullBytesValue, "Setting has incorrect pendingValue");
+
+		var settingId = await aosetting.getSettingIdByThoughtName(associatedThoughtId, settingName);
+		assert.equal(
+			settingId.toNumber(),
+			settingId4.toNumber(),
+			"Contract returns incorrect settingId given an associatedThoughtId and settingName"
+		);
+
+		var settingNameExist = await aosetting.settingNameExist(settingName, associatedThoughtId);
+		assert.equal(settingNameExist, true, "settingNameExist returns incorrect value");
+
+		assert.notEqual(settingCreationEvent, null, "Contract didn't emit SettingCreation event when adding a bytes setting");
+		assert.equal(
+			settingCreationEvent.args.settingId.toNumber(),
+			totalSettingAfter.toNumber(),
+			"SettingCreation event has incorrect settingId"
+		);
+		assert.equal(settingCreationEvent.args.creatorNameId, creatorThoughtNameId, "SettingCreation event has incorrect creatorNameId");
+		assert.equal(settingCreationEvent.args.creatorThoughtId, creatorThoughtId, "SettingCreation event has incorrect creatorThoughtId");
+		assert.equal(
+			settingCreationEvent.args.associatedThoughtId,
+			associatedThoughtId,
+			"SettingCreation event has incorrect associatedThoughtId"
+		);
+		assert.equal(settingCreationEvent.args.settingName, settingName, "SettingCreation event has incorrect settingName");
+		assert.equal(settingCreationEvent.args.settingType.toNumber(), 4, "SettingCreation event has incorrect settingType");
 
 		var associatedThoughtSetting = await aosettingattribute.getAssociatedThoughtSetting(associatedThoughtSettingId);
 		assert.equal(
