@@ -156,7 +156,7 @@ module.exports = function(deployer, network, accounts) {
 				namefactory.address,
 				aosettingattribute.address,
 				aouintsetting.address,
-				aoboolsetting.addres,
+				aoboolsetting.address,
 				aoaddresssetting.address,
 				aobytessetting.address,
 				aostringsetting.address
