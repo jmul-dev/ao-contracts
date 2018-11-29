@@ -34,7 +34,7 @@ contract AOSetting {
 	 *
 	 * The setting's name needs to be converted to bytes32 since solidity does not support mapping by string.
 	 */
-	mapping (address => mapping (bytes32 => uint256)) public nameSettingLookup;
+	mapping (address => mapping (bytes32 => uint256)) internal nameSettingLookup;
 
 	// Mapping from updateHashKey to it's settingId
 	mapping (bytes32 => uint256) public updateHashLookup;
@@ -96,7 +96,7 @@ contract AOSetting {
 	 * @dev Check if `_settingName` of `_associatedThoughtId` is taken
 	 */
 	modifier settingNameNotTaken(string _settingName, address _associatedThoughtId) {
-		require (isSettingNameTaken(_settingName, _associatedThoughtId) == false);
+		require (settingNameExist(_settingName, _associatedThoughtId) == false);
 		_;
 	}
 
@@ -110,13 +110,13 @@ contract AOSetting {
 
 	/***** Public Methods *****/
 	/**
-	 * @dev Check whether or not a setting name of an associatedThoughtId is taken
+	 * @dev Check whether or not a setting name of an associatedThoughtId exist
 	 * @param _settingName The human-readable name of the setting
 	 * @param _associatedThoughtId The thoughtId that the setting affects
-	 * @return true if taken. false otherwise
+	 * @return true if yes. false otherwise
 	 */
-	function isSettingNameTaken(string _settingName, address _associatedThoughtId) public view returns (bool) {
-		return (nameSettingLookup[_associatedThoughtId][keccak256(abi.encodePacked(this, _settingName))] == 0);
+	function settingNameExist(string _settingName, address _associatedThoughtId) public view returns (bool) {
+		return (nameSettingLookup[_associatedThoughtId][keccak256(abi.encodePacked(this, _settingName))] > 0);
 	}
 
 	/**
@@ -417,6 +417,17 @@ contract AOSetting {
 
 		(,, address _creatorThoughtId,,,,,,,,,) = _aoSettingAttribute.getSettingDeprecation(_settingId);
 		emit FinalizeSettingDeprecation(_settingId, _creatorThoughtId, _creatorThoughtAdvocate);
+	}
+
+	/**
+	 * @dev Get setting Id given an associatedThoughtId and settingName
+	 * @param _associatedThoughtId The ID of the AssociatedThought
+	 * @param _settingName The name of the setting
+	 * @return the ID of the setting
+	 */
+	function getSettingIdByThoughtName(address _associatedThoughtId, string _settingName) public view returns (uint256) {
+		require (settingNameExist(_settingName, _associatedThoughtId));
+		return nameSettingLookup[_associatedThoughtId][keccak256(abi.encodePacked(this, _settingName))];
 	}
 
 	/***** Internal Method *****/
