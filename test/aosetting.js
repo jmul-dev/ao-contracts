@@ -25,7 +25,18 @@ contract("AOSetting", function(accounts) {
 	var account2 = accounts[2];
 	var account3 = accounts[3];
 
-	var settingName, settingId1, settingId2, settingId3, settingId4, settingId5;
+	var settingName,
+		settingId1, // uintSetting
+		settingId2, // boolSetting
+		settingId3, // addressSetting
+		settingId4, // bytesSetting
+		settingId5, // stringSetting
+		settingId6, // uintSetting2 (to be rejected)
+		settingId7, // boolSetting2 (to be rejected)
+		settingId8, // addressSetting2 (to be rejected)
+		settingId9, // bytesSetting2 (to be rejected)
+		settingId10, // stringSetting2 (to be rejected)
+		settingId11; // non-approved setting
 	var creatorThoughtNameId, creatorThoughtId, associatedThoughtNameId, associatedThoughtId, proposalThoughtNameId, proposalThoughtId;
 	var extraData = JSON.stringify({ extraVariable: "someValue" });
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
@@ -223,6 +234,44 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(creatorThoughtSetting[1], creatorThoughtId, "getCreatorThoughtSetting returns incorrect creatorThoughtId");
 		assert.equal(creatorThoughtSetting[2].toNumber(), settingId.toNumber(), "getCreatorThoughtSetting returns incorrect settingId");
+
+		// Add settingId6
+		try {
+			var result = await aosetting.addUintSetting("uintSetting2", uintValue, creatorThoughtId, associatedThoughtId, extraData, {
+				from: account1
+			});
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId6 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId6 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
+
+		// Add settingId11
+		try {
+			var result = await aosetting.addUintSetting("uintSetting3", uintValue, creatorThoughtId, associatedThoughtId, extraData, {
+				from: account1
+			});
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId11 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId11 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
 	});
 
 	it("should be able to add bool setting", async function() {
@@ -362,6 +411,25 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(creatorThoughtSetting[1], creatorThoughtId, "getCreatorThoughtSetting returns incorrect creatorThoughtId");
 		assert.equal(creatorThoughtSetting[2].toNumber(), settingId.toNumber(), "getCreatorThoughtSetting returns incorrect settingId");
+
+		// Add settingId7
+		try {
+			var result = await aosetting.addBoolSetting("boolSetting2", boolValue, creatorThoughtId, associatedThoughtId, extraData, {
+				from: account1
+			});
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId7 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId7 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
 	});
 
 	it("should be able to add address setting", async function() {
@@ -501,6 +569,32 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(creatorThoughtSetting[1], creatorThoughtId, "getCreatorThoughtSetting returns incorrect creatorThoughtId");
 		assert.equal(creatorThoughtSetting[2].toNumber(), settingId.toNumber(), "getCreatorThoughtSetting returns incorrect settingId");
+
+		// Add settingId8
+		try {
+			var result = await aosetting.addAddressSetting(
+				"addressSetting2",
+				addressValue,
+				creatorThoughtId,
+				associatedThoughtId,
+				extraData,
+				{
+					from: account1
+				}
+			);
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId8 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId8 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
 	});
 
 	it("should be able to add bytes setting", async function() {
@@ -640,6 +734,25 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(creatorThoughtSetting[1], creatorThoughtId, "getCreatorThoughtSetting returns incorrect creatorThoughtId");
 		assert.equal(creatorThoughtSetting[2].toNumber(), settingId.toNumber(), "getCreatorThoughtSetting returns incorrect settingId");
+
+		// Add settingId9
+		try {
+			var result = await aosetting.addBytesSetting("bytesSetting2", bytesValue, creatorThoughtId, associatedThoughtId, extraData, {
+				from: account1
+			});
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId9 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId9 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
 	});
 
 	it("should be able to add string setting", async function() {
@@ -779,9 +892,28 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(creatorThoughtSetting[1], creatorThoughtId, "getCreatorThoughtSetting returns incorrect creatorThoughtId");
 		assert.equal(creatorThoughtSetting[2].toNumber(), settingId.toNumber(), "getCreatorThoughtSetting returns incorrect settingId");
+
+		// Add settingId10
+		try {
+			var result = await aosetting.addStringSetting("stringSetting2", stringValue, creatorThoughtId, associatedThoughtId, extraData, {
+				from: account1
+			});
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId10 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId10 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
 	});
 
-	it("only the Advocate of setting's Associated Thought can approve/reject setting creation", async function() {
+	it("only the Advocate of setting's Associated Thought can approve/reject uint setting creation", async function() {
 		var canApprove, approveSettingCreationEvent;
 		try {
 			var result = await aosetting.approveSettingCreation(99, true, { from: account1 });
@@ -831,9 +963,9 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(approveSettingCreationEvent.args.approved, true, "ApproveSettingCreation has incorrect approved");
 
-		// Reject settingId2
+		// Reject settingId6
 		try {
-			var result = await aosetting.approveSettingCreation(settingId2, false, { from: account2 });
+			var result = await aosetting.approveSettingCreation(settingId6, false, { from: account2 });
 			canApprove = true;
 			approveSettingCreationEvent = result.logs[0];
 		} catch (e) {
@@ -844,7 +976,7 @@ contract("AOSetting", function(accounts) {
 
 		assert.equal(
 			approveSettingCreationEvent.args.settingId.toNumber(),
-			settingId2.toNumber(),
+			settingId6.toNumber(),
 			"ApproveSettingCreation has incorrect settingId"
 		);
 		assert.equal(
@@ -861,7 +993,7 @@ contract("AOSetting", function(accounts) {
 
 		var canGetSettingIdByThoughtName;
 		try {
-			await aosetting.getSettingIdByThoughtName(associatedThoughtId, "boolSetting");
+			await aosetting.getSettingIdByThoughtName(associatedThoughtId, "uintSetting2");
 			canGetSettingIdByThoughtName = true;
 		} catch (e) {
 			canGetSettingIdByThoughtName = false;
@@ -873,7 +1005,7 @@ contract("AOSetting", function(accounts) {
 		);
 	});
 
-	it("only the Advocate of setting's Creator Thought can finalize setting creation", async function() {
+	it("only the Advocate of setting's Creator Thought can finalize uint setting creation", async function() {
 		var canFinalize, finalizeSettingCreationEvent;
 		try {
 			var result = await aosetting.finalizeSettingCreation(99, { from: account1 });
@@ -896,7 +1028,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canFinalize, false, "Non-Advocate of Creator Thought can finalize non-existing setting creation");
 
 		try {
-			var result = await aosetting.finalizeSettingCreation(settingId3, { from: account1 });
+			var result = await aosetting.finalizeSettingCreation(settingId11, { from: account1 });
 			canFinalize = true;
 			finalizeSettingCreationEvent = result.logs[0];
 		} catch (e) {
@@ -906,7 +1038,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canFinalize, false, "Advocate can finalize non-approved setting creation");
 
 		try {
-			var result = await aosetting.finalizeSettingCreation(settingId2, { from: account1 });
+			var result = await aosetting.finalizeSettingCreation(settingId6, { from: account1 });
 			canFinalize = true;
 			finalizeSettingCreationEvent = result.logs[0];
 		} catch (e) {
