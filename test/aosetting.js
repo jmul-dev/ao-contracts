@@ -3492,5 +3492,108 @@ contract("AOSetting", function(accounts) {
 			settingId1.toNumber(),
 			"getCreatorThoughtSettingDeprecation returns incorrect settingId"
 		);
+
+		// Add deprecation for settingId2
+		try {
+			var result = await aosetting.addSettingDeprecation(
+				settingId2,
+				settingId17,
+				newSettingContractAddress,
+				creatorThoughtId,
+				associatedThoughtId,
+				{
+					from: account1
+				}
+			);
+			canAdd = true;
+			settingDeprecationEvent = result.logs[0];
+			associatedThoughtSettingDeprecationId = settingDeprecationEvent.args.associatedThoughtSettingDeprecationId;
+			creatorThoughtSettingDeprecationId = settingDeprecationEvent.args.creatorThoughtSettingDeprecationId;
+		} catch (e) {
+			canAdd = false;
+			settingDeprecationEvent = null;
+			associatedThoughtSettingDeprecationId = null;
+			creatorThoughtSettingDeprecationId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting deprecation");
+	});
+
+	it("only the Advocate of setting deprecation's Associated Thought can approve/reject uint setting deprecation", async function() {
+		var canApprove, approveSettingDeprecationEvent;
+		try {
+			var result = await aosetting.approveSettingDeprecation(99, true, { from: account1 });
+			canApprove = true;
+			approveSettingDeprecationEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingDeprecationEvent = null;
+		}
+		assert.equal(canApprove, false, "Advocate can approve non-existing setting deprecation");
+
+		try {
+			var result = await aosetting.approveSettingDeprecation(settingId1, true, { from: account1 });
+			canApprove = true;
+			approveSettingDeprecationEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingDeprecationEvent = null;
+		}
+		assert.equal(canApprove, false, "Non-Advocate of setting's Associated Thought can approve setting deprecation");
+
+		// Approve settingId1
+		try {
+			var result = await aosetting.approveSettingDeprecation(settingId1, true, { from: account2 });
+			canApprove = true;
+			approveSettingDeprecationEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingDeprecationEvent = null;
+		}
+		assert.equal(canApprove, true, "Advocate of setting's Associated Thought can't approve setting deprecation");
+
+		assert.equal(
+			approveSettingDeprecationEvent.args.settingId.toNumber(),
+			settingId1.toNumber(),
+			"ApproveSettingDeprecation has incorrect settingId"
+		);
+		assert.equal(
+			approveSettingDeprecationEvent.args.associatedThoughtId,
+			associatedThoughtId,
+			"ApproveSettingDeprecation has incorrect associatedThoughtId"
+		);
+		assert.equal(
+			approveSettingDeprecationEvent.args.associatedThoughtAdvocate,
+			associatedThoughtNameId,
+			"ApproveSettingDeprecation has incorrect associatedThoughtAdvocate"
+		);
+		assert.equal(approveSettingDeprecationEvent.args.approved, true, "ApproveSettingDeprecation has incorrect approved");
+
+		// Reject settingId2
+		try {
+			var result = await aosetting.approveSettingDeprecation(settingId2, false, { from: account2 });
+			canApprove = true;
+			approveSettingDeprecationEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingDeprecationEvent = null;
+		}
+		assert.equal(canApprove, true, "Advocate of setting's Associated Thought can't approve setting deprecation");
+
+		assert.equal(
+			approveSettingDeprecationEvent.args.settingId.toNumber(),
+			settingId2.toNumber(),
+			"ApproveSettingDeprecation has incorrect settingId"
+		);
+		assert.equal(
+			approveSettingDeprecationEvent.args.associatedThoughtId,
+			associatedThoughtId,
+			"ApproveSettingDeprecation has incorrect associatedThoughtId"
+		);
+		assert.equal(
+			approveSettingDeprecationEvent.args.associatedThoughtAdvocate,
+			associatedThoughtNameId,
+			"ApproveSettingDeprecation has incorrect associatedThoughtAdvocate"
+		);
+		assert.equal(approveSettingDeprecationEvent.args.approved, false, "ApproveSettingDeprecation has incorrect approved");
 	});
 });
