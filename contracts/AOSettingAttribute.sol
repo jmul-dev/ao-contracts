@@ -535,6 +535,9 @@ contract AOSettingAttribute is developed {
 		// Make sure newSettingId exists
 		require (settingDatas[_newSettingId].creatorNameId != address(0) && settingDatas[_newSettingId].rejected == false && settingDatas[_newSettingId].pendingCreate == false);
 
+		// Make sure the settingType matches
+		require (settingDatas[_settingId].settingType == settingDatas[_newSettingId].settingType);
+
 		// Store setting deprecation info
 		SettingDeprecation storage _settingDeprecation = settingDeprecations[_settingId];
 		_settingDeprecation.settingId = _settingId;
