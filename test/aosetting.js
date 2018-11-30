@@ -2830,7 +2830,7 @@ contract("AOSetting", function(accounts) {
 		});
 
 		var canApprove, approveSettingUpdateEvent;
-		// Approve settingId1
+		// Reject settingId1
 		try {
 			var result = await aosetting.approveSettingUpdate(settingId1, false, { from: account3 });
 			canApprove = true;
@@ -2861,6 +2861,51 @@ contract("AOSetting", function(accounts) {
 		var canFinalize;
 		try {
 			var result = await aosetting.finalizeSettingUpdate(settingId1, { from: account2 });
+			canFinalize = true;
+		} catch (e) {
+			canFinalize = false;
+		}
+		assert.equal(canFinalize, false, "Advocate can finalize rejected setting update");
+	});
+
+	it("only the Advocate of setting's Proposal Thought can reject bool setting update", async function() {
+		boolValue = true;
+		var result = await aosetting.updateBoolSetting(settingId2, boolValue, proposalThoughtId, updateSignature, extraData, {
+			from: account2
+		});
+
+		var canApprove, approveSettingUpdateEvent;
+		// Reject settingId2
+		try {
+			var result = await aosetting.approveSettingUpdate(settingId2, false, { from: account3 });
+			canApprove = true;
+			approveSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingUpdateEvent = null;
+		}
+		assert.equal(canApprove, true, "Advocate of setting's Proposal Thought can't reject setting update");
+
+		assert.equal(
+			approveSettingUpdateEvent.args.settingId.toNumber(),
+			settingId2.toNumber(),
+			"ApproveSettingUpdate has incorrect settingId"
+		);
+		assert.equal(
+			approveSettingUpdateEvent.args.proposalThoughtId,
+			proposalThoughtId,
+			"ApproveSettingUpdate has incorrect proposalThoughtId"
+		);
+		assert.equal(
+			approveSettingUpdateEvent.args.proposalThoughtAdvocate,
+			proposalThoughtNameId,
+			"ApproveSettingUpdate has incorrect proposalThoughtAdvocate"
+		);
+		assert.equal(approveSettingUpdateEvent.args.approved, false, "ApproveSettingUpdate has incorrect approved");
+
+		var canFinalize;
+		try {
+			var result = await aosetting.finalizeSettingUpdate(settingId2, { from: account2 });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
