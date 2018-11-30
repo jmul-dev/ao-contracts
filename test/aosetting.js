@@ -2050,4 +2050,115 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(settingUpdateEvent.args.proposalThoughtId, proposalThoughtId, "SettingUpdate event has incorrect proposalThoughtId");
 	});
+
+	it("only the Advocate of setting's Associated Thought can update bytes setting", async function() {
+		var canUpdate, settingUpdateEvent;
+		bytesValue = "newbytesvalue";
+		try {
+			var result = await aosetting.updateBytesSetting(settingId2, bytesValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can call update bytes on non-bytes setting");
+
+		try {
+			var result = await aosetting.updateBytesSetting(settingId14, bytesValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update non-approved bytes setting");
+
+		try {
+			var result = await aosetting.updateBytesSetting(settingId9, bytesValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update rejected bytes setting");
+
+		try {
+			var result = await aosetting.updateBytesSetting(settingId4, bytesValue, nonThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update bytes setting with invalid Proposal Thought");
+
+		try {
+			var result = await aosetting.updateBytesSetting(settingId4, bytesValue, proposalThoughtId, "", extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update bytes setting without update signature");
+
+		try {
+			var result = await aosetting.updateBytesSetting(settingId4, bytesValue, proposalThoughtId, updateSignature, extraData, {
+				from: account1
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Non-setting Associated Thought's Advocate can update bytes setting");
+
+		try {
+			var result = await aosetting.updateBytesSetting(99, bytesValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update bytes setting on non-existing setting");
+
+		try {
+			var result = await aosetting.updateBytesSetting(settingId4, bytesValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, true, "Advocate can't update bytes setting");
+
+		var pendingValue = await aobytessetting.pendingValue(settingId4.toNumber());
+		assert.notEqual(pendingValue, nullBytesValue, "Setting has incorrect pendingValue");
+
+		assert.equal(settingUpdateEvent.args.settingId.toNumber(), settingId4.toNumber(), "SettingUpdate event has incorrect settingId");
+		assert.equal(
+			settingUpdateEvent.args.updateAdvocateNameId,
+			associatedThoughtNameId,
+			"SettingUpdate event has incorrect updateAdvocateNameId"
+		);
+		assert.equal(settingUpdateEvent.args.proposalThoughtId, proposalThoughtId, "SettingUpdate event has incorrect proposalThoughtId");
+	});
 });
