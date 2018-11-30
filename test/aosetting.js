@@ -2364,4 +2364,45 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(approveSettingUpdateEvent.args.approved, true, "ApproveSettingUpdate has incorrect approved");
 	});
+
+	it("only the Advocate of setting's Proposal Thought can approve address setting update", async function() {
+		var canApprove, approveSettingUpdateEvent;
+		try {
+			var result = await aosetting.approveSettingUpdate(settingId3, true, { from: account1 });
+			canApprove = true;
+			approveSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingUpdateEvent = null;
+		}
+		assert.equal(canApprove, false, "Non-Advocate of setting's Proposal Thought can approve setting update");
+
+		// Approve settingId3
+		try {
+			var result = await aosetting.approveSettingUpdate(settingId3, true, { from: account3 });
+			canApprove = true;
+			approveSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingUpdateEvent = null;
+		}
+		assert.equal(canApprove, true, "Advocate of setting's Proposal Thought can't approve setting update");
+
+		assert.equal(
+			approveSettingUpdateEvent.args.settingId.toNumber(),
+			settingId3.toNumber(),
+			"ApproveSettingUpdate has incorrect settingId"
+		);
+		assert.equal(
+			approveSettingUpdateEvent.args.proposalThoughtId,
+			proposalThoughtId,
+			"ApproveSettingUpdate has incorrect proposalThoughtId"
+		);
+		assert.equal(
+			approveSettingUpdateEvent.args.proposalThoughtAdvocate,
+			proposalThoughtNameId,
+			"ApproveSettingUpdate has incorrect proposalThoughtAdvocate"
+		);
+		assert.equal(approveSettingUpdateEvent.args.approved, true, "ApproveSettingUpdate has incorrect approved");
+	});
 });
