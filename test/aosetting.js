@@ -1145,7 +1145,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingCreationEvent = null;
 		}
-		assert.equal(canFinalize, true, "Advocate can't finalize rejected setting creation");
+		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 
 		var pendingValue = await aouintsetting.pendingValue(settingId1.toNumber());
 		assert.equal(pendingValue.toNumber(), 0, "Setting has incorrect pendingValue");
@@ -1282,7 +1282,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingCreationEvent = null;
 		}
-		assert.equal(canFinalize, true, "Advocate can't finalize rejected setting creation");
+		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 
 		var pendingValue = await aoboolsetting.pendingValue(settingId2.toNumber());
 		assert.equal(pendingValue, false, "Setting has incorrect pendingValue");
@@ -1419,7 +1419,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingCreationEvent = null;
 		}
-		assert.equal(canFinalize, true, "Advocate can't finalize rejected setting creation");
+		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 
 		var pendingValue = await aoaddresssetting.pendingValue(settingId3.toNumber());
 		assert.equal(pendingValue, emptyAddress, "Setting has incorrect pendingValue");
@@ -1556,7 +1556,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingCreationEvent = null;
 		}
-		assert.equal(canFinalize, true, "Advocate can't finalize rejected setting creation");
+		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 
 		var pendingValue = await aobytessetting.pendingValue(settingId4.toNumber());
 		assert.equal(pendingValue, nullBytesValue, "Setting has incorrect pendingValue");
@@ -1693,7 +1693,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingCreationEvent = null;
 		}
-		assert.equal(canFinalize, true, "Advocate can't finalize rejected setting creation");
+		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 
 		var pendingValue = await aostringsetting.pendingValue(settingId5.toNumber());
 		assert.equal(pendingValue, "", "Setting has incorrect pendingValue");
@@ -2538,7 +2538,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingUpdateEvent = null;
 		}
-		assert.equal(canFinalize, true, "Advocate can't finalize rejected setting update");
+		assert.equal(canFinalize, true, "Advocate can't finalize setting update");
 
 		var pendingValue = await aouintsetting.pendingValue(settingId1.toNumber());
 		assert.equal(pendingValue.toNumber(), 0, "Setting has incorrect pendingValue");
@@ -2603,7 +2603,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingUpdateEvent = null;
 		}
-		assert.equal(canFinalize, true, "Advocate can't finalize rejected setting update");
+		assert.equal(canFinalize, true, "Advocate can't finalize setting update");
 
 		var pendingValue = await aoboolsetting.pendingValue(settingId2.toNumber());
 		assert.equal(pendingValue, false, "Setting has incorrect pendingValue");
@@ -2668,7 +2668,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingUpdateEvent = null;
 		}
-		assert.equal(canFinalize, true, "Advocate can't finalize rejected setting update");
+		assert.equal(canFinalize, true, "Advocate can't finalize setting update");
 
 		var pendingValue = await aoaddresssetting.pendingValue(settingId3.toNumber());
 		assert.equal(pendingValue, emptyAddress, "Setting has incorrect pendingValue");
@@ -2733,7 +2733,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingUpdateEvent = null;
 		}
-		assert.equal(canFinalize, true, "Advocate can't finalize rejected setting update");
+		assert.equal(canFinalize, true, "Advocate can't finalize setting update");
 
 		var pendingValue = await aobytessetting.pendingValue(settingId4.toNumber());
 		assert.equal(pendingValue, nullBytesValue, "Setting has incorrect pendingValue");
@@ -2798,7 +2798,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingUpdateEvent = null;
 		}
-		assert.equal(canFinalize, true, "Advocate can't finalize rejected setting update");
+		assert.equal(canFinalize, true, "Advocate can't finalize setting update");
 
 		var pendingValue = await aostringsetting.pendingValue(settingId5.toNumber());
 		assert.equal(pendingValue, "", "Setting has incorrect pendingValue");
@@ -2821,5 +2821,50 @@ contract("AOSetting", function(accounts) {
 			associatedThoughtNameId,
 			"FinalizeSettingUpdate event has incorrect associatedThoughtAdvocate"
 		);
+	});
+
+	it("only the Advocate of setting's Proposal Thought can reject uint setting update", async function() {
+		uintValue = 1000;
+		var result = await aosetting.updateUintSetting(settingId1, uintValue, proposalThoughtId, updateSignature, extraData, {
+			from: account2
+		});
+
+		var canApprove, approveSettingUpdateEvent;
+		// Approve settingId1
+		try {
+			var result = await aosetting.approveSettingUpdate(settingId1, false, { from: account3 });
+			canApprove = true;
+			approveSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingUpdateEvent = null;
+		}
+		assert.equal(canApprove, true, "Advocate of setting's Proposal Thought can't reject setting update");
+
+		assert.equal(
+			approveSettingUpdateEvent.args.settingId.toNumber(),
+			settingId1.toNumber(),
+			"ApproveSettingUpdate has incorrect settingId"
+		);
+		assert.equal(
+			approveSettingUpdateEvent.args.proposalThoughtId,
+			proposalThoughtId,
+			"ApproveSettingUpdate has incorrect proposalThoughtId"
+		);
+		assert.equal(
+			approveSettingUpdateEvent.args.proposalThoughtAdvocate,
+			proposalThoughtNameId,
+			"ApproveSettingUpdate has incorrect proposalThoughtAdvocate"
+		);
+		assert.equal(approveSettingUpdateEvent.args.approved, false, "ApproveSettingUpdate has incorrect approved");
+
+		var canFinalize;
+		try {
+			var result = await aosetting.finalizeSettingUpdate(settingId1, { from: account2 });
+			canFinalize = true;
+		} catch (e) {
+			canFinalize = false;
+		}
+		assert.equal(canFinalize, false, "Advocate can finalize rejected setting update");
 	});
 });
