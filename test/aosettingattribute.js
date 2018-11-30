@@ -229,9 +229,17 @@ contract("AOSettingAttribute", function(accounts) {
 	it("only whitelisted account can update setting", async function() {
 		var canUpdate;
 		try {
-			await aosettingattribute.update(settingId1, associatedThoughtNameId, proposalThoughtId, updateSignature, extraData, {
-				from: account1
-			});
+			await aosettingattribute.update(
+				settingId1,
+				settingType,
+				associatedThoughtNameId,
+				proposalThoughtId,
+				updateSignature,
+				extraData,
+				{
+					from: account1
+				}
+			);
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
@@ -239,9 +247,17 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canUpdate, false, "Non-whitelisted account can update setting");
 
 		try {
-			await aosettingattribute.update(settingId1, associatedThoughtNameId, proposalThoughtId, updateSignature, extraData, {
-				from: whitelistedAccount
-			});
+			await aosettingattribute.update(
+				settingId1,
+				settingType,
+				associatedThoughtNameId,
+				proposalThoughtId,
+				updateSignature,
+				extraData,
+				{
+					from: whitelistedAccount
+				}
+			);
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
@@ -256,9 +272,17 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(settingState[6], extraData, "SettingState has incorrect settingStateJSON");
 
 		try {
-			await aosettingattribute.update(settingId1, associatedThoughtNameId, proposalThoughtId, updateSignature, extraData, {
-				from: whitelistedAccount
-			});
+			await aosettingattribute.update(
+				settingId1,
+				settingType,
+				associatedThoughtNameId,
+				proposalThoughtId,
+				updateSignature,
+				extraData,
+				{
+					from: whitelistedAccount
+				}
+			);
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
@@ -266,9 +290,17 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canUpdate, false, "Whitelisted account can update setting that is pending update");
 
 		try {
-			await aosettingattribute.update(settingId2, associatedThoughtNameId, proposalThoughtId, updateSignature, extraData, {
-				from: whitelistedAccount
-			});
+			await aosettingattribute.update(
+				settingId2,
+				settingType,
+				associatedThoughtNameId,
+				proposalThoughtId,
+				updateSignature,
+				extraData,
+				{
+					from: whitelistedAccount
+				}
+			);
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
@@ -357,9 +389,17 @@ contract("AOSettingAttribute", function(accounts) {
 	it("rejected setting update can not be finalized", async function() {
 		// Update setting again
 		try {
-			await aosettingattribute.update(settingId1, associatedThoughtNameId, proposalThoughtId, updateSignature, extraData, {
-				from: whitelistedAccount
-			});
+			await aosettingattribute.update(
+				settingId1,
+				settingType,
+				associatedThoughtNameId,
+				proposalThoughtId,
+				updateSignature,
+				extraData,
+				{
+					from: whitelistedAccount
+				}
+			);
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
