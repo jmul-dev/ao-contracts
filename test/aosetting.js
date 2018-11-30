@@ -3002,4 +3002,49 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canFinalize, false, "Advocate can finalize rejected setting update");
 	});
+
+	it("only the Advocate of setting's Proposal Thought can reject string setting update", async function() {
+		stringValue = "anotherstringvalue";
+		var result = await aosetting.updateStringSetting(settingId5, stringValue, proposalThoughtId, updateSignature, extraData, {
+			from: account2
+		});
+
+		var canApprove, approveSettingUpdateEvent;
+		// Reject settingId5
+		try {
+			var result = await aosetting.approveSettingUpdate(settingId5, false, { from: account3 });
+			canApprove = true;
+			approveSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingUpdateEvent = null;
+		}
+		assert.equal(canApprove, true, "Advocate of setting's Proposal Thought can't reject setting update");
+
+		assert.equal(
+			approveSettingUpdateEvent.args.settingId.toNumber(),
+			settingId5.toNumber(),
+			"ApproveSettingUpdate has incorrect settingId"
+		);
+		assert.equal(
+			approveSettingUpdateEvent.args.proposalThoughtId,
+			proposalThoughtId,
+			"ApproveSettingUpdate has incorrect proposalThoughtId"
+		);
+		assert.equal(
+			approveSettingUpdateEvent.args.proposalThoughtAdvocate,
+			proposalThoughtNameId,
+			"ApproveSettingUpdate has incorrect proposalThoughtAdvocate"
+		);
+		assert.equal(approveSettingUpdateEvent.args.approved, false, "ApproveSettingUpdate has incorrect approved");
+
+		var canFinalize;
+		try {
+			var result = await aosetting.finalizeSettingUpdate(settingId5, { from: account2 });
+			canFinalize = true;
+		} catch (e) {
+			canFinalize = false;
+		}
+		assert.equal(canFinalize, false, "Advocate can finalize rejected setting update");
+	});
 });
