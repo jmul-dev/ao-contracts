@@ -1939,4 +1939,115 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(settingUpdateEvent.args.proposalThoughtId, proposalThoughtId, "SettingUpdate event has incorrect proposalThoughtId");
 	});
+
+	it("only the Advocate of setting's Associated Thought can update address setting", async function() {
+		var canUpdate, settingUpdateEvent;
+		addressValue = accounts[9];
+		try {
+			var result = await aosetting.updateAddressSetting(settingId2, addressValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can call update address on non-address setting");
+
+		try {
+			var result = await aosetting.updateAddressSetting(settingId13, addressValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update non-approved address setting");
+
+		try {
+			var result = await aosetting.updateAddressSetting(settingId7, addressValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update rejected address setting");
+
+		try {
+			var result = await aosetting.updateAddressSetting(settingId3, addressValue, nonThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update address setting with invalid Proposal Thought");
+
+		try {
+			var result = await aosetting.updateAddressSetting(settingId3, addressValue, proposalThoughtId, "", extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update address setting without update signature");
+
+		try {
+			var result = await aosetting.updateAddressSetting(settingId3, addressValue, proposalThoughtId, updateSignature, extraData, {
+				from: account1
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Non-setting Associated Thought's Advocate can update address setting");
+
+		try {
+			var result = await aosetting.updateAddressSetting(99, addressValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update address setting on non-existing setting");
+
+		try {
+			var result = await aosetting.updateAddressSetting(settingId3, addressValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, true, "Advocate can't update address setting");
+
+		var pendingValue = await aoaddresssetting.pendingValue(settingId3.toNumber());
+		assert.equal(pendingValue, addressValue, "Setting has incorrect pendingValue");
+
+		assert.equal(settingUpdateEvent.args.settingId.toNumber(), settingId3.toNumber(), "SettingUpdate event has incorrect settingId");
+		assert.equal(
+			settingUpdateEvent.args.updateAdvocateNameId,
+			associatedThoughtNameId,
+			"SettingUpdate event has incorrect updateAdvocateNameId"
+		);
+		assert.equal(settingUpdateEvent.args.proposalThoughtId, proposalThoughtId, "SettingUpdate event has incorrect proposalThoughtId");
+	});
 });
