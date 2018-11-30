@@ -256,7 +256,7 @@ contract AOSetting {
 	 */
 	function updateUintSetting(uint256 _settingId, uint256 _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) {
 		// Store the setting state data
-		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		require (_aoSettingAttribute.update(_settingId, 1, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 
 		// Store the value as pending value
 		_aoUintSetting.setPendingValue(_settingId, _newValue);
@@ -277,7 +277,7 @@ contract AOSetting {
 	 */
 	function updateBoolSetting(uint256 _settingId, bool _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) {
 		// Store the setting state data
-		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		require (_aoSettingAttribute.update(_settingId, 2, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 
 		// Store the value as pending value
 		_aoBoolSetting.setPendingValue(_settingId, _newValue);
@@ -298,7 +298,7 @@ contract AOSetting {
 	 */
 	function updateAddressSetting(uint256 _settingId, address _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) {
 		// Store the setting state data
-		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		require (_aoSettingAttribute.update(_settingId, 3, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 
 		// Store the value as pending value
 		_aoAddressSetting.setPendingValue(_settingId, _newValue);
@@ -319,7 +319,7 @@ contract AOSetting {
 	 */
 	function updateBytesSetting(uint256 _settingId, bytes32 _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) {
 		// Store the setting state data
-		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		require (_aoSettingAttribute.update(_settingId, 4, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 
 		// Store the value as pending value
 		_aoBytesSetting.setPendingValue(_settingId, _newValue);
@@ -340,7 +340,7 @@ contract AOSetting {
 	 */
 	function updateStringSetting(uint256 _settingId, string _newValue, address _proposalThoughtId, string _updateSignature, string _extraData) public isThought(_proposalThoughtId) {
 		// Store the setting state data
-		require (_aoSettingAttribute.update(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
+		require (_aoSettingAttribute.update(_settingId, 5, _nameFactory.ethAddressToNameId(msg.sender), _proposalThoughtId, _updateSignature, _extraData));
 
 		// Store the value as pending value
 		_aoStringSetting.setPendingValue(_settingId, _newValue);
