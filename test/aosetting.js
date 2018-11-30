@@ -104,7 +104,7 @@ contract("AOSetting", function(accounts) {
 		proposalThoughtId = createThoughtEvent.args.thoughtId;
 	});
 
-	it("should be able to add uint setting", async function() {
+	it("only the Advocate of a Creator Thought can add uint setting", async function() {
 		settingName = "uintSetting";
 		var settingNameExist = await aosetting.settingNameExist(settingName, associatedThoughtId);
 		assert.equal(settingNameExist, false, "settingNameExist returns incorrect value");
@@ -281,7 +281,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
 	});
 
-	it("should be able to add bool setting", async function() {
+	it("only the Advocate of a Creator Thought can add bool setting", async function() {
 		settingName = "boolSetting";
 		var settingNameExist = await aosetting.settingNameExist(settingName, associatedThoughtId);
 		assert.equal(settingNameExist, false, "settingNameExist returns incorrect value");
@@ -458,7 +458,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
 	});
 
-	it("should be able to add address setting", async function() {
+	it("only the Advocate of a Creator Thought can add address setting", async function() {
 		settingName = "addressSetting";
 		var settingNameExist = await aosetting.settingNameExist(settingName, associatedThoughtId);
 		assert.equal(settingNameExist, false, "settingNameExist returns incorrect value");
@@ -649,7 +649,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
 	});
 
-	it("should be able to add bytes setting", async function() {
+	it("only the Advocate of a Creator Thought can add bytes setting", async function() {
 		settingName = "bytesSetting";
 		var settingNameExist = await aosetting.settingNameExist(settingName, associatedThoughtId);
 		assert.equal(settingNameExist, false, "settingNameExist returns incorrect value");
@@ -826,7 +826,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
 	});
 
-	it("should be able to add string setting", async function() {
+	it("only the Advocate of a Creator Thought can add string setting", async function() {
 		settingName = "stringSetting";
 		var settingNameExist = await aosetting.settingNameExist(settingName, associatedThoughtId);
 		assert.equal(settingNameExist, false, "settingNameExist returns incorrect value");
@@ -1718,7 +1718,7 @@ contract("AOSetting", function(accounts) {
 		);
 	});
 
-	it("should be able to update uint setting", async function() {
+	it("only the Advocate of setting's Associated Thought can update uint setting", async function() {
 		var canUpdate, settingUpdateEvent;
 		uintValue = 100;
 		try {
@@ -1821,6 +1821,117 @@ contract("AOSetting", function(accounts) {
 		assert.equal(pendingValue.toNumber(), uintValue, "Setting has incorrect pendingValue");
 
 		assert.equal(settingUpdateEvent.args.settingId.toNumber(), settingId1.toNumber(), "SettingUpdate event has incorrect settingId");
+		assert.equal(
+			settingUpdateEvent.args.updateAdvocateNameId,
+			associatedThoughtNameId,
+			"SettingUpdate event has incorrect updateAdvocateNameId"
+		);
+		assert.equal(settingUpdateEvent.args.proposalThoughtId, proposalThoughtId, "SettingUpdate event has incorrect proposalThoughtId");
+	});
+
+	it("only the Advocate of setting's Associated Thought can update bool setting", async function() {
+		var canUpdate, settingUpdateEvent;
+		boolValue = false;
+		try {
+			var result = await aosetting.updateBoolSetting(settingId1, boolValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can call update bool on non-bool setting");
+
+		try {
+			var result = await aosetting.updateBoolSetting(settingId12, boolValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update non-approved bool setting");
+
+		try {
+			var result = await aosetting.updateBoolSetting(settingId7, boolValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update rejected bool setting");
+
+		try {
+			var result = await aosetting.updateBoolSetting(settingId2, boolValue, nonThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update bool setting with invalid Proposal Thought");
+
+		try {
+			var result = await aosetting.updateBoolSetting(settingId2, boolValue, proposalThoughtId, "", extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update bool setting without update signature");
+
+		try {
+			var result = await aosetting.updateBoolSetting(settingId2, boolValue, proposalThoughtId, updateSignature, extraData, {
+				from: account1
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Non-setting Associated Thought's Advocate can update bool setting");
+
+		try {
+			var result = await aosetting.updateBoolSetting(99, boolValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update bool setting on non-existing setting");
+
+		try {
+			var result = await aosetting.updateBoolSetting(settingId2, boolValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, true, "Advocate can't update bool setting");
+
+		var pendingValue = await aoboolsetting.pendingValue(settingId2.toNumber());
+		assert.equal(pendingValue, boolValue, "Setting has incorrect pendingValue");
+
+		assert.equal(settingUpdateEvent.args.settingId.toNumber(), settingId2.toNumber(), "SettingUpdate event has incorrect settingId");
 		assert.equal(
 			settingUpdateEvent.args.updateAdvocateNameId,
 			associatedThoughtNameId,
