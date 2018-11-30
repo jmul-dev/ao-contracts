@@ -3725,4 +3725,20 @@ contract("AOSetting", function(accounts) {
 			"FinalizeSettingDeprecation event has incorrect creatorThoughtAdvocate"
 		);
 	});
+
+	it("Advocate should not be able to update deprecated setting", async function() {
+		var canUpdate, settingUpdateEvent;
+		uintValue = 100;
+		try {
+			var result = await aosetting.updateUintSetting(settingId1, uintValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update deprecated uint setting");
+	});
 });
