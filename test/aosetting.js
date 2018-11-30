@@ -40,7 +40,12 @@ contract("AOSetting", function(accounts) {
 		settingId12, // non-approved bool setting
 		settingId13, // non-approved address setting
 		settingId14, // non-approved bytes setting
-		settingId15; // non-approved string setting
+		settingId15, // non-approved string setting
+		settingId16, // approved uint setting
+		settingId17, // approved bool setting
+		settingId18, // approved address setting
+		settingId19, // approved bytes setting
+		settingId20; // approved string setting
 
 	var creatorThoughtNameId, creatorThoughtId, associatedThoughtNameId, associatedThoughtId, proposalThoughtNameId, proposalThoughtId;
 	var extraData = JSON.stringify({ extraVariable: "someValue" });
@@ -58,6 +63,7 @@ contract("AOSetting", function(accounts) {
 	var stringValue = "somestringvalue";
 
 	var updateSignature = "somesignature";
+	var newSettingContractAddress = accounts[7];
 
 	before(async function() {
 		aosetting = await AOSetting.deployed();
@@ -279,6 +285,25 @@ contract("AOSetting", function(accounts) {
 			creatorThoughtSettingId = null;
 		}
 		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
+
+		// Add settingId16
+		try {
+			var result = await aosetting.addUintSetting("uintSetting4", uintValue, creatorThoughtId, associatedThoughtId, extraData, {
+				from: account1
+			});
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId16 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId16 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
 	});
 
 	it("only the Advocate of a Creator Thought can add bool setting", async function() {
@@ -452,6 +477,25 @@ contract("AOSetting", function(accounts) {
 			canAdd = false;
 			settingCreationEvent = null;
 			settingId12 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
+
+		// Add settingId17
+		try {
+			var result = await aosetting.addBoolSetting("boolSetting4", boolValue, creatorThoughtId, associatedThoughtId, extraData, {
+				from: account1
+			});
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId17 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId17 = null;
 			associatedThoughtSettingId = null;
 			creatorThoughtSettingId = null;
 		}
@@ -647,6 +691,32 @@ contract("AOSetting", function(accounts) {
 			creatorThoughtSettingId = null;
 		}
 		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
+
+		// Add settingId18
+		try {
+			var result = await aosetting.addAddressSetting(
+				"addressSetting4",
+				addressValue,
+				creatorThoughtId,
+				associatedThoughtId,
+				extraData,
+				{
+					from: account1
+				}
+			);
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId18 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId18 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
 	});
 
 	it("only the Advocate of a Creator Thought can add bytes setting", async function() {
@@ -820,6 +890,25 @@ contract("AOSetting", function(accounts) {
 			canAdd = false;
 			settingCreationEvent = null;
 			settingId14 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
+
+		// Add settingId19
+		try {
+			var result = await aosetting.addBytesSetting("bytesSetting4", bytesValue, creatorThoughtId, associatedThoughtId, extraData, {
+				from: account1
+			});
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId19 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId19 = null;
 			associatedThoughtSettingId = null;
 			creatorThoughtSettingId = null;
 		}
@@ -1001,6 +1090,25 @@ contract("AOSetting", function(accounts) {
 			creatorThoughtSettingId = null;
 		}
 		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
+
+		// Add settingId20
+		try {
+			var result = await aosetting.addStringSetting("stringSetting4", stringValue, creatorThoughtId, associatedThoughtId, extraData, {
+				from: account1
+			});
+			canAdd = true;
+			settingCreationEvent = result.logs[0];
+			settingId20 = settingCreationEvent.args.settingId;
+			associatedThoughtSettingId = settingCreationEvent.args.associatedThoughtSettingId;
+			creatorThoughtSettingId = settingCreationEvent.args.creatorThoughtSettingId;
+		} catch (e) {
+			canAdd = false;
+			settingCreationEvent = null;
+			settingId20 = null;
+			associatedThoughtSettingId = null;
+			creatorThoughtSettingId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting");
 	});
 
 	it("only the Advocate of setting's Associated Thought can approve/reject uint setting creation", async function() {
@@ -1093,6 +1201,17 @@ contract("AOSetting", function(accounts) {
 			false,
 			"canGetSettingIdByThoughtName() is successful even though setting creation is rejected"
 		);
+
+		// Approve settingId16
+		try {
+			var result = await aosetting.approveSettingCreation(settingId16, true, { from: account2 });
+			canApprove = true;
+			approveSettingCreationEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingCreationEvent = null;
+		}
+		assert.equal(canApprove, true, "Advocate of setting's Associated Thought can't approve setting creation");
 	});
 
 	it("only the Advocate of setting's Creator Thought can finalize uint setting creation", async function() {
@@ -1168,6 +1287,16 @@ contract("AOSetting", function(accounts) {
 			creatorThoughtNameId,
 			"FinalizeSettingCreation event has incorrect creatorThoughtAdvocate"
 		);
+
+		try {
+			var result = await aosetting.finalizeSettingCreation(settingId16, { from: account1 });
+			canFinalize = true;
+			finalizeSettingCreationEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingCreationEvent = null;
+		}
+		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 	});
 
 	it("only the Advocate of setting's Associated Thought can approve/reject bool setting creation", async function() {
@@ -1250,6 +1379,17 @@ contract("AOSetting", function(accounts) {
 			false,
 			"canGetSettingIdByThoughtName() is successful even though setting creation is rejected"
 		);
+
+		// Approve settingId17
+		try {
+			var result = await aosetting.approveSettingCreation(settingId17, true, { from: account2 });
+			canApprove = true;
+			approveSettingCreationEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingCreationEvent = null;
+		}
+		assert.equal(canApprove, true, "Advocate of setting's Associated Thought can't approve setting creation");
 	});
 
 	it("only the Advocate of setting's Creator Thought can finalize bool setting creation", async function() {
@@ -1305,6 +1445,16 @@ contract("AOSetting", function(accounts) {
 			creatorThoughtNameId,
 			"FinalizeSettingCreation event has incorrect creatorThoughtAdvocate"
 		);
+
+		try {
+			var result = await aosetting.finalizeSettingCreation(settingId17, { from: account1 });
+			canFinalize = true;
+			finalizeSettingCreationEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingCreationEvent = null;
+		}
+		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 	});
 
 	it("only the Advocate of setting's Associated Thought can approve/reject address setting creation", async function() {
@@ -1387,6 +1537,17 @@ contract("AOSetting", function(accounts) {
 			false,
 			"canGetSettingIdByThoughtName() is successful even though setting creation is rejected"
 		);
+
+		// Approve settingId18
+		try {
+			var result = await aosetting.approveSettingCreation(settingId18, true, { from: account2 });
+			canApprove = true;
+			approveSettingCreationEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingCreationEvent = null;
+		}
+		assert.equal(canApprove, true, "Advocate of setting's Associated Thought can't approve setting creation");
 	});
 
 	it("only the Advocate of setting's Creator Thought can finalize address setting creation", async function() {
@@ -1442,6 +1603,16 @@ contract("AOSetting", function(accounts) {
 			creatorThoughtNameId,
 			"FinalizeSettingCreation event has incorrect creatorThoughtAdvocate"
 		);
+
+		try {
+			var result = await aosetting.finalizeSettingCreation(settingId18, { from: account1 });
+			canFinalize = true;
+			finalizeSettingCreationEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingCreationEvent = null;
+		}
+		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 	});
 
 	it("only the Advocate of setting's Associated Thought can approve/reject bytes setting creation", async function() {
@@ -1524,6 +1695,17 @@ contract("AOSetting", function(accounts) {
 			false,
 			"canGetSettingIdByThoughtName() is successful even though setting creation is rejected"
 		);
+
+		// Approve settingId19
+		try {
+			var result = await aosetting.approveSettingCreation(settingId19, true, { from: account2 });
+			canApprove = true;
+			approveSettingCreationEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingCreationEvent = null;
+		}
+		assert.equal(canApprove, true, "Advocate of setting's Associated Thought can't approve setting creation");
 	});
 
 	it("only the Advocate of setting's Creator Thought can finalize bytes setting creation", async function() {
@@ -1579,6 +1761,16 @@ contract("AOSetting", function(accounts) {
 			creatorThoughtNameId,
 			"FinalizeSettingCreation event has incorrect creatorThoughtAdvocate"
 		);
+
+		try {
+			var result = await aosetting.finalizeSettingCreation(settingId19, { from: account1 });
+			canFinalize = true;
+			finalizeSettingCreationEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingCreationEvent = null;
+		}
+		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 	});
 
 	it("only the Advocate of setting's Associated Thought can approve/reject string setting creation", async function() {
@@ -1661,6 +1853,17 @@ contract("AOSetting", function(accounts) {
 			false,
 			"canGetSettingIdByThoughtName() is successful even though setting creation is rejected"
 		);
+
+		// Approve settingId20
+		try {
+			var result = await aosetting.approveSettingCreation(settingId20, true, { from: account2 });
+			canApprove = true;
+			approveSettingCreationEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingCreationEvent = null;
+		}
+		assert.equal(canApprove, true, "Advocate of setting's Associated Thought can't approve setting creation");
 	});
 
 	it("only the Advocate of setting's Creator Thought can finalize string setting creation", async function() {
@@ -1716,6 +1919,16 @@ contract("AOSetting", function(accounts) {
 			creatorThoughtNameId,
 			"FinalizeSettingCreation event has incorrect creatorThoughtAdvocate"
 		);
+
+		try {
+			var result = await aosetting.finalizeSettingCreation(settingId20, { from: account1 });
+			canFinalize = true;
+			finalizeSettingCreationEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingCreationEvent = null;
+		}
+		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 	});
 
 	it("only the Advocate of setting's Associated Thought can update uint setting", async function() {
@@ -3046,5 +3259,238 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 		}
 		assert.equal(canFinalize, false, "Advocate can finalize rejected setting update");
+	});
+
+	it("only the Advocate of a Creator Thought can add setting deprecation", async function() {
+		var canAdd, settingDeprecationEvent, associatedThoughtSettingDeprecationId, creatorThoughtSettingDeprecationId;
+		try {
+			var result = await aosetting.addSettingDeprecation(
+				settingId1,
+				settingId16,
+				newSettingContractAddress,
+				nonThoughtId,
+				associatedThoughtId,
+				{
+					from: account1
+				}
+			);
+			canAdd = true;
+			settingDeprecationEvent = result.logs[0];
+			associatedThoughtSettingDeprecationId = settingDeprecationEvent.args.associatedThoughtSettingDeprecationId;
+			creatorThoughtSettingDeprecationId = settingDeprecationEvent.args.creatorThoughtSettingDeprecationId;
+		} catch (e) {
+			canAdd = false;
+			settingDeprecationEvent = null;
+			associatedThoughtSettingDeprecationId = null;
+			creatorThoughtSettingDeprecationId = null;
+		}
+		assert.equal(canAdd, false, "Can create deprecation using invalid Creator Thought");
+
+		try {
+			var result = await aosetting.addSettingDeprecation(
+				settingId1,
+				settingId16,
+				newSettingContractAddress,
+				creatorThoughtId,
+				nonThoughtId,
+				{
+					from: account1
+				}
+			);
+			canAdd = true;
+			settingDeprecationEvent = result.logs[0];
+			associatedThoughtSettingDeprecationId = settingDeprecationEvent.args.associatedThoughtSettingDeprecationId;
+			creatorThoughtSettingDeprecationId = settingDeprecationEvent.args.creatorThoughtSettingDeprecationId;
+		} catch (e) {
+			canAdd = false;
+			settingDeprecationEvent = null;
+			associatedThoughtSettingDeprecationId = null;
+			creatorThoughtSettingDeprecationId = null;
+		}
+		assert.equal(canAdd, false, "Can create deprecation using invalid Associated Thought");
+
+		try {
+			var result = await aosetting.addSettingDeprecation(
+				settingId1,
+				settingId17,
+				newSettingContractAddress,
+				creatorThoughtId,
+				associatedThoughtId,
+				{
+					from: account1
+				}
+			);
+			canAdd = true;
+			settingDeprecationEvent = result.logs[0];
+			associatedThoughtSettingDeprecationId = settingDeprecationEvent.args.associatedThoughtSettingDeprecationId;
+			creatorThoughtSettingDeprecationId = settingDeprecationEvent.args.creatorThoughtSettingDeprecationId;
+		} catch (e) {
+			canAdd = false;
+			settingDeprecationEvent = null;
+			associatedThoughtSettingDeprecationId = null;
+			creatorThoughtSettingDeprecationId = null;
+		}
+		assert.equal(canAdd, false, "Advocate can create setting deprecation and route setting to a non-matching setting type");
+
+		try {
+			var result = await aosetting.addSettingDeprecation(
+				settingId1,
+				settingId6,
+				newSettingContractAddress,
+				creatorThoughtId,
+				associatedThoughtId,
+				{
+					from: account1
+				}
+			);
+			canAdd = true;
+			settingDeprecationEvent = result.logs[0];
+			associatedThoughtSettingDeprecationId = settingDeprecationEvent.args.associatedThoughtSettingDeprecationId;
+			creatorThoughtSettingDeprecationId = settingDeprecationEvent.args.creatorThoughtSettingDeprecationId;
+		} catch (e) {
+			canAdd = false;
+			settingDeprecationEvent = null;
+			associatedThoughtSettingDeprecationId = null;
+			creatorThoughtSettingDeprecationId = null;
+		}
+		assert.equal(canAdd, false, "Advocate can create setting deprecation and route setting to rejected setting");
+
+		try {
+			var result = await aosetting.addSettingDeprecation(
+				settingId1,
+				settingId11,
+				newSettingContractAddress,
+				creatorThoughtId,
+				associatedThoughtId,
+				{
+					from: account1
+				}
+			);
+			canAdd = true;
+			settingDeprecationEvent = result.logs[0];
+			associatedThoughtSettingDeprecationId = settingDeprecationEvent.args.associatedThoughtSettingDeprecationId;
+			creatorThoughtSettingDeprecationId = settingDeprecationEvent.args.creatorThoughtSettingDeprecationId;
+		} catch (e) {
+			canAdd = false;
+			settingDeprecationEvent = null;
+			associatedThoughtSettingDeprecationId = null;
+			creatorThoughtSettingDeprecationId = null;
+		}
+		assert.equal(canAdd, false, "Advocate can create setting deprecation and route setting to non-approved setting");
+
+		try {
+			var result = await aosetting.addSettingDeprecation(
+				settingId1,
+				settingId16,
+				newSettingContractAddress,
+				creatorThoughtId,
+				associatedThoughtId,
+				{
+					from: account2
+				}
+			);
+			canAdd = true;
+			settingDeprecationEvent = result.logs[0];
+			associatedThoughtSettingDeprecationId = settingDeprecationEvent.args.associatedThoughtSettingDeprecationId;
+			creatorThoughtSettingDeprecationId = settingDeprecationEvent.args.creatorThoughtSettingDeprecationId;
+		} catch (e) {
+			canAdd = false;
+			settingDeprecationEvent = null;
+			associatedThoughtSettingDeprecationId = null;
+			creatorThoughtSettingDeprecationId = null;
+		}
+		assert.equal(canAdd, false, "Non-Advocate of setting's Creator Thought can create setting deprecation");
+
+		try {
+			var result = await aosetting.addSettingDeprecation(
+				settingId1,
+				settingId16,
+				newSettingContractAddress,
+				creatorThoughtId,
+				associatedThoughtId,
+				{
+					from: account1
+				}
+			);
+			canAdd = true;
+			settingDeprecationEvent = result.logs[0];
+			associatedThoughtSettingDeprecationId = settingDeprecationEvent.args.associatedThoughtSettingDeprecationId;
+			creatorThoughtSettingDeprecationId = settingDeprecationEvent.args.creatorThoughtSettingDeprecationId;
+		} catch (e) {
+			canAdd = false;
+			settingDeprecationEvent = null;
+			associatedThoughtSettingDeprecationId = null;
+			creatorThoughtSettingDeprecationId = null;
+		}
+		assert.equal(canAdd, true, "Advocate of Creator Thought can't create setting deprecation");
+
+		assert.equal(
+			settingDeprecationEvent.args.settingId.toNumber(),
+			settingId1.toNumber(),
+			"SettingDeprecation event has incorrect settingId"
+		);
+		assert.equal(
+			settingDeprecationEvent.args.creatorNameId,
+			creatorThoughtNameId,
+			"SettingDeprecation event has incorrect creatorNameId"
+		);
+		assert.equal(
+			settingDeprecationEvent.args.creatorThoughtId,
+			creatorThoughtId,
+			"SettingDeprecation event has incorrect creatorThoughtId"
+		);
+		assert.equal(
+			settingDeprecationEvent.args.associatedThoughtId,
+			associatedThoughtId,
+			"SettingDeprecation event has incorrect associatedThoughtId"
+		);
+		assert.equal(
+			settingDeprecationEvent.args.newSettingId.toNumber(),
+			settingId16.toNumber(),
+			"SettingDeprecation event has incorrect newSettingId"
+		);
+		assert.equal(
+			settingDeprecationEvent.args.newSettingContractAddress,
+			newSettingContractAddress,
+			"SettingDeprecation event has incorrect newSettingContractAddress"
+		);
+
+		var associatedThoughtSettingDeprecation = await aosettingattribute.getAssociatedThoughtSettingDeprecation(
+			associatedThoughtSettingDeprecationId
+		);
+		assert.equal(
+			associatedThoughtSettingDeprecation[0],
+			associatedThoughtSettingDeprecationId,
+			"getAssociatedThoughtSettingDeprecation returns incorrect associatedThoughtSettingDeprecationId"
+		);
+		assert.equal(
+			associatedThoughtSettingDeprecation[1],
+			associatedThoughtId,
+			"getAssociatedThoughtSettingDeprecation returns incorrect associatedThoughtId"
+		);
+		assert.equal(
+			associatedThoughtSettingDeprecation[2].toNumber(),
+			settingId1.toNumber(),
+			"getAssociatedThoughtSettingDeprecation returns incorrect settingId"
+		);
+
+		var creatorThoughtSettingDeprecation = await aosettingattribute.getCreatorThoughtSettingDeprecation(
+			creatorThoughtSettingDeprecationId
+		);
+		assert.equal(
+			creatorThoughtSettingDeprecation[0],
+			creatorThoughtSettingDeprecationId,
+			"getCreatorThoughtSettingDeprecation returns incorrect creatorThoughtSettingDeprecationId"
+		);
+		assert.equal(
+			creatorThoughtSettingDeprecation[1],
+			creatorThoughtId,
+			"getCreatorThoughtSettingDeprecation returns incorrect creatorThoughtId"
+		);
+		assert.equal(
+			creatorThoughtSettingDeprecation[2].toNumber(),
+			settingId1.toNumber(),
+			"getCreatorThoughtSettingDeprecation returns incorrect settingId"
+		);
 	});
 });
