@@ -1115,7 +1115,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingCreationEvent = null;
 		}
-		assert.equal(canFinalize, false, "Non-Advocate of Creator Thought can finalize non-existing setting creation");
+		assert.equal(canFinalize, false, "Non-Advocate of Creator Thought can finalize setting creation");
 
 		try {
 			var result = await aosetting.finalizeSettingCreation(settingId11, { from: account1 });
@@ -1262,7 +1262,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingCreationEvent = null;
 		}
-		assert.equal(canFinalize, false, "Non-Advocate of Creator Thought can finalize non-existing setting creation");
+		assert.equal(canFinalize, false, "Non-Advocate of Creator Thought can finalize setting creation");
 
 		try {
 			var result = await aosetting.finalizeSettingCreation(settingId7, { from: account1 });
@@ -1399,7 +1399,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingCreationEvent = null;
 		}
-		assert.equal(canFinalize, false, "Non-Advocate of Creator Thought can finalize non-existing setting creation");
+		assert.equal(canFinalize, false, "Non-Advocate of Creator Thought can finalize setting creation");
 
 		try {
 			var result = await aosetting.finalizeSettingCreation(settingId8, { from: account1 });
@@ -1536,7 +1536,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingCreationEvent = null;
 		}
-		assert.equal(canFinalize, false, "Non-Advocate of Creator Thought can finalize non-existing setting creation");
+		assert.equal(canFinalize, false, "Non-Advocate of Creator Thought can finalize setting creation");
 
 		try {
 			var result = await aosetting.finalizeSettingCreation(settingId9, { from: account1 });
@@ -1673,7 +1673,7 @@ contract("AOSetting", function(accounts) {
 			canFinalize = false;
 			finalizeSettingCreationEvent = null;
 		}
-		assert.equal(canFinalize, false, "Non-Advocate of Creator Thought can finalize non-existing setting creation");
+		assert.equal(canFinalize, false, "Non-Advocate of Creator Thought can finalize setting creation");
 
 		try {
 			var result = await aosetting.finalizeSettingCreation(settingId10, { from: account1 });
@@ -2445,5 +2445,121 @@ contract("AOSetting", function(accounts) {
 			"ApproveSettingUpdate has incorrect proposalThoughtAdvocate"
 		);
 		assert.equal(approveSettingUpdateEvent.args.approved, true, "ApproveSettingUpdate has incorrect approved");
+	});
+
+	it("only the Advocate of setting's Proposal Thought can approve string setting update", async function() {
+		var canApprove, approveSettingUpdateEvent;
+		try {
+			var result = await aosetting.approveSettingUpdate(settingId5, true, { from: account1 });
+			canApprove = true;
+			approveSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingUpdateEvent = null;
+		}
+		assert.equal(canApprove, false, "Non-Advocate of setting's Proposal Thought can approve setting update");
+
+		// Approve settingId5
+		try {
+			var result = await aosetting.approveSettingUpdate(settingId5, true, { from: account3 });
+			canApprove = true;
+			approveSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canApprove = false;
+			approveSettingUpdateEvent = null;
+		}
+		assert.equal(canApprove, true, "Advocate of setting's Proposal Thought can't approve setting update");
+
+		assert.equal(
+			approveSettingUpdateEvent.args.settingId.toNumber(),
+			settingId5.toNumber(),
+			"ApproveSettingUpdate has incorrect settingId"
+		);
+		assert.equal(
+			approveSettingUpdateEvent.args.proposalThoughtId,
+			proposalThoughtId,
+			"ApproveSettingUpdate has incorrect proposalThoughtId"
+		);
+		assert.equal(
+			approveSettingUpdateEvent.args.proposalThoughtAdvocate,
+			proposalThoughtNameId,
+			"ApproveSettingUpdate has incorrect proposalThoughtAdvocate"
+		);
+		assert.equal(approveSettingUpdateEvent.args.approved, true, "ApproveSettingUpdate has incorrect approved");
+	});
+
+	it("only the Advocate of setting's Associated Thought can finalize uint setting update", async function() {
+		var canFinalize, finalizeSettingUpdateEvent;
+		try {
+			var result = await aosetting.finalizeSettingUpdate(99, { from: account2 });
+			canFinalize = true;
+			finalizeSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingUpdateEvent = null;
+		}
+		assert.equal(canFinalize, false, "Advocate can finalize non-existing setting");
+
+		try {
+			var result = await aosetting.finalizeSettingUpdate(settingId1, { from: account1 });
+			canFinalize = true;
+			finalizeSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingUpdateEvent = null;
+		}
+		assert.equal(canFinalize, false, "Non-Advocate of Associated Thought can finalize setting update");
+
+		try {
+			var result = await aosetting.finalizeSettingUpdate(settingId11, { from: account2 });
+			canFinalize = true;
+			finalizeSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingUpdateEvent = null;
+		}
+		assert.equal(canFinalize, false, "Advocate can finalize update for non-approved setting");
+
+		try {
+			var result = await aosetting.finalizeSettingUpdate(settingId6, { from: account2 });
+			canFinalize = true;
+			finalizeSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingUpdateEvent = null;
+		}
+		assert.equal(canFinalize, false, "Advocate can finalize update for rejected setting");
+
+		try {
+			var result = await aosetting.finalizeSettingUpdate(settingId1, { from: account2 });
+			canFinalize = true;
+			finalizeSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingUpdateEvent = null;
+		}
+		assert.equal(canFinalize, true, "Advocate can't finalize rejected setting update");
+
+		var pendingValue = await aouintsetting.pendingValue(settingId1.toNumber());
+		assert.equal(pendingValue.toNumber(), 0, "Setting has incorrect pendingValue");
+
+		var settingValue = await aouintsetting.settingValue(settingId1.toNumber());
+		assert.equal(settingValue.toNumber(), uintValue, "Setting has incorrect settingValue");
+
+		assert.equal(
+			finalizeSettingUpdateEvent.args.settingId.toNumber(),
+			settingId1.toNumber(),
+			"FinalizeSettingUpdate event has incorrect settingId"
+		);
+		assert.equal(
+			finalizeSettingUpdateEvent.args.associatedThoughtId,
+			associatedThoughtId,
+			"FinalizeSettingUpdate event has incorrect associatedThoughtId"
+		);
+		assert.equal(
+			finalizeSettingUpdateEvent.args.associatedThoughtAdvocate,
+			associatedThoughtNameId,
+			"FinalizeSettingUpdate event has incorrect associatedThoughtAdvocate"
+		);
 	});
 });
