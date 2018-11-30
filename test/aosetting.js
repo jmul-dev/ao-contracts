@@ -2040,6 +2040,18 @@ contract("AOSetting", function(accounts) {
 			"SettingUpdate event has incorrect updateAdvocateNameId"
 		);
 		assert.equal(settingUpdateEvent.args.proposalThoughtId, proposalThoughtId, "SettingUpdate event has incorrect proposalThoughtId");
+
+		try {
+			var result = await aosetting.updateUintSetting(settingId1, uintValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update uint setting that is currently pending approval");
 	});
 
 	it("only the Advocate of setting's Associated Thought can update bool setting", async function() {
@@ -2151,6 +2163,18 @@ contract("AOSetting", function(accounts) {
 			"SettingUpdate event has incorrect updateAdvocateNameId"
 		);
 		assert.equal(settingUpdateEvent.args.proposalThoughtId, proposalThoughtId, "SettingUpdate event has incorrect proposalThoughtId");
+
+		try {
+			var result = await aosetting.updateBoolSetting(settingId2, boolValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update bool setting that is currently pending approval");
 	});
 
 	it("only the Advocate of setting's Associated Thought can update address setting", async function() {
@@ -2262,6 +2286,18 @@ contract("AOSetting", function(accounts) {
 			"SettingUpdate event has incorrect updateAdvocateNameId"
 		);
 		assert.equal(settingUpdateEvent.args.proposalThoughtId, proposalThoughtId, "SettingUpdate event has incorrect proposalThoughtId");
+
+		try {
+			var result = await aosetting.updateAddressSetting(settingId3, addressValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update address setting that is currently pending approval");
 	});
 
 	it("only the Advocate of setting's Associated Thought can update bytes setting", async function() {
@@ -2373,6 +2409,18 @@ contract("AOSetting", function(accounts) {
 			"SettingUpdate event has incorrect updateAdvocateNameId"
 		);
 		assert.equal(settingUpdateEvent.args.proposalThoughtId, proposalThoughtId, "SettingUpdate event has incorrect proposalThoughtId");
+
+		try {
+			var result = await aosetting.updateBytesSetting(settingId4, bytesValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update bytes setting that is currently pending approval");
 	});
 
 	it("only the Advocate of setting's Associated Thought can update string setting", async function() {
@@ -2484,6 +2532,18 @@ contract("AOSetting", function(accounts) {
 			"SettingUpdate event has incorrect updateAdvocateNameId"
 		);
 		assert.equal(settingUpdateEvent.args.proposalThoughtId, proposalThoughtId, "SettingUpdate event has incorrect proposalThoughtId");
+
+		try {
+			var result = await aosetting.updateStringSetting(settingId5, stringValue, proposalThoughtId, updateSignature, extraData, {
+				from: account2
+			});
+			canUpdate = true;
+			settingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canUpdate = false;
+			settingUpdateEvent = null;
+		}
+		assert.equal(canUpdate, false, "Advocate can update string setting that is currently pending approval");
 	});
 
 	it("only the Advocate of setting's Proposal Thought can approve uint setting update", async function() {
@@ -3595,5 +3655,74 @@ contract("AOSetting", function(accounts) {
 			"ApproveSettingDeprecation has incorrect associatedThoughtAdvocate"
 		);
 		assert.equal(approveSettingDeprecationEvent.args.approved, false, "ApproveSettingDeprecation has incorrect approved");
+	});
+
+	it("only the Advocate of setting's Creator Thought can finalize setting deprecation", async function() {
+		var canFinalize, finalizeSettingDeprecationEvent;
+		try {
+			var result = await aosetting.finalizeSettingDeprecation(99, { from: account1 });
+			canFinalize = true;
+			finalizeSettingDeprecationEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingDeprecationEvent = null;
+		}
+		assert.equal(canFinalize, false, "Advocate can finalize non-existing setting deprecation");
+
+		try {
+			var result = await aosetting.finalizeSettingDeprecation(settingId1, { from: account2 });
+			canFinalize = true;
+			finalizeSettingDeprecationEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingDeprecationEvent = null;
+		}
+		assert.equal(canFinalize, false, "Non-Advocate of Creator Thought can finalize setting deprecation");
+
+		try {
+			var result = await aosetting.finalizeSettingDeprecation(settingId3, { from: account1 });
+			canFinalize = true;
+			finalizeSettingDeprecationEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingDeprecationEvent = null;
+		}
+		assert.equal(canFinalize, false, "Advocate can finalize setting that has no deprecation");
+
+		try {
+			var result = await aosetting.finalizeSettingDeprecation(settingId2, { from: account1 });
+			canFinalize = true;
+			finalizeSettingDeprecationEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingDeprecationEvent = null;
+		}
+		assert.equal(canFinalize, false, "Advocate can finalize rejected setting deprecation");
+
+		try {
+			var result = await aosetting.finalizeSettingDeprecation(settingId1, { from: account1 });
+			canFinalize = true;
+			finalizeSettingDeprecationEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingDeprecationEvent = null;
+		}
+		assert.equal(canFinalize, true, "Advocate can't finalize setting deprecation");
+
+		assert.equal(
+			finalizeSettingDeprecationEvent.args.settingId.toNumber(),
+			settingId1.toNumber(),
+			"FinalizeSettingDeprecation event has incorrect settingId"
+		);
+		assert.equal(
+			finalizeSettingDeprecationEvent.args.creatorThoughtId,
+			creatorThoughtId,
+			"FinalizeSettingDeprecation event has incorrect creatorThoughtId"
+		);
+		assert.equal(
+			finalizeSettingDeprecationEvent.args.creatorThoughtAdvocate,
+			creatorThoughtNameId,
+			"FinalizeSettingDeprecation event has incorrect creatorThoughtAdvocate"
+		);
 	});
 });
