@@ -2692,4 +2692,69 @@ contract("AOSetting", function(accounts) {
 			"FinalizeSettingUpdate event has incorrect associatedThoughtAdvocate"
 		);
 	});
+
+	it("only the Advocate of setting's Associated Thought can finalize bytes setting update", async function() {
+		var canFinalize, finalizeSettingUpdateEvent;
+		try {
+			var result = await aosetting.finalizeSettingUpdate(settingId4, { from: account1 });
+			canFinalize = true;
+			finalizeSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingUpdateEvent = null;
+		}
+		assert.equal(canFinalize, false, "Non-Advocate of Associated Thought can finalize setting update");
+
+		try {
+			var result = await aosetting.finalizeSettingUpdate(settingId14, { from: account2 });
+			canFinalize = true;
+			finalizeSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingUpdateEvent = null;
+		}
+		assert.equal(canFinalize, false, "Advocate can finalize update for non-approved setting");
+
+		try {
+			var result = await aosetting.finalizeSettingUpdate(settingId9, { from: account2 });
+			canFinalize = true;
+			finalizeSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingUpdateEvent = null;
+		}
+		assert.equal(canFinalize, false, "Advocate can finalize update for rejected setting");
+
+		try {
+			var result = await aosetting.finalizeSettingUpdate(settingId4, { from: account2 });
+			canFinalize = true;
+			finalizeSettingUpdateEvent = result.logs[0];
+		} catch (e) {
+			canFinalize = false;
+			finalizeSettingUpdateEvent = null;
+		}
+		assert.equal(canFinalize, true, "Advocate can't finalize rejected setting update");
+
+		var pendingValue = await aobytessetting.pendingValue(settingId4.toNumber());
+		assert.equal(pendingValue, nullBytesValue, "Setting has incorrect pendingValue");
+
+		var settingValue = await aobytessetting.settingValue(settingId4.toNumber());
+		assert.notEqual(settingValue, nullBytesValue, "Setting has incorrect settingValue");
+
+		assert.equal(
+			finalizeSettingUpdateEvent.args.settingId.toNumber(),
+			settingId4.toNumber(),
+			"FinalizeSettingUpdate event has incorrect settingId"
+		);
+		assert.equal(
+			finalizeSettingUpdateEvent.args.associatedThoughtId,
+			associatedThoughtId,
+			"FinalizeSettingUpdate event has incorrect associatedThoughtId"
+		);
+		assert.equal(
+			finalizeSettingUpdateEvent.args.associatedThoughtAdvocate,
+			associatedThoughtNameId,
+			"FinalizeSettingUpdate event has incorrect associatedThoughtAdvocate"
+		);
+	});
 });
