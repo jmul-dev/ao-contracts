@@ -9,6 +9,7 @@ import './AOBoolSetting.sol';
 import './AOAddressSetting.sol';
 import './AOBytesSetting.sol';
 import './AOStringSetting.sol';
+import './AOLibrary.sol';
 
 /**
  * @title AOSetting
@@ -16,6 +17,13 @@ import './AOStringSetting.sol';
  * This contract stores all AO setting variables
  */
 contract AOSetting {
+	address public aoSettingAttributeAddress;
+	address public aoUintSettingAddress;
+	address public aoBoolSettingAddress;
+	address public aoAddressSettingAddress;
+	address public aoBytesSettingAddress;
+	address public aoStringSettingAddress;
+
 	NameFactory internal _nameFactory;
 	AOSettingAttribute internal _aoSettingAttribute;
 	AOUintSetting internal _aoUintSetting;
@@ -75,6 +83,12 @@ contract AOSetting {
 		address _aoAddressSettingAddress,
 		address _aoBytesSettingAddress,
 		address _aoStringSettingAddress) public {
+		aoSettingAttributeAddress = _aoSettingAttributeAddress;
+		aoUintSettingAddress = _aoUintSettingAddress;
+		aoBoolSettingAddress = _aoBoolSettingAddress;
+		aoAddressSettingAddress = _aoAddressSettingAddress;
+		aoBytesSettingAddress = _aoBytesSettingAddress;
+		aoStringSettingAddress = _aoStringSettingAddress;
 		_nameFactory = NameFactory(_nameFactoryAddress);
 		_aoSettingAttribute = AOSettingAttribute(_aoSettingAttributeAddress);
 		_aoUintSetting = AOUintSetting(_aoUintSettingAddress);
@@ -428,6 +442,20 @@ contract AOSetting {
 	function getSettingIdByThoughtName(address _associatedThoughtId, string _settingName) public view returns (uint256) {
 		require (settingNameExist(_settingName, _associatedThoughtId));
 		return nameSettingLookup[_associatedThoughtId][keccak256(abi.encodePacked(this, _settingName))];
+	}
+
+	/**
+	 * @dev Get setting values by setting ID.
+	 *		Will throw error if the setting is not exist or rejected.
+	 * @param _settingId The ID of the setting
+	 * @return the uint256 value of this setting ID
+	 * @return the bool value of this setting ID
+	 * @return the address value of this setting ID
+	 * @return the bytes32 value of this setting ID
+	 * @return the string value of this setting ID
+	 */
+	function getSettingValuesById(uint256 _settingId) public view returns (uint256, bool, address, bytes32, string) {
+		return AOLibrary.getSettingValuesById(aoSettingAttributeAddress, aoUintSettingAddress, aoBoolSettingAddress, aoAddressSettingAddress, aoBytesSettingAddress, aoStringSettingAddress, _settingId);
 	}
 
 	/***** Internal Method *****/

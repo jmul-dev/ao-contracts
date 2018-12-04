@@ -4,6 +4,12 @@ import './SafeMath.sol';
 import './AOTreasury.sol';
 import './AOContent.sol';
 import './AOEarning.sol';
+import './AOSettingAttribute.sol';
+import './AOUintSetting.sol';
+import './AOBoolSetting.sol';
+import './AOAddressSetting.sol';
+import './AOBytesSetting.sol';
+import './AOStringSetting.sol';
 
 /**
  * @title AOLibrary
@@ -370,5 +376,60 @@ library AOLibrary {
 	 */
 	function calculateMultiplierAfterConversion(uint256 _primordialBalance, uint256 _currentWeightedMultiplier, uint256 _amountToConvert) public pure returns (uint256) {
 		return _primordialBalance.mul(_currentWeightedMultiplier).div(_primordialBalance.add(_amountToConvert));
+	}
+
+	/**
+	 * @dev Get setting values by setting ID.
+	 *		Will throw error if the setting is not exist or rejected.
+	 * @param _aoSettingAttributeAddress The address of AOSettingAttribute
+	 * @param _aoUintSettingAddress The address of AOUintSetting
+	 * @param _aoBoolSettingAddress The address of AOBoolSetting
+	 * @param _aoAddressSettingAddress The address of AOAddressSetting
+	 * @param _aoBytesSettingAddress The address of AOBytesSetting
+	 * @param _aoStringSettingAddress The address of AOStringSetting
+	 * @param _settingId The ID of the setting
+	 * @return the uint256 value of this setting ID
+	 * @return the bool value of this setting ID
+	 * @return the address value of this setting ID
+	 * @return the bytes32 value of this setting ID
+	 * @return the string value of this setting ID
+	 */
+	function getSettingValuesById(address _aoSettingAttributeAddress, address _aoUintSettingAddress, address _aoBoolSettingAddress, address _aoAddressSettingAddress, address _aoBytesSettingAddress, address _aoStringSettingAddress, uint256 _settingId) public view returns (uint256, bool, address, bytes32, string) {
+		require (_settingExist(_aoSettingAttributeAddress, _settingId));
+
+		_settingId = _getLatestSettingId(_aoSettingAttributeAddress, _settingId);
+		return (
+			AOUintSetting(_aoUintSettingAddress).settingValue(_settingId),
+			AOBoolSetting(_aoBoolSettingAddress).settingValue(_settingId),
+			AOAddressSetting(_aoAddressSettingAddress).settingValue(_settingId),
+			AOBytesSetting(_aoBytesSettingAddress).settingValue(_settingId),
+			AOStringSetting(_aoStringSettingAddress).settingValue(_settingId)
+		);
+	}
+
+	/***** Internal Methods *****/
+	/**
+	 * @dev Check if a setting exist and not rejected
+	 * @param _aoSettingAttributeAddress The address of AOSettingAttribute
+	 * @param _settingId The ID of the setting
+	 * @return true if exist. false otherwise
+	 */
+	function _settingExist(address _aoSettingAttributeAddress, uint256 _settingId) public view returns (bool) {
+		(uint256 settingId,,,,,,,, bool _rejected,) = AOSettingAttribute(_aoSettingAttributeAddress).getSettingData(_settingId);
+		return (settingId == _settingId && _rejected == false);
+	}
+
+	/**
+	 * @dev Get the latest ID of a deprecated setting, if exist
+	 * @param _aoSettingAttributeAddress The address of AOSettingAttribute
+	 * @param _settingId The ID of the setting
+	 * @return The latest setting ID
+	 */
+	function _getLatestSettingId(address _aoSettingAttributeAddress, uint256 _settingId) public view returns (uint256) {
+		(,,,,,,, bool _migrated,, uint256 _newSettingId,,) = AOSettingAttribute(_aoSettingAttributeAddress).getSettingDeprecation(_settingId);
+		while (_migrated && _newSettingId > 0) {
+			_settingId = _newSettingId;
+		}
+		return _settingId;
 	}
 }

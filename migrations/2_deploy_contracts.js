@@ -92,6 +92,7 @@ module.exports = function(deployer, network, accounts) {
 	deployer.link(AOLibrary, AOYotta);
 	deployer.link(AOLibrary, AOXona);
 	deployer.link(AOLibrary, AOContent);
+	deployer.link(AOLibrary, AOSetting);
 
 	deployer.deploy([
 		[AOToken, 0, "AO Token", "AOTKN"],
