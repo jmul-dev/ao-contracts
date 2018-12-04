@@ -20,14 +20,14 @@ module.exports = {
 			host: "127.0.0.1",
 			port: 8545,
 			network_id: "*",
-			gas: 6500000
+			gas: 6800000
 		},
 		ropsten: {
 			host: "localhost", // Connect to geth on the specified
 			port: 8545,
 			from: "0x52af6e29eefd251d37028c9f8254724ac54422cd", // default address to use for any transaction Truffle makes during migrations
 			network_id: 3,
-			gas: 6500000, // Gas limit used for deploys,
+			gas: 6800000, // Gas limit used for deploys,
 			gasPrice: 10000000000 // 10 Gwei
 		},
 		rinkeby: {
@@ -35,7 +35,7 @@ module.exports = {
 			port: 8545,
 			from: "0xcccf4699bbdcf30c8f310d19f5e07c8098665f18", // default address to use for any transaction Truffle makes during migrations
 			network_id: 4,
-			gas: 6500000, // Gas limit used for deploys,
+			gas: 6800000, // Gas limit used for deploys,
 			gasPrice: 10000000000 // 10 Gwei
 		}
 	},
