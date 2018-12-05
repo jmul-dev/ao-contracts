@@ -458,6 +458,21 @@ contract AOSetting {
 		return AOLibrary.getSettingValuesById(aoSettingAttributeAddress, aoUintSettingAddress, aoBoolSettingAddress, aoAddressSettingAddress, aoBytesSettingAddress, aoStringSettingAddress, _settingId);
 	}
 
+	/**
+	 * @dev Get setting values by thoughtId and settingName.
+	 *		Will throw error if the setting is not exist or rejected.
+	 * @param _thoughtId The ID of the Thought
+	 * @param _settingName The name of the setting
+	 * @return the uint256 value of this setting ID
+	 * @return the bool value of this setting ID
+	 * @return the address value of this setting ID
+	 * @return the bytes32 value of this setting ID
+	 * @return the string value of this setting ID
+	 */
+	function getSettingValuesByThoughtName(address _thoughtId, string _settingName) public view returns (uint256, bool, address, bytes32, string) {
+		return AOLibrary.getSettingValuesById(aoSettingAttributeAddress, aoUintSettingAddress, aoBoolSettingAddress, aoAddressSettingAddress, aoBytesSettingAddress, aoStringSettingAddress, getSettingIdByThoughtName(_thoughtId, _settingName));
+	}
+
 	/***** Internal Method *****/
 	/**
 	 * @dev Store setting creation data
