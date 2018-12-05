@@ -288,7 +288,7 @@ contract("AOSetting", function(accounts) {
 
 		// Add settingId16
 		try {
-			var result = await aosetting.addUintSetting("uintSetting4", uintValue, creatorThoughtId, associatedThoughtId, extraData, {
+			var result = await aosetting.addUintSetting("uintSetting4", 91273, creatorThoughtId, associatedThoughtId, extraData, {
 				from: account1
 			});
 			canAdd = true;
@@ -1297,6 +1297,9 @@ contract("AOSetting", function(accounts) {
 			finalizeSettingCreationEvent = null;
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
+
+		var settingValues = await aosetting.getSettingValuesById(settingId1.toNumber());
+		assert.equal(settingValues[0].toNumber(), uintValue, "getSettingValuesById() return incorrect uint256 value");
 	});
 
 	it("only the Advocate of setting's Associated Thought can approve/reject bool setting creation", async function() {
@@ -1455,6 +1458,9 @@ contract("AOSetting", function(accounts) {
 			finalizeSettingCreationEvent = null;
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
+
+		var settingValues = await aosetting.getSettingValuesById(settingId2.toNumber());
+		assert.equal(settingValues[1], boolValue, "getSettingValuesById() return incorrect bool value");
 	});
 
 	it("only the Advocate of setting's Associated Thought can approve/reject address setting creation", async function() {
@@ -1613,6 +1619,9 @@ contract("AOSetting", function(accounts) {
 			finalizeSettingCreationEvent = null;
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
+
+		var settingValues = await aosetting.getSettingValuesById(settingId3.toNumber());
+		assert.equal(settingValues[2], addressValue, "getSettingValuesById() return incorrect address value");
 	});
 
 	it("only the Advocate of setting's Associated Thought can approve/reject bytes setting creation", async function() {
@@ -1771,6 +1780,9 @@ contract("AOSetting", function(accounts) {
 			finalizeSettingCreationEvent = null;
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
+
+		var settingValues = await aosetting.getSettingValuesById(settingId4.toNumber());
+		assert.notEqual(settingValues[3], nullBytesValue, "getSettingValuesById() return incorrect bytes32 value");
 	});
 
 	it("only the Advocate of setting's Associated Thought can approve/reject string setting creation", async function() {
@@ -1929,6 +1941,9 @@ contract("AOSetting", function(accounts) {
 			finalizeSettingCreationEvent = null;
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
+
+		var settingValues = await aosetting.getSettingValuesById(settingId5.toNumber());
+		assert.equal(settingValues[4], stringValue, "getSettingValuesById() return incorrect string value");
 	});
 
 	it("only the Advocate of setting's Associated Thought can update uint setting", async function() {
@@ -2834,6 +2849,9 @@ contract("AOSetting", function(accounts) {
 			associatedThoughtNameId,
 			"FinalizeSettingUpdate event has incorrect associatedThoughtAdvocate"
 		);
+
+		var settingValues = await aosetting.getSettingValuesById(settingId1.toNumber());
+		assert.equal(settingValues[0].toNumber(), uintValue, "getSettingValuesById() return incorrect uint256 value");
 	});
 
 	it("only the Advocate of setting's Associated Thought can finalize bool setting update", async function() {
@@ -2899,6 +2917,9 @@ contract("AOSetting", function(accounts) {
 			associatedThoughtNameId,
 			"FinalizeSettingUpdate event has incorrect associatedThoughtAdvocate"
 		);
+
+		var settingValues = await aosetting.getSettingValuesById(settingId2.toNumber());
+		assert.equal(settingValues[1], boolValue, "getSettingValuesById() return incorrect bool value");
 	});
 
 	it("only the Advocate of setting's Associated Thought can finalize address setting update", async function() {
@@ -2964,6 +2985,9 @@ contract("AOSetting", function(accounts) {
 			associatedThoughtNameId,
 			"FinalizeSettingUpdate event has incorrect associatedThoughtAdvocate"
 		);
+
+		var settingValues = await aosetting.getSettingValuesById(settingId3.toNumber());
+		assert.equal(settingValues[2], addressValue, "getSettingValuesById() return incorrect address value");
 	});
 
 	it("only the Advocate of setting's Associated Thought can finalize bytes setting update", async function() {
@@ -3029,6 +3053,9 @@ contract("AOSetting", function(accounts) {
 			associatedThoughtNameId,
 			"FinalizeSettingUpdate event has incorrect associatedThoughtAdvocate"
 		);
+
+		var settingValues = await aosetting.getSettingValuesById(settingId4.toNumber());
+		assert.notEqual(settingValues[3], nullBytesValue, "getSettingValuesById() return incorrect bytes32 value");
 	});
 
 	it("only the Advocate of setting's Associated Thought can finalize string setting update", async function() {
@@ -3094,6 +3121,9 @@ contract("AOSetting", function(accounts) {
 			associatedThoughtNameId,
 			"FinalizeSettingUpdate event has incorrect associatedThoughtAdvocate"
 		);
+
+		var settingValues = await aosetting.getSettingValuesById(settingId5.toNumber());
+		assert.equal(settingValues[4], stringValue, "getSettingValuesById() return incorrect string value");
 	});
 
 	it("only the Advocate of setting's Proposal Thought can reject uint setting update", async function() {
@@ -3723,6 +3753,14 @@ contract("AOSetting", function(accounts) {
 			finalizeSettingDeprecationEvent.args.creatorThoughtAdvocate,
 			creatorThoughtNameId,
 			"FinalizeSettingDeprecation event has incorrect creatorThoughtAdvocate"
+		);
+
+		var settingId1Values = await aosetting.getSettingValuesById(settingId1.toNumber());
+		var settingId16Value = await aouintsetting.settingValue(settingId16.toNumber());
+		assert.equal(
+			settingId1Values[0].toNumber(),
+			settingId16Value.toNumber(),
+			"getSettingValuesById() return incorrect uint256 value for deprecated setting"
 		);
 	});
 

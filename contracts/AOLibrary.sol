@@ -429,6 +429,7 @@ library AOLibrary {
 		(,,,,,,, bool _migrated,, uint256 _newSettingId,,) = AOSettingAttribute(_aoSettingAttributeAddress).getSettingDeprecation(_settingId);
 		while (_migrated && _newSettingId > 0) {
 			_settingId = _newSettingId;
+			(,,,,,,, _migrated,, _newSettingId,,) = AOSettingAttribute(_aoSettingAttributeAddress).getSettingDeprecation(_settingId);
 		}
 		return _settingId;
 	}
