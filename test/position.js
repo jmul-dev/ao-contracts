@@ -33,11 +33,6 @@ contract("Position", function(accounts) {
 			maxSupplyPerName = await position.MAX_SUPPLY_PER_NAME();
 			assert.equal(maxSupplyPerName.toNumber(), 100 * 10 ** 4, "Contract has incorrect MAX_SUPPLY_PER_NAME");
 		});
-
-		it("should have 0 total supply", async function() {
-			var totalSupply = await position.totalSupply();
-			assert.equal(totalSupply.toNumber(), 0, "Contract has incorrect total supply");
-		});
 	});
 	contract("Public Function Tests", function() {
 		before(async function() {
