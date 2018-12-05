@@ -5,7 +5,7 @@ contract("AOBoolSetting", function(accounts) {
 	var developer = accounts[0];
 	var account1 = accounts[1];
 	var whitelistedAccount = accounts[2];
-	var settingId = 1;
+	var settingId = 1000000000;
 	var settingValue = true;
 
 	before(async function() {

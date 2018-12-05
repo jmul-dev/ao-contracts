@@ -5,12 +5,18 @@ import './developed.sol';
 import './TokenERC20.sol';
 import './tokenRecipient.sol';
 import './AOLibrary.sol';
+import './AOSetting.sol';
 
 /**
  * @title AOToken
  */
 contract AOToken is developed, TokenERC20 {
 	using SafeMath for uint256;
+
+	address public settingThoughtId;
+	address public aoSettingAddress;
+
+	AOSetting internal _aoSetting;
 
 	// To differentiate denomination of AO
 	uint256 public powerOfTen;
@@ -131,8 +137,12 @@ contract AOToken is developed, TokenERC20 {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol)
+	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _settingThoughtId, address _aoSettingAddress)
 		TokenERC20(initialSupply, tokenName, tokenSymbol) public {
+		settingThoughtId = _settingThoughtId;
+		aoSettingAddress = _aoSettingAddress;
+		_aoSetting = AOSetting(_aoSettingAddress);
+
 		powerOfTen = 0;
 		decimals = 0;
 		networkExchangeContract = true;

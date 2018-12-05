@@ -1,5 +1,28 @@
 var AOLibrary = artifacts.require("./AOLibrary.sol");
 
+// Thought Currencies
+var Logos = artifacts.require("./Logos.sol");
+var Ethos = artifacts.require("./Ethos.sol");
+var Pathos = artifacts.require("./Pathos.sol");
+var AntiLogos = artifacts.require("./AntiLogos.sol");
+var AntiEthos = artifacts.require("./AntiEthos.sol");
+var AntiPathos = artifacts.require("./AntiPathos.sol");
+
+// Name/Thought Contracts
+var Position = artifacts.require("./Position.sol");
+var NameFactory = artifacts.require("./NameFactory.sol");
+var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
+var ThoughtPosition = artifacts.require("./ThoughtPosition.sol");
+
+// Settings
+var AOSettingAttribute = artifacts.require("./AOSettingAttribute.sol");
+var AOUintSetting = artifacts.require("./AOUintSetting.sol");
+var AOBoolSetting = artifacts.require("./AOBoolSetting.sol");
+var AOAddressSetting = artifacts.require("./AOAddressSetting.sol");
+var AOBytesSetting = artifacts.require("./AOBytesSetting.sol");
+var AOStringSetting = artifacts.require("./AOStringSetting.sol");
+var AOSetting = artifacts.require("./AOSetting.sol");
+
 // AO and its denominations
 var AOToken = artifacts.require("./AOToken.sol");
 var AOKilo = artifacts.require("./AOKilo.sol");
@@ -17,27 +40,8 @@ var AOTreasury = artifacts.require("./AOTreasury.sol");
 var AOContent = artifacts.require("./AOContent.sol");
 var AOEarning = artifacts.require("./AOEarning.sol");
 
-// Thought Currencies
-var Logos = artifacts.require("./Logos.sol");
-var Ethos = artifacts.require("./Ethos.sol");
-var Pathos = artifacts.require("./Pathos.sol");
-var AntiLogos = artifacts.require("./AntiLogos.sol");
-var AntiEthos = artifacts.require("./AntiEthos.sol");
-var AntiPathos = artifacts.require("./AntiPathos.sol");
-
-var Position = artifacts.require("./Position.sol");
-var NameFactory = artifacts.require("./NameFactory.sol");
-var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
-var ThoughtPosition = artifacts.require("./ThoughtPosition.sol");
-
+// AO Pool
 var AOPool = artifacts.require("./AOPool.sol");
-var AOSettingAttribute = artifacts.require("./AOSettingAttribute.sol");
-var AOUintSetting = artifacts.require("./AOUintSetting.sol");
-var AOBoolSetting = artifacts.require("./AOBoolSetting.sol");
-var AOAddressSetting = artifacts.require("./AOAddressSetting.sol");
-var AOBytesSetting = artifacts.require("./AOBytesSetting.sol");
-var AOStringSetting = artifacts.require("./AOStringSetting.sol");
-var AOSetting = artifacts.require("./AOSetting.sol");
 
 module.exports = function(deployer, network, accounts) {
 	var primordialAccount, settingAccount, primordialNameId, settingNameId, primordialThoughtId, settingThoughtId;
@@ -83,6 +87,7 @@ module.exports = function(deployer, network, accounts) {
 		aosetting;
 
 	deployer.deploy(AOLibrary);
+	deployer.link(AOLibrary, AOSetting);
 	deployer.link(AOLibrary, AOToken);
 	deployer.link(AOLibrary, AOKilo);
 	deployer.link(AOLibrary, AOMega);
@@ -94,20 +99,8 @@ module.exports = function(deployer, network, accounts) {
 	deployer.link(AOLibrary, AOYotta);
 	deployer.link(AOLibrary, AOXona);
 	deployer.link(AOLibrary, AOContent);
-	deployer.link(AOLibrary, AOSetting);
 
 	deployer.deploy([
-		[AOToken, 0, "AO Token", "AOTKN"],
-		[AOKilo, 0, "AO Kilo", "AOKILO"],
-		[AOMega, 0, "AO Mega", "AOMEGA"],
-		[AOGiga, 0, "AO Giga", "AOGIGA"],
-		[AOTera, 0, "AO Tera", "AOTERA"],
-		[AOPeta, 0, "AO Peta", "AOPETA"],
-		[AOExa, 0, "AO Exa", "AOEXA"],
-		[AOZetta, 0, "AO Zetta", "AOZETTA"],
-		[AOYotta, 0, "AO Yotta", "AOYOTTA"],
-		[AOXona, 0, "AO Xona", "AOXONA"],
-		AOTreasury,
 		[Logos, 0, "Logos", "LOGOS", "logos"],
 		[Ethos, 0, "Ethos", "ETHOS", "ethos"],
 		[Pathos, 0, "Pathos", "PATHOS", "antipathos"],
@@ -126,17 +119,6 @@ module.exports = function(deployer, network, accounts) {
 	deployer
 		.then(async function() {
 			aolibrary = await AOLibrary.deployed();
-			aotoken = await AOToken.deployed();
-			aokilo = await AOKilo.deployed();
-			aomega = await AOMega.deployed();
-			aogiga = await AOGiga.deployed();
-			aotera = await AOTera.deployed();
-			aopeta = await AOPeta.deployed();
-			aoexa = await AOExa.deployed();
-			aozetta = await AOZetta.deployed();
-			aoyotta = await AOYotta.deployed();
-			aoxona = await AOXona.deployed();
-			aotreasury = await AOTreasury.deployed();
 			logos = await Logos.deployed();
 			ethos = await Ethos.deployed();
 			pathos = await Pathos.deployed();
@@ -151,30 +133,6 @@ module.exports = function(deployer, network, accounts) {
 			aobytessetting = await AOBytesSetting.deployed();
 			aostringsetting = await AOStringSetting.deployed();
 
-			// Store AO denominations in the treasury contract
-			await aotreasury.addDenomination("ao", aotoken.address, { from: primordialAccount });
-			await aotreasury.addDenomination("kilo", aokilo.address, { from: primordialAccount });
-			await aotreasury.addDenomination("mega", aomega.address, { from: primordialAccount });
-			await aotreasury.addDenomination("giga", aogiga.address, { from: primordialAccount });
-			await aotreasury.addDenomination("tera", aotera.address, { from: primordialAccount });
-			await aotreasury.addDenomination("peta", aopeta.address, { from: primordialAccount });
-			await aotreasury.addDenomination("exa", aoexa.address, { from: primordialAccount });
-			await aotreasury.addDenomination("zetta", aozetta.address, { from: primordialAccount });
-			await aotreasury.addDenomination("yotta", aoyotta.address, { from: primordialAccount });
-			await aotreasury.addDenomination("xona", aoxona.address, { from: primordialAccount });
-
-			// Grant access to aotreasury to transact on behalf of others on all AO Tokens denominations
-			await aotoken.setWhitelist(aotreasury.address, true, { from: primordialAccount });
-			await aokilo.setWhitelist(aotreasury.address, true, { from: primordialAccount });
-			await aomega.setWhitelist(aotreasury.address, true, { from: primordialAccount });
-			await aogiga.setWhitelist(aotreasury.address, true, { from: primordialAccount });
-			await aotera.setWhitelist(aotreasury.address, true, { from: primordialAccount });
-			await aopeta.setWhitelist(aotreasury.address, true, { from: primordialAccount });
-			await aoexa.setWhitelist(aotreasury.address, true, { from: primordialAccount });
-			await aozetta.setWhitelist(aotreasury.address, true, { from: primordialAccount });
-			await aoyotta.setWhitelist(aotreasury.address, true, { from: primordialAccount });
-			await aoxona.setWhitelist(aotreasury.address, true, { from: primordialAccount });
-
 			return deployer.deploy(NameFactory, position.address);
 		})
 		.then(async function() {
@@ -182,74 +140,6 @@ module.exports = function(deployer, network, accounts) {
 
 			// position grant access to namefactory
 			await position.setWhitelist(namefactory.address, true, { from: primordialAccount });
-
-			return deployer.deploy(ThoughtFactory, namefactory.address, position.address);
-		})
-		.then(async function() {
-			thoughtfactory = await ThoughtFactory.deployed();
-
-			return deployer.deploy(ThoughtPosition, namefactory.address, position.address);
-		})
-		.then(async function() {
-			thoughtposition = await ThoughtPosition.deployed();
-
-			// position grant access to thoughtposition
-			await position.setWhitelist(thoughtposition.address, true, { from: primordialAccount });
-
-			return deployer.deploy(AOPool, aotoken.address);
-		})
-		.then(async function() {
-			aopool = await AOPool.deployed();
-
-			// Grant access to aopool to transact on behalf of others on base denomination
-			await aotoken.setWhitelist(aopool.address, true, { from: primordialAccount });
-
-			// Create test pools for testing exchanges
-			// Pool #1
-			// price: 10000
-			// status: true (active)
-			// sellCapStatus: no
-			// quantityCapStatus: no
-			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, false, "", false, "", false, "", "", { from: primordialAccount });
-
-			// Pool #2
-			// price: 10000
-			// status: true (active)
-			// sellCapStatus: yes
-			// sellCapAmount: 10000000
-			// quantityCapStatus: no
-			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, true, 10000000, false, "", false, "", "", { from: primordialAccount });
-
-			// Pool #3
-			// price: 10000
-			// status: true (active)
-			// sellCapStatus: no
-			// quantityCapStatus: yes
-			// quantityCapAmount: 5000
-			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, false, "", true, 5000, false, "", "", { from: primordialAccount });
-
-			// Pool #4
-			// price: 10000
-			// status: true (active)
-			// sellCapStatus: yes
-			// sellCapAmount: 10000000
-			// quantityCapStatus: yes
-			// quantityCapAmount: 5000
-			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, true, 10000000, true, 5000, false, "", "", { from: primordialAccount });
-
-			// Pool #5
-			// price: 10000
-			// status: false (inactive)
-			// sellCapStatus: yes
-			// sellCapAmount: 10000000
-			// quantityCapStatus: yes
-			// quantityCapAmount: 5000
-			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, false, true, 10000000, true, 5000, false, "", "", { from: primordialAccount });
 
 			/**
 			 * Create Primordial Name and Associated Name
@@ -273,6 +163,30 @@ module.exports = function(deployer, network, accounts) {
 				console.log("Unable to create Associated Name", e);
 				return;
 			}
+
+			// Deploy ThoughtFactory, ThoughtPosition, AOSetting
+			return deployer.deploy([
+				[ThoughtFactory, namefactory.address, position.address],
+				[ThoughtPosition, namefactory.address, position.address],
+				[
+					AOSetting,
+					namefactory.address,
+					aosettingattribute.address,
+					aouintsetting.address,
+					aoboolsetting.address,
+					aoaddresssetting.address,
+					aobytessetting.address,
+					aostringsetting.address
+				]
+			]);
+		})
+		.then(async function() {
+			thoughtfactory = await ThoughtFactory.deployed();
+			thoughtposition = await ThoughtPosition.deployed();
+			aosetting = await AOSetting.deployed();
+
+			// position grant access to thoughtposition
+			await position.setWhitelist(thoughtposition.address, true, { from: primordialAccount });
 
 			/**
 			 * Create Primordial Thought and Associated Thought that proposes Content Usage Setting creation
@@ -298,20 +212,6 @@ module.exports = function(deployer, network, accounts) {
 				console.log("Unable to create Associated Thought", e);
 				return;
 			}
-
-			return deployer.deploy(
-				AOSetting,
-				namefactory.address,
-				aosettingattribute.address,
-				aouintsetting.address,
-				aoboolsetting.address,
-				aoaddresssetting.address,
-				aobytessetting.address,
-				aostringsetting.address
-			);
-		})
-		.then(async function() {
-			aosetting = await AOSetting.deployed();
 
 			// Grant access to aosetting
 			await aosettingattribute.setWhitelist(aosetting.address, true, { from: primordialAccount });
@@ -382,18 +282,116 @@ module.exports = function(deployer, network, accounts) {
 				console.log("Unable to add MULTIPLIER_DIVISOR setting", e);
 			}
 
-			return deployer.deploy(
-				AOEarning,
-				settingThoughtId,
-				aosetting.address,
-				aotoken.address,
-				aotreasury.address,
-				pathos.address,
-				antilogos.address
-			);
+			// Deploy AOToken and all of the denominations
+			return deployer.deploy([
+				[AOToken, 0, "AO Token", "AOTKN", settingThoughtId, aosetting.address],
+				[AOKilo, 0, "AO Kilo", "AOKILO", settingThoughtId, aosetting.address],
+				[AOMega, 0, "AO Mega", "AOMEGA", settingThoughtId, aosetting.address],
+				[AOGiga, 0, "AO Giga", "AOGIGA", settingThoughtId, aosetting.address],
+				[AOTera, 0, "AO Tera", "AOTERA", settingThoughtId, aosetting.address],
+				[AOPeta, 0, "AO Peta", "AOPETA", settingThoughtId, aosetting.address],
+				[AOExa, 0, "AO Exa", "AOEXA", settingThoughtId, aosetting.address],
+				[AOZetta, 0, "AO Zetta", "AOZETTA", settingThoughtId, aosetting.address],
+				[AOYotta, 0, "AO Yotta", "AOYOTTA", settingThoughtId, aosetting.address],
+				[AOXona, 0, "AO Xona", "AOXONA", settingThoughtId, aosetting.address],
+				AOTreasury
+			]);
 		})
 		.then(async function() {
+			aotoken = await AOToken.deployed();
+			aokilo = await AOKilo.deployed();
+			aomega = await AOMega.deployed();
+			aogiga = await AOGiga.deployed();
+			aotera = await AOTera.deployed();
+			aopeta = await AOPeta.deployed();
+			aoexa = await AOExa.deployed();
+			aozetta = await AOZetta.deployed();
+			aoyotta = await AOYotta.deployed();
+			aoxona = await AOXona.deployed();
+			aotreasury = await AOTreasury.deployed();
+
+			// Store AO denominations in the treasury contract
+			await aotreasury.addDenomination("ao", aotoken.address, { from: primordialAccount });
+			await aotreasury.addDenomination("kilo", aokilo.address, { from: primordialAccount });
+			await aotreasury.addDenomination("mega", aomega.address, { from: primordialAccount });
+			await aotreasury.addDenomination("giga", aogiga.address, { from: primordialAccount });
+			await aotreasury.addDenomination("tera", aotera.address, { from: primordialAccount });
+			await aotreasury.addDenomination("peta", aopeta.address, { from: primordialAccount });
+			await aotreasury.addDenomination("exa", aoexa.address, { from: primordialAccount });
+			await aotreasury.addDenomination("zetta", aozetta.address, { from: primordialAccount });
+			await aotreasury.addDenomination("yotta", aoyotta.address, { from: primordialAccount });
+			await aotreasury.addDenomination("xona", aoxona.address, { from: primordialAccount });
+
+			// Grant access to aotreasury to transact on behalf of others on all AO Tokens denominations
+			await aotoken.setWhitelist(aotreasury.address, true, { from: primordialAccount });
+			await aokilo.setWhitelist(aotreasury.address, true, { from: primordialAccount });
+			await aomega.setWhitelist(aotreasury.address, true, { from: primordialAccount });
+			await aogiga.setWhitelist(aotreasury.address, true, { from: primordialAccount });
+			await aotera.setWhitelist(aotreasury.address, true, { from: primordialAccount });
+			await aopeta.setWhitelist(aotreasury.address, true, { from: primordialAccount });
+			await aoexa.setWhitelist(aotreasury.address, true, { from: primordialAccount });
+			await aozetta.setWhitelist(aotreasury.address, true, { from: primordialAccount });
+			await aoyotta.setWhitelist(aotreasury.address, true, { from: primordialAccount });
+			await aoxona.setWhitelist(aotreasury.address, true, { from: primordialAccount });
+
+			return deployer.deploy([
+				[AOPool, aotoken.address],
+				[AOEarning, settingThoughtId, aosetting.address, aotoken.address, aotreasury.address, pathos.address, antilogos.address]
+			]);
+		})
+		.then(async function() {
+			aopool = await AOPool.deployed();
 			aoearning = await AOEarning.deployed();
+
+			// Grant access to aopool to transact on behalf of others on base denomination
+			await aotoken.setWhitelist(aopool.address, true, { from: primordialAccount });
+
+			// Create test pools for testing exchanges
+			// Pool #1
+			// price: 10000
+			// status: true (active)
+			// sellCapStatus: no
+			// quantityCapStatus: no
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, true, false, "", false, "", false, "", "", { from: primordialAccount });
+
+			// Pool #2
+			// price: 10000
+			// status: true (active)
+			// sellCapStatus: yes
+			// sellCapAmount: 10000000
+			// quantityCapStatus: no
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, true, true, 10000000, false, "", false, "", "", { from: primordialAccount });
+
+			// Pool #3
+			// price: 10000
+			// status: true (active)
+			// sellCapStatus: no
+			// quantityCapStatus: yes
+			// quantityCapAmount: 5000
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, true, false, "", true, 5000, false, "", "", { from: primordialAccount });
+
+			// Pool #4
+			// price: 10000
+			// status: true (active)
+			// sellCapStatus: yes
+			// sellCapAmount: 10000000
+			// quantityCapStatus: yes
+			// quantityCapAmount: 5000
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, true, true, 10000000, true, 5000, false, "", "", { from: primordialAccount });
+
+			// Pool #5
+			// price: 10000
+			// status: false (inactive)
+			// sellCapStatus: yes
+			// sellCapAmount: 10000000
+			// quantityCapStatus: yes
+			// quantityCapAmount: 5000
+			// erc20CounterAsset: false (priced in Eth)
+			await aopool.createPool(10000, false, true, 10000000, true, 5000, false, "", "", { from: primordialAccount });
 
 			// Grant access to aoearning to transact on behalf of others on base denomination
 			await aotoken.setWhitelist(aoearning.address, true, { from: primordialAccount });

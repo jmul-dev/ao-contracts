@@ -116,6 +116,8 @@ contract AOEarning is developed {
 
 	/**
 	 * @dev Constructor function
+	 * @param _settingThoughtId The Thought ID that controls the setting
+	 * @param _aoSettingAddress The address of AOSetting
 	 * @param _baseDenominationAddress The address of AO base token
 	 * @param _treasuryAddress The address of AOTreasury
 	 */
