@@ -40,13 +40,13 @@ var AOStringSetting = artifacts.require("./AOStringSetting.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
 
 module.exports = function(deployer, network, accounts) {
-	var primordialAccount, associatedAccount, primordialNameId, associatedNameId, primordialThoughtId, associatedThoughtId;
+	var primordialAccount, settingAccount, primordialNameId, settingNameId, primordialThoughtId, settingThoughtId;
 	if (network === "rinkeby") {
 		primordialAccount = "0xcccf4699bbdcf30c8f310d19f5e07c8098665f18";
-		associatedAccount = "0xd2021e918ed447797fb66c48efa2899ea17dbddb";
+		settingAccount = "0xd2021e918ed447797fb66c48efa2899ea17dbddb";
 	} else {
 		primordialAccount = accounts[0];
-		associatedAccount = accounts[9];
+		settingAccount = accounts[9];
 	}
 
 	var aotoken,
@@ -196,24 +196,6 @@ module.exports = function(deployer, network, accounts) {
 			// position grant access to thoughtposition
 			await position.setWhitelist(thoughtposition.address, true, { from: primordialAccount });
 
-			return deployer.deploy(AOEarning, aotoken.address, aotreasury.address, pathos.address, antilogos.address);
-		})
-		.then(async function() {
-			aoearning = await AOEarning.deployed();
-
-			// Grant access to aoearning to transact on behalf of others on base denomination
-			await aotoken.setWhitelist(aoearning.address, true, { from: primordialAccount });
-
-			// pathos grant access to aoearning
-			await pathos.setWhitelist(aoearning.address, true, { from: primordialAccount });
-
-			// antilogos grant access to aoearning
-			await antilogos.setWhitelist(aoearning.address, true, { from: primordialAccount });
-
-			// set inflation rate and foundation cut
-			await aoearning.setInflationRate(10000, { from: primordialAccount }); // inflation rate 1%
-			await aoearning.setFoundationCut(5000, { from: primordialAccount }); // foundation cut 0.5%
-
 			return deployer.deploy(AOPool, aotoken.address);
 		})
 		.then(async function() {
@@ -284,9 +266,9 @@ module.exports = function(deployer, network, accounts) {
 
 			try {
 				var result = await namefactory.createName("beta", "", "", "", "", {
-					from: associatedAccount
+					from: settingAccount
 				});
-				associatedNameId = await namefactory.ethAddressToNameId(associatedAccount);
+				settingNameId = await namefactory.ethAddressToNameId(settingAccount);
 			} catch (e) {
 				console.log("Unable to create Associated Name", e);
 				return;
@@ -308,10 +290,10 @@ module.exports = function(deployer, network, accounts) {
 
 			try {
 				var result = await thoughtfactory.createThought("", "", "", "", primordialThoughtId, {
-					from: associatedAccount
+					from: settingAccount
 				});
 				var createThoughtEvent = result.logs[0];
-				associatedThoughtId = createThoughtEvent.args.thoughtId;
+				settingThoughtId = createThoughtEvent.args.thoughtId;
 			} catch (e) {
 				console.log("Unable to create Associated Thought", e);
 				return;
@@ -338,6 +320,89 @@ module.exports = function(deployer, network, accounts) {
 			await aoaddresssetting.setWhitelist(aosetting.address, true, { from: primordialAccount });
 			await aobytessetting.setWhitelist(aosetting.address, true, { from: primordialAccount });
 			await aostringsetting.setWhitelist(aosetting.address, true, { from: primordialAccount });
+
+			/***** Add Settings *****/
+			/**
+			 * Inflation Rate 1%
+			 */
+			try {
+				var result = await aosetting.addUintSetting("inflationRate", 10000, primordialThoughtId, settingThoughtId, "", {
+					from: primordialAccount
+				});
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add inflationRate setting", e);
+			}
+
+			/**
+			 * Foundation Cut 0.5%
+			 */
+			try {
+				var result = await aosetting.addUintSetting("foundationCut", 5000, primordialThoughtId, settingThoughtId, "", {
+					from: primordialAccount
+				});
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add foundationCut setting", e);
+			}
+
+			/**
+			 * PERCENTAGE_DIVISOR 100% = 1000000
+			 */
+			try {
+				var result = await aosetting.addUintSetting("PERCENTAGE_DIVISOR", 10 ** 6, primordialThoughtId, settingThoughtId, "", {
+					from: primordialAccount
+				});
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add PERCENTAGE_DIVISOR setting", e);
+			}
+
+			/**
+			 * MULTIPLIER_DIVISOR 1000000 = 1
+			 */
+			try {
+				var result = await aosetting.addUintSetting("MULTIPLIER_DIVISOR", 10 ** 6, primordialThoughtId, settingThoughtId, "", {
+					from: primordialAccount
+				});
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add MULTIPLIER_DIVISOR setting", e);
+			}
+
+			return deployer.deploy(
+				AOEarning,
+				settingThoughtId,
+				aosetting.address,
+				aotoken.address,
+				aotreasury.address,
+				pathos.address,
+				antilogos.address
+			);
+		})
+		.then(async function() {
+			aoearning = await AOEarning.deployed();
+
+			// Grant access to aoearning to transact on behalf of others on base denomination
+			await aotoken.setWhitelist(aoearning.address, true, { from: primordialAccount });
+
+			// pathos grant access to aoearning
+			await pathos.setWhitelist(aoearning.address, true, { from: primordialAccount });
+
+			// antilogos grant access to aoearning
+			await antilogos.setWhitelist(aoearning.address, true, { from: primordialAccount });
 
 			return deployer.deploy(AOContent, aotoken.address, aotreasury.address, aoearning.address);
 		})
