@@ -5,10 +5,24 @@ var AOEarning = artifacts.require("./AOEarning.sol");
 var AOLibrary = artifacts.require("./AOLibrary.sol");
 var Pathos = artifacts.require("./Pathos.sol");
 var AntiLogos = artifacts.require("./AntiLogos.sol");
+var AOSetting = artifacts.require("./AOSetting.sol");
 var EthCrypto = require("eth-crypto");
 
 contract("AOContent & AOEarning", function(accounts) {
-	var aocontent, aotoken, aodecimals, aotreasury, aoearning, library, pathos, antilogos;
+	var aocontent,
+		aotoken,
+		aodecimals,
+		aotreasury,
+		aoearning,
+		library,
+		pathos,
+		antilogos,
+		settingThoughtId,
+		aosetting,
+		inflationRate,
+		foundationCut,
+		percentageDivisor,
+		multiplierDivisor;
 	var someAddress = "0x0694bdcab07b298e88a834a3c91602cb8f457bde";
 	var developer = accounts[0];
 	var account1 = accounts[1];
@@ -38,6 +52,7 @@ contract("AOContent & AOEarning", function(accounts) {
 		aotoken = await AOToken.deployed();
 		aotreasury = await AOTreasury.deployed();
 		aoearning = await AOEarning.deployed();
+		aosetting = await AOSetting.deployed();
 
 		// Get the decimals
 		aodecimals = await aotoken.decimals();
@@ -46,7 +61,22 @@ contract("AOContent & AOEarning", function(accounts) {
 
 		pathos = await Pathos.deployed();
 		antilogos = await AntiLogos.deployed();
+
+		settingThoughtId = await aoearning.settingThoughtId();
+
+		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "inflationRate");
+		inflationRate = settingValues[0];
+
+		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "foundationCut");
+		foundationCut = settingValues[0];
+
+		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "PERCENTAGE_DIVISOR");
+		percentageDivisor = settingValues[0];
+
+		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "MULTIPLIER_DIVISOR");
+		multiplierDivisor = settingValues[0];
 	});
+
 	contract("AOContent - Developer Only Function Tests", function() {
 		it("only developer can pause/unpause contract", async function() {
 			var canPause;
@@ -162,46 +192,6 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.equal(canSetBaseDenominationAddress, true, "Developer can't set base denomination address");
 			var baseDenominationAddress = await aoearning.baseDenominationAddress();
 			assert.equal(baseDenominationAddress, aotoken.address, "Contract has incorrect base denomination address");
-		});
-
-		it("only developer can set inflation rate", async function() {
-			var canSetInflationRate;
-			try {
-				await aoearning.setInflationRate(10000, { from: account1 });
-				canSetInflationRate = true;
-			} catch (e) {
-				canSetInflationRate = false;
-			}
-			assert.notEqual(canSetInflationRate, true, "Non-developer can set inflation rate");
-			try {
-				await aoearning.setInflationRate(10000, { from: developer });
-				canSetInflationRate = true;
-			} catch (e) {
-				canSetInflationRate = false;
-			}
-			assert.equal(canSetInflationRate, true, "Developer can't set inflation rate");
-			var inflationRate = await aoearning.inflationRate();
-			assert.equal(inflationRate.toString(), 10000, "Contract has incorrect inflation rate after developer set inflation rate");
-		});
-
-		it("only developer can set foundation cut", async function() {
-			var canSetFoundationCut;
-			try {
-				await aoearning.setFoundationCut(5000, { from: account1 });
-				canSetFoundationCut = true;
-			} catch (e) {
-				canSetFoundationCut = false;
-			}
-			assert.notEqual(canSetFoundationCut, true, "Non-developer can set foundation cut");
-			try {
-				await aoearning.setFoundationCut(5000, { from: developer });
-				canSetFoundationCut = true;
-			} catch (e) {
-				canSetFoundationCut = false;
-			}
-			assert.equal(canSetFoundationCut, true, "Developer can't set foundation cut");
-			var foundationCut = await aoearning.foundationCut();
-			assert.equal(foundationCut.toString(), 5000, "Contract has incorrect foundation cut after developer set foundation cut");
 		});
 
 		it("only developer can call escape hatch", async function() {
@@ -1172,10 +1162,6 @@ contract("AOContent & AOEarning", function(accounts) {
 			var hostAntiLogosBalanceBefore = await antilogos.balanceOf(account1);
 
 			var price = await aocontent.contentHostPrice(contentHostId1);
-			var inflationRate = await aoearning.inflationRate();
-			var foundationCut = await aoearning.foundationCut();
-			var percentageDivisor = await aoearning.PERCENTAGE_DIVISOR();
-			var multiplierDivisor = await aoearning.MULTIPLIER_DIVISOR();
 			var stakedContent = await aocontent.stakedContentById(stakeId1);
 			var stakedNetworkAmount = stakedContent[2];
 			var stakedPrimordialAmount = stakedContent[3];

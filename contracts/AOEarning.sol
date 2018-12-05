@@ -6,6 +6,7 @@ import './AOToken.sol';
 import './AOTreasury.sol';
 import './Pathos.sol';
 import './AntiLogos.sol';
+import './AOSetting.sol';
 
 /**
  * @title AOEarning
@@ -18,6 +19,8 @@ contract AOEarning is developed {
 	bool public paused;
 	bool public killed;
 
+	address public settingThoughtId;
+	address public aoSettingAddress;
 	address public baseDenominationAddress;
 	address public treasuryAddress;
 	address public pathosAddress;
@@ -27,11 +30,7 @@ contract AOEarning is developed {
 	AOTreasury internal _treasury;
 	Pathos internal _pathos;
 	AntiLogos internal _antiLogos;
-
-	uint256 public inflationRate; // support up to 4 decimals, i.e 12.3456% = 123456
-	uint256 public foundationCut; // support up to 4 decimals, i.e 12.3456% = 123456
-	uint256 constant public PERCENTAGE_DIVISOR = 10 ** 6; // 100% = 1000000
-	uint256 constant public MULTIPLIER_DIVISOR = 10 ** 6; // 1000000 = 1
+	AOSetting internal _aoSetting;
 
 	// Total earning from staking content from all nodes
 	uint256 public totalStakeContentEarning;
@@ -120,11 +119,15 @@ contract AOEarning is developed {
 	 * @param _baseDenominationAddress The address of AO base token
 	 * @param _treasuryAddress The address of AOTreasury
 	 */
-	constructor(address _baseDenominationAddress, address _treasuryAddress, address _pathosAddress, address _antiLogosAddress) public {
+	constructor(address _settingThoughtId, address _aoSettingAddress, address _baseDenominationAddress, address _treasuryAddress, address _pathosAddress, address _antiLogosAddress) public {
+		settingThoughtId = _settingThoughtId;
+		aoSettingAddress = _aoSettingAddress;
 		baseDenominationAddress = _baseDenominationAddress;
 		treasuryAddress = _treasuryAddress;
 		pathosAddress = _pathosAddress;
 		antiLogosAddress = _antiLogosAddress;
+
+		_aoSetting = AOSetting(_aoSettingAddress);
 		_baseAO = AOToken(_baseDenominationAddress);
 		_treasury = AOTreasury(_treasuryAddress);
 		_pathos = Pathos(_pathosAddress);
@@ -156,23 +159,6 @@ contract AOEarning is developed {
 		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).networkExchangeContract() == true);
 		baseDenominationAddress = _newBaseDenominationAddress;
 		_baseAO = AOToken(baseDenominationAddress);
-	}
-
-	/**
-	 * @dev Sets inflation rate
-	 * @param _inflationRate The new inflation rate value to be set
-	 */
-	function setInflationRate(uint256 _inflationRate) public inWhitelist(msg.sender) {
-		inflationRate = _inflationRate;
-	}
-
-	/**
-	 * @dev Sets foundation cut
-	 * @param _foundationCut The new foundation cut value to be set
-	 */
-	function setFoundationCut(uint256 _foundationCut) public inWhitelist(msg.sender) {
-		require (_foundationCut <= PERCENTAGE_DIVISOR);
-		foundationCut = _foundationCut;
 	}
 
 	/**
@@ -261,6 +247,8 @@ contract AOEarning is developed {
 	 * @param _host The address of the host
 	 */
 	function _escrowPaymentEarning(address _buyer, bytes32 _purchaseId, uint256 _totalStaked, uint256 _profitPercentage, address _stakeOwner, address _host) internal {
+		(uint256 PERCENTAGE_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'PERCENTAGE_DIVISOR');
+
 		// Store how much the content creator (stake owner) earns in escrow
 		uint256 _stakeOwnerEarning = (_totalStaked.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
 		Earning storage _stakeEarning = stakeEarnings[_stakeOwner][_purchaseId];
@@ -285,6 +273,10 @@ contract AOEarning is developed {
 	 * @return the bonus network amount
 	 */
 	function _calculateInflationBonus(uint256 _networkAmountStaked, uint256 _primordialAmountStaked, uint256 _primordialWeightedMultiplierStaked) internal view returns (uint256) {
+		(uint256 inflationRate,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'inflationRate');
+		(uint256 PERCENTAGE_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'PERCENTAGE_DIVISOR');
+		(uint256 MULTIPLIER_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'MULTIPLIER_DIVISOR');
+
 		uint256 _networkBonus = _networkAmountStaked.mul(inflationRate).div(PERCENTAGE_DIVISOR);
 		uint256 _primordialBonus = _primordialAmountStaked.mul(_primordialWeightedMultiplierStaked).div(MULTIPLIER_DIVISOR).mul(inflationRate).div(PERCENTAGE_DIVISOR);
 		return _networkBonus.add(_primordialBonus);
@@ -305,6 +297,9 @@ contract AOEarning is developed {
 		address _stakeOwner,
 		address _host
 	) internal {
+		(uint256 foundationCut,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'foundationCut');
+		(uint256 PERCENTAGE_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'PERCENTAGE_DIVISOR');
+
 		if (_inflationBonusAmount > 0) {
 			// Store how much the content creator earns in escrow
 			uint256 _stakeOwnerInflationBonus = (_inflationBonusAmount.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
