@@ -638,7 +638,7 @@ contract AOToken is developed, TokenERC20 {
 	 * @return The amount of network token as bonus
 	 */
 	function calculateMultiplierAndBonus(uint256 _purchaseAmount) public isNetworkExchange view returns (uint256, uint256, uint256) {
-		(, uint256 startingPrimordialMultiplier, uint256 endingPrimordialMultiplier, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
+		(uint256 startingPrimordialMultiplier, uint256 endingPrimordialMultiplier, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
 		return (
 			AOLibrary.calculatePrimordialMultiplier(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingPrimordialMultiplier, endingPrimordialMultiplier),
 			AOLibrary.calculateNetworkTokenBonusPercentage(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier),
@@ -856,7 +856,7 @@ contract AOToken is developed, TokenERC20 {
 	 * @param to The recipient of the token
 	 */
 	function _sendPrimordialTokenAndRewardDev(uint256 tokenAmount, address to) internal {
-		(uint256 PERCENTAGE_DIVISOR, uint256 startingPrimordialMultiplier,, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
+		(uint256 startingPrimordialMultiplier,, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
 
 		// Update primordialTotalBought
 		(uint256 multiplier, uint256 networkTokenBonusPercentage, uint256 networkTokenBonusAmount) = calculateMultiplierAndBonus(tokenAmount);
@@ -865,7 +865,7 @@ contract AOToken is developed, TokenERC20 {
 
 		// Calculate Foundation and AO Dev Team's portion of Primordial and Network Token Bonus
 		uint256 inverseMultiplier = startingPrimordialMultiplier.sub(multiplier); // Inverse of the buyer's multiplier
-		uint256 foundationNetworkTokenBonusAmount = (startingNetworkTokenBonusMultiplier.sub(networkTokenBonusPercentage).add(endingNetworkTokenBonusMultiplier)).mul(tokenAmount).div(PERCENTAGE_DIVISOR);
+		uint256 foundationNetworkTokenBonusAmount = (startingNetworkTokenBonusMultiplier.sub(networkTokenBonusPercentage).add(endingNetworkTokenBonusMultiplier)).mul(tokenAmount).div(AOLibrary.PERCENTAGE_DIVISOR());
 		if (aoDevTeam1 != address(0)) {
 			_createPrimordialLot(aoDevTeam1, tokenAmount.div(2), inverseMultiplier, foundationNetworkTokenBonusAmount.div(2));
 		}
@@ -997,20 +997,18 @@ contract AOToken is developed, TokenERC20 {
 
 	/**
 	 * @dev Get setting variables
-	 * @return PERCENTAGE_DIVISOR The divisor used to calculate percentage
 	 * @return startingPrimordialMultiplier The starting multiplier used to calculate primordial token
 	 * @return endingPrimordialMultiplier The ending multiplier used to calculate primordial token
 	 * @return startingNetworkTokenBonusMultiplier The starting multiplier used to calculate network token bonus
 	 * @return endingNetworkTokenBonusMultiplier The ending multiplier used to calculate network token bonus
 	 */
-	function _getSettingVariables() internal view returns (uint256, uint256, uint256, uint256, uint256) {
-		(uint256 PERCENTAGE_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'PERCENTAGE_DIVISOR');
+	function _getSettingVariables() internal view returns (uint256, uint256, uint256, uint256) {
 		(uint256 startingPrimordialMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'startingPrimordialMultiplier');
 		(uint256 endingPrimordialMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'endingPrimordialMultiplier');
 
 		(uint256 startingNetworkTokenBonusMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'startingNetworkTokenBonusMultiplier');
 		(uint256 endingNetworkTokenBonusMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'endingNetworkTokenBonusMultiplier');
 
-		return (PERCENTAGE_DIVISOR, startingPrimordialMultiplier, endingPrimordialMultiplier, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier);
+		return (startingPrimordialMultiplier, endingPrimordialMultiplier, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier);
 	}
 }

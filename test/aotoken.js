@@ -42,6 +42,8 @@ contract("AOToken", function(accounts) {
 		aosetting = await AOSetting.deployed();
 
 		settingThoughtId = await tokenMeta.settingThoughtId();
+
+		percentageDivisor = await library.PERCENTAGE_DIVISOR();
 	});
 	contract("Variable Setting Tests", function() {
 		it("should return correct name", function() {
@@ -77,11 +79,6 @@ contract("AOToken", function(accounts) {
 			return tokenMeta.networkExchangeContract.call().then(function(isNetworkExchangeContract) {
 				assert.equal(isNetworkExchangeContract, true, "Contract should be set as the Network Exchange contract");
 			});
-		});
-		it("should have the correct percentage divisor", async function() {
-			var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "PERCENTAGE_DIVISOR");
-			percentageDivisor = new BigNumber(settingValues[0]);
-			assert.equal(percentageDivisor.toNumber(), 10 ** 6, "Contract has incorrect percentage divisor");
 		});
 		it("should have the correct AO Dev team 1 address", async function() {
 			var aoDevTeam = await tokenMeta.aoDevTeam1();
