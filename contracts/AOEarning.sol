@@ -249,7 +249,7 @@ contract AOEarning is developed {
 	 * @param _host The address of the host
 	 */
 	function _escrowPaymentEarning(address _buyer, bytes32 _purchaseId, uint256 _totalStaked, uint256 _profitPercentage, address _stakeOwner, address _host) internal {
-		(uint256 PERCENTAGE_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'PERCENTAGE_DIVISOR');
+		(,, uint256 PERCENTAGE_DIVISOR,) = _getSettingVariables();
 
 		// Store how much the content creator (stake owner) earns in escrow
 		uint256 _stakeOwnerEarning = (_totalStaked.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
@@ -275,9 +275,7 @@ contract AOEarning is developed {
 	 * @return the bonus network amount
 	 */
 	function _calculateInflationBonus(uint256 _networkAmountStaked, uint256 _primordialAmountStaked, uint256 _primordialWeightedMultiplierStaked) internal view returns (uint256) {
-		(uint256 inflationRate,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'inflationRate');
-		(uint256 PERCENTAGE_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'PERCENTAGE_DIVISOR');
-		(uint256 MULTIPLIER_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'MULTIPLIER_DIVISOR');
+		(uint256 inflationRate,, uint256 PERCENTAGE_DIVISOR, uint256 MULTIPLIER_DIVISOR) = _getSettingVariables();
 
 		uint256 _networkBonus = _networkAmountStaked.mul(inflationRate).div(PERCENTAGE_DIVISOR);
 		uint256 _primordialBonus = _primordialAmountStaked.mul(_primordialWeightedMultiplierStaked).div(MULTIPLIER_DIVISOR).mul(inflationRate).div(PERCENTAGE_DIVISOR);
@@ -299,8 +297,7 @@ contract AOEarning is developed {
 		address _stakeOwner,
 		address _host
 	) internal {
-		(uint256 foundationCut,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'foundationCut');
-		(uint256 PERCENTAGE_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'PERCENTAGE_DIVISOR');
+		(, uint256 foundationCut, uint256 PERCENTAGE_DIVISOR,) = _getSettingVariables();
 
 		if (_inflationBonusAmount > 0) {
 			// Store how much the content creator earns in escrow
@@ -398,5 +395,21 @@ contract AOEarning is developed {
 		}
 		require (_baseAO.unescrowFrom(_account, _totalEarning));
 		emit EarningUnescrowed(_account, _purchaseId, _paymentEarning, _inflationBonus, _recipientType);
+	}
+
+	/**
+	 * @dev Get setting variables
+	 * @return inflationRate The rate to use when calculating inflation bonus
+	 * @return foundationCut The rate to use when calculation the foundation earning
+	 * @return PERCENTAGE_DIVISOR The divisor used to calculate percentage
+	 * @return MULTIPLIER_DIVISOR The divisor used to calculate multiplier
+	 */
+	function _getSettingVariables() internal view returns (uint256, uint256, uint256, uint256) {
+		(uint256 inflationRate,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'inflationRate');
+		(uint256 foundationCut,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'foundationCut');
+		(uint256 PERCENTAGE_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'PERCENTAGE_DIVISOR');
+		(uint256 MULTIPLIER_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'MULTIPLIER_DIVISOR');
+
+		return (inflationRate, foundationCut, PERCENTAGE_DIVISOR, MULTIPLIER_DIVISOR);
 	}
 }
