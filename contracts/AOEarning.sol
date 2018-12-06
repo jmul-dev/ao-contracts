@@ -7,6 +7,7 @@ import './AOTreasury.sol';
 import './Pathos.sol';
 import './AntiLogos.sol';
 import './AOSetting.sol';
+import './AOLibrary.sol';
 
 /**
  * @title AOEarning
@@ -249,10 +250,8 @@ contract AOEarning is developed {
 	 * @param _host The address of the host
 	 */
 	function _escrowPaymentEarning(address _buyer, bytes32 _purchaseId, uint256 _totalStaked, uint256 _profitPercentage, address _stakeOwner, address _host) internal {
-		(,, uint256 PERCENTAGE_DIVISOR,) = _getSettingVariables();
-
 		// Store how much the content creator (stake owner) earns in escrow
-		uint256 _stakeOwnerEarning = (_totalStaked.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
+		uint256 _stakeOwnerEarning = (_totalStaked.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR());
 		Earning storage _stakeEarning = stakeEarnings[_stakeOwner][_purchaseId];
 		_stakeEarning.purchaseId = _purchaseId;
 		_stakeEarning.paymentEarning = _stakeOwnerEarning;
@@ -264,7 +263,7 @@ contract AOEarning is developed {
 		_hostEarning.purchaseId = _purchaseId;
 		_hostEarning.paymentEarning = _totalStaked.sub(_stakeOwnerEarning);
 		require (_baseAO.escrowFrom(_buyer, _host, _hostEarning.paymentEarning));
-		emit PaymentEarningEscrowed(_host, _purchaseId, _totalStaked, PERCENTAGE_DIVISOR.sub(_profitPercentage), _hostEarning.paymentEarning, 1);
+		emit PaymentEarningEscrowed(_host, _purchaseId, _totalStaked, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), _hostEarning.paymentEarning, 1);
 	}
 
 	/**
@@ -275,10 +274,10 @@ contract AOEarning is developed {
 	 * @return the bonus network amount
 	 */
 	function _calculateInflationBonus(uint256 _networkAmountStaked, uint256 _primordialAmountStaked, uint256 _primordialWeightedMultiplierStaked) internal view returns (uint256) {
-		(uint256 inflationRate,, uint256 PERCENTAGE_DIVISOR, uint256 MULTIPLIER_DIVISOR) = _getSettingVariables();
+		(uint256 inflationRate,) = _getSettingVariables();
 
-		uint256 _networkBonus = _networkAmountStaked.mul(inflationRate).div(PERCENTAGE_DIVISOR);
-		uint256 _primordialBonus = _primordialAmountStaked.mul(_primordialWeightedMultiplierStaked).div(MULTIPLIER_DIVISOR).mul(inflationRate).div(PERCENTAGE_DIVISOR);
+		uint256 _networkBonus = _networkAmountStaked.mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR());
+		uint256 _primordialBonus = _primordialAmountStaked.mul(_primordialWeightedMultiplierStaked).div(AOLibrary.MULTIPLIER_DIVISOR()).mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR());
 		return _networkBonus.add(_primordialBonus);
 	}
 
@@ -297,11 +296,11 @@ contract AOEarning is developed {
 		address _stakeOwner,
 		address _host
 	) internal {
-		(, uint256 foundationCut, uint256 PERCENTAGE_DIVISOR,) = _getSettingVariables();
+		(, uint256 foundationCut) = _getSettingVariables();
 
 		if (_inflationBonusAmount > 0) {
 			// Store how much the content creator earns in escrow
-			uint256 _stakeOwnerInflationBonus = (_inflationBonusAmount.mul(_profitPercentage)).div(PERCENTAGE_DIVISOR);
+			uint256 _stakeOwnerInflationBonus = (_inflationBonusAmount.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR());
 			Earning storage _stakeEarning = stakeEarnings[_stakeOwner][_purchaseId];
 			_stakeEarning.inflationBonus = _stakeOwnerInflationBonus;
 			require (_baseAO.mintTokenEscrow(_stakeOwner, _stakeEarning.inflationBonus));
@@ -311,17 +310,17 @@ contract AOEarning is developed {
 			Earning storage _hostEarning = hostEarnings[_host][_purchaseId];
 			_hostEarning.inflationBonus = _inflationBonusAmount.sub(_stakeOwnerInflationBonus);
 			require (_baseAO.mintTokenEscrow(_host, _hostEarning.inflationBonus));
-			emit InflationBonusEscrowed(_host, _purchaseId, _inflationBonusAmount, PERCENTAGE_DIVISOR.sub(_profitPercentage), _hostEarning.inflationBonus, 1);
+			emit InflationBonusEscrowed(_host, _purchaseId, _inflationBonusAmount, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), _hostEarning.inflationBonus, 1);
 
 			// Store how much the foundation earns in escrow
 			Earning storage _foundationEarning = foundationEarnings[_purchaseId];
 			_foundationEarning.purchaseId = _purchaseId;
-			_foundationEarning.inflationBonus = (_inflationBonusAmount.mul(foundationCut)).div(PERCENTAGE_DIVISOR);
+			_foundationEarning.inflationBonus = (_inflationBonusAmount.mul(foundationCut)).div(AOLibrary.PERCENTAGE_DIVISOR());
 			require (_baseAO.mintTokenEscrow(developer, _foundationEarning.inflationBonus));
 			emit InflationBonusEscrowed(developer, _purchaseId, _inflationBonusAmount, foundationCut, _foundationEarning.inflationBonus, 2);
 		} else {
 			emit InflationBonusEscrowed(_stakeOwner, _purchaseId, 0, _profitPercentage, 0, 0);
-			emit InflationBonusEscrowed(_host, _purchaseId, 0, PERCENTAGE_DIVISOR.sub(_profitPercentage), 0, 1);
+			emit InflationBonusEscrowed(_host, _purchaseId, 0, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), 0, 1);
 			emit InflationBonusEscrowed(developer, _purchaseId, 0, foundationCut, 0, 2);
 		}
 	}
@@ -401,15 +400,10 @@ contract AOEarning is developed {
 	 * @dev Get setting variables
 	 * @return inflationRate The rate to use when calculating inflation bonus
 	 * @return foundationCut The rate to use when calculation the foundation earning
-	 * @return PERCENTAGE_DIVISOR The divisor used to calculate percentage
-	 * @return MULTIPLIER_DIVISOR The divisor used to calculate multiplier
 	 */
-	function _getSettingVariables() internal view returns (uint256, uint256, uint256, uint256) {
+	function _getSettingVariables() internal view returns (uint256, uint256) {
 		(uint256 inflationRate,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'inflationRate');
 		(uint256 foundationCut,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'foundationCut');
-		(uint256 PERCENTAGE_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'PERCENTAGE_DIVISOR');
-		(uint256 MULTIPLIER_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'MULTIPLIER_DIVISOR');
-
-		return (inflationRate, foundationCut, PERCENTAGE_DIVISOR, MULTIPLIER_DIVISOR);
+		return (inflationRate, foundationCut);
 	}
 }
