@@ -3,14 +3,22 @@ var BigNumber = require("bignumber.js");
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1 }); // no rounding
 
 contract("AOLibrary", function(accounts) {
-	var library;
-	var multiplierDivisor = new BigNumber(10 ** 6); // 1000000 = 1
-	var percentageDivisor = new BigNumber(10 ** 6); // 1000000 = 100%
+	var library, percentageDivisor, multiplierDivisor;
 
 	before(function() {
 		return AOLibrary.deployed().then(function(instance) {
 			library = instance;
 		});
+	});
+
+	it("should have the correct percentage divisor value", async function() {
+		percentageDivisor = await library.PERCENTAGE_DIVISOR();
+		assert.equal(percentageDivisor.toNumber(), 10 ** 6, "Contract has incorrect PERCENTAGE_DIVISOR value");
+	});
+
+	it("should have the correct multiplier divisor value", async function() {
+		multiplierDivisor = await library.MULTIPLIER_DIVISOR();
+		assert.equal(multiplierDivisor.toNumber(), 10 ** 6, "Contract has incorrect MULTIPLIER_DIVISOR value");
 	});
 
 	it("calculateWeightedMultiplier() - should calculate and return correct weighted multiplier", async function() {

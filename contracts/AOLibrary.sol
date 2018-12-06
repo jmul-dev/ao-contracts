@@ -17,31 +17,63 @@ import './AOStringSetting.sol';
 library AOLibrary {
 	using SafeMath for uint256;
 
-	uint256 constant public MULTIPLIER_DIVISOR = 10 ** 6; // 1000000 = 1
-	uint256 constant public PERCENTAGE_DIVISOR = 10 ** 6; // 100% = 1000000
+	uint256 constant private _MULTIPLIER_DIVISOR = 10 ** 6; // 1000000 = 1
+	uint256 constant private _PERCENTAGE_DIVISOR = 10 ** 6; // 100% = 1000000
 
 	/**
-	 * @dev Check whether the network token and/or primordial token is adequate to pay for the filesize
-	 * @param _treasuryAddress AO treasury contract address
-	 * @param _networkIntegerAmount The integer amount of the network token
-	 * @param _networkFractionAmount The fraction amount of the network token
-	 * @param _denomination The denomination of the the network token
-	 * @param _primordialAmount The amount of primordial token
-	 * @param _fileSize The file size of the content
-	 * @return true when the amount is sufficient, false otherwise
+	 * @dev Return the divisor used to correctly calculate percentage.
+	 *		Percentage stored throughout AO contracts covers 4 decimals,
+	 *		so 1% is 10000, 1.25% is 12500, etc
 	 */
-	function canStake(address _treasuryAddress, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount, uint256 _fileSize) public view returns (bool) {
-		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
-			if (AOTreasury(_treasuryAddress).toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) >= _fileSize) {
-				return true;
-			} else {
-				return false;
-			}
-		} else if (_primordialAmount >= _fileSize) {
-			return true;
-		} else {
-			return false;
-		}
+	function PERCENTAGE_DIVISOR() public pure returns (uint256) {
+		return _PERCENTAGE_DIVISOR;
+	}
+
+	/**
+	 * @dev Return the divisor used to correctly calculate multiplier.
+	 *		Multiplier stored throughout AO contracts covers 6 decimals,
+	 *		so 1 is 1000000, 0.023 is 23000, etc
+	 */
+	function MULTIPLIER_DIVISOR() public pure returns (uint256) {
+		return _MULTIPLIER_DIVISOR;
+	}
+
+	/**
+	 * @dev Check whether or not content creator can stake a content based on the provided params
+	 * @param _treasuryAddress AO treasury contract address
+	 * @param _networkIntegerAmount The integer amount of network token to stake
+	 * @param _networkFractionAmount The fraction amount of network token to stake
+	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
+	 * @param _primordialAmount The amount of primordial Token to stake
+	 * @param _baseChallenge The base challenge string (PUBLIC KEY) of the content
+	 * @param _encChallenge The encrypted challenge string (PUBLIC KEY) of the content unique to the host
+	 * @param _contentDatKey The dat key of the content
+	 * @param _metadataDatKey The dat key of the content's metadata
+	 * @param _fileSize The size of the file
+	 * @param _profitPercentage The percentage of profit the stake owner's media will charge
+	 * @return true if yes. false otherwise
+	 */
+	function canStake(address _treasuryAddress,
+		uint256 _networkIntegerAmount,
+		uint256 _networkFractionAmount,
+		bytes8 _denomination,
+		uint256 _primordialAmount,
+		string _baseChallenge,
+		string _encChallenge,
+		string _contentDatKey,
+		string _metadataDatKey,
+		uint256 _fileSize,
+		uint256 _profitPercentage) public view returns (bool) {
+		return (
+			bytes(_baseChallenge).length > 0 &&
+			bytes(_encChallenge).length > 0 &&
+			bytes(_contentDatKey).length > 0 &&
+			bytes(_metadataDatKey).length > 0 &&
+			_fileSize > 0 &&
+			(_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0) &&
+			_stakeAmountValid(_treasuryAddress, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _fileSize) == true &&
+			_profitPercentage <= _PERCENTAGE_DIVISOR
+		);
 	}
 
 	/**
@@ -247,19 +279,19 @@ library AOLibrary {
 			uint256 temp = _totalPrimordialMinted.add(_purchaseAmount.div(2));
 
 			/**
-			 * Multiply multiplier with MULTIPLIER_DIVISOR/MULTIPLIER_DIVISOR to account for 6 decimals
-			 * so, Multiplier = (MULTIPLIER_DIVISOR/MULTIPLIER_DIVISOR) * (1 - (temp / T)) * (S-E)
-			 * Multiplier = ((MULTIPLIER_DIVISOR * (1 - (temp / T))) * (S-E)) / MULTIPLIER_DIVISOR
-			 * Multiplier = ((MULTIPLIER_DIVISOR - ((MULTIPLIER_DIVISOR * temp) / T)) * (S-E)) / MULTIPLIER_DIVISOR
-			 * Take out the division by MULTIPLIER_DIVISOR for now and include in later calculation
-			 * Multiplier = (MULTIPLIER_DIVISOR - ((MULTIPLIER_DIVISOR * temp) / T)) * (S-E)
+			 * Multiply multiplier with _MULTIPLIER_DIVISOR/_MULTIPLIER_DIVISOR to account for 6 decimals
+			 * so, Multiplier = (_MULTIPLIER_DIVISOR/_MULTIPLIER_DIVISOR) * (1 - (temp / T)) * (S-E)
+			 * Multiplier = ((_MULTIPLIER_DIVISOR * (1 - (temp / T))) * (S-E)) / _MULTIPLIER_DIVISOR
+			 * Multiplier = ((_MULTIPLIER_DIVISOR - ((_MULTIPLIER_DIVISOR * temp) / T)) * (S-E)) / _MULTIPLIER_DIVISOR
+			 * Take out the division by _MULTIPLIER_DIVISOR for now and include in later calculation
+			 * Multiplier = (_MULTIPLIER_DIVISOR - ((_MULTIPLIER_DIVISOR * temp) / T)) * (S-E)
 			 */
-			uint256 multiplier = (MULTIPLIER_DIVISOR.sub(MULTIPLIER_DIVISOR.mul(temp).div(_totalPrimordialMintable))).mul(_startingMultiplier.sub(_endingMultiplier));
+			uint256 multiplier = (_MULTIPLIER_DIVISOR.sub(_MULTIPLIER_DIVISOR.mul(temp).div(_totalPrimordialMintable))).mul(_startingMultiplier.sub(_endingMultiplier));
 			/**
 			 * Since _startingMultiplier and _endingMultiplier are in 6 decimals
-			 * Need to divide multiplier by MULTIPLIER_DIVISOR
+			 * Need to divide multiplier by _MULTIPLIER_DIVISOR
 			 */
-			return multiplier.div(MULTIPLIER_DIVISOR);
+			return multiplier.div(_MULTIPLIER_DIVISOR);
 		} else {
 			return 0;
 		}
@@ -290,16 +322,16 @@ library AOLibrary {
 			uint256 temp = _totalPrimordialMinted.add(_purchaseAmount.div(2));
 
 			/**
-			 * Multiply B% with PERCENTAGE_DIVISOR/PERCENTAGE_DIVISOR to account for 6 decimals
-			 * so, B% = (PERCENTAGE_DIVISOR/PERCENTAGE_DIVISOR) * (1 - (temp / T)) * (Bs-Be)
-			 * B% = ((PERCENTAGE_DIVISOR * (1 - (temp / T))) * (Bs-Be)) / PERCENTAGE_DIVISOR
-			 * B% = ((PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * temp) / T)) * (Bs-Be)) / PERCENTAGE_DIVISOR
-			 * Take out the division by PERCENTAGE_DIVISOR for now and include in later calculation
-			 * B% = (PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * temp) / T)) * (Bs-Be)
-			 * But since Bs and Be are in 6 decimals, need to divide by PERCENTAGE_DIVISOR
-			 * B% = (PERCENTAGE_DIVISOR - ((PERCENTAGE_DIVISOR * temp) / T)) * (Bs-Be) / PERCENTAGE_DIVISOR
+			 * Multiply B% with _PERCENTAGE_DIVISOR/_PERCENTAGE_DIVISOR to account for 6 decimals
+			 * so, B% = (_PERCENTAGE_DIVISOR/_PERCENTAGE_DIVISOR) * (1 - (temp / T)) * (Bs-Be)
+			 * B% = ((_PERCENTAGE_DIVISOR * (1 - (temp / T))) * (Bs-Be)) / _PERCENTAGE_DIVISOR
+			 * B% = ((_PERCENTAGE_DIVISOR - ((_PERCENTAGE_DIVISOR * temp) / T)) * (Bs-Be)) / _PERCENTAGE_DIVISOR
+			 * Take out the division by _PERCENTAGE_DIVISOR for now and include in later calculation
+			 * B% = (_PERCENTAGE_DIVISOR - ((_PERCENTAGE_DIVISOR * temp) / T)) * (Bs-Be)
+			 * But since Bs and Be are in 6 decimals, need to divide by _PERCENTAGE_DIVISOR
+			 * B% = (_PERCENTAGE_DIVISOR - ((_PERCENTAGE_DIVISOR * temp) / T)) * (Bs-Be) / _PERCENTAGE_DIVISOR
 			 */
-			uint256 bonusPercentage = (PERCENTAGE_DIVISOR.sub(PERCENTAGE_DIVISOR.mul(temp).div(_totalPrimordialMintable))).mul(_startingMultiplier.sub(_endingMultiplier)).div(PERCENTAGE_DIVISOR);
+			uint256 bonusPercentage = (_PERCENTAGE_DIVISOR.sub(_PERCENTAGE_DIVISOR.mul(temp).div(_totalPrimordialMintable))).mul(_startingMultiplier.sub(_endingMultiplier)).div(_PERCENTAGE_DIVISOR);
 			return bonusPercentage;
 		} else {
 			return 0;
@@ -320,10 +352,10 @@ library AOLibrary {
 	function calculateNetworkTokenBonusAmount(uint256 _purchaseAmount, uint256 _totalPrimordialMintable, uint256 _totalPrimordialMinted, uint256 _startingMultiplier, uint256 _endingMultiplier) public pure returns (uint256) {
 		uint256 bonusPercentage = calculateNetworkTokenBonusPercentage(_purchaseAmount, _totalPrimordialMintable, _totalPrimordialMinted, _startingMultiplier, _endingMultiplier);
 		/**
-		 * Since bonusPercentage is in PERCENTAGE_DIVISOR format, need to divide it with PERCENTAGE DIVISOR
+		 * Since bonusPercentage is in _PERCENTAGE_DIVISOR format, need to divide it with _PERCENTAGE DIVISOR
 		 * when calculating the network token bonus amount
 		 */
-		uint256 networkTokenBonus = bonusPercentage.mul(_purchaseAmount).div(PERCENTAGE_DIVISOR);
+		uint256 networkTokenBonus = bonusPercentage.mul(_purchaseAmount).div(_PERCENTAGE_DIVISOR);
 		return networkTokenBonus;
 	}
 
@@ -432,5 +464,29 @@ library AOLibrary {
 			(,,,,,,, _migrated,, _newSettingId,,) = AOSettingAttribute(_aoSettingAttributeAddress).getSettingDeprecation(_settingId);
 		}
 		return _settingId;
+	}
+
+	/**
+	 * @dev Check whether the network token and/or primordial token is adequate to pay for the filesize
+	 * @param _treasuryAddress AO treasury contract address
+	 * @param _networkIntegerAmount The integer amount of network token to stake
+	 * @param _networkFractionAmount The fraction amount of network token to stake
+	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
+	 * @param _primordialAmount The amount of primordial Token to stake
+	 * @param _fileSize The size of the file
+	 * @return true when the amount is sufficient, false otherwise
+	 */
+	function _stakeAmountValid(address _treasuryAddress, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount, uint256 _fileSize) internal view returns (bool) {
+		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
+			if (AOTreasury(_treasuryAddress).toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) >= _fileSize) {
+				return true;
+			} else {
+				return false;
+			}
+		} else if (_primordialAmount >= _fileSize) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
