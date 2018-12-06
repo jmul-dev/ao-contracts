@@ -283,28 +283,6 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			/**
-			 * TOTAL_PRIMORDIAL_FOR_SALE 1125899906842620
-			 */
-			try {
-				var result = await aosetting.addUintSetting(
-					"TOTAL_PRIMORDIAL_FOR_SALE",
-					1125899906842620,
-					primordialThoughtId,
-					settingThoughtId,
-					"",
-					{
-						from: primordialAccount
-					}
-				);
-				var settingId = result.logs[0].args.settingId;
-
-				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
-				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
-			} catch (e) {
-				console.log("Unable to add TOTAL_PRIMORDIAL_FOR_SALE setting", e);
-			}
-
-			/**
 			 * startingPrimordialMultiplier 50 * MULTIPLIER_DIVISOR = 50
 			 */
 			try {

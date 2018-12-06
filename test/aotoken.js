@@ -70,8 +70,7 @@ contract("AOToken", function(accounts) {
 			});
 		});
 		it("should have total of 1125899906842620 Primordial tokens for sale", async function() {
-			var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "TOTAL_PRIMORDIAL_FOR_SALE");
-			totalPrimordialForSale = new BigNumber(settingValues[0]);
+			totalPrimordialForSale = new BigNumber(await tokenMeta.TOTAL_PRIMORDIAL_FOR_SALE());
 			assert.equal(totalPrimordialForSale.toNumber(), 1125899906842620, "Contract has incorrect total primordial for sale");
 		});
 		it("should set this contract as the Network Exchange contract", function() {

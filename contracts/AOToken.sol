@@ -43,6 +43,9 @@ contract AOToken is developed, TokenERC20 {
 	uint256 public primordialBuyPrice;
 	bool public networkExchangeContract;
 
+	// Total available primordial token for sale 1,125,899,906,842,620 AO+
+	uint256 constant public TOTAL_PRIMORDIAL_FOR_SALE = 1125899906842620;
+
 	mapping (address => uint256) public primordialBalanceOf;
 	mapping (address => mapping (address => uint256)) public primordialAllowance;
 
@@ -150,7 +153,6 @@ contract AOToken is developed, TokenERC20 {
 	 * @dev Checks if buyer can buy primordial token
 	 */
 	modifier canBuyPrimordial(uint256 _sentAmount) {
-		(uint256 TOTAL_PRIMORDIAL_FOR_SALE,,,,,) = _getSettingVariables();
 		require (networkExchangeEnded == false && primordialTotalBought < TOTAL_PRIMORDIAL_FOR_SALE && primordialBuyPrice > 0 && _sentAmount > 0);
 		_;
 	}
@@ -636,7 +638,7 @@ contract AOToken is developed, TokenERC20 {
 	 * @return The amount of network token as bonus
 	 */
 	function calculateMultiplierAndBonus(uint256 _purchaseAmount) public isNetworkExchange view returns (uint256, uint256, uint256) {
-		(uint256 TOTAL_PRIMORDIAL_FOR_SALE,, uint256 startingPrimordialMultiplier, uint256 endingPrimordialMultiplier, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
+		(, uint256 startingPrimordialMultiplier, uint256 endingPrimordialMultiplier, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
 		return (
 			AOLibrary.calculatePrimordialMultiplier(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingPrimordialMultiplier, endingPrimordialMultiplier),
 			AOLibrary.calculateNetworkTokenBonusPercentage(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier),
@@ -831,8 +833,6 @@ contract AOToken is developed, TokenERC20 {
 	 * @return bool whether or not the network exchange should end
 	 */
 	function _calculateTokenAmountAndRemainderBudget(uint256 _budget) internal view returns (uint256, uint256, bool) {
-		(uint256 TOTAL_PRIMORDIAL_FOR_SALE,,,,,) = _getSettingVariables();
-
 		// Calculate the amount of tokens
 		uint256 tokenAmount = _budget.div(primordialBuyPrice);
 
@@ -856,7 +856,7 @@ contract AOToken is developed, TokenERC20 {
 	 * @param to The recipient of the token
 	 */
 	function _sendPrimordialTokenAndRewardDev(uint256 tokenAmount, address to) internal {
-		(, uint256 PERCENTAGE_DIVISOR, uint256 startingPrimordialMultiplier,, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
+		(uint256 PERCENTAGE_DIVISOR, uint256 startingPrimordialMultiplier,, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
 
 		// Update primordialTotalBought
 		(uint256 multiplier, uint256 networkTokenBonusPercentage, uint256 networkTokenBonusAmount) = calculateMultiplierAndBonus(tokenAmount);
@@ -997,15 +997,13 @@ contract AOToken is developed, TokenERC20 {
 
 	/**
 	 * @dev Get setting variables
-	 * @return TOTAL_PRIMORDIAL_FOR_SALE The total primordial token that is available for sale
 	 * @return PERCENTAGE_DIVISOR The divisor used to calculate percentage
 	 * @return startingPrimordialMultiplier The starting multiplier used to calculate primordial token
 	 * @return endingPrimordialMultiplier The ending multiplier used to calculate primordial token
 	 * @return startingNetworkTokenBonusMultiplier The starting multiplier used to calculate network token bonus
 	 * @return endingNetworkTokenBonusMultiplier The ending multiplier used to calculate network token bonus
 	 */
-	function _getSettingVariables() internal view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
-		(uint256 TOTAL_PRIMORDIAL_FOR_SALE,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'TOTAL_PRIMORDIAL_FOR_SALE');
+	function _getSettingVariables() internal view returns (uint256, uint256, uint256, uint256, uint256) {
 		(uint256 PERCENTAGE_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'PERCENTAGE_DIVISOR');
 		(uint256 startingPrimordialMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'startingPrimordialMultiplier');
 		(uint256 endingPrimordialMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'endingPrimordialMultiplier');
@@ -1013,6 +1011,6 @@ contract AOToken is developed, TokenERC20 {
 		(uint256 startingNetworkTokenBonusMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'startingNetworkTokenBonusMultiplier');
 		(uint256 endingNetworkTokenBonusMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'endingNetworkTokenBonusMultiplier');
 
-		return (TOTAL_PRIMORDIAL_FOR_SALE, PERCENTAGE_DIVISOR, startingPrimordialMultiplier, endingPrimordialMultiplier, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier);
+		return (PERCENTAGE_DIVISOR, startingPrimordialMultiplier, endingPrimordialMultiplier, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier);
 	}
 }
