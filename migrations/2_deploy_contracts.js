@@ -99,6 +99,7 @@ module.exports = function(deployer, network, accounts) {
 	deployer.link(AOLibrary, AOYotta);
 	deployer.link(AOLibrary, AOXona);
 	deployer.link(AOLibrary, AOContent);
+	deployer.link(AOLibrary, AOEarning);
 
 	deployer.deploy([
 		[Logos, 0, "Logos", "LOGOS", "logos"],
@@ -223,67 +224,7 @@ module.exports = function(deployer, network, accounts) {
 
 			/***** Add Settings *****/
 			/**
-			 * Inflation Rate 1%
-			 */
-			try {
-				var result = await aosetting.addUintSetting("inflationRate", 10000, primordialThoughtId, settingThoughtId, "", {
-					from: primordialAccount
-				});
-				var settingId = result.logs[0].args.settingId;
-
-				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
-				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
-			} catch (e) {
-				console.log("Unable to add inflationRate setting", e);
-			}
-
-			/**
-			 * Foundation Cut 0.5%
-			 */
-			try {
-				var result = await aosetting.addUintSetting("foundationCut", 5000, primordialThoughtId, settingThoughtId, "", {
-					from: primordialAccount
-				});
-				var settingId = result.logs[0].args.settingId;
-
-				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
-				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
-			} catch (e) {
-				console.log("Unable to add foundationCut setting", e);
-			}
-
-			/**
-			 * PERCENTAGE_DIVISOR 100% = 1000000
-			 */
-			try {
-				var result = await aosetting.addUintSetting("PERCENTAGE_DIVISOR", 10 ** 6, primordialThoughtId, settingThoughtId, "", {
-					from: primordialAccount
-				});
-				var settingId = result.logs[0].args.settingId;
-
-				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
-				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
-			} catch (e) {
-				console.log("Unable to add PERCENTAGE_DIVISOR setting", e);
-			}
-
-			/**
-			 * MULTIPLIER_DIVISOR 1000000 = 1
-			 */
-			try {
-				var result = await aosetting.addUintSetting("MULTIPLIER_DIVISOR", 10 ** 6, primordialThoughtId, settingThoughtId, "", {
-					from: primordialAccount
-				});
-				var settingId = result.logs[0].args.settingId;
-
-				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
-				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
-			} catch (e) {
-				console.log("Unable to add MULTIPLIER_DIVISOR setting", e);
-			}
-
-			/**
-			 * startingPrimordialMultiplier 50 * MULTIPLIER_DIVISOR = 50
+			 * startingPrimordialMultiplier 50 * (1000000) = 50
 			 */
 			try {
 				var result = await aosetting.addUintSetting(
@@ -305,7 +246,7 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			/**
-			 * endingPrimordialMultiplier 3 * MULTIPLIER_DIVISOR = 3
+			 * endingPrimordialMultiplier 3 * (1000000) = 3
 			 */
 			try {
 				var result = await aosetting.addUintSetting(
@@ -368,6 +309,102 @@ module.exports = function(deployer, network, accounts) {
 				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
 			} catch (e) {
 				console.log("Unable to add endingNetworkTokenBonusMultiplier setting", e);
+			}
+
+			/**
+			 * Inflation Rate 1%
+			 */
+			try {
+				var result = await aosetting.addUintSetting("inflationRate", 10000, primordialThoughtId, settingThoughtId, "", {
+					from: primordialAccount
+				});
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add inflationRate setting", e);
+			}
+
+			/**
+			 * Foundation Cut 0.5%
+			 */
+			try {
+				var result = await aosetting.addUintSetting("foundationCut", 5000, primordialThoughtId, settingThoughtId, "", {
+					from: primordialAccount
+				});
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add foundationCut setting", e);
+			}
+
+			/**
+			 * Content Usage Type AO Content = AO Content
+			 */
+			try {
+				var result = await aosetting.addStringSetting(
+					"contentUsageType_aoContent",
+					"AO Content",
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add contentUsageType_aoContent setting", e);
+			}
+
+			/**
+			 * Content Usage Type Creative Commons = Creative Commons
+			 */
+			try {
+				var result = await aosetting.addStringSetting(
+					"contentUsageType_creativeCommons",
+					"Creative Commons",
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add contentUsageType_creativeCommons setting", e);
+			}
+
+			/**
+			 * Content Usage Type TAO Content = T(AO) Content
+			 */
+			try {
+				var result = await aosetting.addStringSetting(
+					"contentUsageType_taoContent",
+					"T(AO) Content",
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add contentUsageType_taoContent setting", e);
 			}
 
 			// Deploy AOToken and all of the denominations
@@ -490,7 +527,7 @@ module.exports = function(deployer, network, accounts) {
 			// antilogos grant access to aoearning
 			await antilogos.setWhitelist(aoearning.address, true, { from: primordialAccount });
 
-			return deployer.deploy(AOContent, aotoken.address, aotreasury.address, aoearning.address);
+			return deployer.deploy(AOContent, settingThoughtId, aosetting.address, aotoken.address, aotreasury.address, aoearning.address);
 		})
 		.then(async function() {
 			aocontent = await AOContent.deployed();
