@@ -1,10 +1,11 @@
 var AOToken = artifacts.require("./AOToken.sol");
 var AOLibrary = artifacts.require("./AOLibrary.sol");
+var AOSetting = artifacts.require("./AOSetting.sol");
 var BigNumber = require("bignumber.js");
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
 contract("AOToken", function(accounts) {
-	var tokenMeta, library;
+	var tokenMeta, library, aosetting, settingThoughtId;
 	var developer = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
@@ -14,9 +15,8 @@ contract("AOToken", function(accounts) {
 	var aoDevTeam2 = accounts[9];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 	var totalPrimordialForSale;
-	var multiplierDivisor;
 	var percentageDivisor;
-	var startingMultiplier, endingMultiplier, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier;
+	var startingPrimordialMultiplier, endingPrimordialMultiplier, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier;
 	var account1Lots = [];
 	var account2Lots = [];
 	var account3Lots = [];
@@ -39,6 +39,9 @@ contract("AOToken", function(accounts) {
 	before(async function() {
 		tokenMeta = await AOToken.deployed();
 		library = await AOLibrary.deployed();
+		aosetting = await AOSetting.deployed();
+
+		settingThoughtId = await tokenMeta.settingThoughtId();
 	});
 	contract("Variable Setting Tests", function() {
 		it("should return correct name", function() {
@@ -66,17 +69,10 @@ contract("AOToken", function(accounts) {
 				assert.equal(balance.toNumber(), 0, "Contract has incorrect initial supply");
 			});
 		});
-		it("should have total of 1125899906842620 Primordial tokens for sale", function() {
-			return tokenMeta.TOTAL_PRIMORDIAL_FOR_SALE.call().then(function(primordialSupply) {
-				totalPrimordialForSale = primordialSupply;
-				assert.equal(totalPrimordialForSale.toNumber(), 1125899906842620, "Contract has incorrect total primordial for sale");
-			});
-		});
-		it("should have the correct multiplier divisor", function() {
-			return tokenMeta.MULTIPLIER_DIVISOR.call().then(function(divisor) {
-				multiplierDivisor = new BigNumber(divisor);
-				assert.equal(divisor.toNumber(), 10 ** 6, "Contract has incorrect multiplier divisor");
-			});
+		it("should have total of 1125899906842620 Primordial tokens for sale", async function() {
+			var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "TOTAL_PRIMORDIAL_FOR_SALE");
+			totalPrimordialForSale = new BigNumber(settingValues[0]);
+			assert.equal(totalPrimordialForSale.toNumber(), 1125899906842620, "Contract has incorrect total primordial for sale");
 		});
 		it("should set this contract as the Network Exchange contract", function() {
 			return tokenMeta.networkExchangeContract.call().then(function(isNetworkExchangeContract) {
@@ -84,7 +80,8 @@ contract("AOToken", function(accounts) {
 			});
 		});
 		it("should have the correct percentage divisor", async function() {
-			percentageDivisor = new BigNumber(await tokenMeta.PERCENTAGE_DIVISOR());
+			var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "PERCENTAGE_DIVISOR");
+			percentageDivisor = new BigNumber(settingValues[0]);
 			assert.equal(percentageDivisor.toNumber(), 10 ** 6, "Contract has incorrect percentage divisor");
 		});
 		it("should have the correct AO Dev team 1 address", async function() {
@@ -96,15 +93,18 @@ contract("AOToken", function(accounts) {
 			assert.equal(aoDevTeam, aoDevTeam2, "Contract has incorrect aoDevTeam2");
 		});
 		it("should have the correct starting multiplier for calculating primordial multiplier", async function() {
-			startingMultiplier = new BigNumber(await tokenMeta.startingMultiplier());
-			assert.equal(startingMultiplier.toNumber(), 50 * multiplierDivisor.toNumber(), "Contract has incorrect startingMultiplier");
+			var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "startingPrimordialMultiplier");
+			startingPrimordialMultiplier = new BigNumber(settingValues[0]);
+			assert.equal(startingPrimordialMultiplier.toNumber(), 50 * 10 ** 6, "Contract has incorrect startingPrimordialMultiplier");
 		});
 		it("should have the correct ending multiplier for calculating primordial multiplier", async function() {
-			endingMultiplier = new BigNumber(await tokenMeta.endingMultiplier());
-			assert.equal(endingMultiplier.toNumber(), 3 * multiplierDivisor.toNumber(), "Contract has incorrect endingMultiplier");
+			var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "endingPrimordialMultiplier");
+			endingPrimordialMultiplier = new BigNumber(settingValues[0]);
+			assert.equal(endingPrimordialMultiplier.toNumber(), 3 * 10 ** 6, "Contract has incorrect endingPrimordialMultiplier");
 		});
 		it("should have the correct starting network token bonus multiplier for calculating network token bonus amount", async function() {
-			startingNetworkTokenBonusMultiplier = new BigNumber(await tokenMeta.startingNetworkTokenBonusMultiplier());
+			var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "startingNetworkTokenBonusMultiplier");
+			startingNetworkTokenBonusMultiplier = new BigNumber(settingValues[0]);
 			assert.equal(
 				startingNetworkTokenBonusMultiplier.toNumber(),
 				1000000,
@@ -112,89 +112,12 @@ contract("AOToken", function(accounts) {
 			);
 		});
 		it("should have the correct ending network token bonus multiplier for calculating network token bonus amount", async function() {
-			endingNetworkTokenBonusMultiplier = new BigNumber(await tokenMeta.endingNetworkTokenBonusMultiplier());
+			var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "endingNetworkTokenBonusMultiplier");
+			endingNetworkTokenBonusMultiplier = new BigNumber(settingValues[0]);
 			assert.equal(endingNetworkTokenBonusMultiplier.toNumber(), 250000, "Contract has incorrect endingNetworkTokenBonusMultiplier");
 		});
 	});
 	contract("Developer Only Function Tests", function() {
-		it("setStartingEndingMultiplier() - should update starting/ending multiplier value", async function() {
-			var canSet;
-			try {
-				await tokenMeta.setStartingEndingMultiplier(1000, 500, { from: account1 });
-				canSet = true;
-			} catch (e) {
-				canSet = false;
-			}
-			assert.notEqual(canSet, true, "Non-developer account can set starting/ending multiplier value");
-
-			try {
-				await tokenMeta.setStartingEndingMultiplier(500, 1000, { from: developer });
-				canSet = true;
-			} catch (e) {
-				canSet = false;
-			}
-			assert.notEqual(
-				canSet,
-				true,
-				"Developer account can set starting/ending multiplier value with ending multiplier > starting multiplier"
-			);
-
-			try {
-				await tokenMeta.setStartingEndingMultiplier(1000, 500, { from: developer });
-				canSet = true;
-			} catch (e) {
-				canSet = false;
-			}
-			assert.equal(canSet, true, "Developer account can't set starting/ending multiplier");
-
-			var _startingMultiplier = await tokenMeta.startingMultiplier();
-			assert.equal(_startingMultiplier.toString(), 1000, "Contract has incorrect startingMultiplier");
-
-			var _endingMultiplier = await tokenMeta.endingMultiplier();
-			assert.equal(_endingMultiplier.toString(), 500, "Contract has incorrect endingMultiplier");
-		});
-
-		it("setStartingEndingNetworkTokenBonusMultiplier() - should update starting/ending network token bonus multiplier value", async function() {
-			var canSet;
-			try {
-				await tokenMeta.setStartingEndingNetworkTokenBonusMultiplier(1000, 500, { from: account1 });
-				canSet = true;
-			} catch (e) {
-				canSet = false;
-			}
-			assert.notEqual(canSet, true, "Non-developer account can set starting/ending network token bonus multiplier value");
-
-			try {
-				await tokenMeta.setStartingEndingNetworkTokenBonusMultiplier(500, 1000, { from: developer });
-				canSet = true;
-			} catch (e) {
-				canSet = false;
-			}
-			assert.notEqual(
-				canSet,
-				true,
-				"Developer account can set starting/ending network token bonus multiplier value with ending network token bonus multiplier > starting network token bonus multiplier"
-			);
-
-			try {
-				await tokenMeta.setStartingEndingNetworkTokenBonusMultiplier(1000, 500, { from: developer });
-				canSet = true;
-			} catch (e) {
-				canSet = false;
-			}
-			assert.equal(canSet, true, "Developer account can't set starting/ending network token bonus multiplier");
-
-			var _startingNetworkTokenBonusMultiplier = await tokenMeta.startingNetworkTokenBonusMultiplier();
-			assert.equal(
-				_startingNetworkTokenBonusMultiplier.toString(),
-				1000,
-				"Contract has incorrect startingNetworkTokenBonusMultiplier"
-			);
-
-			var _endingNetworkTokenBonusMultiplier = await tokenMeta.endingNetworkTokenBonusMultiplier();
-			assert.equal(_endingNetworkTokenBonusMultiplier.toString(), 500, "Contract has incorrect endingNetworkTokenBonusMultiplier");
-		});
-
 		it("setAODevTeamAddresses() - should update AO Dev team addresses", async function() {
 			var canSet;
 			try {
@@ -443,7 +366,7 @@ contract("AOToken", function(accounts) {
 
 			var bonus = await tokenMeta.calculateMultiplierAndBonus(tokenAmount.toNumber());
 
-			var inverseMultiplier = startingMultiplier.minus(bonus[0]);
+			var inverseMultiplier = startingPrimordialMultiplier.minus(bonus[0]);
 			var foundationNetworkTokenBonusAmount = startingNetworkTokenBonusMultiplier
 				.minus(bonus[1])
 				.plus(endingNetworkTokenBonusMultiplier)
@@ -670,18 +593,13 @@ contract("AOToken", function(accounts) {
 		});
 		it("calculateMultiplierAndBonus() - should calculate the primordial token multiplier, bonus network token percentage and the bonus network token amount on a given lot when account purchases primordial token during network exchange", async function() {
 			var primordialTotalBought = await tokenMeta.primordialTotalBought();
-			var startingMultiplier = await tokenMeta.startingMultiplier();
-			var endingMultiplier = await tokenMeta.endingMultiplier();
-			var startingNetworkTokenBonusMultiplier = await tokenMeta.startingNetworkTokenBonusMultiplier();
-			var endingNetworkTokenBonusMultiplier = await tokenMeta.endingNetworkTokenBonusMultiplier();
-
 			var purchaseAmount = 10000;
 			var primordialMultiplier = await library.calculatePrimordialMultiplier(
 				purchaseAmount,
 				totalPrimordialForSale.toString(),
 				primordialTotalBought.toString(),
-				startingMultiplier.toString(),
-				endingMultiplier.toString()
+				startingPrimordialMultiplier.toString(),
+				endingPrimordialMultiplier.toString()
 			);
 			var bonusPercentage = await library.calculateNetworkTokenBonusPercentage(
 				purchaseAmount,

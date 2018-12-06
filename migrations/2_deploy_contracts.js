@@ -282,6 +282,116 @@ module.exports = function(deployer, network, accounts) {
 				console.log("Unable to add MULTIPLIER_DIVISOR setting", e);
 			}
 
+			/**
+			 * TOTAL_PRIMORDIAL_FOR_SALE 1125899906842620
+			 */
+			try {
+				var result = await aosetting.addUintSetting(
+					"TOTAL_PRIMORDIAL_FOR_SALE",
+					1125899906842620,
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add TOTAL_PRIMORDIAL_FOR_SALE setting", e);
+			}
+
+			/**
+			 * startingPrimordialMultiplier 50 * MULTIPLIER_DIVISOR = 50
+			 */
+			try {
+				var result = await aosetting.addUintSetting(
+					"startingPrimordialMultiplier",
+					50 * 10 ** 6,
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add startingPrimordialMultiplier setting", e);
+			}
+
+			/**
+			 * endingPrimordialMultiplier 3 * MULTIPLIER_DIVISOR = 3
+			 */
+			try {
+				var result = await aosetting.addUintSetting(
+					"endingPrimordialMultiplier",
+					3 * 10 ** 6,
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add endingPrimordialMultiplier setting", e);
+			}
+
+			/**
+			 * startingNetworkTokenBonusMultiplier 1000000 = 100%
+			 */
+			try {
+				var result = await aosetting.addUintSetting(
+					"startingNetworkTokenBonusMultiplier",
+					10 ** 6,
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add startingNetworkTokenBonusMultiplier setting", e);
+			}
+
+			/**
+			 * endingNetworkTokenBonusMultiplier 250000 = 25%
+			 */
+			try {
+				var result = await aosetting.addUintSetting(
+					"endingNetworkTokenBonusMultiplier",
+					250000,
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add endingNetworkTokenBonusMultiplier setting", e);
+			}
+
 			// Deploy AOToken and all of the denominations
 			return deployer.deploy([
 				[AOToken, 0, "AO Token", "AOTKN", settingThoughtId, aosetting.address],

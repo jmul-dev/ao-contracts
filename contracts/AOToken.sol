@@ -42,10 +42,6 @@ contract AOToken is developed, TokenERC20 {
 	uint256 public primordialSellPrice;
 	uint256 public primordialBuyPrice;
 	bool public networkExchangeContract;
-	uint256 public startingMultiplier;
-	uint256 public endingMultiplier;
-	uint256 public startingNetworkTokenBonusMultiplier;
-	uint256 public endingNetworkTokenBonusMultiplier;
 
 	mapping (address => uint256) public primordialBalanceOf;
 	mapping (address => mapping (address => uint256)) public primordialAllowance;
@@ -62,13 +58,6 @@ contract AOToken is developed, TokenERC20 {
 	uint256 public totalLots;
 	uint256 public totalBurnLots;
 	uint256 public totalConvertLots;
-
-	// Total available primordial token for sale 1,125,899,906,842,620 AO+
-	uint256 constant public TOTAL_PRIMORDIAL_FOR_SALE = 1125899906842620;
-
-	// Account for 6 decimal points for multiplier
-	uint256 constant public MULTIPLIER_DIVISOR = 10 ** 6; // 1000000 = 1
-	uint256 constant public PERCENTAGE_DIVISOR = 10 ** 6; // 100% = 1000000
 
 	bool public networkExchangeEnded;
 
@@ -147,10 +136,6 @@ contract AOToken is developed, TokenERC20 {
 		decimals = 0;
 		networkExchangeContract = true;
 		setPrimordialPrices(0, 10000); // Set Primordial buy price to 10000 Wei/token
-		startingMultiplier = 50 * MULTIPLIER_DIVISOR;
-		endingMultiplier = 3 * MULTIPLIER_DIVISOR;
-		startingNetworkTokenBonusMultiplier = 1000000; // 100%
-		endingNetworkTokenBonusMultiplier = 250000; // 25%
 	}
 
 	/**
@@ -161,29 +146,16 @@ contract AOToken is developed, TokenERC20 {
 		_;
 	}
 
+	/**
+	 * @dev Checks if buyer can buy primordial token
+	 */
+	modifier canBuyPrimordial(uint256 _sentAmount) {
+		(uint256 TOTAL_PRIMORDIAL_FOR_SALE,,,,,) = _getSettingVariables();
+		require (networkExchangeEnded == false && primordialTotalBought < TOTAL_PRIMORDIAL_FOR_SALE && primordialBuyPrice > 0 && _sentAmount > 0);
+		_;
+	}
+
 	/***** DEVELOPER ONLY METHODS *****/
-	/**
-	 * @dev Set starting/ending multiplier values that are used to calculate primordial multiplier
-	 * @param _startingMultiplier The new starting multiplier value
-	 * @param _endingMultiplier The new ending multiplier value
-	 */
-	function setStartingEndingMultiplier(uint256 _startingMultiplier, uint256 _endingMultiplier) public onlyDeveloper {
-		require (_startingMultiplier >= _endingMultiplier);
-		startingMultiplier = _startingMultiplier;
-		endingMultiplier = _endingMultiplier;
-	}
-
-	/**
-	 * @dev Set starting/ending network token bonus multiplier values that are used to calculate network token bonus amount
-	 * @param _startingNetworkTokenBonusMultiplier The new starting network token bonus multiplier value
-	 * @param _endingNetworkTokenBonusMultiplier The new ending network token bonus multiplier value
-	 */
-	function setStartingEndingNetworkTokenBonusMultiplier(uint256 _startingNetworkTokenBonusMultiplier, uint256 _endingNetworkTokenBonusMultiplier) public onlyDeveloper {
-		require (_startingNetworkTokenBonusMultiplier >= _endingNetworkTokenBonusMultiplier);
-		startingNetworkTokenBonusMultiplier = _startingNetworkTokenBonusMultiplier;
-		endingNetworkTokenBonusMultiplier = _endingNetworkTokenBonusMultiplier;
-	}
-
 	/***** NETWORK TOKEN DEVELOPER ONLY METHODS *****/
 	/**
 	 * @dev Prevent/Allow target from sending & receiving tokens
@@ -392,46 +364,21 @@ contract AOToken is developed, TokenERC20 {
 	/**
 	 * @dev Buy Primordial tokens from contract by sending ether
 	 */
-	function buyPrimordialToken() public payable isNetworkExchange {
-		require (networkExchangeEnded == false);
-		require (primordialTotalBought < TOTAL_PRIMORDIAL_FOR_SALE);
-		require (primordialBuyPrice > 0);
-		require (msg.value > 0);
-
-		// Calculate the amount of tokens
-		uint256 tokenAmount = msg.value.div(primordialBuyPrice);
-
-		// If we need to return ETH to the buyer, in the case
-		// where the buyer sends more ETH than available primordial token to be purchased
-		uint256 remainderEth = 0;
-
-		// Make sure primordialTotalBought is not overflowing
-		if (primordialTotalBought.add(tokenAmount) >= TOTAL_PRIMORDIAL_FOR_SALE) {
-			tokenAmount = TOTAL_PRIMORDIAL_FOR_SALE.sub(primordialTotalBought);
-			networkExchangeEnded = true;
-			remainderEth = msg.value.sub(tokenAmount.mul(primordialBuyPrice));
-		}
+	function buyPrimordialToken() public payable isNetworkExchange canBuyPrimordial(msg.value) {
+		(uint256 tokenAmount, uint256 remainderBudget, bool shouldEndNetworkExchange) = _calculateTokenAmountAndRemainderBudget(msg.value);
 		require (tokenAmount > 0);
 
-		// Update primordialTotalBought
-		(uint256 multiplier, uint256 networkTokenBonusPercentage, uint256 networkTokenBonusAmount) = calculateMultiplierAndBonus(tokenAmount);
-		primordialTotalBought = primordialTotalBought.add(tokenAmount);
-		_createPrimordialLot(msg.sender, tokenAmount, multiplier, networkTokenBonusAmount);
-
-		// Calculate Foundation and AO Dev Team's portion of Primordial and Network Token Bonus
-		uint256 inverseMultiplier = startingMultiplier.sub(multiplier); // Inverse of the buyer's multiplier
-		uint256 foundationNetworkTokenBonusAmount = (startingNetworkTokenBonusMultiplier.sub(networkTokenBonusPercentage).add(endingNetworkTokenBonusMultiplier)).mul(tokenAmount).div(PERCENTAGE_DIVISOR);
-		if (aoDevTeam1 != address(0)) {
-			_createPrimordialLot(aoDevTeam1, tokenAmount.div(2), inverseMultiplier, foundationNetworkTokenBonusAmount.div(2));
+		// Ends network exchange if necessary
+		if (shouldEndNetworkExchange) {
+			networkExchangeEnded = true;
 		}
-		if (aoDevTeam2 != address(0)) {
-			_createPrimordialLot(aoDevTeam2, tokenAmount.div(2), inverseMultiplier, foundationNetworkTokenBonusAmount.div(2));
-		}
-		_mintToken(developer, foundationNetworkTokenBonusAmount);
 
-		// Send remainder ETH back to buyer if exist
-		if (remainderEth > 0) {
-			msg.sender.transfer(remainderEth);
+		// Send the primordial token to buyer and reward AO devs
+		_sendPrimordialTokenAndRewardDev(tokenAmount, msg.sender);
+
+		// Send remainder budget back to buyer if exist
+		if (remainderBudget > 0) {
+			msg.sender.transfer(remainderBudget);
 		}
 	}
 
@@ -689,8 +636,9 @@ contract AOToken is developed, TokenERC20 {
 	 * @return The amount of network token as bonus
 	 */
 	function calculateMultiplierAndBonus(uint256 _purchaseAmount) public isNetworkExchange view returns (uint256, uint256, uint256) {
+		(uint256 TOTAL_PRIMORDIAL_FOR_SALE,, uint256 startingPrimordialMultiplier, uint256 endingPrimordialMultiplier, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
 		return (
-			AOLibrary.calculatePrimordialMultiplier(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingMultiplier, endingMultiplier),
+			AOLibrary.calculatePrimordialMultiplier(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingPrimordialMultiplier, endingPrimordialMultiplier),
 			AOLibrary.calculateNetworkTokenBonusPercentage(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier),
 			AOLibrary.calculateNetworkTokenBonusAmount(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier)
 		);
@@ -875,6 +823,59 @@ contract AOToken is developed, TokenERC20 {
 
 	/***** PRIMORDIAL TOKEN INTERNAL METHODS *****/
 	/**
+	 * @dev Calculate the amount of token the buyer will receive and remaining budget if exist
+	 *		when he/she buys primordial token
+	 * @param _budget The amount of ETH sent by buyer
+	 * @return uint256 of the tokenAmount the buyer will receiver
+	 * @return uint256 of the remaining budget, if exist
+	 * @return bool whether or not the network exchange should end
+	 */
+	function _calculateTokenAmountAndRemainderBudget(uint256 _budget) internal view returns (uint256, uint256, bool) {
+		(uint256 TOTAL_PRIMORDIAL_FOR_SALE,,,,,) = _getSettingVariables();
+
+		// Calculate the amount of tokens
+		uint256 tokenAmount = _budget.div(primordialBuyPrice);
+
+		// If we need to return ETH to the buyer, in the case
+		// where the buyer sends more ETH than available primordial token to be purchased
+		uint256 remainderEth = 0;
+
+		// Make sure primordialTotalBought is not overflowing
+		bool shouldEndNetworkExchange = false;
+		if (primordialTotalBought.add(tokenAmount) >= TOTAL_PRIMORDIAL_FOR_SALE) {
+			tokenAmount = TOTAL_PRIMORDIAL_FOR_SALE.sub(primordialTotalBought);
+			shouldEndNetworkExchange = true;
+			remainderEth = msg.value.sub(tokenAmount.mul(primordialBuyPrice));
+		}
+		return (tokenAmount, remainderEth, shouldEndNetworkExchange);
+	}
+
+	/**
+	 * @dev Actually sending the primordial token to buyer and reward AO devs accordingly
+	 * @param tokenAmount The amount of primordial token to be sent to buyer
+	 * @param to The recipient of the token
+	 */
+	function _sendPrimordialTokenAndRewardDev(uint256 tokenAmount, address to) internal {
+		(, uint256 PERCENTAGE_DIVISOR, uint256 startingPrimordialMultiplier,, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
+
+		// Update primordialTotalBought
+		(uint256 multiplier, uint256 networkTokenBonusPercentage, uint256 networkTokenBonusAmount) = calculateMultiplierAndBonus(tokenAmount);
+		primordialTotalBought = primordialTotalBought.add(tokenAmount);
+		_createPrimordialLot(to, tokenAmount, multiplier, networkTokenBonusAmount);
+
+		// Calculate Foundation and AO Dev Team's portion of Primordial and Network Token Bonus
+		uint256 inverseMultiplier = startingPrimordialMultiplier.sub(multiplier); // Inverse of the buyer's multiplier
+		uint256 foundationNetworkTokenBonusAmount = (startingNetworkTokenBonusMultiplier.sub(networkTokenBonusPercentage).add(endingNetworkTokenBonusMultiplier)).mul(tokenAmount).div(PERCENTAGE_DIVISOR);
+		if (aoDevTeam1 != address(0)) {
+			_createPrimordialLot(aoDevTeam1, tokenAmount.div(2), inverseMultiplier, foundationNetworkTokenBonusAmount.div(2));
+		}
+		if (aoDevTeam2 != address(0)) {
+			_createPrimordialLot(aoDevTeam2, tokenAmount.div(2), inverseMultiplier, foundationNetworkTokenBonusAmount.div(2));
+		}
+		_mintToken(developer, foundationNetworkTokenBonusAmount);
+	}
+
+	/**
 	 * @dev Create a lot with `primordialTokenAmount` of primordial tokens with `_multiplier` for an `account`
 	 *		during network exchange, and reward `_networkTokenBonusAmount` if exist
 	 * @param _account Address of the lot owner
@@ -992,5 +993,26 @@ contract AOToken is developed, TokenERC20 {
 		burnLot.tokenAmount = _tokenAmount;
 		ownedBurnLots[_account].push(burnLotId);
 		emit BurnLotCreation(burnLot.lotOwner, burnLot.burnLotId, burnLot.tokenAmount, ownerWeightedMultiplier[burnLot.lotOwner]);
+	}
+
+	/**
+	 * @dev Get setting variables
+	 * @return TOTAL_PRIMORDIAL_FOR_SALE The total primordial token that is available for sale
+	 * @return PERCENTAGE_DIVISOR The divisor used to calculate percentage
+	 * @return startingPrimordialMultiplier The starting multiplier used to calculate primordial token
+	 * @return endingPrimordialMultiplier The ending multiplier used to calculate primordial token
+	 * @return startingNetworkTokenBonusMultiplier The starting multiplier used to calculate network token bonus
+	 * @return endingNetworkTokenBonusMultiplier The ending multiplier used to calculate network token bonus
+	 */
+	function _getSettingVariables() internal view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
+		(uint256 TOTAL_PRIMORDIAL_FOR_SALE,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'TOTAL_PRIMORDIAL_FOR_SALE');
+		(uint256 PERCENTAGE_DIVISOR,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'PERCENTAGE_DIVISOR');
+		(uint256 startingPrimordialMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'startingPrimordialMultiplier');
+		(uint256 endingPrimordialMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'endingPrimordialMultiplier');
+
+		(uint256 startingNetworkTokenBonusMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'startingNetworkTokenBonusMultiplier');
+		(uint256 endingNetworkTokenBonusMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'endingNetworkTokenBonusMultiplier');
+
+		return (TOTAL_PRIMORDIAL_FOR_SALE, PERCENTAGE_DIVISOR, startingPrimordialMultiplier, endingPrimordialMultiplier, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier);
 	}
 }
