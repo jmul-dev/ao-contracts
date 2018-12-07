@@ -345,7 +345,7 @@ module.exports = function(deployer, network, accounts) {
 			 * Content Usage Type AO Content = AO Content
 			 */
 			try {
-				var result = await aosetting.addStringSetting(
+				var result = await aosetting.addBytesSetting(
 					"contentUsageType_aoContent",
 					"AO Content",
 					primordialThoughtId,
@@ -367,7 +367,7 @@ module.exports = function(deployer, network, accounts) {
 			 * Content Usage Type Creative Commons = Creative Commons
 			 */
 			try {
-				var result = await aosetting.addStringSetting(
+				var result = await aosetting.addBytesSetting(
 					"contentUsageType_creativeCommons",
 					"Creative Commons",
 					primordialThoughtId,
@@ -389,7 +389,7 @@ module.exports = function(deployer, network, accounts) {
 			 * Content Usage Type TAO Content = T(AO) Content
 			 */
 			try {
-				var result = await aosetting.addStringSetting(
+				var result = await aosetting.addBytesSetting(
 					"contentUsageType_taoContent",
 					"T(AO) Content",
 					primordialThoughtId,
@@ -405,6 +405,72 @@ module.exports = function(deployer, network, accounts) {
 				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
 			} catch (e) {
 				console.log("Unable to add contentUsageType_taoContent setting", e);
+			}
+
+			/**
+			 * TAO Content State Submitted = Submitted
+			 */
+			try {
+				var result = await aosetting.addBytesSetting(
+					"taoContentState_submitted",
+					"Submitted",
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add taoContentState_submitted setting", e);
+			}
+
+			/**
+			 * TAO Content State Pending Review = Pending Review
+			 */
+			try {
+				var result = await aosetting.addBytesSetting(
+					"taoContentState_pendingReview",
+					"Pending Review",
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add taoContentState_pendingReview setting", e);
+			}
+
+			/**
+			 * TAO Content State Accepted to TAO = Accepted to TAO
+			 */
+			try {
+				var result = await aosetting.addBytesSetting(
+					"taoContentState_acceptedToTao",
+					"Accepted to TAO",
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add taoContentState_acceptedToTao setting", e);
 			}
 
 			// Deploy AOToken and all of the denominations
