@@ -230,7 +230,7 @@ library AOLibrary {
 	 * @return the primordial weighted multiplier of the staked content
 	 */
 	function getStakingMetrics(address _contentAddress, bytes32 _stakeId) public view returns (uint256, uint256, uint256) {
-		(,, uint256 networkAmount, uint256 primordialAmount, uint256 primordialWeightedMultiplier,,,,) = AOContent(_contentAddress).stakedContentById(_stakeId);
+		(,, uint256 networkAmount, uint256 primordialAmount, uint256 primordialWeightedMultiplier,,,) = AOContent(_contentAddress).stakedContentById(_stakeId);
 		return (
 			networkAmount,
 			primordialAmount,
