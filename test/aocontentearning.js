@@ -22,7 +22,10 @@ contract("AOContent & AOEarning", function(accounts) {
 		inflationRate,
 		foundationCut,
 		percentageDivisor,
-		multiplierDivisor;
+		multiplierDivisor,
+		contentUsageType_aoContent,
+		contentUsageType_creativeCommons,
+		contentUsageType_taoContent;
 	var someAddress = "0x0694bdcab07b298e88a834a3c91602cb8f457bde";
 	var developer = accounts[0];
 	var account1 = accounts[1];
@@ -39,13 +42,15 @@ contract("AOContent & AOEarning", function(accounts) {
 	var account2MetadataDatKey = "02bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 	var account3ContentDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 	var account3MetadataDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
-	var extraData = "someextradata";
+	var extraData = "";
 
 	var account2LocalIdentity = EthCrypto.createIdentity();
 	var account3LocalIdentity = EthCrypto.createIdentity();
 
 	var fileSize = 1000000; // 1000000 bytes = min 1000000 AO
 	var profitPercentage = 600000; // 60%
+
+	var taoId = "";
 
 	before(async function() {
 		aocontent = await AOContent.deployed();
@@ -70,11 +75,17 @@ contract("AOContent & AOEarning", function(accounts) {
 		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "foundationCut");
 		foundationCut = settingValues[0];
 
-		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "PERCENTAGE_DIVISOR");
-		percentageDivisor = settingValues[0];
+		percentageDivisor = await library.PERCENTAGE_DIVISOR();
+		multiplierDivisor = await library.MULTIPLIER_DIVISOR();
 
-		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "MULTIPLIER_DIVISOR");
-		multiplierDivisor = settingValues[0];
+		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "contentUsageType_aoContent");
+		contentUsageType_aoContent = settingValues[4];
+
+		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "contentUsageType_creativeCommons");
+		contentUsageType_creativeCommons = settingValues[4];
+
+		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "contentUsageType_taoContent");
+		contentUsageType_taoContent = settingValues[4];
 	});
 
 	contract("AOContent - Developer Only Function Tests", function() {
@@ -243,7 +254,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 			var canStake, content, stakedContent, contentHost, storeContentEvent, stakeContentEvent, hostContentEvent;
 			try {
-				var result = await aocontent.stakeContent(
+				var result = await aocontent.stakeAOContent(
 					networkIntegerAmount,
 					networkFractionAmount,
 					denomination,
@@ -254,7 +265,6 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					fileSize,
 					profitPercentage,
-					extraData,
 					{ from: account }
 				);
 
@@ -293,6 +303,12 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.equal(content[0], account, "contentById returns incorrect content creator");
 			assert.equal(content[1].toString(), fileSize, "contentById returns incorrect filesize");
 
+			/**
+			 * TODO: add more validation for contentById
+			 */
+			//assert.equal(content[2], contentUsageType_aoContent, "contentById returns incorrect contentUsageType_aoContent");
+			//assert.equal(content[3], extraData, "contentById returns incorrect extraData");
+
 			// Verify stakedContent
 			assert.equal(stakedContent[0], contentId, "stakedContentById returns incorrect contentID");
 			assert.equal(stakedContent[1], account, "stakedContentById returns incorrect stakeOwner");
@@ -309,7 +325,6 @@ contract("AOContent & AOEarning", function(accounts) {
 			);
 			assert.equal(stakedContent[5].toString(), profitPercentage, "stakedContentById returns incorrect profitPercentage");
 			assert.equal(stakedContent[6], true, "stakedContentById returns incorrect active status");
-			assert.equal(stakedContent[8], extraData, "stakedContentById returns incorrect extraData");
 
 			// Verify contentHost
 			assert.equal(contentHost[0], stakeId, "contentHostById returns incorrect stakeID");
@@ -548,7 +563,7 @@ contract("AOContent & AOEarning", function(accounts) {
 		it("stakeContent() - should NOT stake content if params provided are not valid", async function() {
 			var canStake;
 			try {
-				await aocontent.stakeContent(
+				await aocontent.stakeAOContent(
 					1,
 					0,
 					"mega",
@@ -559,7 +574,6 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					fileSize,
 					profitPercentage,
-					extraData,
 					{
 						from: account1
 					}
@@ -571,7 +585,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canStake, true, "account1 can stake content even though it's missing baseChallenge");
 
 			try {
-				await aocontent.stakeContent(
+				await aocontent.stakeAOContent(
 					1,
 					0,
 					"mega",
@@ -582,7 +596,6 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					fileSize,
 					profitPercentage,
-					extraData,
 					{ from: account1 }
 				);
 				canStake = true;
@@ -592,7 +605,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canStake, true, "account1 can stake content even though it's missing encChallenge");
 
 			try {
-				await aocontent.stakeContent(
+				await aocontent.stakeAOContent(
 					1,
 					0,
 					"mega",
@@ -603,7 +616,6 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					fileSize,
 					profitPercentage,
-					extraData,
 					{
 						from: account1
 					}
@@ -614,7 +626,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			}
 			assert.notEqual(canStake, true, "account1 can stake content even though it's missing contentDatKey");
 			try {
-				await aocontent.stakeContent(
+				await aocontent.stakeAOContent(
 					1,
 					0,
 					"mega",
@@ -625,7 +637,6 @@ contract("AOContent & AOEarning", function(accounts) {
 					"",
 					fileSize,
 					profitPercentage,
-					extraData,
 					{
 						from: account1
 					}
@@ -636,7 +647,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			}
 			assert.notEqual(canStake, true, "account1 can stake content even though it's missing metadataDatKey");
 			try {
-				await aocontent.stakeContent(
+				await aocontent.stakeAOContent(
 					1,
 					0,
 					"mega",
@@ -647,7 +658,6 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					0,
 					profitPercentage,
-					extraData,
 					{ from: account1 }
 				);
 				canStake = true;
@@ -656,7 +666,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			}
 			assert.notEqual(canStake, true, "account1 can stake content even though fileSize is 0");
 			try {
-				await aocontent.stakeContent(
+				await aocontent.stakeAOContent(
 					1,
 					0,
 					"mega",
@@ -667,7 +677,6 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					fileSize,
 					1100000,
-					extraData,
 					{ from: account1 }
 				);
 				canStake = true;
@@ -677,7 +686,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canStake, true, "account1 can stake content even though it's profitPercentage is > 100%");
 
 			try {
-				await aocontent.stakeContent(
+				await aocontent.stakeAOContent(
 					1,
 					0,
 					"kilo",
@@ -688,7 +697,6 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					fileSize,
 					profitPercentage,
-					extraData,
 					{ from: account1 }
 				);
 				canStake = true;
@@ -701,7 +709,7 @@ contract("AOContent & AOEarning", function(accounts) {
 		it("stakeContent() - should NOT stake content if account does not have enough balance", async function() {
 			var canStake;
 			try {
-				await aocontent.stakeContent(
+				await aocontent.stakeAOContent(
 					2,
 					0,
 					"giga",
@@ -712,7 +720,6 @@ contract("AOContent & AOEarning", function(accounts) {
 					metadataDatKey,
 					fileSize,
 					700000,
-					extraData,
 					{ from: account1 }
 				);
 				canStake = true;

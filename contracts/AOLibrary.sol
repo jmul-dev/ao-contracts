@@ -10,6 +10,8 @@ import './AOBoolSetting.sol';
 import './AOAddressSetting.sol';
 import './AOBytesSetting.sol';
 import './AOStringSetting.sol';
+import './Thought.sol';
+import './NameFactory.sol';
 
 /**
  * @title AOLibrary
@@ -173,17 +175,7 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Generate hash of the message
-	 * @param _callingContractAddress the address of the calling contract
-	 * @param _message the message to be hashed
-	 * @return hash
-	 */
-	function doHash(address _callingContractAddress, string _message) public pure returns (bytes32) {
-		return keccak256(abi.encodePacked(_callingContractAddress, _message));
-	}
-
-	/**
-	 * @dev Return the address that signed the message
+	 * @dev Return the address that signed the message when a node wants to become a host
 	 * @param _callingContractAddress the address of the calling contract
 	 * @param _message the message that was signed
 	 * @param _v part of the signature
@@ -191,8 +183,24 @@ library AOLibrary {
 	 * @param _s part of the signature
 	 * @return the address that signed the message
 	 */
-	function checkSignature(address _callingContractAddress, string _message, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
-		bytes32 _hash = doHash(_callingContractAddress, _message);
+	function getBecomeHostSignatureAddress(address _callingContractAddress, string _message, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
+		bytes32 _hash = keccak256(abi.encodePacked(_callingContractAddress, _message));
+		return ecrecover(_hash, _v, _r, _s);
+	}
+
+	/**
+	 * @dev Return the address that signed the TAO content state update
+	 * @param _callingContractAddress the address of the calling contract
+	 * @param _contentId the ID of the content
+	 * @param _thoughtId the ID of the Thought
+	 * @param _taoContentState the TAO Content State value, i.e Submitted, Pending Review, or Accepted to TAO
+	 * @param _v part of the signature
+	 * @param _r part of the signature
+	 * @param _s part of the signature
+	 * @return the address that signed the message
+	 */
+	function getUpdateTAOContentStateSignatureAddress(address _callingContractAddress, bytes32 _contentId, address _thoughtId, bytes32 _taoContentState, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
+		bytes32 _hash = keccak256(abi.encodePacked(_callingContractAddress, _contentId, _thoughtId, _taoContentState));
 		return ecrecover(_hash, _v, _r, _s);
 	}
 
@@ -437,6 +445,30 @@ library AOLibrary {
 			AOBytesSetting(_aoBytesSettingAddress).settingValue(_settingId),
 			AOStringSetting(_aoStringSettingAddress).settingValue(_settingId)
 		);
+	}
+
+	/**
+	 * @dev Check whether or not the given Thought ID is a Thought
+	 * @param _thoughtId The ID of the Thought
+	 * @return true if yes. false otherwise
+	 */
+	function isThought(address _thoughtId) public view returns (bool) {
+		return (_thoughtId != address(0) && Thought(_thoughtId).originNameId() != address(0) && Thought(_thoughtId).thoughtTypeId() == 0);
+	}
+
+	/**
+	 * @dev Check whether or not _from address can update TAO Content's State,
+	 *		i.e the address has to be either Advocate/Listener/Speaker of the Thought
+	 * @param _nameFactoryAddress The address of NameFactory
+	 * @param _from The address that wants to update the TAO Content State
+	 * @param _thoughtId The ID of the Thought
+	 * @return true if yes. false otherwise
+	 */
+	function addressCanUpdateTAOContentState(address _nameFactoryAddress, address _from, address _thoughtId) public view returns (bool) {
+		address _nameId = NameFactory(_nameFactoryAddress).ethAddressToNameId(_from);
+		require (_nameId != address(0));
+		require (isThought(_thoughtId));
+		return (_nameId == Thought(_thoughtId).advocateId() || _nameId == Thought(_thoughtId).listenerId() || _nameId == Thought(_thoughtId).speakerId());
 	}
 
 	/***** Internal Methods *****/

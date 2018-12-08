@@ -456,7 +456,7 @@ module.exports = function(deployer, network, accounts) {
 			 */
 			try {
 				var result = await aosetting.addBytesSetting(
-					"taoContentState_acceptedToTao",
+					"taoContentState_acceptedToTAO",
 					"Accepted to TAO",
 					primordialThoughtId,
 					settingThoughtId,
@@ -470,7 +470,7 @@ module.exports = function(deployer, network, accounts) {
 				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
 				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
 			} catch (e) {
-				console.log("Unable to add taoContentState_acceptedToTao setting", e);
+				console.log("Unable to add taoContentState_acceptedToTAO setting", e);
 			}
 
 			// Deploy AOToken and all of the denominations
@@ -593,7 +593,15 @@ module.exports = function(deployer, network, accounts) {
 			// antilogos grant access to aoearning
 			await antilogos.setWhitelist(aoearning.address, true, { from: primordialAccount });
 
-			return deployer.deploy(AOContent, settingThoughtId, aosetting.address, aotoken.address, aotreasury.address, aoearning.address);
+			return deployer.deploy(
+				AOContent,
+				settingThoughtId,
+				aosetting.address,
+				aotoken.address,
+				aotreasury.address,
+				aoearning.address,
+				namefactory.address
+			);
 		})
 		.then(async function() {
 			aocontent = await AOContent.deployed();
