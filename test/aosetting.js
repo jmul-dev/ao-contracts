@@ -17,8 +17,7 @@ contract("AOSetting", function(accounts) {
 		aobytessetting,
 		aostringsetting,
 		namefactory,
-		thoughtfactory,
-		primordialName;
+		thoughtfactory;
 	var developer = accounts[0];
 	var whitelistedAccount = accounts[9];
 	var account1 = accounts[1];
