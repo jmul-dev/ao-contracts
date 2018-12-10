@@ -871,8 +871,8 @@ contract("AOContent & AOEarning", function(accounts) {
 			// Let's give account1 some tokens
 			await aotoken.mintToken(account1, 10 ** 9, { from: developer }); // 1,000,000,000 AO Token
 			// Buy 2 lots so that we can test avg weighted multiplier
-			await aotoken.buyPrimordialToken({ from: account1, value: 50000000000 });
-			await aotoken.buyPrimordialToken({ from: account1, value: 50000000000 });
+			await aotoken.buyPrimordialToken({ from: account1, value: 500000000000 });
+			await aotoken.buyPrimordialToken({ from: account1, value: 500000000000 });
 
 			// Let's give account2 some tokens
 			await aotoken.mintToken(account2, 10 ** 9, { from: developer }); // 1,000,000,000 AO Token
@@ -1820,9 +1820,6 @@ contract("AOContent & AOEarning", function(accounts) {
 			await unstakeContent(account1, TAOContent_stakeId3);
 		});
 
-		return;
-		/*
-
 		it("stakeExistingContent() - should NOT be able to stake non-existing staked content", async function() {
 			var canStakeExisting;
 			try {
@@ -1838,7 +1835,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			var stakeExistingContent = async function(stakeId) {
 				var canStakeExisting;
 				try {
-					await aocontent.stakeExistingContent(stakeId, 5, 10, "mega", 10, { from: account2 });
+					await aocontent.stakeExistingContent(stakeId, 1, 0, "mega", 0, { from: account2 });
 					canStakeExisting = true;
 				} catch (e) {
 					canStakeExisting = false;
@@ -1846,9 +1843,9 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.notEqual(canStakeExisting, true, "Non-stake owner address can stake existing staked content");
 			};
 
-			await stakeExistingContent(stakeId1);
-			await stakeExistingContent(stakeId2);
-			await stakeExistingContent(stakeId3);
+			await stakeExistingContent(AOContent_stakeId1);
+			await stakeExistingContent(AOContent_stakeId2);
+			await stakeExistingContent(AOContent_stakeId3);
 		});
 
 		it("stakeExistingContent() - should not be able to stake less than file size", async function() {
@@ -1876,57 +1873,143 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.notEqual(canStakeExisting, true, "Stake owner can stake less than filesize");
 			};
 
-			await stakeExistingContent(stakeId1, 30, 0, "ao", 0);
-			await stakeExistingContent(stakeId1, 0, 0, "", 30);
-			await stakeExistingContent(stakeId1, 30, 0, "ao", 30);
+			await stakeExistingContent(AOContent_stakeId1, 30, 0, "ao", 0);
+			await stakeExistingContent(AOContent_stakeId1, 0, 0, "", 30);
+			await stakeExistingContent(AOContent_stakeId1, 30, 0, "ao", 30);
+
+			await stakeExistingContent(CreativeCommons_stakeId1, 30, 0, "ao", 0);
+			await stakeExistingContent(CreativeCommons_stakeId1, 0, 0, "", 30);
+			await stakeExistingContent(CreativeCommons_stakeId1, 30, 0, "ao", 30);
+
+			await stakeExistingContent(TAOContent_stakeId1, 30, 0, "ao", 0);
+			await stakeExistingContent(TAOContent_stakeId1, 0, 0, "", 30);
+			await stakeExistingContent(TAOContent_stakeId1, 30, 0, "ao", 30);
+		});
+
+		it("stakeExistingContent() - should not be able to stake more than file size for non-AO Content", async function() {
+			var stakeExistingContent = async function(
+				stakeId,
+				networkIntegerAmount,
+				networkFractionAmount,
+				denomination,
+				primordialAmount
+			) {
+				var canStakeExisting;
+				try {
+					await aocontent.stakeExistingContent(
+						stakeId,
+						networkIntegerAmount,
+						networkFractionAmount,
+						denomination,
+						primordialAmount,
+						{ from: account1 }
+					);
+					canStakeExisting = true;
+				} catch (e) {
+					canStakeExisting = false;
+				}
+				assert.notEqual(canStakeExisting, true, "Stake owner can stake more than filesize");
+			};
+
+			await stakeExistingContent(CreativeCommons_stakeId1, 3, 0, "mega", 0);
+			await stakeExistingContent(CreativeCommons_stakeId1, 0, 0, "", 3000000);
+			await stakeExistingContent(CreativeCommons_stakeId1, 30, 0, "mega", 30);
+
+			await stakeExistingContent(TAOContent_stakeId1, 3, 0, "mega", 0);
+			await stakeExistingContent(TAOContent_stakeId1, 0, 0, "", 3000000);
+			await stakeExistingContent(TAOContent_stakeId1, 30, 0, "mega", 30);
 		});
 
 		it("stakeExistingContent() - should be able to stake only network tokens on existing staked content", async function() {
-			await stakeExistingContent(account1, stakeId1, 2, 0, "mega", 0);
-			await stakeExistingContent(account1, stakeId2, 1000, 100, "kilo", 0);
-			await stakeExistingContent(account1, stakeId3, 1, 0, "mega", 0);
+			await stakeExistingContent(account1, AOContent_stakeId1, 2, 0, "mega", 0);
+			await stakeExistingContent(account1, AOContent_stakeId2, 1000, 100, "kilo", 0);
+			await stakeExistingContent(account1, AOContent_stakeId3, 1, 0, "mega", 0);
+
+			await stakeExistingContent(account1, CreativeCommons_stakeId1, 1, 0, "mega", 0);
+			await stakeExistingContent(account1, CreativeCommons_stakeId2, 1, 0, "mega", 0);
+			await stakeExistingContent(account1, CreativeCommons_stakeId3, 1000, 0, "kilo", 0);
+
+			await stakeExistingContent(account1, TAOContent_stakeId1, 1, 0, "mega", 0);
+			await stakeExistingContent(account1, TAOContent_stakeId2, 1, 0, "mega", 0);
+			await stakeExistingContent(account1, TAOContent_stakeId3, 1000, 0, "kilo", 0);
 
 			// unstake them again for next test
-			await aocontent.unstakeContent(stakeId1, { from: account1 });
-			await aocontent.unstakeContent(stakeId2, { from: account1 });
-			await aocontent.unstakeContent(stakeId3, { from: account1 });
+			await aocontent.unstakeContent(AOContent_stakeId1, { from: account1 });
+			await aocontent.unstakeContent(AOContent_stakeId2, { from: account1 });
+			await aocontent.unstakeContent(AOContent_stakeId3, { from: account1 });
+
+			await aocontent.unstakeContent(CreativeCommons_stakeId1, { from: account1 });
+			await aocontent.unstakeContent(CreativeCommons_stakeId2, { from: account1 });
+			await aocontent.unstakeContent(CreativeCommons_stakeId3, { from: account1 });
+
+			await aocontent.unstakeContent(TAOContent_stakeId1, { from: account1 });
+			await aocontent.unstakeContent(TAOContent_stakeId2, { from: account1 });
+			await aocontent.unstakeContent(TAOContent_stakeId3, { from: account1 });
 		});
 
 		it("stakeExistingContent() - should be able to stake only primordial tokens on existing staked content", async function() {
-			await stakeExistingContent(account1, stakeId1, 0, 0, "", 1000100);
-			await stakeExistingContent(account1, stakeId2, 0, 0, "", 2000000);
-			await stakeExistingContent(account1, stakeId3, 0, 0, "", 1000000);
+			await stakeExistingContent(account1, AOContent_stakeId1, 0, 0, "", 1000100);
+			await stakeExistingContent(account1, AOContent_stakeId2, 0, 0, "", 2000000);
+			await stakeExistingContent(account1, AOContent_stakeId3, 0, 0, "", 1000000);
+
+			await stakeExistingContent(account1, CreativeCommons_stakeId1, 0, 0, "", 1000000);
+			await stakeExistingContent(account1, CreativeCommons_stakeId2, 0, 0, "", 1000000);
+			await stakeExistingContent(account1, CreativeCommons_stakeId3, 0, 0, "", 1000000);
+
+			await stakeExistingContent(account1, TAOContent_stakeId1, 0, 0, "", 1000000);
+			await stakeExistingContent(account1, TAOContent_stakeId2, 0, 0, "", 1000000);
+			await stakeExistingContent(account1, TAOContent_stakeId3, 0, 0, "", 1000000);
 
 			// unstake them again for next test
-			await aocontent.unstakeContent(stakeId1, { from: account1 });
-			await aocontent.unstakeContent(stakeId2, { from: account1 });
-			await aocontent.unstakeContent(stakeId3, { from: account1 });
+			await aocontent.unstakeContent(AOContent_stakeId1, { from: account1 });
+			await aocontent.unstakeContent(AOContent_stakeId2, { from: account1 });
+			await aocontent.unstakeContent(AOContent_stakeId3, { from: account1 });
+
+			await aocontent.unstakeContent(CreativeCommons_stakeId1, { from: account1 });
+			await aocontent.unstakeContent(CreativeCommons_stakeId2, { from: account1 });
+			await aocontent.unstakeContent(CreativeCommons_stakeId3, { from: account1 });
+
+			await aocontent.unstakeContent(TAOContent_stakeId1, { from: account1 });
+			await aocontent.unstakeContent(TAOContent_stakeId2, { from: account1 });
+			await aocontent.unstakeContent(TAOContent_stakeId3, { from: account1 });
 		});
 
 		it("stakeExistingContent() - should be able to stake both network and primordial tokens on existing staked content", async function() {
-			await stakeExistingContent(account1, stakeId1, 2, 10, "kilo", 1000000);
-			await stakeExistingContent(account1, stakeId2, 1, 0, "mega", 10);
-			await stakeExistingContent(account1, stakeId3, 0, 900000, "mega", 110000);
+			await stakeExistingContent(account1, AOContent_stakeId1, 2, 10, "kilo", 1000000);
+			await stakeExistingContent(account1, AOContent_stakeId2, 1, 0, "mega", 10);
+			await stakeExistingContent(account1, AOContent_stakeId3, 0, 900000, "mega", 110000);
 
 			var networkAmount = await aotreasury.toBase(2, 10, "kilo");
-			contentHost1Price = networkAmount.add(1000000);
+			AOContent_contentHost1Price = networkAmount.add(1000000);
 			networkAmount = await aotreasury.toBase(1, 0, "mega");
-			contentHost2Price = networkAmount.add(10);
+			AOContent_contentHost2Price = networkAmount.add(10);
 			networkAmount = await aotreasury.toBase(0, 900000, "mega");
-			contentHost3Price = networkAmount.add(110000);
+			AOContent_contentHost3Price = networkAmount.add(110000);
 
 			// Should be able to stake again on active staked content
-			await stakeExistingContent(account1, stakeId1, 0, 500, "kilo", 0);
-			await stakeExistingContent(account1, stakeId2, 0, 10, "mega", 1000);
-			await stakeExistingContent(account1, stakeId3, 100, 0, "ao", 100);
+			await stakeExistingContent(account1, AOContent_stakeId1, 0, 500, "kilo", 0);
+			await stakeExistingContent(account1, AOContent_stakeId2, 0, 10, "mega", 1000);
+			await stakeExistingContent(account1, AOContent_stakeId3, 100, 0, "ao", 100);
 
 			networkAmount = await aotreasury.toBase(0, 500, "kilo");
-			contentHost1Price = contentHost1Price.add(networkAmount);
+			AOContent_contentHost1Price = AOContent_contentHost1Price.add(networkAmount);
 			networkAmount = await aotreasury.toBase(0, 10, "mega");
-			contentHost2Price = contentHost2Price.add(networkAmount).add(1000);
+			AOContent_contentHost2Price = AOContent_contentHost2Price.add(networkAmount).add(1000);
 			networkAmount = await aotreasury.toBase(100, 0, "ao");
-			contentHost3Price = contentHost3Price.add(networkAmount).add(100);
+			AOContent_contentHost3Price = AOContent_contentHost3Price.add(networkAmount).add(100);
+
+			await stakeExistingContent(account1, CreativeCommons_stakeId1, 0, 900000, "mega", 100000);
+			await stakeExistingContent(account1, CreativeCommons_stakeId2, 0, 500000, "mega", 500000);
+			await stakeExistingContent(account1, CreativeCommons_stakeId3, 0, 300000, "mega", 700000);
+
+			await stakeExistingContent(account1, TAOContent_stakeId1, 0, 900000, "mega", 100000);
+			await stakeExistingContent(account1, TAOContent_stakeId2, 0, 500000, "mega", 500000);
+			await stakeExistingContent(account1, TAOContent_stakeId3, 0, 300000, "mega", 700000);
 		});
+
+		return;
+		/*
+
 
 		it("contentHostPrice() - should be able to return the price of a content hosted by a host", async function() {
 			var getContentHostPrice;
