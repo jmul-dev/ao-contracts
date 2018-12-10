@@ -314,7 +314,15 @@ contract("AOContent & AOEarning", function(accounts) {
 			TAOContent_purchaseId1,
 			TAOContent_purchaseId2,
 			TAOContent_purchaseId3,
-			contentHostId4;
+			AOContent_contentHostId4,
+			AOContent_contentHostId5,
+			AOContent_contentHostId6,
+			CreativeCommons_contentHostId4,
+			CreativeCommons_contentHostId5,
+			CreativeCommons_contentHostId6,
+			TAOContent_contentHostId4,
+			TAOContent_contentHostId5,
+			TAOContent_contentHostId6;
 
 		var stakeAOContent = async function(account, networkIntegerAmount, networkFractionAmount, denomination, primordialAmount) {
 			var accountBalanceBefore = await aotoken.balanceOf(account);
@@ -2392,9 +2400,6 @@ contract("AOContent & AOEarning", function(accounts) {
 			);
 		});
 
-		return;
-		/*
-
 		it("becomeHost() - should NOT be able to become host if params provided are not valid", async function() {
 			var canBecomeHost;
 			var signHash = EthCrypto.hash.keccak256([
@@ -2408,7 +2413,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				}
 			]);
 
-			var signature = EthCrypto.sign(account2LocalIdentity.privateKey, signHash);
+			var signature = EthCrypto.sign(account2PrivateKey, signHash);
 
 			var vrs = EthCrypto.vrs.fromString(signature);
 
@@ -2431,7 +2436,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 			try {
 				await aocontent.becomeHost(
-					purchaseId,
+					AOContent_purchaseId1,
 					0,
 					vrs.r,
 					vrs.s,
@@ -2452,7 +2457,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 			try {
 				await aocontent.becomeHost(
-					purchaseId,
+					AOContent_purchaseId1,
 					vrs.v,
 					"",
 					vrs.s,
@@ -2473,7 +2478,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 			try {
 				await aocontent.becomeHost(
-					purchaseId,
+					AOContent_purchaseId1,
 					vrs.v,
 					vrs.r,
 					"",
@@ -2493,7 +2498,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			);
 
 			try {
-				await aocontent.becomeHost(purchaseId, vrs.v, vrs.r, vrs.s, "", account2ContentDatKey, account2MetadataDatKey, {
+				await aocontent.becomeHost(AOContent_purchaseId1, vrs.v, vrs.r, vrs.s, "", account2ContentDatKey, account2MetadataDatKey, {
 					from: account2
 				});
 				canBecomeHost = true;
@@ -2507,7 +2512,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			);
 
 			try {
-				await aocontent.becomeHost(purchaseId, vrs.v, vrs.r, vrs.s, account2EncChallenge, "", account2MetadataDatKey, {
+				await aocontent.becomeHost(AOContent_purchaseId1, vrs.v, vrs.r, vrs.s, account2EncChallenge, "", account2MetadataDatKey, {
 					from: account2
 				});
 				canBecomeHost = true;
@@ -2517,7 +2522,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canBecomeHost, true, "Account can become host of content even though it's missing the content dat key");
 
 			try {
-				await aocontent.becomeHost(purchaseId, vrs.v, vrs.r, vrs.s, account2EncChallenge, account2ContentDatKey, "", {
+				await aocontent.becomeHost(AOContent_purchaseId1, vrs.v, vrs.r, vrs.s, account2EncChallenge, account2ContentDatKey, "", {
 					from: account2
 				});
 				canBecomeHost = true;
@@ -2528,7 +2533,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 			try {
 				await aocontent.becomeHost(
-					purchaseId,
+					AOContent_purchaseId1,
 					vrs.v,
 					vrs.r,
 					vrs.s,
@@ -2545,253 +2550,419 @@ contract("AOContent & AOEarning", function(accounts) {
 		});
 
 		it("becomeHost() (stake owner and host are the same address) - should be able to become host and release all the escrowed earnings for stake owner (content creator)/host/foundation", async function() {
-			var signHash = EthCrypto.hash.keccak256([
-				{
-					type: "address",
-					value: aocontent.address
-				},
-				{
-					type: "string",
-					value: baseChallenge
+			var becomeHost = async function(
+				account,
+				privateKey,
+				stakeOwner,
+				host,
+				purchaseId,
+				contentId,
+				stakeId,
+				contentHostId,
+				encChallenge,
+				contentDatKey,
+				metadataDatKey
+			) {
+				var signHash = EthCrypto.hash.keccak256([
+					{
+						type: "address",
+						value: aocontent.address
+					},
+					{
+						type: "string",
+						value: baseChallenge
+					}
+				]);
+
+				var signature = EthCrypto.sign(privateKey, signHash);
+
+				var vrs = EthCrypto.vrs.fromString(signature);
+
+				var stakeOwnerBalanceBefore = await aotoken.balanceOf(stakeOwner);
+				var hostBalanceBefore = await aotoken.balanceOf(host);
+				var foundationBalanceBefore = await aotoken.balanceOf(developer);
+
+				var stakeOwnerEscrowedBalanceBefore = await aotoken.escrowedBalance(stakeOwner);
+				var hostEscrowedBalanceBefore = await aotoken.escrowedBalance(host);
+				var foundationEscrowedBalanceBefore = await aotoken.escrowedBalance(developer);
+
+				var stakeEarningBefore = await aoearning.stakeEarnings(stakeOwner, purchaseId);
+				var hostEarningBefore = await aoearning.hostEarnings(host, purchaseId);
+				var foundationEarningBefore = await aoearning.foundationEarnings(purchaseId);
+
+				var totalStakeContentEarningBefore = await aoearning.totalStakeContentEarning();
+				var totalHostContentEarningBefore = await aoearning.totalHostContentEarning();
+				var totalFoundationEarningBefore = await aoearning.totalFoundationEarning();
+				var stakeContentEarningBefore = await aoearning.stakeContentEarning(stakeOwner);
+				var hostContentEarningBefore = await aoearning.hostContentEarning(host);
+				var networkPriceEarningBefore = await aoearning.networkPriceEarning(stakeOwner);
+				var contentPriceEarningBefore = await aoearning.contentPriceEarning(stakeOwner);
+				var inflationBonusAccruedBefore = await aoearning.inflationBonusAccrued(host);
+
+				var totalStakedContentStakeEarningBefore = await aoearning.totalStakedContentStakeEarning(stakeId);
+				var totalStakedContentHostEarningBefore = await aoearning.totalStakedContentHostEarning(stakeId);
+				var totalStakedContentFoundationEarningBefore = await aoearning.totalStakedContentFoundationEarning(stakeId);
+				var totalHostContentEarningByIdBefore = await aoearning.totalHostContentEarningById(contentHostId);
+
+				var canBecomeHost, hostContentEvent, contentHost;
+				try {
+					var result = await aocontent.becomeHost(purchaseId, vrs.v, vrs.r, vrs.s, encChallenge, contentDatKey, metadataDatKey, {
+						from: account
+					});
+					canBecomeHost = true;
+
+					hostContentEvent = result.logs[0];
+					newContentHostId = hostContentEvent.args.contentHostId;
+					contentHost = await aocontent.contentHostById(newContentHostId);
+				} catch (e) {
+					canBecomeHost = false;
+					hostContentEvent = null;
+					newContentHostId = null;
 				}
-			]);
+				assert.equal(canBecomeHost, true, "Account fails becoming host of the content");
 
-			var signature = EthCrypto.sign(account2LocalIdentity.privateKey, signHash);
+				// Verify the content host object
+				assert.equal(contentHost[0], stakeId, "Content host has incorrect stake ID");
+				assert.equal(contentHost[1], account, "Content host has incorrect host");
+				assert.equal(contentHost[2], contentDatKey, "Content host has incorrect content dat key");
+				assert.equal(contentHost[3], metadataDatKey, "Content host has incorrect metadata dat key");
 
-			var vrs = EthCrypto.vrs.fromString(signature);
+				var stakeOwnerBalanceAfter = await aotoken.balanceOf(stakeOwner);
+				var hostBalanceAfter = await aotoken.balanceOf(host);
+				var foundationBalanceAfter = await aotoken.balanceOf(developer);
 
-			var stakeOwnerBalanceBefore = await aotoken.balanceOf(account1);
-			var hostBalanceBefore = await aotoken.balanceOf(account1);
-			var foundationBalanceBefore = await aotoken.balanceOf(developer);
+				var stakeOwnerEscrowedBalanceAfter = await aotoken.escrowedBalance(stakeOwner);
+				var hostEscrowedBalanceAfter = await aotoken.escrowedBalance(host);
+				var foundationEscrowedBalanceAfter = await aotoken.escrowedBalance(developer);
 
-			var stakeOwnerEscrowedBalanceBefore = await aotoken.escrowedBalance(account1);
-			var hostEscrowedBalanceBefore = await aotoken.escrowedBalance(account1);
-			var foundationEscrowedBalanceBefore = await aotoken.escrowedBalance(developer);
+				var stakeEarningAfter = await aoearning.stakeEarnings(stakeOwner, purchaseId);
+				var hostEarningAfter = await aoearning.hostEarnings(host, purchaseId);
+				var foundationEarningAfter = await aoearning.foundationEarnings(purchaseId);
 
-			var stakeEarningBefore = await aoearning.stakeEarnings(account1, purchaseId);
-			var hostEarningBefore = await aoearning.hostEarnings(account1, purchaseId);
-			var foundationEarningBefore = await aoearning.foundationEarnings(purchaseId);
+				var totalStakeContentEarningAfter = await aoearning.totalStakeContentEarning();
+				var totalHostContentEarningAfter = await aoearning.totalHostContentEarning();
+				var totalFoundationEarningAfter = await aoearning.totalFoundationEarning();
+				var stakeContentEarningAfter = await aoearning.stakeContentEarning(stakeOwner);
+				var hostContentEarningAfter = await aoearning.hostContentEarning(host);
+				var networkPriceEarningAfter = await aoearning.networkPriceEarning(stakeOwner);
+				var contentPriceEarningAfter = await aoearning.contentPriceEarning(stakeOwner);
+				var inflationBonusAccruedAfter = await aoearning.inflationBonusAccrued(stakeOwner);
 
-			var totalStakeContentEarningBefore = await aoearning.totalStakeContentEarning();
-			var totalHostContentEarningBefore = await aoearning.totalHostContentEarning();
-			var totalFoundationEarningBefore = await aoearning.totalFoundationEarning();
-			var stakeContentEarningBefore = await aoearning.stakeContentEarning(account1);
-			var hostContentEarningBefore = await aoearning.hostContentEarning(account1);
-			var networkPriceEarningBefore = await aoearning.networkPriceEarning(account1);
-			var contentPriceEarningBefore = await aoearning.contentPriceEarning(account1);
-			var inflationBonusAccruedBefore = await aoearning.inflationBonusAccrued(account1);
+				var totalStakedContentStakeEarningAfter = await aoearning.totalStakedContentStakeEarning(stakeId);
+				var totalStakedContentHostEarningAfter = await aoearning.totalStakedContentHostEarning(stakeId);
+				var totalStakedContentFoundationEarningAfter = await aoearning.totalStakedContentFoundationEarning(stakeId);
+				var totalHostContentEarningByIdAfter = await aoearning.totalHostContentEarningById(contentHostId);
 
-			var totalStakedContentStakeEarningBefore = await aoearning.totalStakedContentStakeEarning(stakeId1);
-			var totalStakedContentHostEarningBefore = await aoearning.totalStakedContentHostEarning(stakeId1);
-			var totalStakedContentFoundationEarningBefore = await aoearning.totalStakedContentFoundationEarning(stakeId1);
-			var totalHostContentEarningByIdBefore = await aoearning.totalHostContentEarningById(contentHostId1);
-
-			var canBecomeHost, hostContentEvent, contentHost;
-			try {
-				var result = await aocontent.becomeHost(
-					purchaseId,
-					vrs.v,
-					vrs.r,
-					vrs.s,
-					account2EncChallenge,
-					account2ContentDatKey,
-					account2MetadataDatKey,
-					{ from: account2 }
+				// Verify the earning
+				assert.equal(stakeEarningAfter[0], purchaseId, "Stake earning has incorrect purchaseId");
+				assert.equal(
+					stakeEarningAfter[1].toString(),
+					0,
+					"Stake earning has incorrect paymentEarning after request node become host"
 				);
-				canBecomeHost = true;
+				assert.equal(
+					stakeEarningAfter[2].toString(),
+					0,
+					"Stake earning has incorrect inflationBonus after request node become host"
+				);
 
-				hostContentEvent = result.logs[0];
-				contentHostId4 = hostContentEvent.args.contentHostId;
-				contentHost = await aocontent.contentHostById(contentHostId4);
-			} catch (e) {
-				canBecomeHost = false;
-				hostContentEvent = null;
-				contentHostId4 = null;
-			}
-			assert.equal(canBecomeHost, true, "Account fails becoming host of the content");
+				assert.equal(hostEarningAfter[0], purchaseId, "Host earning has incorrect purchaseId");
+				assert.equal(hostEarningAfter[1].toString(), 0, "Host earning has incorrect paymentEarning after request node become host");
+				assert.equal(hostEarningAfter[2].toString(), 0, "Host earning has incorrect inflationBonus after request node become host");
 
-			// Verify the content host object
-			assert.equal(contentHost[0], stakeId1, "Content host has incorrect stake ID");
-			assert.equal(contentHost[1], account2, "Content host has incorrect host");
-			assert.equal(contentHost[2], account2ContentDatKey, "Content host has incorrect content dat key");
-			assert.equal(contentHost[3], account2MetadataDatKey, "Content host has incorrect metadata dat key");
+				assert.equal(foundationEarningAfter[0], purchaseId, "Foundation earning has incorrect purchaseId");
+				assert.equal(
+					foundationEarningAfter[1].toString(),
+					0,
+					"Foundation earning has incorrect paymentEarning after request node become host"
+				);
+				assert.equal(
+					foundationEarningAfter[2].toString(),
+					0,
+					"Foundation earning has incorrect inflationBonus after request node become host"
+				);
 
-			var stakeOwnerBalanceAfter = await aotoken.balanceOf(account1);
-			var hostBalanceAfter = await aotoken.balanceOf(account1);
-			var foundationBalanceAfter = await aotoken.balanceOf(developer);
+				// Verify the balance
+				// Since stake owner and host are the same
+				assert.equal(
+					stakeOwnerBalanceAfter.toString(),
+					stakeOwnerBalanceBefore
+						.plus(stakeEarningBefore[1])
+						.plus(stakeEarningBefore[2])
+						.plus(hostEarningBefore[1])
+						.plus(hostEarningBefore[2])
+						.toString(),
+					"Stake owner/host has incorrect balance after request node become host"
+				);
+				assert.equal(
+					foundationBalanceAfter.toString(),
+					foundationBalanceBefore.plus(foundationEarningBefore[2]).toString(),
+					"Foundation has incorrect balance after request node become host"
+				);
 
-			var stakeOwnerEscrowedBalanceAfter = await aotoken.escrowedBalance(account1);
-			var hostEscrowedBalanceAfter = await aotoken.escrowedBalance(account1);
-			var foundationEscrowedBalanceAfter = await aotoken.escrowedBalance(developer);
+				// Verify the escrowed balance
+				// since stake owner and host are the same
+				assert.equal(
+					stakeOwnerEscrowedBalanceAfter.toString(),
+					stakeOwnerEscrowedBalanceBefore
+						.minus(stakeEarningBefore[1])
+						.minus(stakeEarningBefore[2])
+						.minus(hostEarningBefore[1])
+						.minus(hostEarningBefore[2])
+						.toString(),
+					"Stake owner/host has incorrect escrowed balance after request node become host"
+				);
+				assert.equal(
+					foundationEscrowedBalanceAfter.toString(),
+					foundationEscrowedBalanceBefore.minus(foundationEarningBefore[2]).toString(),
+					"Foundation has incorrect escrowed balance after request node become host"
+				);
 
-			var stakeEarningAfter = await aoearning.stakeEarnings(account1, purchaseId);
-			var hostEarningAfter = await aoearning.hostEarnings(account1, purchaseId);
-			var foundationEarningAfter = await aoearning.foundationEarnings(purchaseId);
+				// Verify global variables earnings
+				assert.equal(
+					totalStakeContentEarningAfter.toString(),
+					totalStakeContentEarningBefore
+						.plus(stakeEarningBefore[1])
+						.plus(stakeEarningBefore[2])
+						.toString(),
+					"Contract has incorrect totalStakeContentEarning"
+				);
+				assert.equal(
+					totalHostContentEarningAfter.toString(),
+					totalHostContentEarningBefore
+						.plus(hostEarningBefore[1])
+						.plus(hostEarningBefore[2])
+						.toString(),
+					"Contract has incorrect totalHostContentEarning"
+				);
+				assert.equal(
+					totalFoundationEarningAfter.toString(),
+					totalFoundationEarningBefore.plus(foundationEarningBefore[2]).toString(),
+					"Contract has incorrect totalFoundationEarning"
+				);
+				assert.equal(
+					stakeContentEarningAfter.toString(),
+					stakeContentEarningBefore
+						.plus(stakeEarningBefore[1])
+						.plus(stakeEarningBefore[2])
+						.toString(),
+					"Contract has incorrect stakeContentEarning for stakeOwner"
+				);
+				assert.equal(
+					hostContentEarningAfter.toString(),
+					hostContentEarningBefore
+						.plus(hostEarningBefore[1])
+						.plus(hostEarningBefore[2])
+						.toString(),
+					"Contract has incorrect hostContentEarning for host"
+				);
 
-			var totalStakeContentEarningAfter = await aoearning.totalStakeContentEarning();
-			var totalHostContentEarningAfter = await aoearning.totalHostContentEarning();
-			var totalFoundationEarningAfter = await aoearning.totalFoundationEarning();
-			var stakeContentEarningAfter = await aoearning.stakeContentEarning(account1);
-			var hostContentEarningAfter = await aoearning.hostContentEarning(account1);
-			var networkPriceEarningAfter = await aoearning.networkPriceEarning(account1);
-			var contentPriceEarningAfter = await aoearning.contentPriceEarning(account1);
-			var inflationBonusAccruedAfter = await aoearning.inflationBonusAccrued(account1);
+				var stakedContent = await aocontent.stakedContentById(stakeId);
+				var content = await aocontent.contentById(contentId);
+				if (stakedContent[2].plus(stakedContent[3]).gt(content[1])) {
+					assert.equal(
+						networkPriceEarningAfter.toString(),
+						networkPriceEarningBefore.toString(),
+						"Contract has incorrect networkPriceEarning"
+					);
 
-			var totalStakedContentStakeEarningAfter = await aoearning.totalStakedContentStakeEarning(stakeId1);
-			var totalStakedContentHostEarningAfter = await aoearning.totalStakedContentHostEarning(stakeId1);
-			var totalStakedContentFoundationEarningAfter = await aoearning.totalStakedContentFoundationEarning(stakeId1);
-			var totalHostContentEarningByIdAfter = await aoearning.totalHostContentEarningById(contentHostId1);
+					// Since stakeOwner/host are the same
+					assert.equal(
+						contentPriceEarningAfter.toString(),
+						contentPriceEarningBefore
+							.plus(stakeEarningBefore[1])
+							.plus(stakeEarningBefore[2])
+							.plus(hostEarningBefore[1])
+							.plus(hostEarningBefore[2])
+							.toString(),
+						"Contract has incorrect contentPriceEarning for stake owner/host"
+					);
+				} else {
+					assert.equal(
+						networkPriceEarningAfter.toString(),
+						networkPriceEarningBefore
+							.plus(stakeEarningBefore[1])
+							.plus(stakeEarningBefore[2])
+							.plus(hostEarningBefore[1])
+							.plus(hostEarningBefore[2])
+							.toString(),
+						"Contract has incorrect networkPriceEarning"
+					);
 
-			// Verify the earning
-			assert.equal(stakeEarningAfter[0], purchaseId, "Stake earning has incorrect purchaseId");
-			assert.equal(stakeEarningAfter[1].toString(), 0, "Stake earning has incorrect paymentEarning after request node become host");
-			assert.equal(stakeEarningAfter[2].toString(), 0, "Stake earning has incorrect inflationBonus after request node become host");
+					// Since stakeOwner/host are the same
+					assert.equal(
+						contentPriceEarningAfter.toString(),
+						contentPriceEarningBefore.toString(),
+						"Contract has incorrect contentPriceEarning for stake owner/host"
+					);
+				}
+				assert.equal(
+					inflationBonusAccruedAfter.toString(),
+					inflationBonusAccruedBefore
+						.plus(stakeEarningBefore[2])
+						.plus(hostEarningBefore[2])
+						.toString(),
+					"Contract has incorrect inflationBonusAccrued for stake owner/host"
+				);
 
-			assert.equal(hostEarningAfter[0], purchaseId, "Host earning has incorrect purchaseId");
-			assert.equal(hostEarningAfter[1].toString(), 0, "Host earning has incorrect paymentEarning after request node become host");
-			assert.equal(hostEarningAfter[2].toString(), 0, "Host earning has incorrect inflationBonus after request node become host");
+				assert.equal(
+					totalStakedContentStakeEarningAfter.toString(),
+					totalStakedContentStakeEarningBefore
+						.plus(stakeEarningBefore[1])
+						.plus(stakeEarningBefore[2])
+						.toString(),
+					"Staked content has incorrect totalStakedContentStakeEarning value"
+				);
+				assert.equal(
+					totalStakedContentHostEarningAfter.toString(),
+					totalStakedContentHostEarningBefore
+						.plus(hostEarningBefore[1])
+						.plus(hostEarningBefore[2])
+						.toString(),
+					"Staked content has incorrect totalStakedContentHostEarning value"
+				);
+				assert.equal(
+					totalStakedContentFoundationEarningAfter.toString(),
+					totalStakedContentFoundationEarningBefore.plus(foundationEarningBefore[2]).toString(),
+					"Staked content has incorrect totalStakedContentFoundationEarning value"
+				);
+				assert.equal(
+					totalHostContentEarningByIdAfter.toString(),
+					totalHostContentEarningByIdBefore
+						.plus(hostEarningBefore[1])
+						.plus(hostEarningBefore[2])
+						.toString(),
+					"Content Host ID has incorrect total earning value"
+				);
 
-			assert.equal(foundationEarningAfter[0], purchaseId, "Foundation earning has incorrect purchaseId");
-			assert.equal(
-				foundationEarningAfter[1].toString(),
-				0,
-				"Foundation earning has incorrect paymentEarning after request node become host"
-			);
-			assert.equal(
-				foundationEarningAfter[2].toString(),
-				0,
-				"Foundation earning has incorrect inflationBonus after request node become host"
-			);
+				return newContentHostId;
+			};
 
-			// Verify the balance
-			// Since stake owner and host are the same
-			assert.equal(
-				stakeOwnerBalanceAfter.toString(),
-				stakeOwnerBalanceBefore
-					.plus(stakeEarningBefore[1])
-					.plus(stakeEarningBefore[2])
-					.plus(hostEarningBefore[1])
-					.plus(hostEarningBefore[2])
-					.toString(),
-				"Stake owner/host has incorrect balance after request node become host"
+			AOContent_contentHostId4 = await becomeHost(
+				account2,
+				account2PrivateKey,
+				account1,
+				account1,
+				AOContent_purchaseId1,
+				AOContent_contentId1,
+				AOContent_stakeId1,
+				AOContent_contentHostId1,
+				account2EncChallenge,
+				account2ContentDatKey,
+				account2MetadataDatKey
 			);
-			assert.equal(
-				foundationBalanceAfter.toString(),
-				foundationBalanceBefore.plus(foundationEarningBefore[2]).toString(),
-				"Foundation has incorrect balance after request node become host"
+			AOContent_contentHostId5 = await becomeHost(
+				account2,
+				account2PrivateKey,
+				account1,
+				account1,
+				AOContent_purchaseId2,
+				AOContent_contentId2,
+				AOContent_stakeId2,
+				AOContent_contentHostId2,
+				account2EncChallenge,
+				account2ContentDatKey,
+				account2MetadataDatKey
 			);
-
-			// Verify the escrowed balance
-			// since stake owner and host are the same
-			assert.equal(
-				stakeOwnerEscrowedBalanceAfter.toString(),
-				stakeOwnerEscrowedBalanceBefore
-					.minus(stakeEarningBefore[1])
-					.minus(stakeEarningBefore[2])
-					.minus(hostEarningBefore[1])
-					.minus(hostEarningBefore[2])
-					.toString(),
-				"Stake owner/host has incorrect escrowed balance after request node become host"
-			);
-			assert.equal(
-				foundationEscrowedBalanceAfter.toString(),
-				foundationEscrowedBalanceBefore.minus(foundationEarningBefore[2]).toString(),
-				"Foundation has incorrect escrowed balance after request node become host"
-			);
-
-			// Verify global variables earnings
-			assert.equal(
-				totalStakeContentEarningAfter.toString(),
-				totalStakeContentEarningBefore
-					.plus(stakeEarningBefore[1])
-					.plus(stakeEarningBefore[2])
-					.toString(),
-				"Contract has incorrect totalStakeContentEarning"
-			);
-			assert.equal(
-				totalHostContentEarningAfter.toString(),
-				totalHostContentEarningBefore
-					.plus(hostEarningBefore[1])
-					.plus(hostEarningBefore[2])
-					.toString(),
-				"Contract has incorrect totalHostContentEarning"
-			);
-			assert.equal(
-				totalFoundationEarningAfter.toString(),
-				totalFoundationEarningBefore.plus(foundationEarningBefore[2]).toString(),
-				"Contract has incorrect totalFoundationEarning"
-			);
-			assert.equal(
-				stakeContentEarningAfter.toString(),
-				stakeContentEarningBefore
-					.plus(stakeEarningBefore[1])
-					.plus(stakeEarningBefore[2])
-					.toString(),
-				"Contract has incorrect stakeContentEarning for stakeOwner"
-			);
-			assert.equal(
-				hostContentEarningAfter.toString(),
-				hostContentEarningBefore
-					.plus(hostEarningBefore[1])
-					.plus(hostEarningBefore[2])
-					.toString(),
-				"Contract has incorrect hostContentEarning for host"
-			);
-			assert.equal(
-				networkPriceEarningAfter.toString(),
-				networkPriceEarningBefore.toString(),
-				"Contract has incorrect networkPriceEarning"
-			);
-			// Since stakeOwner/host are the same
-			assert.equal(
-				contentPriceEarningAfter.toString(),
-				contentPriceEarningBefore
-					.plus(stakeEarningBefore[1])
-					.plus(stakeEarningBefore[2])
-					.plus(hostEarningBefore[1])
-					.plus(hostEarningBefore[2])
-					.toString(),
-				"Contract has incorrect contentPriceEarning for stake owner/host"
-			);
-			assert.equal(
-				inflationBonusAccruedAfter.toString(),
-				inflationBonusAccruedBefore
-					.plus(stakeEarningBefore[2])
-					.plus(hostEarningBefore[2])
-					.toString(),
-				"Contract has incorrect inflationBonusAccrued for stake owner/host"
+			AOContent_contentHostId6 = await becomeHost(
+				account2,
+				account2PrivateKey,
+				account1,
+				account1,
+				AOContent_purchaseId3,
+				AOContent_contentId3,
+				AOContent_stakeId3,
+				AOContent_contentHostId3,
+				account2EncChallenge,
+				account2ContentDatKey,
+				account2MetadataDatKey
 			);
 
-			assert.equal(
-				totalStakedContentStakeEarningAfter.toString(),
-				totalStakedContentStakeEarningBefore
-					.plus(stakeEarningBefore[1])
-					.plus(stakeEarningBefore[2])
-					.toString(),
-				"Staked content has incorrect totalStakedContentStakeEarning value"
+			CreativeCommons_contentHostId4 = await becomeHost(
+				account2,
+				account2PrivateKey,
+				account1,
+				account1,
+				CreativeCommons_purchaseId1,
+				CreativeCommons_contentId1,
+				CreativeCommons_stakeId1,
+				CreativeCommons_contentHostId1,
+				account2EncChallenge,
+				account2ContentDatKey,
+				account2MetadataDatKey
 			);
-			assert.equal(
-				totalStakedContentHostEarningAfter.toString(),
-				totalStakedContentHostEarningBefore
-					.plus(hostEarningBefore[1])
-					.plus(hostEarningBefore[2])
-					.toString(),
-				"Staked content has incorrect totalStakedContentHostEarning value"
+			CreativeCommons_contentHostId5 = await becomeHost(
+				account2,
+				account2PrivateKey,
+				account1,
+				account1,
+				CreativeCommons_purchaseId2,
+				CreativeCommons_contentId2,
+				CreativeCommons_stakeId2,
+				CreativeCommons_contentHostId2,
+				account2EncChallenge,
+				account2ContentDatKey,
+				account2MetadataDatKey
 			);
-			assert.equal(
-				totalStakedContentFoundationEarningAfter.toString(),
-				totalStakedContentFoundationEarningBefore.plus(foundationEarningBefore[2]).toString(),
-				"Staked content has incorrect totalStakedContentFoundationEarning value"
+			CreativeCommons_contentHostId6 = await becomeHost(
+				account2,
+				account2PrivateKey,
+				account1,
+				account1,
+				CreativeCommons_purchaseId3,
+				CreativeCommons_contentId3,
+				CreativeCommons_stakeId3,
+				CreativeCommons_contentHostId3,
+				account2EncChallenge,
+				account2ContentDatKey,
+				account2MetadataDatKey
 			);
-			assert.equal(
-				totalHostContentEarningByIdAfter.toString(),
-				totalHostContentEarningByIdBefore
-					.plus(hostEarningBefore[1])
-					.plus(hostEarningBefore[2])
-					.toString(),
-				"Content Host ID has incorrect total earning value"
+
+			TAOContent_contentHostId4 = await becomeHost(
+				account2,
+				account2PrivateKey,
+				account1,
+				account1,
+				TAOContent_purchaseId1,
+				TAOContent_contentId1,
+				TAOContent_stakeId1,
+				TAOContent_contentHostId1,
+				account2EncChallenge,
+				account2ContentDatKey,
+				account2MetadataDatKey
+			);
+			TAOContent_contentHostId5 = await becomeHost(
+				account2,
+				account2PrivateKey,
+				account1,
+				account1,
+				TAOContent_purchaseId2,
+				TAOContent_contentId2,
+				TAOContent_stakeId2,
+				TAOContent_contentHostId2,
+				account2EncChallenge,
+				account2ContentDatKey,
+				account2MetadataDatKey
+			);
+			TAOContent_contentHostId6 = await becomeHost(
+				account2,
+				account2PrivateKey,
+				account1,
+				account1,
+				TAOContent_purchaseId3,
+				TAOContent_contentId3,
+				TAOContent_stakeId3,
+				TAOContent_contentHostId3,
+				account2EncChallenge,
+				account2ContentDatKey,
+				account2MetadataDatKey
 			);
 		});
+
+		return;
+		/*
+
+
 
 		it("new node should be able to buy content from new distribution node, and then become a host itself", async function() {
 			// Let's give account3 some tokens
