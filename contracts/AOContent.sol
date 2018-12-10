@@ -348,7 +348,7 @@ contract AOContent is developed {
 		require (AOLibrary.canStake(treasuryAddress, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _baseChallenge, _encChallenge, _contentDatKey, _metadataDatKey, _fileSize, 0));
 		require (
 			_treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) == _fileSize &&
-			AOLibrary.isThought(_taoId)
+			AOLibrary.addressIsThoughtAdvocateListenerSpeaker(nameFactoryAddress, msg.sender, _taoId)
 		);
 
 		(,,bytes32 _contentUsageType_taoContent,,,) = _getSettingVariables();
@@ -789,7 +789,7 @@ contract AOContent is developed {
 		Content storage _content = contents[contentIndex[_contentId]];
 
 		// Make sure that the signature address is one of content's TAO ID's Advocate/Listener/Speaker
-		require (AOLibrary.addressCanUpdateTAOContentState(nameFactoryAddress, _signatureAddress, _content.taoId));
+		require (AOLibrary.addressIsThoughtAdvocateListenerSpeaker(nameFactoryAddress, _signatureAddress, _content.taoId));
 
 		_content.taoContentState = _taoContentState;
 		_content.updateTAOContentStateV = _updateTAOContentStateV;

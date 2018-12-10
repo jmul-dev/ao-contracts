@@ -457,14 +457,13 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Check whether or not _from address can update TAO Content's State,
-	 *		i.e the address has to be either Advocate/Listener/Speaker of the Thought
+	 * @dev Check whether or not _from address is Advocate/Listener/Speaker of the Thought
 	 * @param _nameFactoryAddress The address of NameFactory
 	 * @param _from The address that wants to update the TAO Content State
 	 * @param _thoughtId The ID of the Thought
 	 * @return true if yes. false otherwise
 	 */
-	function addressCanUpdateTAOContentState(address _nameFactoryAddress, address _from, address _thoughtId) public view returns (bool) {
+	function addressIsThoughtAdvocateListenerSpeaker(address _nameFactoryAddress, address _from, address _thoughtId) public view returns (bool) {
 		address _nameId = NameFactory(_nameFactoryAddress).ethAddressToNameId(_from);
 		require (_nameId != address(0));
 		require (isThought(_thoughtId));
