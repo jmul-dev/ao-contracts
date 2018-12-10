@@ -51,8 +51,22 @@ contract("AOContent & AOEarning", function(accounts) {
 	var account3ContentDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 	var account3MetadataDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 
-	var account2LocalIdentity = EthCrypto.createIdentity();
-	var account3LocalIdentity = EthCrypto.createIdentity();
+	// Retrieve private key from ganache
+	var account1PrivateKey = "0xfa372b56eac0e71de587267f0a59989719b2325aeb4579912379641cf93ccaab";
+	var account2PrivateKey = "0x6a35c58d0acad0ceca9c03d37aa2d2288d70afe0690f5e5f5e05aeab93b95dad";
+	var account3PrivateKey = "0xf4bab2d2f0c5119cc6aad0735bbf0a017d229cbf430c0041af382b93e713a1c3";
+	var account1LocalIdentity = {
+		publicKey: EthCrypto.publicKeyByPrivateKey(account1PrivateKey),
+		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account1PrivateKey))
+	};
+	var account2LocalIdentity = {
+		publicKey: EthCrypto.publicKeyByPrivateKey(account2PrivateKey),
+		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account2PrivateKey))
+	};
+	var account3LocalIdentity = {
+		publicKey: EthCrypto.publicKeyByPrivateKey(account3PrivateKey),
+		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account3PrivateKey))
+	};
 
 	var fileSize = 1000000; // 1000000 bytes = min 1000000 AO
 	var profitPercentage = 600000; // 60%
@@ -264,9 +278,9 @@ contract("AOContent & AOEarning", function(accounts) {
 			AOContent_contentHostId1,
 			AOContent_contentHostId2,
 			AOContent_contentHostId3,
-			AOContent_contentHost1Price,
-			AOContent_contentHost2Price,
-			AOContent_contentHost3Price,
+			AOContent_contentHostPrice1,
+			AOContent_contentHostPrice2,
+			AOContent_contentHostPrice3,
 			CreativeCommons_contentId1,
 			CreativeCommons_contentId2,
 			CreativeCommons_contentId3,
@@ -276,9 +290,9 @@ contract("AOContent & AOEarning", function(accounts) {
 			CreativeCommons_contentHostId1,
 			CreativeCommons_contentHostId2,
 			CreativeCommons_contentHostId3,
-			CreativeCommons_contentHost1Price,
-			CreativeCommons_contentHost2Price,
-			CreativeCommons_contentHost3Price,
+			CreativeCommons_contentHostPrice1,
+			CreativeCommons_contentHostPrice2,
+			CreativeCommons_contentHostPrice3,
 			TAOContent_contentId1,
 			TAOContent_contentId2,
 			TAOContent_contentId3,
@@ -288,10 +302,18 @@ contract("AOContent & AOEarning", function(accounts) {
 			TAOContent_contentHostId1,
 			TAOContent_contentHostId2,
 			TAOContent_contentHostId3,
-			TAOContent_contentHost1Price,
-			TAOContent_contentHost2Price,
-			TAOContent_contentHost3Price,
-			purchaseId,
+			TAOContent_contentHostPrice1,
+			TAOContent_contentHostPrice2,
+			TAOContent_contentHostPrice3,
+			AOContent_purchaseId1,
+			AOContent_purchaseId2,
+			AOContent_purchaseId3,
+			CreativeCommons_purchaseId1,
+			CreativeCommons_purchaseId2,
+			CreativeCommons_purchaseId3,
+			TAOContent_purchaseId1,
+			TAOContent_purchaseId2,
+			TAOContent_purchaseId3,
 			contentHostId4;
 
 		var stakeAOContent = async function(account, networkIntegerAmount, networkFractionAmount, denomination, primordialAmount) {
@@ -1980,11 +2002,11 @@ contract("AOContent & AOEarning", function(accounts) {
 			await stakeExistingContent(account1, AOContent_stakeId3, 0, 900000, "mega", 110000);
 
 			var networkAmount = await aotreasury.toBase(2, 10, "kilo");
-			AOContent_contentHost1Price = networkAmount.add(1000000);
+			AOContent_contentHostPrice1 = networkAmount.add(1000000);
 			networkAmount = await aotreasury.toBase(1, 0, "mega");
-			AOContent_contentHost2Price = networkAmount.add(10);
+			AOContent_contentHostPrice2 = networkAmount.add(10);
 			networkAmount = await aotreasury.toBase(0, 900000, "mega");
-			AOContent_contentHost3Price = networkAmount.add(110000);
+			AOContent_contentHostPrice3 = networkAmount.add(110000);
 
 			// Should be able to stake again on active staked content
 			await stakeExistingContent(account1, AOContent_stakeId1, 0, 500, "kilo", 0);
@@ -1992,11 +2014,11 @@ contract("AOContent & AOEarning", function(accounts) {
 			await stakeExistingContent(account1, AOContent_stakeId3, 100, 0, "ao", 100);
 
 			networkAmount = await aotreasury.toBase(0, 500, "kilo");
-			AOContent_contentHost1Price = AOContent_contentHost1Price.add(networkAmount);
+			AOContent_contentHostPrice1 = AOContent_contentHostPrice1.add(networkAmount);
 			networkAmount = await aotreasury.toBase(0, 10, "mega");
-			AOContent_contentHost2Price = AOContent_contentHost2Price.add(networkAmount).add(1000);
+			AOContent_contentHostPrice2 = AOContent_contentHostPrice2.add(networkAmount).add(1000);
 			networkAmount = await aotreasury.toBase(100, 0, "ao");
-			AOContent_contentHost3Price = AOContent_contentHost3Price.add(networkAmount).add(100);
+			AOContent_contentHostPrice3 = AOContent_contentHostPrice3.add(networkAmount).add(100);
 
 			await stakeExistingContent(account1, CreativeCommons_stakeId1, 0, 900000, "mega", 100000);
 			await stakeExistingContent(account1, CreativeCommons_stakeId2, 0, 500000, "mega", 500000);
@@ -2017,50 +2039,45 @@ contract("AOContent & AOEarning", function(accounts) {
 			}
 			assert.notEqual(getContentHostPrice, true, "Contract can get price for non-existing contentHostID");
 
-			var _AOContent_contentHost1Price = await aocontent.contentHostPrice(AOContent_contentHostId1);
+			var _AOContent_contentHostPrice1 = await aocontent.contentHostPrice(AOContent_contentHostId1);
 			assert.equal(
-				_AOContent_contentHost1Price.toString(),
-				AOContent_contentHost1Price.toString(),
+				_AOContent_contentHostPrice1.toString(),
+				AOContent_contentHostPrice1.toString(),
 				"Content host has incorrect price"
 			);
 
-			var _AOContent_contentHost2Price = await aocontent.contentHostPrice(AOContent_contentHostId2);
+			var _AOContent_contentHostPrice2 = await aocontent.contentHostPrice(AOContent_contentHostId2);
 			assert.equal(
-				_AOContent_contentHost2Price.toString(),
-				AOContent_contentHost2Price.toString(),
+				_AOContent_contentHostPrice2.toString(),
+				AOContent_contentHostPrice2.toString(),
 				"Content host has incorrect price"
 			);
 
-			var _AOContent_contentHost3Price = await aocontent.contentHostPrice(AOContent_contentHostId3);
+			var _AOContent_contentHostPrice3 = await aocontent.contentHostPrice(AOContent_contentHostId3);
 			assert.equal(
-				_AOContent_contentHost3Price.toString(),
-				AOContent_contentHost3Price.toString(),
+				_AOContent_contentHostPrice3.toString(),
+				AOContent_contentHostPrice3.toString(),
 				"Content host has incorrect price"
 			);
 
-			var _CreativeCommons_contentHost1Price = await aocontent.contentHostPrice(CreativeCommons_contentHostId1);
-			assert.equal(_CreativeCommons_contentHost1Price.toString(), fileSize, "Content host has incorrect price");
+			CreativeCommons_contentHostPrice1 = await aocontent.contentHostPrice(CreativeCommons_contentHostId1);
+			assert.equal(CreativeCommons_contentHostPrice1.toString(), fileSize, "Content host has incorrect price");
 
-			var _CreativeCommons_contentHost2Price = await aocontent.contentHostPrice(CreativeCommons_contentHostId2);
-			assert.equal(_CreativeCommons_contentHost2Price.toString(), fileSize, "Content host has incorrect price");
+			CreativeCommons_contentHostPrice2 = await aocontent.contentHostPrice(CreativeCommons_contentHostId2);
+			assert.equal(CreativeCommons_contentHostPrice2.toString(), fileSize, "Content host has incorrect price");
 
-			var _CreativeCommons_contentHost3Price = await aocontent.contentHostPrice(CreativeCommons_contentHostId3);
-			assert.equal(_CreativeCommons_contentHost3Price.toString(), fileSize, "Content host has incorrect price");
+			CreativeCommons_contentHostPrice3 = await aocontent.contentHostPrice(CreativeCommons_contentHostId3);
+			assert.equal(CreativeCommons_contentHostPrice3.toString(), fileSize, "Content host has incorrect price");
 
-			var _TAOContent_contentHost1Price = await aocontent.contentHostPrice(TAOContent_contentHostId1);
-			assert.equal(_TAOContent_contentHost1Price.toString(), fileSize, "Content host has incorrect price");
+			TAOContent_contentHostPrice1 = await aocontent.contentHostPrice(TAOContent_contentHostId1);
+			assert.equal(TAOContent_contentHostPrice1.toString(), fileSize, "Content host has incorrect price");
 
-			var _TAOContent_contentHost2Price = await aocontent.contentHostPrice(TAOContent_contentHostId2);
-			assert.equal(_TAOContent_contentHost2Price.toString(), fileSize, "Content host has incorrect price");
+			TAOContent_contentHostPrice2 = await aocontent.contentHostPrice(TAOContent_contentHostId2);
+			assert.equal(TAOContent_contentHostPrice2.toString(), fileSize, "Content host has incorrect price");
 
-			var _TAOContent_contentHost3Price = await aocontent.contentHostPrice(TAOContent_contentHostId3);
-			assert.equal(_TAOContent_contentHost3Price.toString(), fileSize, "Content host has incorrect price");
+			TAOContent_contentHostPrice3 = await aocontent.contentHostPrice(TAOContent_contentHostId3);
+			assert.equal(TAOContent_contentHostPrice3.toString(), fileSize, "Content host has incorrect price");
 		});
-
-		return;
-		/*
-
-
 
 		it("buyContent() - should NOT be able to buy content if sent tokens < price", async function() {
 			var buyContent = async function(account, contentHostId, publicKey, publicAddress) {
@@ -2073,9 +2090,17 @@ contract("AOContent & AOEarning", function(accounts) {
 				}
 				assert.notEqual(canBuyContent, true, "Account can buy content even though sent tokens < price");
 			};
-			await buyContent(account2, contentHostId1, account2LocalIdentity.publicKey, account2LocalIdentity.address);
-			await buyContent(account2, contentHostId2, account2LocalIdentity.publicKey, account2LocalIdentity.address);
-			await buyContent(account2, contentHostId3, account2LocalIdentity.publicKey, account2LocalIdentity.address);
+			await buyContent(account2, AOContent_contentHostId1, account2LocalIdentity.publicKey, account2LocalIdentity.address);
+			await buyContent(account2, AOContent_contentHostId2, account2LocalIdentity.publicKey, account2LocalIdentity.address);
+			await buyContent(account2, AOContent_contentHostId3, account2LocalIdentity.publicKey, account2LocalIdentity.address);
+
+			await buyContent(account2, CreativeCommons_contentHostId1, account2LocalIdentity.publicKey, account2LocalIdentity.address);
+			await buyContent(account2, CreativeCommons_contentHostId2, account2LocalIdentity.publicKey, account2LocalIdentity.address);
+			await buyContent(account2, CreativeCommons_contentHostId3, account2LocalIdentity.publicKey, account2LocalIdentity.address);
+
+			await buyContent(account2, TAOContent_contentHostId1, account2LocalIdentity.publicKey, account2LocalIdentity.address);
+			await buyContent(account2, TAOContent_contentHostId2, account2LocalIdentity.publicKey, account2LocalIdentity.address);
+			await buyContent(account2, TAOContent_contentHostId3, account2LocalIdentity.publicKey, account2LocalIdentity.address);
 		});
 
 		it("buyContent() - should NOT be able to buy content if account does not have enough balance", async function() {
@@ -2089,179 +2114,286 @@ contract("AOContent & AOEarning", function(accounts) {
 				}
 				assert.notEqual(canBuyContent, true, "Account can buy content even though account does not have enough balance");
 			};
-			await buyContent(account3, contentHostId1, account3LocalIdentity.publicKey, account3LocalIdentity.address);
-			await buyContent(account3, contentHostId2, account3LocalIdentity.publicKey, account3LocalIdentity.address);
-			await buyContent(account3, contentHostId3, account3LocalIdentity.publicKey, account3LocalIdentity.address);
+			await buyContent(account3, AOContent_contentHostId1, account3LocalIdentity.publicKey, account3LocalIdentity.address);
+			await buyContent(account3, AOContent_contentHostId2, account3LocalIdentity.publicKey, account3LocalIdentity.address);
+			await buyContent(account3, AOContent_contentHostId3, account3LocalIdentity.publicKey, account3LocalIdentity.address);
+
+			await buyContent(account3, CreativeCommons_contentHostId1, account3LocalIdentity.publicKey, account3LocalIdentity.address);
+			await buyContent(account3, CreativeCommons_contentHostId2, account3LocalIdentity.publicKey, account3LocalIdentity.address);
+			await buyContent(account3, CreativeCommons_contentHostId3, account3LocalIdentity.publicKey, account3LocalIdentity.address);
+
+			await buyContent(account3, TAOContent_contentHostId1, account3LocalIdentity.publicKey, account3LocalIdentity.address);
+			await buyContent(account3, TAOContent_contentHostId2, account3LocalIdentity.publicKey, account3LocalIdentity.address);
+			await buyContent(account3, TAOContent_contentHostId3, account3LocalIdentity.publicKey, account3LocalIdentity.address);
 		});
 
 		it("buyContent() - should be able to buy content and store all of the earnings of stake owner (content creator)/host/foundation in escrow", async function() {
-			var accountBalanceBefore = await aotoken.balanceOf(account2);
-			var stakeOwnerBalanceBefore = await aotoken.balanceOf(account1);
-			var hostBalanceBefore = await aotoken.balanceOf(account1);
-			var foundationBalanceBefore = await aotoken.balanceOf(developer);
+			var buyContent = async function(account, stakeOwner, host, stakeId, contentHostId, publicKey, publicAddress, contentHostPrice) {
+				var accountBalanceBefore = await aotoken.balanceOf(account);
+				var stakeOwnerBalanceBefore = await aotoken.balanceOf(stakeOwner);
+				var hostBalanceBefore = await aotoken.balanceOf(host);
+				var foundationBalanceBefore = await aotoken.balanceOf(developer);
 
-			var stakeOwnerPathosBalanceBefore = await pathos.balanceOf(account1);
-			var hostAntiLogosBalanceBefore = await antilogos.balanceOf(account1);
+				var stakeOwnerPathosBalanceBefore = await pathos.balanceOf(stakeOwner);
+				var hostAntiLogosBalanceBefore = await antilogos.balanceOf(host);
 
-			var price = await aocontent.contentHostPrice(contentHostId1);
-			var stakedContent = await aocontent.stakedContentById(stakeId1);
-			var stakedNetworkAmount = stakedContent[2];
-			var stakedPrimordialAmount = stakedContent[3];
-			var stakedPrimordialWeightedMultiplier = stakedContent[4];
-			var profitPercentage = stakedContent[5];
+				var price = await aocontent.contentHostPrice(contentHostId);
+				var stakedContent = await aocontent.stakedContentById(stakeId);
+				var stakedNetworkAmount = stakedContent[2];
+				var stakedPrimordialAmount = stakedContent[3];
+				var stakedPrimordialWeightedMultiplier = stakedContent[4];
+				var profitPercentage = stakedContent[5];
 
-			var canBuyContent, buyContentEvent, purchaseReceipt, stakeEarning, hostEarning, foundationEarning;
-			try {
-				var result = await aocontent.buyContent(
-					contentHostId1,
-					3,
-					0,
-					"mega",
-					account2LocalIdentity.publicKey,
-					account2LocalIdentity.address,
-					{ from: account2 }
+				var stakeOwnerEscrowedBalanceBefore = await aotoken.escrowedBalance(stakeOwner);
+				var hostEscrowedBalanceBefore = await aotoken.escrowedBalance(host);
+				var foundationEscrowedBalanceBefore = await aotoken.escrowedBalance(developer);
+
+				var canBuyContent, buyContentEvent, purchaseReceipt, stakeEarning, hostEarning, foundationEarning;
+				try {
+					var result = await aocontent.buyContent(contentHostId, 3, 0, "mega", publicKey, publicAddress, { from: account });
+					canBuyContent = true;
+					buyContentEvent = result.logs[0];
+					purchaseId = buyContentEvent.args.purchaseId;
+					purchaseReceipt = await aocontent.purchaseReceiptById(purchaseId);
+					stakeEarning = await aoearning.stakeEarnings(stakeOwner, purchaseId);
+					hostEarning = await aoearning.hostEarnings(host, purchaseId);
+					foundationEarning = await aoearning.foundationEarnings(purchaseId);
+				} catch (e) {
+					canBuyContent = false;
+					buyContentEvent = null;
+					purchaseId = null;
+					purchaseReceipt = null;
+					stakeEarning = null;
+					hostEarning = null;
+					foundationEarning = null;
+				}
+				assert.equal(canBuyContent, true, "Account can't buy content even though sent tokens >= price");
+				assert.notEqual(purchaseId, null, "Unable to determine the purchaseID from the log after buying content");
+
+				assert.equal(purchaseReceipt[0], contentHostId, "Purchase receipt has incorrect content host ID");
+				assert.equal(purchaseReceipt[1], account, "Purchase receipt has incorrect buyer address");
+				assert.equal(
+					purchaseReceipt[2].toString(),
+					contentHostPrice.toString(),
+					"Purchase receipt has incorrect paid network amount"
 				);
-				canBuyContent = true;
-				buyContentEvent = result.logs[0];
-				purchaseId = buyContentEvent.args.purchaseId;
-				purchaseReceipt = await aocontent.purchaseReceiptById(purchaseId);
-				stakeEarning = await aoearning.stakeEarnings(account1, purchaseId);
-				hostEarning = await aoearning.hostEarnings(account1, purchaseId);
-				foundationEarning = await aoearning.foundationEarnings(purchaseId);
-			} catch (e) {
-				canBuyContent = false;
-				buyContentEvent = null;
-				purchaseId = null;
-				purchaseReceipt = null;
-				stakeEarning = null;
-				hostEarning = null;
-				foundationEarning = null;
-			}
-			assert.equal(canBuyContent, true, "Account can't buy content even though sent tokens >= price");
-			assert.notEqual(purchaseId, null, "Unable to determine the purchaseID from the log after buying content");
+				assert.equal(purchaseReceipt[3], publicKey, "Purchase receipt has incorrect public key");
 
-			assert.equal(purchaseReceipt[0], contentHostId1, "Purchase receipt has incorrect content host ID");
-			assert.equal(purchaseReceipt[1], account2, "Purchase receipt has incorrect buyer address");
-			assert.equal(purchaseReceipt[2].toString(), contentHost1Price.toString(), "Purchase receipt has incorrect paid network amount");
-			assert.equal(purchaseReceipt[3], account2LocalIdentity.publicKey, "Purchase receipt has incorrect public key");
-
-			assert.equal(
-				purchaseReceipt[4].toLowerCase(),
-				account2LocalIdentity.address.toLowerCase(),
-				"Purchase receipt has incorrect public address"
-			);
-
-			var accountBalanceAfter = await aotoken.balanceOf(account2);
-			var stakeOwnerBalanceAfter = await aotoken.balanceOf(account1);
-			var hostBalanceAfter = await aotoken.balanceOf(account1);
-			var foundationBalanceAfter = await aotoken.balanceOf(developer);
-
-			assert.equal(
-				accountBalanceAfter.toString(),
-				accountBalanceBefore.minus(price).toString(),
-				"Account has incorrect balance after buying content"
-			);
-			assert.equal(
-				stakeOwnerBalanceAfter.toString(),
-				stakeOwnerBalanceBefore.toString(),
-				"Stake owner has incorrect balance after buying content"
-			);
-			assert.equal(hostBalanceAfter.toString(), hostBalanceBefore.toString(), "Host has incorrect balance after buying content");
-			assert.equal(
-				foundationBalanceAfter.toString(),
-				foundationBalanceBefore.toString(),
-				"Foundation has incorrect balance after buying content"
-			);
-
-			// Calculate stake owner/host payment earning
-			var stakeOwnerPaymentEarning = parseInt(
-				price
-					.mul(profitPercentage)
-					.div(percentageDivisor)
-					.toString()
-			);
-			var hostPaymentEarning = price.minus(stakeOwnerPaymentEarning);
-
-			// Verify payment earning
-			assert.equal(stakeEarning[0], purchaseId, "Stake earning has incorrect purchase ID");
-			assert.equal(stakeEarning[1].toString(), stakeOwnerPaymentEarning, "Stake earning has incorrect paymentEarning amount");
-
-			assert.equal(hostEarning[0], purchaseId, "Host earning has incorrect purchase ID");
-			assert.equal(hostEarning[1].toString(), hostPaymentEarning, "Host earning has incorrect paymentEarning amount");
-
-			assert.equal(foundationEarning[0], purchaseId, "Foundation earning has incorrect purchase ID");
-			assert.equal(foundationEarning[1].toString(), 0, "Foundation earning has incorrect paymentEarning amount");
-
-			// Calculate inflation bonus
-			var networkBonus = parseInt(stakedNetworkAmount.times(inflationRate).div(percentageDivisor));
-
-			var primordialBonus = parseInt(
-				stakedPrimordialAmount
-					.times(stakedPrimordialWeightedMultiplier)
-					.div(multiplierDivisor)
-					.times(inflationRate)
-					.div(percentageDivisor)
-			);
-			var inflationBonus = networkBonus + primordialBonus;
-
-			// Calculate stake owner/host/foundation inflation bonus
-			var stakeOwnerInflationBonus = parseInt(profitPercentage.times(inflationBonus).div(percentageDivisor));
-			var hostInflationBonus = inflationBonus - stakeOwnerInflationBonus;
-			var foundationInflationBonus = parseInt(foundationCut.times(inflationBonus).div(percentageDivisor));
-
-			// Verify inflation bonus
-			assert.equal(stakeEarning[2].toString(), stakeOwnerInflationBonus, "Stake earning has incorrect inflationBonus amount");
-			assert.equal(hostEarning[2].toString(), hostInflationBonus, "Host earning has incorrect inflationBonus amount");
-			assert.equal(
-				foundationEarning[2].toString(),
-				foundationInflationBonus,
-				"Foundation earning has incorrect inflationBonus amount"
-			);
-
-			// Verify escrowed balance
-			var stakeOwnerEscrowedBalance = await aotoken.escrowedBalance(account1);
-			var hostEscrowedBalance = await aotoken.escrowedBalance(account1);
-			var foundationEscrowedBalance = await aotoken.escrowedBalance(developer);
-
-			// since the stake owner and the host are the same
-			assert.equal(
-				stakeOwnerEscrowedBalance.toString(),
-				price.add(inflationBonus).toString(),
-				"Stake owner/host has incorrect escrowed balance"
-			);
-			assert.equal(foundationEscrowedBalance.toString(), foundationInflationBonus, "Foundation has incorrect escrowed balance");
-
-			try {
-				var result = await aocontent.buyContent(
-					contentHostId1,
-					3,
-					0,
-					"mega",
-					account2LocalIdentity.publicKey,
-					account2LocalIdentity.address,
-					{ from: account2 }
+				assert.equal(
+					purchaseReceipt[4].toLowerCase(),
+					publicAddress.toLowerCase(),
+					"Purchase receipt has incorrect public address"
 				);
-				canBuyContent = true;
-			} catch (e) {
-				canBuyContent = false;
-			}
-			assert.notEqual(canBuyContent, true, "Account can buy the same content more than once");
 
-			// Verify Thought Currencies balance
-			var stakeOwnerPathosBalanceAfter = await pathos.balanceOf(account1);
-			var hostAntiLogosBalanceAfter = await antilogos.balanceOf(account1);
+				var accountBalanceAfter = await aotoken.balanceOf(account);
+				var stakeOwnerBalanceAfter = await aotoken.balanceOf(stakeOwner);
+				var hostBalanceAfter = await aotoken.balanceOf(host);
+				var foundationBalanceAfter = await aotoken.balanceOf(developer);
 
-			assert.equal(
-				stakeOwnerPathosBalanceAfter.toString(),
-				stakeOwnerPathosBalanceBefore.plus(price).toString(),
-				"Stake owner has incorrect Pathos balance"
+				assert.equal(
+					accountBalanceAfter.toString(),
+					accountBalanceBefore.minus(price).toString(),
+					"Account has incorrect balance after buying content"
+				);
+				assert.equal(
+					stakeOwnerBalanceAfter.toString(),
+					stakeOwnerBalanceBefore.toString(),
+					"Stake owner has incorrect balance after buying content"
+				);
+				assert.equal(hostBalanceAfter.toString(), hostBalanceBefore.toString(), "Host has incorrect balance after buying content");
+				assert.equal(
+					foundationBalanceAfter.toString(),
+					foundationBalanceBefore.toString(),
+					"Foundation has incorrect balance after buying content"
+				);
+
+				// Calculate stake owner/host payment earning
+				var stakeOwnerPaymentEarning = parseInt(
+					price
+						.mul(profitPercentage)
+						.div(percentageDivisor)
+						.toString()
+				);
+				var hostPaymentEarning = price.minus(stakeOwnerPaymentEarning);
+
+				// Verify payment earning
+				assert.equal(stakeEarning[0], purchaseId, "Stake earning has incorrect purchase ID");
+				assert.equal(stakeEarning[1].toString(), stakeOwnerPaymentEarning, "Stake earning has incorrect paymentEarning amount");
+
+				assert.equal(hostEarning[0], purchaseId, "Host earning has incorrect purchase ID");
+				assert.equal(hostEarning[1].toString(), hostPaymentEarning, "Host earning has incorrect paymentEarning amount");
+
+				assert.equal(foundationEarning[0], purchaseId, "Foundation earning has incorrect purchase ID");
+				assert.equal(foundationEarning[1].toString(), 0, "Foundation earning has incorrect paymentEarning amount");
+
+				// Calculate inflation bonus
+				var networkBonus = parseInt(stakedNetworkAmount.times(inflationRate).div(percentageDivisor));
+
+				var primordialBonus = parseInt(
+					stakedPrimordialAmount
+						.times(stakedPrimordialWeightedMultiplier)
+						.div(multiplierDivisor)
+						.times(inflationRate)
+						.div(percentageDivisor)
+				);
+				var inflationBonus = networkBonus + primordialBonus;
+
+				// Calculate stake owner/host/foundation inflation bonus
+				var stakeOwnerInflationBonus = parseInt(profitPercentage.times(inflationBonus).div(percentageDivisor));
+				var hostInflationBonus = inflationBonus - stakeOwnerInflationBonus;
+				var foundationInflationBonus = parseInt(foundationCut.times(inflationBonus).div(percentageDivisor));
+
+				// Verify inflation bonus
+				assert.equal(stakeEarning[2].toString(), stakeOwnerInflationBonus, "Stake earning has incorrect inflationBonus amount");
+				assert.equal(hostEarning[2].toString(), hostInflationBonus, "Host earning has incorrect inflationBonus amount");
+				assert.equal(
+					foundationEarning[2].toString(),
+					foundationInflationBonus,
+					"Foundation earning has incorrect inflationBonus amount"
+				);
+
+				// Verify escrowed balance
+				var stakeOwnerEscrowedBalanceAfter = await aotoken.escrowedBalance(stakeOwner);
+				var hostEscrowedBalanceAfter = await aotoken.escrowedBalance(host);
+				var foundationEscrowedBalanceAfter = await aotoken.escrowedBalance(developer);
+
+				// since the stake owner and the host are the same
+				assert.equal(
+					stakeOwnerEscrowedBalanceAfter.toString(),
+					stakeOwnerEscrowedBalanceBefore
+						.add(price)
+						.add(inflationBonus)
+						.toString(),
+					"Stake owner/host has incorrect escrowed balance"
+				);
+				assert.equal(
+					foundationEscrowedBalanceAfter.toString(),
+					foundationEscrowedBalanceBefore.add(foundationInflationBonus).toString(),
+					"Foundation has incorrect escrowed balance"
+				);
+
+				try {
+					var result = await aocontent.buyContent(contentHostId, 3, 0, "mega", publicKey, publicAddress, { from: account });
+					canBuyContent = true;
+				} catch (e) {
+					canBuyContent = false;
+				}
+				assert.notEqual(canBuyContent, true, "Account can buy the same content more than once");
+
+				// Verify Thought Currencies balance
+				var stakeOwnerPathosBalanceAfter = await pathos.balanceOf(stakeOwner);
+				var hostAntiLogosBalanceAfter = await antilogos.balanceOf(host);
+
+				assert.equal(
+					stakeOwnerPathosBalanceAfter.toString(),
+					stakeOwnerPathosBalanceBefore.plus(price).toString(),
+					"Stake owner has incorrect Pathos balance"
+				);
+				assert.equal(
+					hostAntiLogosBalanceAfter.toString(),
+					hostAntiLogosBalanceBefore.plus(fileSize).toString(),
+					"Host has incorrect AntiLogos balance"
+				);
+
+				return purchaseId;
+			};
+
+			AOContent_purchaseId1 = await buyContent(
+				account2,
+				account1,
+				account1,
+				AOContent_stakeId1,
+				AOContent_contentHostId1,
+				account2LocalIdentity.publicKey,
+				account2LocalIdentity.address,
+				AOContent_contentHostPrice1
 			);
-			assert.equal(
-				hostAntiLogosBalanceAfter.toString(),
-				hostAntiLogosBalanceBefore.plus(fileSize).toString(),
-				"Host has incorrect AntiLogos balance"
+			AOContent_purchaseId2 = await buyContent(
+				account2,
+				account1,
+				account1,
+				AOContent_stakeId2,
+				AOContent_contentHostId2,
+				account2LocalIdentity.publicKey,
+				account2LocalIdentity.address,
+				AOContent_contentHostPrice2
+			);
+			AOContent_purchaseId3 = await buyContent(
+				account2,
+				account1,
+				account1,
+				AOContent_stakeId3,
+				AOContent_contentHostId3,
+				account2LocalIdentity.publicKey,
+				account2LocalIdentity.address,
+				AOContent_contentHostPrice3
+			);
+
+			CreativeCommons_purchaseId1 = await buyContent(
+				account2,
+				account1,
+				account1,
+				CreativeCommons_stakeId1,
+				CreativeCommons_contentHostId1,
+				account2LocalIdentity.publicKey,
+				account2LocalIdentity.address,
+				CreativeCommons_contentHostPrice1
+			);
+			CreativeCommons_purchaseId2 = await buyContent(
+				account2,
+				account1,
+				account1,
+				CreativeCommons_stakeId2,
+				CreativeCommons_contentHostId2,
+				account2LocalIdentity.publicKey,
+				account2LocalIdentity.address,
+				CreativeCommons_contentHostPrice2
+			);
+			CreativeCommons_purchaseId3 = await buyContent(
+				account2,
+				account1,
+				account1,
+				CreativeCommons_stakeId3,
+				CreativeCommons_contentHostId3,
+				account2LocalIdentity.publicKey,
+				account2LocalIdentity.address,
+				CreativeCommons_contentHostPrice3
+			);
+
+			TAOContent_purchaseId1 = await buyContent(
+				account2,
+				account1,
+				account1,
+				TAOContent_stakeId1,
+				TAOContent_contentHostId1,
+				account2LocalIdentity.publicKey,
+				account2LocalIdentity.address,
+				TAOContent_contentHostPrice1
+			);
+			TAOContent_purchaseId2 = await buyContent(
+				account2,
+				account1,
+				account1,
+				TAOContent_stakeId2,
+				TAOContent_contentHostId2,
+				account2LocalIdentity.publicKey,
+				account2LocalIdentity.address,
+				TAOContent_contentHostPrice2
+			);
+			TAOContent_purchaseId3 = await buyContent(
+				account2,
+				account1,
+				account1,
+				TAOContent_stakeId3,
+				TAOContent_contentHostId3,
+				account2LocalIdentity.publicKey,
+				account2LocalIdentity.address,
+				TAOContent_contentHostPrice3
 			);
 		});
+
+		return;
+		/*
 
 		it("becomeHost() - should NOT be able to become host if params provided are not valid", async function() {
 			var canBecomeHost;
