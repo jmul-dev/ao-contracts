@@ -59,6 +59,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 	var nullBytesValue = "0x0000000000000000000000000000000000000000000000000000000000000000";
+	var extraData = JSON.stringify({ extraData: "value" });
 
 	var nameId1, // Name that creates a TAO, i.e thoughtId1
 		nameId2, // Other Name that creates a Thought
@@ -1434,8 +1435,6 @@ contract("AOContent & AOEarning", function(accounts) {
 			TAOContent_contentHostId3 = response.contentHostId;
 		});
 
-		return;
-		/*
 		it("setProfitPercentage() - should NOT be able to set profit percentage on non-existing staked content", async function() {
 			var canSetProfitPercentage;
 			try {
@@ -1459,9 +1458,9 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.notEqual(canSetProfitPercentage, true, "Non-stake owner address can set profit percentage");
 			};
 
-			await setProfitPercentage(stakeId1);
-			await setProfitPercentage(stakeId2);
-			await setProfitPercentage(stakeId3);
+			await setProfitPercentage(AOContent_stakeId1);
+			await setProfitPercentage(AOContent_stakeId2);
+			await setProfitPercentage(AOContent_stakeId3);
 		});
 
 		it("setProfitPercentage() - should NOT be able to set profit percentage if profit percentage is more than 100%", async function() {
@@ -1476,9 +1475,9 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.notEqual(canSetProfitPercentage, true, "account1 can set profit percentage more than its allowed value");
 			};
 
-			await setProfitPercentage(stakeId1);
-			await setProfitPercentage(stakeId2);
-			await setProfitPercentage(stakeId3);
+			await setProfitPercentage(AOContent_stakeId1);
+			await setProfitPercentage(AOContent_stakeId2);
+			await setProfitPercentage(AOContent_stakeId3);
 		});
 
 		it("setProfitPercentage() - should be able to set profit percentage", async function() {
@@ -1491,12 +1490,98 @@ contract("AOContent & AOEarning", function(accounts) {
 					canSetProfitPercentage = false;
 				}
 				assert.equal(canSetProfitPercentage, true, "account1 is unable to set profit percentage");
+
+				var stakedContent = await aocontent.stakedContentById(stakeId);
+				assert.equal(stakedContent[5].toNumber(), 800000, "StakedContent has incorrect profitPercentage after update");
 			};
 
-			await setProfitPercentage(stakeId1);
-			await setProfitPercentage(stakeId2);
-			await setProfitPercentage(stakeId3);
+			await setProfitPercentage(AOContent_stakeId1);
+			await setProfitPercentage(AOContent_stakeId2);
+			await setProfitPercentage(AOContent_stakeId3);
 		});
+
+		it("setProfitPercentage() - should not be able to set profit percentage for non-AO Content, i.e Creative Commons/T(AO) Content", async function() {
+			var setProfitPercentage = async function(stakeId) {
+				var canSetProfitPercentage;
+				try {
+					await aocontent.setProfitPercentage(stakeId, 800000, { from: account1 });
+					canSetProfitPercentage = true;
+				} catch (e) {
+					canSetProfitPercentage = false;
+				}
+				assert.notEqual(canSetProfitPercentage, true, "account1 is able to set profit percentage");
+			};
+
+			await setProfitPercentage(CreativeCommons_stakeId1);
+			await setProfitPercentage(CreativeCommons_stakeId2);
+			await setProfitPercentage(CreativeCommons_stakeId3);
+			await setProfitPercentage(TAOContent_stakeId1);
+			await setProfitPercentage(TAOContent_stakeId2);
+			await setProfitPercentage(TAOContent_stakeId3);
+		});
+
+		it("setContentExtraData() - should NOT be able to set extraData on non-existing content", async function() {
+			var canSetContentExtraData;
+			try {
+				await aocontent.setContentExtraData("someid", extraData, { from: account1 });
+				canSetContentExtraData = true;
+			} catch (e) {
+				canSetContentExtraData = false;
+			}
+			assert.notEqual(canSetContentExtraData, true, "account1 can set extra data for non-existing content");
+		});
+
+		it("setContentExtraData() - should NOT be able to set extraData if content creator is not the same as sender", async function() {
+			var setContentExtraData = async function(contentId) {
+				var canSetContentExtraData;
+				try {
+					await aocontent.setContentExtraData(contentId, extraData, { from: account2 });
+					canSetContentExtraData = true;
+				} catch (e) {
+					canSetContentExtraData = false;
+				}
+				assert.notEqual(canSetContentExtraData, true, "Non-content creator address can set content extra data");
+			};
+
+			await setContentExtraData(AOContent_contentId1);
+			await setContentExtraData(AOContent_contentId2);
+			await setContentExtraData(AOContent_contentId3);
+			await setContentExtraData(CreativeCommons_contentId1);
+			await setContentExtraData(CreativeCommons_contentId2);
+			await setContentExtraData(CreativeCommons_contentId3);
+			await setContentExtraData(TAOContent_contentId1);
+			await setContentExtraData(TAOContent_contentId2);
+			await setContentExtraData(TAOContent_contentId3);
+		});
+
+		it("setContentExtraData() - should be able to set extraData", async function() {
+			var setContentExtraData = async function(contentId) {
+				var canSetContentExtraData;
+				try {
+					await aocontent.setContentExtraData(contentId, extraData, { from: account1 });
+					canSetContentExtraData = true;
+				} catch (e) {
+					canSetContentExtraData = false;
+				}
+				assert.equal(canSetContentExtraData, true, "Content creator address can's set content extra data");
+
+				var content = await aocontent.contentById(contentId);
+				assert.equal(content[8], extraData, "Content has incorrect extraData after update");
+			};
+
+			await setContentExtraData(AOContent_contentId1);
+			await setContentExtraData(AOContent_contentId2);
+			await setContentExtraData(AOContent_contentId3);
+			await setContentExtraData(CreativeCommons_contentId1);
+			await setContentExtraData(CreativeCommons_contentId2);
+			await setContentExtraData(CreativeCommons_contentId3);
+			await setContentExtraData(TAOContent_contentId1);
+			await setContentExtraData(TAOContent_contentId2);
+			await setContentExtraData(TAOContent_contentId3);
+		});
+
+		return;
+		/*
 
 		it("unstakePartialContent() - should NOT be able to partially unstake non-existing staked content", async function() {
 			var canUnstakePartial;
