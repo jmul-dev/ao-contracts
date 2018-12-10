@@ -201,16 +201,24 @@ contract AOTreasury is developed {
 	 * @param denominationName bytes8 name of the token denomination
 	 * @return uint256 converted amount in base denomination from target denomination
 	 */
-	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) public isValidDenomination(denominationName) view returns (uint256) {
-		Denomination memory _denomination = denominations[denominationIndex[denominationName]];
-		AOToken _denominationToken = AOToken(_denomination.denominationAddress);
-		uint8 fractionNumDigits = _numDigits(fractionAmount);
-		require (fractionNumDigits <= _denominationToken.decimals());
-		uint256 baseInteger = integerAmount.mul(10 ** _denominationToken.powerOfTen());
-		if (_denominationToken.decimals() == 0) {
-			fractionAmount = 0;
+	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) public view returns (uint256) {
+		if (denominationName.length > 0 &&
+			denominationIndex[denominationName] > 0 &&
+			denominations[denominationIndex[denominationName]].denominationAddress != address(0) &&
+			(integerAmount > 0 || fractionAmount > 0)) {
+
+			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
+			AOToken _denominationToken = AOToken(_denomination.denominationAddress);
+			uint8 fractionNumDigits = _numDigits(fractionAmount);
+			require (fractionNumDigits <= _denominationToken.decimals());
+			uint256 baseInteger = integerAmount.mul(10 ** _denominationToken.powerOfTen());
+			if (_denominationToken.decimals() == 0) {
+				fractionAmount = 0;
+			}
+			return baseInteger.add(fractionAmount);
+		} else {
+			return 0;
 		}
-		return baseInteger.add(fractionAmount);
 	}
 
 	/**
