@@ -6,6 +6,8 @@ var AOLibrary = artifacts.require("./AOLibrary.sol");
 var Pathos = artifacts.require("./Pathos.sol");
 var AntiLogos = artifacts.require("./AntiLogos.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
+var NameFactory = artifacts.require("./NameFactory.sol");
+var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
 var EthCrypto = require("eth-crypto");
 
 contract("AOContent & AOEarning", function(accounts) {
@@ -19,19 +21,25 @@ contract("AOContent & AOEarning", function(accounts) {
 		antilogos,
 		settingThoughtId,
 		aosetting,
+		namefactory,
+		thoughtfactory,
 		inflationRate,
 		foundationCut,
 		percentageDivisor,
 		multiplierDivisor,
 		contentUsageType_aoContent,
 		contentUsageType_creativeCommons,
-		contentUsageType_taoContent;
+		contentUsageType_taoContent,
+		taoContentState_submitted,
+		taoContentState_pendingReview,
+		taoContentState_acceptedToTAO;
+
 	var someAddress = "0x0694bdcab07b298e88a834a3c91602cb8f457bde";
 	var developer = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var account3 = accounts[3];
-	// Retrieve private keys from ganache
+
 	var baseChallenge = "basechallengestring";
 	var encChallenge = "encchallengestring";
 	var account2EncChallenge = "account2encchallengestring";
@@ -42,7 +50,6 @@ contract("AOContent & AOEarning", function(accounts) {
 	var account2MetadataDatKey = "02bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 	var account3ContentDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 	var account3MetadataDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
-	var extraData = "";
 
 	var account2LocalIdentity = EthCrypto.createIdentity();
 	var account3LocalIdentity = EthCrypto.createIdentity();
@@ -50,7 +57,14 @@ contract("AOContent & AOEarning", function(accounts) {
 	var fileSize = 1000000; // 1000000 bytes = min 1000000 AO
 	var profitPercentage = 600000; // 60%
 
-	var taoId = "";
+	var emptyAddress = "0x0000000000000000000000000000000000000000";
+	var nullBytesValue = "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+	var nameId1, // Name that creates a TAO, i.e thoughtId1
+		nameId2, // Other Name that creates a Thought
+		thoughtId1, // A TAO created by nameId1
+		thoughtId2, // A Thought created by nameId1 to update TAO Content State
+		thoughtId3; // A Thought created by nameId2
 
 	before(async function() {
 		aocontent = await AOContent.deployed();
@@ -58,6 +72,8 @@ contract("AOContent & AOEarning", function(accounts) {
 		aotreasury = await AOTreasury.deployed();
 		aoearning = await AOEarning.deployed();
 		aosetting = await AOSetting.deployed();
+		namefactory = await NameFactory.deployed();
+		thoughtfactory = await ThoughtFactory.deployed();
 
 		// Get the decimals
 		aodecimals = await aotoken.decimals();
@@ -79,13 +95,52 @@ contract("AOContent & AOEarning", function(accounts) {
 		multiplierDivisor = await library.MULTIPLIER_DIVISOR();
 
 		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "contentUsageType_aoContent");
-		contentUsageType_aoContent = settingValues[4];
+		contentUsageType_aoContent = settingValues[3];
 
 		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "contentUsageType_creativeCommons");
-		contentUsageType_creativeCommons = settingValues[4];
+		contentUsageType_creativeCommons = settingValues[3];
 
 		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "contentUsageType_taoContent");
-		contentUsageType_taoContent = settingValues[4];
+		contentUsageType_taoContent = settingValues[3];
+
+		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "taoContentState_submitted");
+		taoContentState_submitted = settingValues[3];
+
+		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "taoContentState_pendingReview");
+		taoContentState_pendingReview = settingValues[3];
+
+		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "taoContentState_acceptedToTAO");
+		taoContentState_acceptedToTAO = settingValues[3];
+
+		// Create Names
+		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+			from: account1
+		});
+		nameId1 = await namefactory.ethAddressToNameId(account1);
+
+		result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+			from: account2
+		});
+		nameId2 = await namefactory.ethAddressToNameId(account2);
+
+		// Create Thoughts
+		result = await thoughtfactory.createThought("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId1, {
+			from: account1
+		});
+		var createThoughtEvent = result.logs[0];
+		thoughtId1 = createThoughtEvent.args.thoughtId;
+
+		result = await thoughtfactory.createThought("somedathash", "somedatabase", "somekeyvalue", "somecontentid", thoughtId1, {
+			from: account1
+		});
+		createThoughtEvent = result.logs[0];
+		thoughtId2 = createThoughtEvent.args.thoughtId;
+
+		result = await thoughtfactory.createThought("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId2, {
+			from: account2
+		});
+		createThoughtEvent = result.logs[0];
+		thoughtId3 = createThoughtEvent.args.thoughtId;
 	});
 
 	contract("AOContent - Developer Only Function Tests", function() {
@@ -227,22 +282,46 @@ contract("AOContent & AOEarning", function(accounts) {
 	});
 
 	contract("Stake, Unstake, Buy Content & Become Host Function Tests", function() {
-		var contentId1,
-			contentId2,
-			contentId3,
-			stakeId1,
-			stakeId2,
-			stakeId3,
-			contentHostId1,
-			contentHostId2,
-			contentHostId3,
-			contentHost1Price,
-			contentHost2Price,
-			contentHost3Price,
+		var AOContent_contentId1,
+			AOContent_contentId2,
+			AOContent_contentId3,
+			AOContent_stakeId1,
+			AOContent_stakeId2,
+			AOContent_stakeId3,
+			AOContent_contentHostId1,
+			AOContent_contentHostId2,
+			AOContent_contentHostId3,
+			AOContent_contentHost1Price,
+			AOContent_contentHost2Price,
+			AOContent_contentHost3Price,
+			CreativeCommons_contentId1,
+			CreativeCommons_contentId2,
+			CreativeCommons_contentId3,
+			CreativeCommons_stakeId1,
+			CreativeCommons_stakeId2,
+			CreativeCommons_stakeId3,
+			CreativeCommons_contentHostId1,
+			CreativeCommons_contentHostId2,
+			CreativeCommons_contentHostId3,
+			CreativeCommons_contentHost1Price,
+			CreativeCommons_contentHost2Price,
+			CreativeCommons_contentHost3Price,
+			TAOContent_contentId1,
+			TAOContent_contentId2,
+			TAOContent_contentId3,
+			TAOContent_stakeId1,
+			TAOContent_stakeId2,
+			TAOContent_stakeId3,
+			TAOContent_contentHostId1,
+			TAOContent_contentHostId2,
+			TAOContent_contentHostId3,
+			TAOContent_contentHost1Price,
+			TAOContent_contentHost2Price,
+			TAOContent_contentHost3Price,
 			purchaseId,
 			contentHostId4;
 
-		var stakeContent = async function(account, networkIntegerAmount, networkFractionAmount, denomination, primordialAmount) {
+		var stakeAOContent = async function(account, networkIntegerAmount, networkFractionAmount, denomination, primordialAmount) {
 			var accountBalanceBefore = await aotoken.balanceOf(account);
 			var accountStakedBalanceBefore = await aotoken.stakedBalance(account);
 			var accountWeightedMultiplierBefore = await aotoken.weightedMultiplierByAddress(account);
@@ -302,12 +381,13 @@ contract("AOContent & AOEarning", function(accounts) {
 			// Verify content
 			assert.equal(content[0], account, "contentById returns incorrect content creator");
 			assert.equal(content[1].toString(), fileSize, "contentById returns incorrect filesize");
-
-			/**
-			 * TODO: add more validation for contentById
-			 */
-			//assert.equal(content[2], contentUsageType_aoContent, "contentById returns incorrect contentUsageType_aoContent");
-			//assert.equal(content[3], extraData, "contentById returns incorrect extraData");
+			assert.equal(content[2], contentUsageType_aoContent, "contentById returns incorrect contentUsageType");
+			assert.equal(content[3], emptyAddress, "contentById returns incorrect taoId");
+			assert.equal(content[4], nullBytesValue, "contentById returns incorrect taoContentState");
+			assert.equal(content[5].toNumber(), 0, "contentById returns incorrect updateTAOContentStateV");
+			assert.equal(content[6], nullBytesValue, "contentById returns incorrect updateTAOContentStateR");
+			assert.equal(content[7], nullBytesValue, "contentById returns incorrect updateTAOContentStateS");
+			assert.equal(content[8], "", "contentById returns incorrect extraData");
 
 			// Verify stakedContent
 			assert.equal(stakedContent[0], contentId, "stakedContentById returns incorrect contentID");
@@ -324,6 +404,141 @@ contract("AOContent & AOEarning", function(accounts) {
 				"stakedContentById returns incorrect primordialWeightedMultiplier"
 			);
 			assert.equal(stakedContent[5].toString(), profitPercentage, "stakedContentById returns incorrect profitPercentage");
+			assert.equal(stakedContent[6], true, "stakedContentById returns incorrect active status");
+
+			// Verify contentHost
+			assert.equal(contentHost[0], stakeId, "contentHostById returns incorrect stakeID");
+			assert.equal(contentHost[1], account, "contentHostById returns incorrect host");
+			assert.equal(contentHost[2], contentDatKey, "contentHostById returns incorrect contentDatKey");
+			assert.equal(contentHost[3], metadataDatKey, "contentHostById returns incorrect metadataDatKey");
+
+			// Verify the account balance after staking
+			var accountBalanceAfter = await aotoken.balanceOf(account);
+			var accountStakedBalanceAfter = await aotoken.stakedBalance(account);
+			var accountWeightedMultiplierAfter = await aotoken.weightedMultiplierByAddress(account);
+			var accountPrimordialBalanceAfter = await aotoken.primordialBalanceOf(account);
+			var accountPrimordialStakedBalanceAfter = await aotoken.primordialStakedBalance(
+				account,
+				accountWeightedMultiplierAfter.toNumber()
+			);
+
+			assert.equal(
+				accountBalanceAfter.toString(),
+				accountBalanceBefore.minus(networkAmount).toString(),
+				"account has incorrect balance after staking"
+			);
+			assert.equal(
+				accountStakedBalanceAfter.toString(),
+				accountStakedBalanceBefore.plus(networkAmount).toString(),
+				"account has incorrect staked balance after staking"
+			);
+			assert.equal(
+				accountWeightedMultiplierAfter.toString(),
+				accountWeightedMultiplierBefore.toString(),
+				"account has incorrect weighted multiplier after staking"
+			);
+			assert.equal(
+				accountPrimordialBalanceAfter.toString(),
+				accountPrimordialBalanceBefore.minus(primordialAmount).toString(),
+				"account has incorrect primordial balance after staking"
+			);
+			assert.equal(
+				accountPrimordialStakedBalanceAfter.toString(),
+				accountPrimordialStakedBalanceBefore.plus(primordialAmount).toString(),
+				"account has incorrect staked primordial balance after staking"
+			);
+
+			return { contentId: contentId, stakeId: stakeId, contentHostId: contentHostId };
+		};
+
+		var stakeCreativeCommonsContent = async function(
+			account,
+			networkIntegerAmount,
+			networkFractionAmount,
+			denomination,
+			primordialAmount
+		) {
+			var accountBalanceBefore = await aotoken.balanceOf(account);
+			var accountStakedBalanceBefore = await aotoken.stakedBalance(account);
+			var accountWeightedMultiplierBefore = await aotoken.weightedMultiplierByAddress(account);
+			var accountPrimordialBalanceBefore = await aotoken.primordialBalanceOf(account);
+			var accountPrimordialStakedBalanceBefore = await aotoken.primordialStakedBalance(
+				account,
+				accountWeightedMultiplierBefore.toNumber()
+			);
+
+			var canStake, content, stakedContent, contentHost, storeContentEvent, stakeContentEvent, hostContentEvent;
+			try {
+				var result = await aocontent.stakeCreativeCommonsContent(
+					networkIntegerAmount,
+					networkFractionAmount,
+					denomination,
+					primordialAmount,
+					baseChallenge,
+					encChallenge,
+					contentDatKey,
+					metadataDatKey,
+					fileSize,
+					{ from: account }
+				);
+
+				storeContentEvent = result.logs[0];
+				stakeContentEvent = result.logs[1];
+				hostContentEvent = result.logs[2];
+
+				contentId = storeContentEvent.args.contentId;
+				stakeId = stakeContentEvent.args.stakeId;
+				contentHostId = hostContentEvent.args.contentHostId;
+
+				content = await aocontent.contentById(contentId);
+				stakedContent = await aocontent.stakedContentById(stakeId);
+				contentHost = await aocontent.contentHostById(contentHostId);
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+				contentId = null;
+				stakeId = null;
+				contentHostId = null;
+
+				content = null;
+				stakedContent = null;
+				contentHost = null;
+			}
+			var networkAmount =
+				networkIntegerAmount > 0 || networkFractionAmount > 0
+					? await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination)
+					: 0;
+			assert.equal(canStake, true, "account can't stake content even though enough tokens were sent");
+			assert.notEqual(contentId, null, "Unable to determine the contentID from the log after staking content");
+			assert.notEqual(stakeId, null, "Unable to determine the stakeID from the log after staking content");
+			assert.notEqual(contentHostId, null, "Unable to determine the contentHostID from the log after staking content");
+
+			// Verify content
+			assert.equal(content[0], account, "contentById returns incorrect content creator");
+			assert.equal(content[1].toString(), fileSize, "contentById returns incorrect filesize");
+			assert.equal(content[2], contentUsageType_creativeCommons, "contentById returns incorrect contentUsageType");
+			assert.equal(content[3], emptyAddress, "contentById returns incorrect taoId");
+			assert.equal(content[4], nullBytesValue, "contentById returns incorrect taoContentState");
+			assert.equal(content[5].toNumber(), 0, "contentById returns incorrect updateTAOContentStateV");
+			assert.equal(content[6], nullBytesValue, "contentById returns incorrect updateTAOContentStateR");
+			assert.equal(content[7], nullBytesValue, "contentById returns incorrect updateTAOContentStateS");
+			assert.equal(content[8], "", "contentById returns incorrect extraData");
+
+			// Verify stakedContent
+			assert.equal(stakedContent[0], contentId, "stakedContentById returns incorrect contentID");
+			assert.equal(stakedContent[1], account, "stakedContentById returns incorrect stakeOwner");
+			assert.equal(
+				stakedContent[2].toString(),
+				networkAmount ? networkAmount.toString() : 0,
+				"stakedContentById returns incorrect networkAmount"
+			);
+			assert.equal(stakedContent[3].toString(), primordialAmount, "stakedContentById returns incorrect primordialAmount");
+			assert.equal(
+				stakedContent[4].toString(),
+				primordialAmount ? accountWeightedMultiplierBefore.toString() : 0,
+				"stakedContentById returns incorrect primordialWeightedMultiplier"
+			);
+			assert.equal(stakedContent[5].toString(), 0, "stakedContentById returns incorrect profitPercentage");
 			assert.equal(stakedContent[6], true, "stakedContentById returns incorrect active status");
 
 			// Verify contentHost
@@ -560,7 +775,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			await aotoken.mintToken(account2, 10 ** 9, { from: developer }); // 1,000,000,000 AO Token
 		});
 
-		it("stakeContent() - should NOT stake content if params provided are not valid", async function() {
+		it("stakeAOContent() - should NOT stake content if params provided are not valid", async function() {
 			var canStake;
 			try {
 				await aocontent.stakeAOContent(
@@ -706,7 +921,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canStake, true, "account1 can stake content even though staked amount is less than filesize");
 		});
 
-		it("stakeContent() - should NOT stake content if account does not have enough balance", async function() {
+		it("stakeAOContent() - should NOT stake content if account does not have enough balance", async function() {
 			var canStake;
 			try {
 				await aocontent.stakeAOContent(
@@ -729,27 +944,173 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canStake, true, "account1 can stake more than available balance");
 		});
 
-		it("stakeContent() - should be able to stake content with only network tokens", async function() {
-			var response = await stakeContent(account1, 5, 1000, "mega", 0);
-			contentId1 = response.contentId;
-			stakeId1 = response.stakeId;
-			contentHostId1 = response.contentHostId;
+		it("stakeAOContent() - should be able to stake content with only network tokens", async function() {
+			var response = await stakeAOContent(account1, 5, 1000, "mega", 0);
+			AOContent_contentId1 = response.contentId;
+			AOContent_stakeId1 = response.stakeId;
+			AOContent_contentHostId1 = response.contentHostId;
 		});
 
-		it("stakeContent() - should be able to stake content with only primordial tokens", async function() {
-			var response = await stakeContent(account1, 0, 0, "", 1000100);
-			contentId2 = response.contentId;
-			stakeId2 = response.stakeId;
-			contentHostId2 = response.contentHostId;
+		it("stakeAOContent() - should be able to stake content with only primordial tokens", async function() {
+			var response = await stakeAOContent(account1, 0, 0, "", 1000100);
+			AOContent_contentId2 = response.contentId;
+			AOContent_stakeId2 = response.stakeId;
+			AOContent_contentHostId2 = response.contentHostId;
 		});
 
-		it("stakeContent() - should be able to stake content with both network Tokens and primordial tokens", async function() {
-			var response = await stakeContent(account1, 3, 100, "mega", 10000);
-			contentId3 = response.contentId;
-			stakeId3 = response.stakeId;
-			contentHostId3 = response.contentHostId;
+		it("stakeAOContent() - should be able to stake content with both network Tokens and primordial tokens", async function() {
+			var response = await stakeAOContent(account1, 3, 100, "mega", 10000);
+			AOContent_contentId3 = response.contentId;
+			AOContent_stakeId3 = response.stakeId;
+			AOContent_contentHostId3 = response.contentHostId;
 		});
 
+		it("stakeCreativeCommonsContent() - should NOT stake content if params provided are not valid", async function() {
+			var canStake;
+			try {
+				await aocontent.stakeCreativeCommonsContent(1, 0, "mega", 0, "", encChallenge, contentDatKey, metadataDatKey, fileSize, {
+					from: account1
+				});
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+			}
+			assert.notEqual(canStake, true, "account1 can stake content even though it's missing baseChallenge");
+
+			try {
+				await aocontent.stakeCreativeCommonsContent(1, 0, "mega", 0, baseChallenge, "", contentDatKey, metadataDatKey, fileSize, {
+					from: account1
+				});
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+			}
+			assert.notEqual(canStake, true, "account1 can stake content even though it's missing encChallenge");
+
+			try {
+				await aocontent.stakeCreativeCommonsContent(1, 0, "mega", 0, baseChallenge, encChallenge, "", metadataDatKey, fileSize, {
+					from: account1
+				});
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+			}
+			assert.notEqual(canStake, true, "account1 can stake content even though it's missing contentDatKey");
+			try {
+				await aocontent.stakeCreativeCommonsContent(1, 0, "mega", 0, baseChallenge, encChallenge, contentDatKey, "", fileSize, {
+					from: account1
+				});
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+			}
+			assert.notEqual(canStake, true, "account1 can stake content even though it's missing metadataDatKey");
+			try {
+				await aocontent.stakeCreativeCommonsContent(
+					1,
+					0,
+					"mega",
+					0,
+					baseChallenge,
+					encChallenge,
+					contentDatKey,
+					metadataDatKey,
+					0,
+					{ from: account1 }
+				);
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+			}
+			assert.notEqual(canStake, true, "account1 can stake content even though fileSize is 0");
+
+			try {
+				await aocontent.stakeCreativeCommonsContent(
+					1,
+					0,
+					"kilo",
+					100,
+					baseChallenge,
+					encChallenge,
+					contentDatKey,
+					metadataDatKey,
+					fileSize,
+					{ from: account1 }
+				);
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+			}
+			assert.notEqual(canStake, true, "account1 can stake content even though staked amount is less than filesize");
+		});
+
+		it("stakeCreativeCommonsContent() - should NOT stake content if account does not have enough balance", async function() {
+			var canStake;
+			try {
+				await aocontent.stakeCreativeCommonsContent(
+					2,
+					0,
+					"giga",
+					0,
+					baseChallenge,
+					encChallenge,
+					contentDatKey,
+					metadataDatKey,
+					fileSize,
+					{ from: account1 }
+				);
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+			}
+			assert.notEqual(canStake, true, "account1 can stake more than available balance");
+		});
+
+		it("stakeCreativeCommonsContent() - should NOT stake content if staked amount is > filesize", async function() {
+			var canStake;
+			try {
+				await aocontent.stakeCreativeCommonsContent(
+					5,
+					1000,
+					"mega",
+					0,
+					baseChallenge,
+					encChallenge,
+					contentDatKey,
+					metadataDatKey,
+					fileSize,
+					{ from: account1 }
+				);
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+			}
+			assert.notEqual(canStake, true, "account1 can stake more than filesize");
+		});
+
+		it("stakeCreativeCommonsContent() - should be able to stake content with only network tokens", async function() {
+			var response = await stakeCreativeCommonsContent(account1, 1, 0, "mega", 0);
+			CreativeCommons_contentId1 = response.contentId;
+			CreativeCommons_stakeId1 = response.stakeId;
+			CreativeCommons_contentHostId1 = response.contentHostId;
+		});
+
+		it("stakeCreativeCommonsContent() - should be able to stake content with only primordial tokens", async function() {
+			var response = await stakeCreativeCommonsContent(account1, 0, 0, "", 1000000);
+			CreativeCommons_contentId2 = response.contentId;
+			CreativeCommons_stakeId2 = response.stakeId;
+			CreativeCommons_contentHostId2 = response.contentHostId;
+		});
+
+		it("stakeCreativeCommonsContent() - should be able to stake content with both network Tokens and primordial tokens", async function() {
+			var response = await stakeCreativeCommonsContent(account1, 0, 900000, "mega", 100000);
+			CreativeCommons_contentId3 = response.contentId;
+			CreativeCommons_stakeId3 = response.stakeId;
+			CreativeCommons_contentHostId3 = response.contentHostId;
+		});
+
+		return;
+		/*
 		it("setProfitPercentage() - should NOT be able to set profit percentage on non-existing staked content", async function() {
 			var canSetProfitPercentage;
 			try {
@@ -1919,5 +2280,6 @@ contract("AOContent & AOEarning", function(accounts) {
 				"getEarningMetrics() returns incorrect total earning for Foundation"
 			);
 		});
+		*/
 	});
 });
