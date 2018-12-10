@@ -1701,8 +1701,6 @@ contract("AOContent & AOEarning", function(accounts) {
 			await unstakePartialContent(TAOContent_stakeId1, 1, 0, "kilo", 10);
 		});
 
-		return;
-		/*
 		it("unstakeContent() - should NOT be able to unstake non-existing staked content", async function() {
 			var canUnstake;
 			try {
@@ -1713,8 +1711,6 @@ contract("AOContent & AOEarning", function(accounts) {
 			}
 			assert.notEqual(canUnstake, true, "account1 can unstake non-existing staked content");
 		});
-
-
 
 		it("unstakeContent() - should NOT be able to unstake existing staked content if stake owner is not the same as the sender", async function() {
 			var unstakeContent = async function(stakeId) {
@@ -1728,9 +1724,17 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.notEqual(canUnstake, true, "Non-stake owner address can unstake existing staked content");
 			};
 
-			await unstakeContent(stakeId1);
-			await unstakeContent(stakeId2);
-			await unstakeContent(stakeId3);
+			await unstakeContent(AOContent_stakeId1);
+			await unstakeContent(AOContent_stakeId2);
+			await unstakeContent(AOContent_stakeId3);
+
+			await unstakeContent(CreativeCommons_stakeId1);
+			await unstakeContent(CreativeCommons_stakeId2);
+			await unstakeContent(CreativeCommons_stakeId3);
+
+			await unstakeContent(TAOContent_stakeId1);
+			await unstakeContent(TAOContent_stakeId2);
+			await unstakeContent(TAOContent_stakeId3);
 		});
 
 		it("unstakeContent() - should be able to unstake existing staked content", async function() {
@@ -1803,10 +1807,21 @@ contract("AOContent & AOEarning", function(accounts) {
 				);
 			};
 
-			await unstakeContent(account1, stakeId1);
-			await unstakeContent(account1, stakeId2);
-			await unstakeContent(account1, stakeId3);
+			await unstakeContent(account1, AOContent_stakeId1);
+			await unstakeContent(account1, AOContent_stakeId2);
+			await unstakeContent(account1, AOContent_stakeId3);
+
+			await unstakeContent(account1, CreativeCommons_stakeId1);
+			await unstakeContent(account1, CreativeCommons_stakeId2);
+			await unstakeContent(account1, CreativeCommons_stakeId3);
+
+			await unstakeContent(account1, TAOContent_stakeId1);
+			await unstakeContent(account1, TAOContent_stakeId2);
+			await unstakeContent(account1, TAOContent_stakeId3);
 		});
+
+		return;
+		/*
 
 		it("stakeExistingContent() - should NOT be able to stake non-existing staked content", async function() {
 			var canStakeExisting;
