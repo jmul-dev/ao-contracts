@@ -1610,6 +1610,224 @@ contract("AOContent & AOEarning", function(accounts) {
 			await setContentExtraData(TAOContent_contentId3);
 		});
 
+		it("updateTAOContentState() - should NOT update TAO Content State if params provided are not valid", async function() {
+			var signHash = EthCrypto.hash.keccak256([
+				{
+					type: "address",
+					value: aocontent.address
+				},
+				{
+					type: "bytes32",
+					value: TAOContent_contentId1
+				},
+				{
+					type: "address",
+					value: thoughtId2
+				},
+				{
+					type: "bytes32",
+					value: taoContentState_acceptedToTAO
+				}
+			]);
+
+			var signature = EthCrypto.sign(account1PrivateKey, signHash);
+			var vrs = EthCrypto.vrs.fromString(signature);
+
+			var canUpdateTAOContentState;
+			try {
+				await aocontent.updateTAOContentState("someid", thoughtId2, taoContentState_acceptedToTAO, vrs.v, vrs.r, vrs.s, {
+					from: account1
+				});
+				canUpdateTAOContentState = true;
+			} catch (e) {
+				canUpdateTAOContentState = false;
+			}
+			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State for non-existing content");
+
+			try {
+				await aocontent.updateTAOContentState(
+					AOContent_contentId1,
+					thoughtId2,
+					taoContentState_acceptedToTAO,
+					vrs.v,
+					vrs.r,
+					vrs.s,
+					{ from: account1 }
+				);
+				canUpdateTAOContentState = true;
+			} catch (e) {
+				canUpdateTAOContentState = false;
+			}
+			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State for non-T(AO) content");
+
+			try {
+				await aocontent.updateTAOContentState(
+					TAOContent_contentId1,
+					someAddress,
+					taoContentState_acceptedToTAO,
+					vrs.v,
+					vrs.r,
+					vrs.s,
+					{ from: account1 }
+				);
+				canUpdateTAOContentState = true;
+			} catch (e) {
+				canUpdateTAOContentState = false;
+			}
+			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State with invalid Thought");
+
+			try {
+				await aocontent.updateTAOContentState(TAOContent_contentId1, thoughtId2, "somestate", vrs.v, vrs.r, vrs.s, {
+					from: account1
+				});
+				canUpdateTAOContentState = true;
+			} catch (e) {
+				canUpdateTAOContentState = false;
+			}
+			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State with invalid TAO Content State");
+
+			try {
+				await aocontent.updateTAOContentState(TAOContent_contentId1, thoughtId2, taoContentState_acceptedToTAO, 0, vrs.r, vrs.s, {
+					from: account1
+				});
+				canUpdateTAOContentState = true;
+			} catch (e) {
+				canUpdateTAOContentState = false;
+			}
+			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State with missing v part of the signature");
+
+			try {
+				await aocontent.updateTAOContentState(TAOContent_contentId1, thoughtId2, taoContentState_acceptedToTAO, vrs.v, "", vrs.s, {
+					from: account1
+				});
+				canUpdateTAOContentState = true;
+			} catch (e) {
+				canUpdateTAOContentState = false;
+			}
+			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State with missing r part of the signature");
+
+			try {
+				await aocontent.updateTAOContentState(TAOContent_contentId1, thoughtId2, taoContentState_acceptedToTAO, vrs.v, vrs.r, "", {
+					from: account1
+				});
+				canUpdateTAOContentState = true;
+			} catch (e) {
+				canUpdateTAOContentState = false;
+			}
+			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State with missing s part of the signature");
+
+			try {
+				await aocontent.updateTAOContentState(
+					TAOContent_contentId1,
+					thoughtId2,
+					taoContentState_acceptedToTAO,
+					vrs.v,
+					vrs.r,
+					vrs.s,
+					{ from: account2 }
+				);
+				canUpdateTAOContentState = true;
+			} catch (e) {
+				canUpdateTAOContentState = false;
+			}
+			assert.notEqual(canUpdateTAOContentState, true, "other account can update TAO Content State using other's signature");
+
+			signHash = EthCrypto.hash.keccak256([
+				{
+					type: "address",
+					value: aocontent.address
+				},
+				{
+					type: "bytes32",
+					value: TAOContent_contentId1
+				},
+				{
+					type: "address",
+					value: thoughtId3
+				},
+				{
+					type: "bytes32",
+					value: taoContentState_acceptedToTAO
+				}
+			]);
+
+			signature = EthCrypto.sign(account2PrivateKey, signHash);
+			vrs = EthCrypto.vrs.fromString(signature);
+
+			try {
+				await aocontent.updateTAOContentState(
+					TAOContent_contentId1,
+					thoughtId3,
+					taoContentState_acceptedToTAO,
+					vrs.v,
+					vrs.r,
+					vrs.s,
+					{ from: account2 }
+				);
+				canUpdateTAOContentState = true;
+			} catch (e) {
+				canUpdateTAOContentState = false;
+			}
+			assert.notEqual(canUpdateTAOContentState, true, "Non-Advocate/Listener/Speaker of TAO ID can update TAO Content State");
+		});
+
+		it("updateTAOContentState() - should be able to update TAO Content State", async function() {
+			var updateTAOContentState = async function(account, contentId, thoughtId, taoContentState, privateKey) {
+				var signHash = EthCrypto.hash.keccak256([
+					{
+						type: "address",
+						value: aocontent.address
+					},
+					{
+						type: "bytes32",
+						value: contentId
+					},
+					{
+						type: "address",
+						value: thoughtId
+					},
+					{
+						type: "bytes32",
+						value: taoContentState
+					}
+				]);
+
+				var signature = EthCrypto.sign(privateKey, signHash);
+				var vrs = EthCrypto.vrs.fromString(signature);
+
+				var canUpdateTAOContentState, updateTAOContentStateEvent;
+				try {
+					var result = await aocontent.updateTAOContentState(contentId, thoughtId, taoContentState, vrs.v, vrs.r, vrs.s, {
+						from: account
+					});
+					canUpdateTAOContentState = true;
+					updateTAOContentStateEvent = result.logs[0];
+				} catch (e) {
+					canUpdateTAOContentState = false;
+					updateTAOContentStateEvent = null;
+				}
+				assert.equal(canUpdateTAOContentState, true, "account can't update TAO Content State");
+
+				assert.equal(updateTAOContentStateEvent.args.contentId, contentId, "UpdateTAOContent event has incorrect contentId");
+				assert.equal(updateTAOContentStateEvent.args.thoughtId, thoughtId, "UpdateTAOContent event has incorrect thoughtId");
+				assert.equal(updateTAOContentStateEvent.args.signer, account, "UpdateTAOContent event has incorrect signer");
+				assert.equal(
+					updateTAOContentStateEvent.args.taoContentState,
+					taoContentState,
+					"UpdateTAOContent event has incorrect taoContentState"
+				);
+
+				var content = await aocontent.contentById(contentId);
+				assert.equal(content[4], taoContentState, "Content has incorrect taoContentState");
+				assert.equal(content[5].toNumber(), vrs.v, "Content has incorrect updateTAOContentStateV");
+				assert.equal(content[6], vrs.r, "Content has incorrect updateTAOContentStateR");
+				assert.equal(content[7], vrs.s, "Content has incorrect updateTAOContentStateS");
+			};
+			await updateTAOContentState(account1, TAOContent_contentId1, thoughtId2, taoContentState_acceptedToTAO, account1PrivateKey);
+			await updateTAOContentState(account1, TAOContent_contentId2, thoughtId2, taoContentState_pendingReview, account1PrivateKey);
+			await updateTAOContentState(account1, TAOContent_contentId3, thoughtId2, taoContentState_acceptedToTAO, account1PrivateKey);
+		});
+
 		it("unstakePartialContent() - should NOT be able to partially unstake non-existing staked content", async function() {
 			var canUnstakePartial;
 			try {

@@ -25,10 +25,8 @@ contract AOContent is developed {
 	uint256 public totalPurchaseReceipts;
 
 	address public settingThoughtId;
-	address public aoSettingAddress;
 	address public baseDenominationAddress;
 	address public treasuryAddress;
-	address public earningAddress;
 	address public nameFactoryAddress;
 
 	AOToken internal _baseAO;
@@ -91,28 +89,28 @@ contract AOContent is developed {
 	}
 
 	// Mapping from Content index to the Content object
-	mapping (uint256 => Content) private contents;
+	mapping (uint256 => Content) internal contents;
 
 	// Mapping from content ID to index of the contents list
-	mapping (bytes32 => uint256) private contentIndex;
+	mapping (bytes32 => uint256) internal contentIndex;
 
 	// Mapping from StakedContent index to the StakedContent object
-	mapping (uint256 => StakedContent) private stakedContents;
+	mapping (uint256 => StakedContent) internal stakedContents;
 
 	// Mapping from stake ID to index of the stakedContents list
-	mapping (bytes32 => uint256) private stakedContentIndex;
+	mapping (bytes32 => uint256) internal stakedContentIndex;
 
 	// Mapping from ContentHost index to the ContentHost object
-	mapping (uint256 => ContentHost) private contentHosts;
+	mapping (uint256 => ContentHost) internal contentHosts;
 
 	// Mapping from content host ID to index of the contentHosts list
-	mapping (bytes32 => uint256) private contentHostIndex;
+	mapping (bytes32 => uint256) internal contentHostIndex;
 
 	// Mapping from PurchaseReceipt index to the PurchaseReceipt object
-	mapping (uint256 => PurchaseReceipt) private purchaseReceipts;
+	mapping (uint256 => PurchaseReceipt) internal purchaseReceipts;
 
 	// Mapping from purchase ID to index of the purchaseReceipts list
-	mapping (bytes32 => uint256) private purchaseReceiptIndex;
+	mapping (bytes32 => uint256) internal purchaseReceiptIndex;
 
 	// Mapping from buyer's content host ID to the buy ID
 	// To check whether or not buyer has bought/paid for a content
@@ -159,7 +157,6 @@ contract AOContent is developed {
 	 */
 	constructor(address _settingThoughtId, address _aoSettingAddress, address _baseDenominationAddress, address _treasuryAddress, address _earningAddress, address _nameFactoryAddress) public {
 		settingThoughtId = _settingThoughtId;
-		aoSettingAddress = _aoSettingAddress;
 		baseDenominationAddress = _baseDenominationAddress;
 		treasuryAddress = _treasuryAddress;
 		nameFactoryAddress = _nameFactoryAddress;
@@ -782,15 +779,16 @@ contract AOContent is developed {
 		// Make sure the content exist
 		require (contentIndex[_contentId] > 0);
 		require (AOLibrary.isThought(_thoughtId));
-		(,,,bytes32 taoContentState_submitted, bytes32 taoContentState_pendingReview, bytes32 taoContentState_acceptedToTAO) = _getSettingVariables();
+		(,, bytes32 _contentUsageType_taoContent, bytes32 taoContentState_submitted, bytes32 taoContentState_pendingReview, bytes32 taoContentState_acceptedToTAO) = _getSettingVariables();
 		require (_taoContentState == taoContentState_submitted || _taoContentState == taoContentState_pendingReview || _taoContentState == taoContentState_acceptedToTAO);
 
 		address _signatureAddress = AOLibrary.getUpdateTAOContentStateSignatureAddress(address(this), _contentId, _thoughtId, _taoContentState, _updateTAOContentStateV, _updateTAOContentStateR, _updateTAOContentStateS);
 
 		Content storage _content = contents[contentIndex[_contentId]];
-
 		// Make sure that the signature address is one of content's TAO ID's Advocate/Listener/Speaker
-		require (AOLibrary.addressIsThoughtAdvocateListenerSpeaker(nameFactoryAddress, _signatureAddress, _content.taoId));
+		require (_signatureAddress == msg.sender && AOLibrary.addressIsThoughtAdvocateListenerSpeaker(nameFactoryAddress, _signatureAddress, _content.taoId));
+
+		require (_content.contentUsageType == _contentUsageType_taoContent);
 
 		_content.taoContentState = _taoContentState;
 		_content.updateTAOContentStateV = _updateTAOContentStateV;
