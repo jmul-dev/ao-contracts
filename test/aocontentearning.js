@@ -2959,79 +2959,218 @@ contract("AOContent & AOEarning", function(accounts) {
 			);
 		});
 
-		return;
-		/*
-
-
-
 		it("new node should be able to buy content from new distribution node, and then become a host itself", async function() {
 			// Let's give account3 some tokens
 			await aotoken.mintToken(account3, 10 ** 9, { from: developer }); // 1,000,000,000 AO Token
 
-			var canBuyContent, buyContentEvent;
-			try {
-				var result = await aocontent.buyContent(
-					contentHostId4,
-					3,
-					0,
-					"mega",
-					account3LocalIdentity.publicKey,
-					account3LocalIdentity.address,
-					{ from: account3 }
-				);
-				canBuyContent = true;
-				buyContentEvent = result.logs[0];
-				purchaseId = buyContentEvent.args.purchaseId;
-			} catch (e) {
-				canBuyContent = false;
-				buyContentEvent = null;
-				purchaseId = null;
-			}
-			assert.equal(canBuyContent, true, "Account can't buy content even though sent tokens >= price");
-
-			var signHash = EthCrypto.hash.keccak256([
-				{
-					type: "address",
-					value: aocontent.address
-				},
-				{
-					type: "string",
-					value: baseChallenge
+			var buyAndBecomeHost = async function(
+				account,
+				contentHostId,
+				publicKey,
+				publicAddress,
+				privateKey,
+				encChallenge,
+				contentDatKey,
+				metadataDatKey,
+				stakeId,
+				stakeOwner,
+				host,
+				isAOContent
+			) {
+				var canBuyContent, buyContentEvent;
+				try {
+					var result = await aocontent.buyContent(contentHostId, 3, 0, "mega", publicKey, publicAddress, { from: account });
+					canBuyContent = true;
+					buyContentEvent = result.logs[0];
+					purchaseId = buyContentEvent.args.purchaseId;
+				} catch (e) {
+					canBuyContent = false;
+					buyContentEvent = null;
+					purchaseId = null;
 				}
-			]);
+				assert.equal(canBuyContent, true, "Account can't buy content even though sent tokens >= price");
 
-			var signature = EthCrypto.sign(account3LocalIdentity.privateKey, signHash);
+				var stakeOwnerBalanceBefore = await aotoken.balanceOf(stakeOwner);
+				var hostBalanceBefore = await aotoken.balanceOf(host);
 
-			var vrs = EthCrypto.vrs.fromString(signature);
-			var canBecomeHost, hostContentEvent, contentHostId, contentHost;
-			try {
-				var result = await aocontent.becomeHost(
-					purchaseId,
-					vrs.v,
-					vrs.r,
-					vrs.s,
-					account3EncChallenge,
-					account3ContentDatKey,
-					account3MetadataDatKey,
-					{ from: account3 }
-				);
-				canBecomeHost = true;
+				var signHash = EthCrypto.hash.keccak256([
+					{
+						type: "address",
+						value: aocontent.address
+					},
+					{
+						type: "string",
+						value: baseChallenge
+					}
+				]);
 
-				hostContentEvent = result.logs[0];
-				contentHostId = hostContentEvent.args.contentHostId;
-				contentHost = await aocontent.contentHostById(contentHostId);
-			} catch (e) {
-				canBecomeHost = false;
-				hostContentEvent = null;
-				contentHostId = null;
-			}
-			assert.equal(canBecomeHost, true, "Account fails becoming host of the content");
+				var signature = EthCrypto.sign(privateKey, signHash);
 
-			// Verify the content host object
-			assert.equal(contentHost[0], stakeId1, "Content host has incorrect stake ID");
-			assert.equal(contentHost[1], account3, "Content host has incorrect host");
-			assert.equal(contentHost[2], account3ContentDatKey, "Content host has incorrect content dat key");
-			assert.equal(contentHost[3], account3MetadataDatKey, "Content host has incorrect metadata dat key");
+				var vrs = EthCrypto.vrs.fromString(signature);
+				var canBecomeHost, hostContentEvent, newContentHostId, contentHost;
+				try {
+					var result = await aocontent.becomeHost(purchaseId, vrs.v, vrs.r, vrs.s, encChallenge, contentDatKey, metadataDatKey, {
+						from: account
+					});
+					canBecomeHost = true;
+
+					hostContentEvent = result.logs[0];
+					newContentHostId = hostContentEvent.args.contentHostId;
+					contentHost = await aocontent.contentHostById(newContentHostId);
+				} catch (e) {
+					canBecomeHost = false;
+					hostContentEvent = null;
+					newContentHostId = null;
+				}
+				assert.equal(canBecomeHost, true, "Account fails becoming host of the content");
+
+				// Verify the content host object
+				assert.equal(contentHost[0], stakeId, "Content host has incorrect stake ID");
+				assert.equal(contentHost[1], account, "Content host has incorrect host");
+				assert.equal(contentHost[2], contentDatKey, "Content host has incorrect content dat key");
+				assert.equal(contentHost[3], metadataDatKey, "Content host has incorrect metadata dat key");
+
+				var stakeOwnerBalanceAfter = await aotoken.balanceOf(stakeOwner);
+				var hostBalanceAfter = await aotoken.balanceOf(host);
+
+				if (!isAOContent) {
+					assert.equal(
+						stakeOwnerBalanceAfter.toString(),
+						stakeOwnerBalanceBefore.toString(),
+						"Stake owner has incorrect balance"
+					);
+					assert.isAbove(hostBalanceAfter.toNumber(), hostBalanceBefore.toNumber(), "Host has incorrect balance");
+				}
+			};
+
+			await buyAndBecomeHost(
+				account3,
+				AOContent_contentHostId4,
+				account3LocalIdentity.publicKey,
+				account3LocalIdentity.address,
+				account3PrivateKey,
+				account3EncChallenge,
+				account3ContentDatKey,
+				account3MetadataDatKey,
+				AOContent_stakeId1,
+				account1,
+				account2,
+				true
+			);
+			await buyAndBecomeHost(
+				account3,
+				AOContent_contentHostId5,
+				account3LocalIdentity.publicKey,
+				account3LocalIdentity.address,
+				account3PrivateKey,
+				account3EncChallenge,
+				account3ContentDatKey,
+				account3MetadataDatKey,
+				AOContent_stakeId2,
+				account1,
+				account2,
+				true
+			);
+			await buyAndBecomeHost(
+				account3,
+				AOContent_contentHostId6,
+				account3LocalIdentity.publicKey,
+				account3LocalIdentity.address,
+				account3PrivateKey,
+				account3EncChallenge,
+				account3ContentDatKey,
+				account3MetadataDatKey,
+				AOContent_stakeId3,
+				account1,
+				account2,
+				true
+			);
+
+			await buyAndBecomeHost(
+				account3,
+				CreativeCommons_contentHostId4,
+				account3LocalIdentity.publicKey,
+				account3LocalIdentity.address,
+				account3PrivateKey,
+				account3EncChallenge,
+				account3ContentDatKey,
+				account3MetadataDatKey,
+				CreativeCommons_stakeId1,
+				account1,
+				account2,
+				false
+			);
+			await buyAndBecomeHost(
+				account3,
+				CreativeCommons_contentHostId5,
+				account3LocalIdentity.publicKey,
+				account3LocalIdentity.address,
+				account3PrivateKey,
+				account3EncChallenge,
+				account3ContentDatKey,
+				account3MetadataDatKey,
+				CreativeCommons_stakeId2,
+				account1,
+				account2,
+				false
+			);
+			await buyAndBecomeHost(
+				account3,
+				CreativeCommons_contentHostId6,
+				account3LocalIdentity.publicKey,
+				account3LocalIdentity.address,
+				account3PrivateKey,
+				account3EncChallenge,
+				account3ContentDatKey,
+				account3MetadataDatKey,
+				CreativeCommons_stakeId3,
+				account1,
+				account2,
+				false
+			);
+
+			await buyAndBecomeHost(
+				account3,
+				TAOContent_contentHostId4,
+				account3LocalIdentity.publicKey,
+				account3LocalIdentity.address,
+				account3PrivateKey,
+				account3EncChallenge,
+				account3ContentDatKey,
+				account3MetadataDatKey,
+				TAOContent_stakeId1,
+				account1,
+				account2,
+				false
+			);
+			await buyAndBecomeHost(
+				account3,
+				TAOContent_contentHostId5,
+				account3LocalIdentity.publicKey,
+				account3LocalIdentity.address,
+				account3PrivateKey,
+				account3EncChallenge,
+				account3ContentDatKey,
+				account3MetadataDatKey,
+				TAOContent_stakeId2,
+				account1,
+				account2,
+				false
+			);
+			await buyAndBecomeHost(
+				account3,
+				TAOContent_contentHostId6,
+				account3LocalIdentity.publicKey,
+				account3LocalIdentity.address,
+				account3PrivateKey,
+				account3EncChallenge,
+				account3ContentDatKey,
+				account3MetadataDatKey,
+				TAOContent_stakeId3,
+				account1,
+				account2,
+				false
+			);
 		});
 
 		it("AOLibrary - getContentMetrics(), it should return the staking and earning information of a stake ID", async function() {
@@ -3045,14 +3184,14 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canGetContentMetrics, true, "Library contract can get content metrics of non-existing stake ID");
 
 			try {
-				metrics = await library.getContentMetrics(aocontent.address, aoearning.address, stakeId1);
+				metrics = await library.getContentMetrics(aocontent.address, aoearning.address, AOContent_stakeId1);
 				canGetContentMetrics = true;
 			} catch (e) {
 				canGetContentMetrics = false;
 			}
 			assert.equal(canGetContentMetrics, true, "Library contract can't get content metrics of existing stake ID");
 
-			var stakedContent = await aocontent.stakedContentById(stakeId1);
+			var stakedContent = await aocontent.stakedContentById(AOContent_stakeId1);
 			assert.equal(metrics[0].toString(), stakedContent[2].toString(), "getContentMetrics() returns incorrect staked networkAmount");
 			assert.equal(
 				metrics[1].toString(),
@@ -3065,9 +3204,9 @@ contract("AOContent & AOEarning", function(accounts) {
 				"getContentMetrics() returns incorrect staked primordialWeightedMultiplier"
 			);
 
-			var totalStakedContentStakeEarning = await aoearning.totalStakedContentStakeEarning(stakeId1);
-			var totalStakedContentHostEarning = await aoearning.totalStakedContentHostEarning(stakeId1);
-			var totalStakedContentFoundationEarning = await aoearning.totalStakedContentFoundationEarning(stakeId1);
+			var totalStakedContentStakeEarning = await aoearning.totalStakedContentStakeEarning(AOContent_stakeId1);
+			var totalStakedContentHostEarning = await aoearning.totalStakedContentHostEarning(AOContent_stakeId1);
+			var totalStakedContentFoundationEarning = await aoearning.totalStakedContentFoundationEarning(AOContent_stakeId1);
 
 			assert.equal(
 				metrics[3].toString(),
@@ -3097,14 +3236,14 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canGetStakingMetrics, true, "Library contract can get staking metrics of non-existing stake ID");
 
 			try {
-				metrics = await library.getStakingMetrics(aocontent.address, stakeId1);
+				metrics = await library.getStakingMetrics(aocontent.address, AOContent_stakeId1);
 				canGetStakingMetrics = true;
 			} catch (e) {
 				canGetStakingMetrics = false;
 			}
 			assert.equal(canGetStakingMetrics, true, "Library contract can't get staking metrics of existing stake ID");
 
-			var stakedContent = await aocontent.stakedContentById(stakeId1);
+			var stakedContent = await aocontent.stakedContentById(AOContent_stakeId1);
 			assert.equal(metrics[0].toString(), stakedContent[2].toString(), "getStakingMetrics() returns incorrect staked networkAmount");
 			assert.equal(
 				metrics[1].toString(),
@@ -3136,10 +3275,10 @@ contract("AOContent & AOEarning", function(accounts) {
 				"getEarningMetrics() returns incorrect total earning for Foundation for a non-existing stake ID"
 			);
 
-			var metrics = await library.getEarningMetrics(aoearning.address, stakeId1);
-			var totalStakedContentStakeEarning = await aoearning.totalStakedContentStakeEarning(stakeId1);
-			var totalStakedContentHostEarning = await aoearning.totalStakedContentHostEarning(stakeId1);
-			var totalStakedContentFoundationEarning = await aoearning.totalStakedContentFoundationEarning(stakeId1);
+			var metrics = await library.getEarningMetrics(aoearning.address, AOContent_stakeId1);
+			var totalStakedContentStakeEarning = await aoearning.totalStakedContentStakeEarning(AOContent_stakeId1);
+			var totalStakedContentHostEarning = await aoearning.totalStakedContentHostEarning(AOContent_stakeId1);
+			var totalStakedContentFoundationEarning = await aoearning.totalStakedContentFoundationEarning(AOContent_stakeId1);
 
 			assert.equal(
 				metrics[0].toString(),
@@ -3157,6 +3296,5 @@ contract("AOContent & AOEarning", function(accounts) {
 				"getEarningMetrics() returns incorrect total earning for Foundation"
 			);
 		});
-		*/
 	});
 });
