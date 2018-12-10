@@ -12,6 +12,7 @@ import './AOBytesSetting.sol';
 import './AOStringSetting.sol';
 import './Thought.sol';
 import './NameFactory.sol';
+import './AOSetting.sol';
 
 /**
  * @title AOLibrary
@@ -129,13 +130,20 @@ library AOLibrary {
 	 * @param _primordialAmount The amount of primordial token
 	 * @return true when the amount is sufficient, false otherwise
 	 */
-	function canStakeExisting(address _treasuryAddress, uint256 _fileSize, uint256 _stakedAmount, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount) public view returns (bool) {
-		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
+	function canStakeExisting(
+		address _treasuryAddress,
+		bool _isAOContent,
+		uint256 _fileSize,
+		uint256 _stakedAmount,
+		uint256 _networkIntegerAmount,
+		uint256 _networkFractionAmount,
+		bytes8 _denomination,
+		uint256 _primordialAmount
+	) public view returns (bool) {
+		if (_isAOContent) {
 			return AOTreasury(_treasuryAddress).toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount).add(_stakedAmount) >= _fileSize;
-		} else if (_primordialAmount > 0) {
-			return _stakedAmount.add(_primordialAmount) >= _fileSize;
 		} else {
-			return false;
+			return AOTreasury(_treasuryAddress).toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount).add(_stakedAmount) == _fileSize;
 		}
 	}
 
@@ -149,11 +157,7 @@ library AOLibrary {
 	 * @return true when the amount is sufficient, false otherwise
 	 */
 	function canBuy(address _treasuryAddress, uint256 _price, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination) public view returns (bool) {
-		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
-			return AOTreasury(_treasuryAddress).toBase(_networkIntegerAmount, _networkFractionAmount, _denomination) >= _price;
-		} else {
-			return false;
-		}
+		return AOTreasury(_treasuryAddress).toBase(_networkIntegerAmount, _networkFractionAmount, _denomination) >= _price;
 	}
 
 	/**
@@ -508,16 +512,6 @@ library AOLibrary {
 	 * @return true when the amount is sufficient, false otherwise
 	 */
 	function _stakeAmountValid(address _treasuryAddress, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount, uint256 _fileSize) internal view returns (bool) {
-		if (_denomination.length > 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
-			if (AOTreasury(_treasuryAddress).toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) >= _fileSize) {
-				return true;
-			} else {
-				return false;
-			}
-		} else if (_primordialAmount >= _fileSize) {
-			return true;
-		} else {
-			return false;
-		}
+		return AOTreasury(_treasuryAddress).toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) >= _fileSize;
 	}
 }

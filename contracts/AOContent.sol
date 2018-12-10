@@ -590,7 +590,8 @@ contract AOContent is developed {
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
-		require (AOLibrary.canStakeExisting(treasuryAddress, _content.fileSize, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount));
+		(bytes32 _contentUsageType_aoContent,,,,,) = _getSettingVariables();
+		require (AOLibrary.canStakeExisting(treasuryAddress, _content.contentUsageType == _contentUsageType_aoContent, _content.fileSize, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount));
 
 		// Make sure we can stake primordial token
 		// If we are currently staking an active staked content, then the stake owner's weighted multiplier has to match `stakedContent.primordialWeightedMultiplier`
