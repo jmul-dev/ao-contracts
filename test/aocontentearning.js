@@ -1580,9 +1580,6 @@ contract("AOContent & AOEarning", function(accounts) {
 			await setContentExtraData(TAOContent_contentId3);
 		});
 
-		return;
-		/*
-
 		it("unstakePartialContent() - should NOT be able to partially unstake non-existing staked content", async function() {
 			var canUnstakePartial;
 			try {
@@ -1620,9 +1617,9 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.notEqual(canUnstakePartial, true, "Non-stake owner address can partially unstake existing staked content");
 			};
 
-			await unstakePartialContent(stakeId1, 10, 10, "kilo", 0);
-			await unstakePartialContent(stakeId2, 0, 0, "", 10);
-			await unstakePartialContent(stakeId3, 10, 10, "kilo", 10);
+			await unstakePartialContent(AOContent_stakeId1, 10, 10, "kilo", 0);
+			await unstakePartialContent(AOContent_stakeId2, 0, 0, "", 10);
+			await unstakePartialContent(AOContent_stakeId3, 10, 10, "kilo", 10);
 		});
 
 		it("unstakePartialContent() - should NOT be able to partially unstake existing staked content if the requested unstake amount is more than the balance of the staked amount", async function() {
@@ -1651,25 +1648,61 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.notEqual(canUnstakePartial, true, "Stake owner can partially unstake more tokens than it's existing balance.");
 			};
 
-			await unstakePartialContent(stakeId1, 10, 10, "giga", 10000000);
-			await unstakePartialContent(stakeId2, 10, 10, "giga", 10000000);
-			await unstakePartialContent(stakeId3, 10, 10, "giga", 10000000);
+			await unstakePartialContent(AOContent_stakeId1, 10, 10, "giga", 10000000);
+			await unstakePartialContent(AOContent_stakeId2, 10, 10, "giga", 10000000);
+			await unstakePartialContent(AOContent_stakeId3, 10, 10, "giga", 10000000);
 		});
 
 		it("unstakePartialContent() - should be able to partially unstake only network token from existing staked content", async function() {
-			await unstakePartialContent(account1, stakeId1, 10, 10, "kilo", 0);
-			await unstakePartialContent(account1, stakeId3, 10, 10, "kilo", 0);
+			await unstakePartialContent(account1, AOContent_stakeId1, 10, 10, "kilo", 0);
+			await unstakePartialContent(account1, AOContent_stakeId3, 10, 10, "kilo", 0);
 		});
 
 		it("unstakePartialContent() - should be able to partially unstake only primordial token from existing staked content", async function() {
-			await unstakePartialContent(account1, stakeId2, 0, 0, "", 100);
-			await unstakePartialContent(account1, stakeId3, 0, 0, "", 100);
+			await unstakePartialContent(account1, AOContent_stakeId2, 0, 0, "", 100);
+			await unstakePartialContent(account1, AOContent_stakeId3, 0, 0, "", 100);
 		});
 
 		it("unstakePartialContent() - should be able to partially unstake both network and primordial token from existing staked content", async function() {
-			await unstakePartialContent(account1, stakeId3, 10, 10, "kilo", 100);
+			await unstakePartialContent(account1, AOContent_stakeId3, 10, 10, "kilo", 100);
 		});
 
+		it("unstakePartialContent() - should NOT be able to partially unstake existing non-AO Content, i.e Creative Commons/T(AO) Content", async function() {
+			var unstakePartialContent = async function(
+				stakeId,
+				networkIntegerAmount,
+				networkFractionAmount,
+				denomination,
+				primordialAmount
+			) {
+				var canUnstakePartial;
+				try {
+					await aocontent.unstakePartialContent(
+						stakeId,
+						networkIntegerAmount,
+						networkFractionAmount,
+						denomination,
+						primordialAmount,
+						{ from: account1 }
+					);
+
+					canUnstakePartial = true;
+				} catch (e) {
+					canUnstakePartial = false;
+				}
+				assert.notEqual(canUnstakePartial, true, "Stake owner can partially unstake non-AO Content.");
+			};
+
+			await unstakePartialContent(CreativeCommons_stakeId1, 1, 0, "kilo", 10);
+			await unstakePartialContent(CreativeCommons_stakeId1, 1, 0, "kilo", 10);
+			await unstakePartialContent(CreativeCommons_stakeId1, 1, 0, "kilo", 10);
+			await unstakePartialContent(TAOContent_stakeId1, 1, 0, "kilo", 10);
+			await unstakePartialContent(TAOContent_stakeId1, 1, 0, "kilo", 10);
+			await unstakePartialContent(TAOContent_stakeId1, 1, 0, "kilo", 10);
+		});
+
+		return;
+		/*
 		it("unstakeContent() - should NOT be able to unstake non-existing staked content", async function() {
 			var canUnstake;
 			try {
@@ -1680,6 +1713,8 @@ contract("AOContent & AOEarning", function(accounts) {
 			}
 			assert.notEqual(canUnstake, true, "account1 can unstake non-existing staked content");
 		});
+
+
 
 		it("unstakeContent() - should NOT be able to unstake existing staked content if stake owner is not the same as the sender", async function() {
 			var unstakeContent = async function(stakeId) {
