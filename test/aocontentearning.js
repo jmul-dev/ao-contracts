@@ -2007,10 +2007,6 @@ contract("AOContent & AOEarning", function(accounts) {
 			await stakeExistingContent(account1, TAOContent_stakeId3, 0, 300000, "mega", 700000);
 		});
 
-		return;
-		/*
-
-
 		it("contentHostPrice() - should be able to return the price of a content hosted by a host", async function() {
 			var getContentHostPrice;
 			try {
@@ -2021,15 +2017,50 @@ contract("AOContent & AOEarning", function(accounts) {
 			}
 			assert.notEqual(getContentHostPrice, true, "Contract can get price for non-existing contentHostID");
 
-			var _contentHost1Price = await aocontent.contentHostPrice(contentHostId1);
-			assert.equal(_contentHost1Price.toString(), contentHost1Price.toString(), "Content host has incorrect price");
+			var _AOContent_contentHost1Price = await aocontent.contentHostPrice(AOContent_contentHostId1);
+			assert.equal(
+				_AOContent_contentHost1Price.toString(),
+				AOContent_contentHost1Price.toString(),
+				"Content host has incorrect price"
+			);
 
-			var _contentHost2Price = await aocontent.contentHostPrice(contentHostId2);
-			assert.equal(_contentHost2Price.toString(), contentHost2Price.toString(), "Content host has incorrect price");
+			var _AOContent_contentHost2Price = await aocontent.contentHostPrice(AOContent_contentHostId2);
+			assert.equal(
+				_AOContent_contentHost2Price.toString(),
+				AOContent_contentHost2Price.toString(),
+				"Content host has incorrect price"
+			);
 
-			var _contentHost3Price = await aocontent.contentHostPrice(contentHostId3);
-			assert.equal(_contentHost3Price.toString(), contentHost3Price.toString(), "Content host has incorrect price");
+			var _AOContent_contentHost3Price = await aocontent.contentHostPrice(AOContent_contentHostId3);
+			assert.equal(
+				_AOContent_contentHost3Price.toString(),
+				AOContent_contentHost3Price.toString(),
+				"Content host has incorrect price"
+			);
+
+			var _CreativeCommons_contentHost1Price = await aocontent.contentHostPrice(CreativeCommons_contentHostId1);
+			assert.equal(_CreativeCommons_contentHost1Price.toString(), fileSize, "Content host has incorrect price");
+
+			var _CreativeCommons_contentHost2Price = await aocontent.contentHostPrice(CreativeCommons_contentHostId2);
+			assert.equal(_CreativeCommons_contentHost2Price.toString(), fileSize, "Content host has incorrect price");
+
+			var _CreativeCommons_contentHost3Price = await aocontent.contentHostPrice(CreativeCommons_contentHostId3);
+			assert.equal(_CreativeCommons_contentHost3Price.toString(), fileSize, "Content host has incorrect price");
+
+			var _TAOContent_contentHost1Price = await aocontent.contentHostPrice(TAOContent_contentHostId1);
+			assert.equal(_TAOContent_contentHost1Price.toString(), fileSize, "Content host has incorrect price");
+
+			var _TAOContent_contentHost2Price = await aocontent.contentHostPrice(TAOContent_contentHostId2);
+			assert.equal(_TAOContent_contentHost2Price.toString(), fileSize, "Content host has incorrect price");
+
+			var _TAOContent_contentHost3Price = await aocontent.contentHostPrice(TAOContent_contentHostId3);
+			assert.equal(_TAOContent_contentHost3Price.toString(), fileSize, "Content host has incorrect price");
 		});
+
+		return;
+		/*
+
+
 
 		it("buyContent() - should NOT be able to buy content if sent tokens < price", async function() {
 			var buyContent = async function(account, contentHostId, publicKey, publicAddress) {
