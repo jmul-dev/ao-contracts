@@ -396,9 +396,7 @@ contract AOContent is developed {
 
 		// Make sure we are updating profit percentage for AO Content only
 		// Creative Commons/T(AO) Content has 0 profit percentage
-		Content memory _content = contents[contentIndex[_stakedContent.contentId]];
-		(bytes32 contentUsageType_aoContent,,,,,) = _getSettingVariables();
-		require (_content.contentUsageType == contentUsageType_aoContent);
+		require (_isAOContentUsageType(_stakedContent.contentId));
 
 		_stakedContent.profitPercentage = _profitPercentage;
 
@@ -587,8 +585,7 @@ contract AOContent is developed {
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
-		(bytes32 _contentUsageType_aoContent,,,,,) = _getSettingVariables();
-		require (AOLibrary.canStakeExisting(treasuryAddress, _content.contentUsageType == _contentUsageType_aoContent, _content.fileSize, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount));
+		require (AOLibrary.canStakeExisting(treasuryAddress, _isAOContentUsageType(_stakedContent.contentId), _content.fileSize, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount));
 
 		// Make sure we can stake primordial token
 		// If we are currently staking an active staked content, then the stake owner's weighted multiplier has to match `stakedContent.primordialWeightedMultiplier`
@@ -659,8 +656,9 @@ contract AOContent is developed {
 		require (buyerPurchaseReceipts[msg.sender][_contentHostId][0] == 0);
 
 		// Make sure the token amount can pay for the content price
-		require (_denomination[0] != 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0));
-		require (AOLibrary.canBuy(treasuryAddress, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination));
+		if (_isAOContentUsageType(_stakedContent.contentId)) {
+			require (AOLibrary.canBuy(treasuryAddress, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination));
+		}
 
 		// Increment totalPurchaseReceipts;
 		totalPurchaseReceipts++;
@@ -676,7 +674,7 @@ contract AOContent is developed {
 		_purchaseReceipt.contentHostId = _contentHostId;
 		_purchaseReceipt.buyer = msg.sender;
 		// Update the receipt with the correct network amount
-		_purchaseReceipt.networkAmount = _stakedContent.networkAmount.add(_stakedContent.primordialAmount);
+		_purchaseReceipt.networkAmount = _isAOContentUsageType(_stakedContent.contentId) ? _stakedContent.networkAmount.add(_stakedContent.primordialAmount) : 0;
 		_purchaseReceipt.publicKey = _publicKey;
 		_purchaseReceipt.publicAddress = _publicAddress;
 		_purchaseReceipt.createdOnTimestamp = now;
@@ -694,7 +692,8 @@ contract AOContent is developed {
 			_stakedContent.profitPercentage,
 			contents[contentIndex[_stakedContent.contentId]].fileSize,
 			_stakedContent.stakeOwner,
-			_contentHost.host
+			_contentHost.host,
+			_isAOContentUsageType(_stakedContent.contentId)
 		));
 
 		emit BuyContent(_purchaseReceipt.buyer, _purchaseReceipt.purchaseId, _purchaseReceipt.contentHostId, _purchaseReceipt.networkAmount, _purchaseReceipt.publicKey, _purchaseReceipt.publicAddress, _purchaseReceipt.createdOnTimestamp);
@@ -949,5 +948,15 @@ contract AOContent is developed {
 			taoContentState_pendingReview,
 			taoContentState_acceptedToTAO
 		);
+	}
+
+	/**
+	 * @dev Check whether or not the content is of AO Content Usage Type
+	 * @param _contentId The ID of the content
+	 * @return true if yes. false otherwise
+	 */
+	function _isAOContentUsageType(bytes32 _contentId) internal view returns (bool) {
+		(bytes32 _contentUsageType_aoContent,,,,,) = _getSettingVariables();
+		return contents[contentIndex[_contentId]].contentUsageType == _contentUsageType_aoContent;
 	}
 }

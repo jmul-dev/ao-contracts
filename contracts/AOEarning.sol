@@ -188,6 +188,7 @@ contract AOEarning is developed {
 	 * @param _fileSize The size of the file
 	 * @param _stakeOwner The address of the stake owner
 	 * @param _host The address of the host
+	 * @param _isAOContentUsageType whether or not the content is of AO Content Usage Type
 	 */
 	function calculateEarning(
 		address _buyer,
@@ -198,13 +199,15 @@ contract AOEarning is developed {
 		uint256 _profitPercentage,
 		uint256 _fileSize,
 		address _stakeOwner,
-		address _host) public isActive inWhitelist(msg.sender) returns (bool) {
+		address _host,
+		bool _isAOContentUsageType
+	) public isActive inWhitelist(msg.sender) returns (bool) {
 
 		// Split the payment earning between content creator and host and store them in escrow
-		_escrowPaymentEarning(_buyer, _purchaseId, _networkAmountStaked.add(_primordialAmountStaked), _profitPercentage, _stakeOwner, _host);
+		_escrowPaymentEarning(_buyer, _purchaseId, _networkAmountStaked.add(_primordialAmountStaked), _profitPercentage, _stakeOwner, _host, _isAOContentUsageType);
 
 		// Calculate the inflation bonus earning for content creator/node/foundation in escrow
-		_escrowInflationBonus(_purchaseId, _calculateInflationBonus(_networkAmountStaked, _primordialAmountStaked, _primordialWeightedMultiplierStaked), _profitPercentage, _stakeOwner, _host);
+		_escrowInflationBonus(_purchaseId, _calculateInflationBonus(_networkAmountStaked, _primordialAmountStaked, _primordialWeightedMultiplierStaked), _profitPercentage, _stakeOwner, _host, _isAOContentUsageType);
 
 		// Reward the content creator/stake owner with some Pathos
 		require (_pathos.mintToken(_stakeOwner, _networkAmountStaked.add(_primordialAmountStaked)));
@@ -248,10 +251,13 @@ contract AOEarning is developed {
 	 * @param _profitPercentage The content creator's profit percentage
 	 * @param _stakeOwner The address of the stake owner
 	 * @param _host The address of the host
+	 * @param _isAOContentUsageType whether or not the content is of AO Content Usage Type
 	 */
-	function _escrowPaymentEarning(address _buyer, bytes32 _purchaseId, uint256 _totalStaked, uint256 _profitPercentage, address _stakeOwner, address _host) internal {
+	function _escrowPaymentEarning(address _buyer, bytes32 _purchaseId, uint256 _totalStaked, uint256 _profitPercentage, address _stakeOwner, address _host, bool _isAOContentUsageType) internal {
 		// Store how much the content creator (stake owner) earns in escrow
-		uint256 _stakeOwnerEarning = (_totalStaked.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR());
+		// If content is AO Content Usage Type, stake owner earns 0%
+		// and all profit goes to the serving host node
+		uint256 _stakeOwnerEarning = _isAOContentUsageType ? (_totalStaked.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR()) : 0;
 		Earning storage _stakeEarning = stakeEarnings[_stakeOwner][_purchaseId];
 		_stakeEarning.purchaseId = _purchaseId;
 		_stakeEarning.paymentEarning = _stakeOwnerEarning;
@@ -262,7 +268,12 @@ contract AOEarning is developed {
 		Earning storage _hostEarning = hostEarnings[_host][_purchaseId];
 		_hostEarning.purchaseId = _purchaseId;
 		_hostEarning.paymentEarning = _totalStaked.sub(_stakeOwnerEarning);
-		require (_baseAO.escrowFrom(_buyer, _host, _hostEarning.paymentEarning));
+		if (_isAOContentUsageType) {
+			require (_baseAO.escrowFrom(_buyer, _host, _hostEarning.paymentEarning));
+		} else {
+			// If not AO Content usage type, we want to mint to the host
+			require (_baseAO.mintTokenEscrow(_host, _hostEarning.paymentEarning));
+		}
 		emit PaymentEarningEscrowed(_host, _purchaseId, _totalStaked, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), _hostEarning.paymentEarning, 1);
 	}
 
@@ -288,19 +299,21 @@ contract AOEarning is developed {
 	 * @param _profitPercentage The content creator's profit percentage
 	 * @param _stakeOwner The address of the stake owner
 	 * @param _host The address of the host
+	 * @param _isAOContentUsageType whether or not the content is of AO Content Usage Type
 	 */
 	function _escrowInflationBonus(
 		bytes32 _purchaseId,
 		uint256 _inflationBonusAmount,
 		uint256 _profitPercentage,
 		address _stakeOwner,
-		address _host
+		address _host,
+		bool _isAOContentUsageType
 	) internal {
 		(, uint256 foundationCut) = _getSettingVariables();
 
 		if (_inflationBonusAmount > 0) {
 			// Store how much the content creator earns in escrow
-			uint256 _stakeOwnerInflationBonus = (_inflationBonusAmount.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR());
+			uint256 _stakeOwnerInflationBonus = _isAOContentUsageType ? (_inflationBonusAmount.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR()) : 0;
 			Earning storage _stakeEarning = stakeEarnings[_stakeOwner][_purchaseId];
 			_stakeEarning.inflationBonus = _stakeOwnerInflationBonus;
 			require (_baseAO.mintTokenEscrow(_stakeOwner, _stakeEarning.inflationBonus));

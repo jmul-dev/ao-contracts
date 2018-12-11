@@ -122,6 +122,7 @@ library AOLibrary {
 	/**
 	 * @dev Check whether the network token and/or primordial token is adequate to pay for existing staked content
 	 * @param _treasuryAddress AO treasury contract address
+	 * @param _isAOContentUsageType whether or not the content is of AO Content usage type
 	 * @param _fileSize The size of the file
 	 * @param _stakedAmount The total staked amount
 	 * @param _networkIntegerAmount The integer amount of the network token
@@ -132,7 +133,7 @@ library AOLibrary {
 	 */
 	function canStakeExisting(
 		address _treasuryAddress,
-		bool _isAOContent,
+		bool _isAOContentUsageType,
 		uint256 _fileSize,
 		uint256 _stakedAmount,
 		uint256 _networkIntegerAmount,
@@ -140,7 +141,7 @@ library AOLibrary {
 		bytes8 _denomination,
 		uint256 _primordialAmount
 	) public view returns (bool) {
-		if (_isAOContent) {
+		if (_isAOContentUsageType) {
 			return AOTreasury(_treasuryAddress).toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount).add(_stakedAmount) >= _fileSize;
 		} else {
 			return AOTreasury(_treasuryAddress).toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount).add(_stakedAmount) == _fileSize;
