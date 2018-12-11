@@ -46,7 +46,7 @@ var AOPool = artifacts.require("./AOPool.sol");
 module.exports = function(deployer, network, accounts) {
 	var primordialAccount, settingAccount, primordialNameId, settingNameId, primordialThoughtId, settingThoughtId;
 	if (network === "rinkeby") {
-		primordialAccount = "0xcccf4699bbdcf30c8f310d19f5e07c8098665f18";
+		primordialAccount = "0x16a038099561ac8ad73c497c18207e6c88ff6593";
 		settingAccount = "0xd2021e918ed447797fb66c48efa2899ea17dbddb";
 	} else {
 		primordialAccount = accounts[0];
