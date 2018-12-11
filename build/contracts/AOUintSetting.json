@@ -1,0 +1,1646 @@
+{
+	"contractName": "AOUintSetting",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoDevTeam1",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_account",
+					"type": "address"
+				},
+				{
+					"name": "_whitelist",
+					"type": "bool"
+				}
+			],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"name": "whitelist",
+			"outputs": [
+				{
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "settingValue",
+			"outputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoDevTeam2",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "pendingValue",
+			"outputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_aoDevTeam1",
+					"type": "address"
+				},
+				{
+					"name": "_aoDevTeam2",
+					"type": "address"
+				}
+			],
+			"name": "setAODevTeamAddresses",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "developer",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "newDeveloper",
+					"type": "address"
+				}
+			],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_settingId",
+					"type": "uint256"
+				},
+				{
+					"name": "_value",
+					"type": "uint256"
+				}
+			],
+			"name": "setPendingValue",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_settingId",
+					"type": "uint256"
+				}
+			],
+			"name": "movePendingToSetting",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+	],
+	"bytecode": "0x608060405260018054600160a060020a0319908116735c63644d01ba385ebac5bcf2ddc1e6dbc1182b52179091556002805490911673156c79bf4347d1891da834ea30662a14177cbf2817905534801561005857600080fd5b5060008054600160a060020a031916331790556104448061007a6000396000f3006080604052600436106100ae5763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663088fc1a881146100b357806315227aa7146100cd57806353d6fd59146100fe5780639b19251a146101245780639ba535ce14610159578063a99433a614610183578063af9e8b1614610198578063b238724b146101b0578063b24626e9146101cb578063ca4b208b146101f2578063f2fde38b14610207575b600080fd5b3480156100bf57600080fd5b506100cb600435610228565b005b3480156100d957600080fd5b506100e261028a565b60408051600160a060020a039092168252519081900360200190f35b34801561010a57600080fd5b506100cb600160a060020a03600435166024351515610299565b34801561013057600080fd5b50610145600160a060020a03600435166102db565b604080519115158252519081900360200190f35b34801561016557600080fd5b506101716004356102f0565b60408051918252519081900360200190f35b34801561018f57600080fd5b506100e2610302565b3480156101a457600080fd5b50610171600435610311565b3480156101bc57600080fd5b506100cb600435602435610323565b3480156101d757600080fd5b506100cb600160a060020a0360043581169060243516610371565b3480156101fe57600080fd5b506100e26103c3565b34801561021357600080fd5b506100cb600160a060020a03600435166103d2565b3360008181526003602052604081205490919060ff1615156001148061025b5750600054600160a060020a038281169116145b151561026657600080fd5b50506000908152600560209081526040808320805490849055600490925290912055565b600154600160a060020a031681565b600054600160a060020a031633146102b057600080fd5b600160a060020a03919091166000908152600360205260409020805460ff1916911515919091179055565b60036020526000908152604090205460ff1681565b60046020526000908152604090205481565b600254600160a060020a031681565b60056020526000908152604090205481565b3360008181526003602052604090205460ff161515600114806103535750600054600160a060020a038281169116145b151561035e57600080fd5b5060009182526005602052604090912055565b600054600160a060020a0316331461038857600080fd5b60018054600160a060020a0393841673ffffffffffffffffffffffffffffffffffffffff199182161790915560028054929093169116179055565b600054600160a060020a031681565b600054600160a060020a031633146103e957600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a03929092169190911790555600a165627a7a72305820d518664815eff2874ded29123772b33e19881a0dba7ccab535e88663f3185c010029",
+	"deployedBytecode": "0x6080604052600436106100ae5763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663088fc1a881146100b357806315227aa7146100cd57806353d6fd59146100fe5780639b19251a146101245780639ba535ce14610159578063a99433a614610183578063af9e8b1614610198578063b238724b146101b0578063b24626e9146101cb578063ca4b208b146101f2578063f2fde38b14610207575b600080fd5b3480156100bf57600080fd5b506100cb600435610228565b005b3480156100d957600080fd5b506100e261028a565b60408051600160a060020a039092168252519081900360200190f35b34801561010a57600080fd5b506100cb600160a060020a03600435166024351515610299565b34801561013057600080fd5b50610145600160a060020a03600435166102db565b604080519115158252519081900360200190f35b34801561016557600080fd5b506101716004356102f0565b60408051918252519081900360200190f35b34801561018f57600080fd5b506100e2610302565b3480156101a457600080fd5b50610171600435610311565b3480156101bc57600080fd5b506100cb600435602435610323565b3480156101d757600080fd5b506100cb600160a060020a0360043581169060243516610371565b3480156101fe57600080fd5b506100e26103c3565b34801561021357600080fd5b506100cb600160a060020a03600435166103d2565b3360008181526003602052604081205490919060ff1615156001148061025b5750600054600160a060020a038281169116145b151561026657600080fd5b50506000908152600560209081526040808320805490849055600490925290912055565b600154600160a060020a031681565b600054600160a060020a031633146102b057600080fd5b600160a060020a03919091166000908152600360205260409020805460ff1916911515919091179055565b60036020526000908152604090205460ff1681565b60046020526000908152604090205481565b600254600160a060020a031681565b60056020526000908152604090205481565b3360008181526003602052604090205460ff161515600114806103535750600054600160a060020a038281169116145b151561035e57600080fd5b5060009182526005602052604090912055565b600054600160a060020a0316331461038857600080fd5b60018054600160a060020a0393841673ffffffffffffffffffffffffffffffffffffffff199182161790915560028054929093169116179055565b600054600160a060020a031681565b600054600160a060020a031633146103e957600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a03929092169190911790555600a165627a7a72305820d518664815eff2874ded29123772b33e19881a0dba7ccab535e88663f3185c010029",
+	"sourceMap": "145:922:18:-;;;139:70:40;;;-1:-1:-1;;;;;;139:70:40;;;167:42;139:70;;;;212;;;;;;240:42;212:70;;;468:23:18;5:2:-1;;;;30:1;27;20:12;5:2;-1:-1;456:9:40;:22;;-1:-1:-1;;;;;;456:22:40;468:10;456:22;;;145:922:18;;;;;;",
+	"deployedSourceMap": "145:922:18:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;855:210;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;855:210:18;;;;;;;139:70:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;139:70:40;;;;;;;;-1:-1:-1;;;;;139:70:40;;;;;;;;;;;;;;1080:118;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1080:118:40;-1:-1:-1;;;;;1080:118:40;;;;;;;;;385:42;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;385:42:40;-1:-1:-1;;;;;385:42:40;;;;;;;;;;;;;;;;;;;;;;;240:48:18;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;240:48:18;;;;;;;;;;;;;;;;;;;;;212:70:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;212:70:40;;;;376:48:18;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;376:48:18;;;;;621:133;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;621:133:18;;;;;;;1414:154:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1414:154:40;-1:-1:-1;;;;;1414:154:40;;;;;;;;;;48:24;;8:9:-1;5:2;;;30:1;27;20:12;5:2;48:24:40;;;;801:102;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;801:102:40;-1:-1:-1;;;;;801:102:40;;;;;855:210:18;924:10;940:18;736:19:40;;;:9;:19;;;;;;940:18:18;;924:10;736:19:40;;:27;;:19;:27;;:52;;-1:-1:-1;779:9:40;;-1:-1:-1;;;;;767:21:40;;;779:9;;767:21;736:52;727:62;;;;;;;;-1:-1:-1;;961:24:18;;;;:12;:24;;;;;;;;;;989:31;;;;1024:12;:24;;;;;;:37;855:210::o;139:70:40:-;;;-1:-1:-1;;;;;139:70:40;;:::o;1080:118::-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;-1:-1:-1;;;;;1162:19:40;;;;;;;;:9;:19;;;;;:32;;-1:-1:-1;;1162:32:40;;;;;;;;;;1080:118::o;385:42::-;;;;;;;;;;;;;;;:::o;240:48:18:-;;;;;;;;;;;;;:::o;212:70:40:-;;;-1:-1:-1;;;;;212:70:40;;:::o;376:48:18:-;;;;;;;;;;;;;:::o;621:133::-;701:10;736:19:40;;;;:9;:19;;;;;;;;:27;;:19;:27;;:52;;-1:-1:-1;779:9:40;;-1:-1:-1;;;;;767:21:40;;;779:9;;767:21;736:52;727:62;;;;;;;;-1:-1:-1;717:24:18;;;;:12;:24;;;;;;:33;621:133::o;1414:154:40:-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;1512:10;:24;;-1:-1:-1;;;;;1512:24:40;;;-1:-1:-1;;1512:24:40;;;;;;;1540:10;:24;;;;;;;;;;;1414:154::o;48:24::-;;;-1:-1:-1;;;;;48:24:40;;:::o;801:102::-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;875:9;:24;;-1:-1:-1;;875:24:40;-1:-1:-1;;;;;875:24:40;;;;;;;;;;801:102::o",
+	"source": "pragma solidity ^0.4.24;\n\nimport './developed.sol';\n\n/**\n * @title AOUintSetting\n *\n * This contract stores all AO uint256 setting variables\n */\ncontract AOUintSetting is developed {\n\t// Mapping from settingId to it's actual uint256 value\n\tmapping (uint256 => uint256) public settingValue;\n\n\t// Mapping from settingId to it's potential uint256 value that is at pending state\n\tmapping (uint256 => uint256) public pendingValue;\n\n\t/**\n\t * @dev Constructor function\n\t */\n\tconstructor() public {}\n\n\t/**\n\t * @dev Set pending value\n\t * @param _settingId The ID of the setting\n\t * @param _value The uint256 value to be set\n\t */\n\tfunction setPendingValue(uint256 _settingId, uint256 _value) public inWhitelist(msg.sender) {\n\t\tpendingValue[_settingId] = _value;\n\t}\n\n\t/**\n\t * @dev Move value from pending to setting\n\t * @param _settingId The ID of the setting\n\t */\n\tfunction movePendingToSetting(uint256 _settingId) public inWhitelist(msg.sender) {\n\t\tuint256 _tempValue = pendingValue[_settingId];\n\t\tdelete pendingValue[_settingId];\n\t\tsettingValue[_settingId] = _tempValue;\n\t}\n}\n",
+	"sourcePath": "/home/jmulyono/ao-contracts/contracts/AOUintSetting.sol",
+	"ast": {
+		"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOUintSetting.sol",
+		"exportedSymbols": {
+			"AOUintSetting": [14777]
+		},
+		"id": 14778,
+		"nodeType": "SourceUnit",
+		"nodes": [
+			{
+				"id": 14716,
+				"literals": ["solidity", "^", "0.4", ".24"],
+				"nodeType": "PragmaDirective",
+				"src": "0:24:18"
+			},
+			{
+				"absolutePath": "/home/jmulyono/ao-contracts/contracts/developed.sol",
+				"file": "./developed.sol",
+				"id": 14717,
+				"nodeType": "ImportDirective",
+				"scope": 14778,
+				"sourceUnit": 18366,
+				"src": "26:25:18",
+				"symbolAliases": [],
+				"unitAlias": ""
+			},
+			{
+				"baseContracts": [
+					{
+						"arguments": null,
+						"baseName": {
+							"contractScope": null,
+							"id": 14718,
+							"name": "developed",
+							"nodeType": "UserDefinedTypeName",
+							"referencedDeclaration": 18365,
+							"src": "171:9:18",
+							"typeDescriptions": {
+								"typeIdentifier": "t_contract$_developed_$18365",
+								"typeString": "contract developed"
+							}
+						},
+						"id": 14719,
+						"nodeType": "InheritanceSpecifier",
+						"src": "171:9:18"
+					}
+				],
+				"contractDependencies": [18365],
+				"contractKind": "contract",
+				"documentation": "@title AOUintSetting\n * This contract stores all AO uint256 setting variables",
+				"fullyImplemented": true,
+				"id": 14777,
+				"linearizedBaseContracts": [14777, 18365],
+				"name": "AOUintSetting",
+				"nodeType": "ContractDefinition",
+				"nodes": [
+					{
+						"constant": false,
+						"id": 14723,
+						"name": "settingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 14777,
+						"src": "240:48:18",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+							"typeString": "mapping(uint256 => uint256)"
+						},
+						"typeName": {
+							"id": 14722,
+							"keyType": {
+								"id": 14720,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "249:7:18",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "240:28:18",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+								"typeString": "mapping(uint256 => uint256)"
+							},
+							"valueType": {
+								"id": 14721,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "260:7:18",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"constant": false,
+						"id": 14727,
+						"name": "pendingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 14777,
+						"src": "376:48:18",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+							"typeString": "mapping(uint256 => uint256)"
+						},
+						"typeName": {
+							"id": 14726,
+							"keyType": {
+								"id": 14724,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "385:7:18",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "376:28:18",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+								"typeString": "mapping(uint256 => uint256)"
+							},
+							"valueType": {
+								"id": 14725,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "396:7:18",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 14730,
+							"nodeType": "Block",
+							"src": "489:2:18",
+							"statements": []
+						},
+						"documentation": "@dev Constructor function",
+						"id": 14731,
+						"implemented": true,
+						"isConstructor": true,
+						"isDeclaredConst": false,
+						"modifiers": [],
+						"name": "",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 14728,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "479:2:18"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 14729,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "489:0:18"
+						},
+						"scope": 14777,
+						"src": "468:23:18",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 14748,
+							"nodeType": "Block",
+							"src": "713:41:18",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 14746,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 14742,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 14727,
+												"src": "717:12:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+													"typeString": "mapping(uint256 => uint256)"
+												}
+											},
+											"id": 14744,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 14743,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 14733,
+												"src": "730:10:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "717:24:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 14745,
+											"name": "_value",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 14735,
+											"src": "744:6:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"src": "717:33:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"id": 14747,
+									"nodeType": "ExpressionStatement",
+									"src": "717:33:18"
+								}
+							]
+						},
+						"documentation": "@dev Set pending value\n@param _settingId The ID of the setting\n@param _value The uint256 value to be set",
+						"id": 14749,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 14738,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "701:3:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 14739,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "701:10:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 14740,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 14737,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "689:11:18",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "689:23:18"
+							}
+						],
+						"name": "setPendingValue",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 14736,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 14733,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 14749,
+									"src": "646:18:18",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 14732,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "646:7:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 14735,
+									"name": "_value",
+									"nodeType": "VariableDeclaration",
+									"scope": 14749,
+									"src": "666:14:18",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 14734,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "666:7:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "645:36:18"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 14741,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "713:0:18"
+						},
+						"scope": 14777,
+						"src": "621:133:18",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 14775,
+							"nodeType": "Block",
+							"src": "936:129:18",
+							"statements": [
+								{
+									"assignments": [14759],
+									"declarations": [
+										{
+											"constant": false,
+											"id": 14759,
+											"name": "_tempValue",
+											"nodeType": "VariableDeclaration",
+											"scope": 14776,
+											"src": "940:18:18",
+											"stateVariable": false,
+											"storageLocation": "default",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											},
+											"typeName": {
+												"id": 14758,
+												"name": "uint256",
+												"nodeType": "ElementaryTypeName",
+												"src": "940:7:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"value": null,
+											"visibility": "internal"
+										}
+									],
+									"id": 14763,
+									"initialValue": {
+										"argumentTypes": null,
+										"baseExpression": {
+											"argumentTypes": null,
+											"id": 14760,
+											"name": "pendingValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 14727,
+											"src": "961:12:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+												"typeString": "mapping(uint256 => uint256)"
+											}
+										},
+										"id": 14762,
+										"indexExpression": {
+											"argumentTypes": null,
+											"id": 14761,
+											"name": "_settingId",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 14751,
+											"src": "974:10:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"isConstant": false,
+										"isLValue": true,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "IndexAccess",
+										"src": "961:24:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"nodeType": "VariableDeclarationStatement",
+									"src": "940:45:18"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 14767,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "UnaryOperation",
+										"operator": "delete",
+										"prefix": true,
+										"src": "989:31:18",
+										"subExpression": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 14764,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 14727,
+												"src": "996:12:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+													"typeString": "mapping(uint256 => uint256)"
+												}
+											},
+											"id": 14766,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 14765,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 14751,
+												"src": "1009:10:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "996:24:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"typeDescriptions": {
+											"typeIdentifier": "t_tuple$__$",
+											"typeString": "tuple()"
+										}
+									},
+									"id": 14768,
+									"nodeType": "ExpressionStatement",
+									"src": "989:31:18"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 14773,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 14769,
+												"name": "settingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 14723,
+												"src": "1024:12:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+													"typeString": "mapping(uint256 => uint256)"
+												}
+											},
+											"id": 14771,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 14770,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 14751,
+												"src": "1037:10:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "1024:24:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 14772,
+											"name": "_tempValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 14759,
+											"src": "1051:10:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"src": "1024:37:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"id": 14774,
+									"nodeType": "ExpressionStatement",
+									"src": "1024:37:18"
+								}
+							]
+						},
+						"documentation": "@dev Move value from pending to setting\n@param _settingId The ID of the setting",
+						"id": 14776,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 14754,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "924:3:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 14755,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "924:10:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 14756,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 14753,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "912:11:18",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "912:23:18"
+							}
+						],
+						"name": "movePendingToSetting",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 14752,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 14751,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 14776,
+									"src": "885:18:18",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 14750,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "885:7:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "884:20:18"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 14757,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "936:0:18"
+						},
+						"scope": 14777,
+						"src": "855:210:18",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					}
+				],
+				"scope": 14778,
+				"src": "145:922:18"
+			}
+		],
+		"src": "0:1068:18"
+	},
+	"legacyAST": {
+		"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOUintSetting.sol",
+		"exportedSymbols": {
+			"AOUintSetting": [14777]
+		},
+		"id": 14778,
+		"nodeType": "SourceUnit",
+		"nodes": [
+			{
+				"id": 14716,
+				"literals": ["solidity", "^", "0.4", ".24"],
+				"nodeType": "PragmaDirective",
+				"src": "0:24:18"
+			},
+			{
+				"absolutePath": "/home/jmulyono/ao-contracts/contracts/developed.sol",
+				"file": "./developed.sol",
+				"id": 14717,
+				"nodeType": "ImportDirective",
+				"scope": 14778,
+				"sourceUnit": 18366,
+				"src": "26:25:18",
+				"symbolAliases": [],
+				"unitAlias": ""
+			},
+			{
+				"baseContracts": [
+					{
+						"arguments": null,
+						"baseName": {
+							"contractScope": null,
+							"id": 14718,
+							"name": "developed",
+							"nodeType": "UserDefinedTypeName",
+							"referencedDeclaration": 18365,
+							"src": "171:9:18",
+							"typeDescriptions": {
+								"typeIdentifier": "t_contract$_developed_$18365",
+								"typeString": "contract developed"
+							}
+						},
+						"id": 14719,
+						"nodeType": "InheritanceSpecifier",
+						"src": "171:9:18"
+					}
+				],
+				"contractDependencies": [18365],
+				"contractKind": "contract",
+				"documentation": "@title AOUintSetting\n * This contract stores all AO uint256 setting variables",
+				"fullyImplemented": true,
+				"id": 14777,
+				"linearizedBaseContracts": [14777, 18365],
+				"name": "AOUintSetting",
+				"nodeType": "ContractDefinition",
+				"nodes": [
+					{
+						"constant": false,
+						"id": 14723,
+						"name": "settingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 14777,
+						"src": "240:48:18",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+							"typeString": "mapping(uint256 => uint256)"
+						},
+						"typeName": {
+							"id": 14722,
+							"keyType": {
+								"id": 14720,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "249:7:18",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "240:28:18",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+								"typeString": "mapping(uint256 => uint256)"
+							},
+							"valueType": {
+								"id": 14721,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "260:7:18",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"constant": false,
+						"id": 14727,
+						"name": "pendingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 14777,
+						"src": "376:48:18",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+							"typeString": "mapping(uint256 => uint256)"
+						},
+						"typeName": {
+							"id": 14726,
+							"keyType": {
+								"id": 14724,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "385:7:18",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "376:28:18",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+								"typeString": "mapping(uint256 => uint256)"
+							},
+							"valueType": {
+								"id": 14725,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "396:7:18",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 14730,
+							"nodeType": "Block",
+							"src": "489:2:18",
+							"statements": []
+						},
+						"documentation": "@dev Constructor function",
+						"id": 14731,
+						"implemented": true,
+						"isConstructor": true,
+						"isDeclaredConst": false,
+						"modifiers": [],
+						"name": "",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 14728,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "479:2:18"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 14729,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "489:0:18"
+						},
+						"scope": 14777,
+						"src": "468:23:18",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 14748,
+							"nodeType": "Block",
+							"src": "713:41:18",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 14746,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 14742,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 14727,
+												"src": "717:12:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+													"typeString": "mapping(uint256 => uint256)"
+												}
+											},
+											"id": 14744,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 14743,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 14733,
+												"src": "730:10:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "717:24:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 14745,
+											"name": "_value",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 14735,
+											"src": "744:6:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"src": "717:33:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"id": 14747,
+									"nodeType": "ExpressionStatement",
+									"src": "717:33:18"
+								}
+							]
+						},
+						"documentation": "@dev Set pending value\n@param _settingId The ID of the setting\n@param _value The uint256 value to be set",
+						"id": 14749,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 14738,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "701:3:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 14739,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "701:10:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 14740,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 14737,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "689:11:18",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "689:23:18"
+							}
+						],
+						"name": "setPendingValue",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 14736,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 14733,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 14749,
+									"src": "646:18:18",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 14732,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "646:7:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 14735,
+									"name": "_value",
+									"nodeType": "VariableDeclaration",
+									"scope": 14749,
+									"src": "666:14:18",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 14734,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "666:7:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "645:36:18"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 14741,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "713:0:18"
+						},
+						"scope": 14777,
+						"src": "621:133:18",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 14775,
+							"nodeType": "Block",
+							"src": "936:129:18",
+							"statements": [
+								{
+									"assignments": [14759],
+									"declarations": [
+										{
+											"constant": false,
+											"id": 14759,
+											"name": "_tempValue",
+											"nodeType": "VariableDeclaration",
+											"scope": 14776,
+											"src": "940:18:18",
+											"stateVariable": false,
+											"storageLocation": "default",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											},
+											"typeName": {
+												"id": 14758,
+												"name": "uint256",
+												"nodeType": "ElementaryTypeName",
+												"src": "940:7:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"value": null,
+											"visibility": "internal"
+										}
+									],
+									"id": 14763,
+									"initialValue": {
+										"argumentTypes": null,
+										"baseExpression": {
+											"argumentTypes": null,
+											"id": 14760,
+											"name": "pendingValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 14727,
+											"src": "961:12:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+												"typeString": "mapping(uint256 => uint256)"
+											}
+										},
+										"id": 14762,
+										"indexExpression": {
+											"argumentTypes": null,
+											"id": 14761,
+											"name": "_settingId",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 14751,
+											"src": "974:10:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"isConstant": false,
+										"isLValue": true,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "IndexAccess",
+										"src": "961:24:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"nodeType": "VariableDeclarationStatement",
+									"src": "940:45:18"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 14767,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "UnaryOperation",
+										"operator": "delete",
+										"prefix": true,
+										"src": "989:31:18",
+										"subExpression": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 14764,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 14727,
+												"src": "996:12:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+													"typeString": "mapping(uint256 => uint256)"
+												}
+											},
+											"id": 14766,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 14765,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 14751,
+												"src": "1009:10:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "996:24:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"typeDescriptions": {
+											"typeIdentifier": "t_tuple$__$",
+											"typeString": "tuple()"
+										}
+									},
+									"id": 14768,
+									"nodeType": "ExpressionStatement",
+									"src": "989:31:18"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 14773,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 14769,
+												"name": "settingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 14723,
+												"src": "1024:12:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+													"typeString": "mapping(uint256 => uint256)"
+												}
+											},
+											"id": 14771,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 14770,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 14751,
+												"src": "1037:10:18",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "1024:24:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 14772,
+											"name": "_tempValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 14759,
+											"src": "1051:10:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"src": "1024:37:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"id": 14774,
+									"nodeType": "ExpressionStatement",
+									"src": "1024:37:18"
+								}
+							]
+						},
+						"documentation": "@dev Move value from pending to setting\n@param _settingId The ID of the setting",
+						"id": 14776,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 14754,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "924:3:18",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 14755,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "924:10:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 14756,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 14753,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "912:11:18",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "912:23:18"
+							}
+						],
+						"name": "movePendingToSetting",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 14752,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 14751,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 14776,
+									"src": "885:18:18",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 14750,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "885:7:18",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "884:20:18"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 14757,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "936:0:18"
+						},
+						"scope": 14777,
+						"src": "855:210:18",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					}
+				],
+				"scope": 14778,
+				"src": "145:922:18"
+			}
+		],
+		"src": "0:1068:18"
+	},
+	"compiler": {
+		"name": "solc",
+		"version": "0.4.24+commit.e67f0147.Emscripten.clang"
+	},
+	"networks": {
+		"4": {
+			"events": {},
+			"links": {},
+			"address": "0x6ed7521038a9ba21d615c28802c72e220965ea32",
+			"transactionHash": "0x8ec345ed3dbb3080d4064b729756ebc5cecaafebaf4d237ea261c2e63e078188"
+		}
+	},
+	"schemaVersion": "2.0.1",
+	"updatedAt": "2018-12-11T08:43:54.393Z"
+}

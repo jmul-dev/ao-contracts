@@ -1,0 +1,1646 @@
+{
+	"contractName": "AOBoolSetting",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoDevTeam1",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_account",
+					"type": "address"
+				},
+				{
+					"name": "_whitelist",
+					"type": "bool"
+				}
+			],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"name": "whitelist",
+			"outputs": [
+				{
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "settingValue",
+			"outputs": [
+				{
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoDevTeam2",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "pendingValue",
+			"outputs": [
+				{
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_aoDevTeam1",
+					"type": "address"
+				},
+				{
+					"name": "_aoDevTeam2",
+					"type": "address"
+				}
+			],
+			"name": "setAODevTeamAddresses",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "developer",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "newDeveloper",
+					"type": "address"
+				}
+			],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_settingId",
+					"type": "uint256"
+				},
+				{
+					"name": "_value",
+					"type": "bool"
+				}
+			],
+			"name": "setPendingValue",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_settingId",
+					"type": "uint256"
+				}
+			],
+			"name": "movePendingToSetting",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+	],
+	"bytecode": "0x608060405260018054600160a060020a0319908116735c63644d01ba385ebac5bcf2ddc1e6dbc1182b52179091556002805490911673156c79bf4347d1891da834ea30662a14177cbf2817905534801561005857600080fd5b5060008054600160a060020a0319163317905561045a8061007a6000396000f3006080604052600436106100ae5763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663088fc1a881146100b357806315227aa7146100cd57806353d6fd59146100fe5780635802c695146101245780639b19251a146101415780639ba535ce14610176578063a99433a61461018e578063af9e8b16146101a3578063b24626e9146101bb578063ca4b208b146101e2578063f2fde38b146101f7575b600080fd5b3480156100bf57600080fd5b506100cb600435610218565b005b3480156100d957600080fd5b506100e261028c565b60408051600160a060020a039092168252519081900360200190f35b34801561010a57600080fd5b506100cb600160a060020a0360043516602435151561029b565b34801561013057600080fd5b506100cb60043560243515156102dd565b34801561014d57600080fd5b50610162600160a060020a0360043516610339565b604080519115158252519081900360200190f35b34801561018257600080fd5b5061016260043561034e565b34801561019a57600080fd5b506100e2610363565b3480156101af57600080fd5b50610162600435610372565b3480156101c757600080fd5b506100cb600160a060020a0360043581169060243516610387565b3480156101ee57600080fd5b506100e26103d9565b34801561020357600080fd5b506100cb600160a060020a03600435166103e8565b3360008181526003602052604081205490919060ff1615156001148061024b5750600054600160a060020a038281169116145b151561025657600080fd5b50506000908152600560209081526040808320805460ff1980821690925560049093529220805490921660ff9091161515179055565b600154600160a060020a031681565b600054600160a060020a031633146102b257600080fd5b600160a060020a03919091166000908152600360205260409020805460ff1916911515919091179055565b3360008181526003602052604090205460ff1615156001148061030d5750600054600160a060020a038281169116145b151561031857600080fd5b50600091825260056020526040909120805460ff1916911515919091179055565b60036020526000908152604090205460ff1681565b60046020526000908152604090205460ff1681565b600254600160a060020a031681565b60056020526000908152604090205460ff1681565b600054600160a060020a0316331461039e57600080fd5b60018054600160a060020a0393841673ffffffffffffffffffffffffffffffffffffffff199182161790915560028054929093169116179055565b600054600160a060020a031681565b600054600160a060020a031633146103ff57600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a03929092169190911790555600a165627a7a7230582086e974f3c3c2dcc25ebcbca804f3d19873fc7ee540a0d3bb43978ad6b1a9d2990029",
+	"deployedBytecode": "0x6080604052600436106100ae5763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663088fc1a881146100b357806315227aa7146100cd57806353d6fd59146100fe5780635802c695146101245780639b19251a146101415780639ba535ce14610176578063a99433a61461018e578063af9e8b16146101a3578063b24626e9146101bb578063ca4b208b146101e2578063f2fde38b146101f7575b600080fd5b3480156100bf57600080fd5b506100cb600435610218565b005b3480156100d957600080fd5b506100e261028c565b60408051600160a060020a039092168252519081900360200190f35b34801561010a57600080fd5b506100cb600160a060020a0360043516602435151561029b565b34801561013057600080fd5b506100cb60043560243515156102dd565b34801561014d57600080fd5b50610162600160a060020a0360043516610339565b604080519115158252519081900360200190f35b34801561018257600080fd5b5061016260043561034e565b34801561019a57600080fd5b506100e2610363565b3480156101af57600080fd5b50610162600435610372565b3480156101c757600080fd5b506100cb600160a060020a0360043581169060243516610387565b3480156101ee57600080fd5b506100e26103d9565b34801561020357600080fd5b506100cb600160a060020a03600435166103e8565b3360008181526003602052604081205490919060ff1615156001148061024b5750600054600160a060020a038281169116145b151561025657600080fd5b50506000908152600560209081526040808320805460ff1980821690925560049093529220805490921660ff9091161515179055565b600154600160a060020a031681565b600054600160a060020a031633146102b257600080fd5b600160a060020a03919091166000908152600360205260409020805460ff1916911515919091179055565b3360008181526003602052604090205460ff1615156001148061030d5750600054600160a060020a038281169116145b151561031857600080fd5b50600091825260056020526040909120805460ff1916911515919091179055565b60036020526000908152604090205460ff1681565b60046020526000908152604090205460ff1681565b600254600160a060020a031681565b60056020526000908152604090205460ff1681565b600054600160a060020a0316331461039e57600080fd5b60018054600160a060020a0393841673ffffffffffffffffffffffffffffffffffffffff199182161790915560028054929093169116179055565b600054600160a060020a031681565b600054600160a060020a031633146103ff57600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a03929092169190911790555600a165627a7a7230582086e974f3c3c2dcc25ebcbca804f3d19873fc7ee540a0d3bb43978ad6b1a9d2990029",
+	"sourceMap": "142:901:1:-;;;139:70:40;;;-1:-1:-1;;;;;;139:70:40;;;167:42;139:70;;;;212;;;;;;240:42;212:70;;;453:23:1;5:2:-1;;;;30:1;27;20:12;5:2;-1:-1;456:9:40;:22;;-1:-1:-1;;;;;;456:22:40;468:10;456:22;;;142:901:1;;;;;;",
+	"deployedSourceMap": "142:901:1:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;834:207;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;834:207:1;;;;;;;139:70:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;139:70:40;;;;;;;;-1:-1:-1;;;;;139:70:40;;;;;;;;;;;;;;1080:118;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1080:118:40;-1:-1:-1;;;;;1080:118:40;;;;;;;;;603:130:1;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;603:130:1;;;;;;;;;385:42:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;385:42:40;-1:-1:-1;;;;;385:42:40;;;;;;;;;;;;;;;;;;;;;;;234:45:1;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;234:45:1;;;;;212:70:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;212:70:40;;;;364:45:1;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;364:45:1;;;;;1414:154:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1414:154:40;-1:-1:-1;;;;;1414:154:40;;;;;;;;;;48:24;;8:9:-1;5:2;;;30:1;27;20:12;5:2;48:24:40;;;;801:102;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;801:102:40;-1:-1:-1;;;;;801:102:40;;;;;834:207:1;903:10;919:15;736:19:40;;;:9;:19;;;;;;919:15:1;;903:10;736:19:40;;:27;;:19;:27;;:52;;-1:-1:-1;779:9:40;;-1:-1:-1;;;;;767:21:40;;;779:9;;767:21;736:52;727:62;;;;;;;;-1:-1:-1;;937:24:1;;;;:12;:24;;;;;;;;;;-1:-1:-1;;965:31:1;;;;;;1000:12;:24;;;;;:37;;;;;937:24;;;;1000:37;;;;;834:207::o;139:70:40:-;;;-1:-1:-1;;;;;139:70:40;;:::o;1080:118::-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;-1:-1:-1;;;;;1162:19:40;;;;;;;;:9;:19;;;;;:32;;-1:-1:-1;;1162:32:40;;;;;;;;;;1080:118::o;603:130:1:-;680:10;736:19:40;;;;:9;:19;;;;;;;;:27;;:19;:27;;:52;;-1:-1:-1;779:9:40;;-1:-1:-1;;;;;767:21:40;;;779:9;;767:21;736:52;727:62;;;;;;;;-1:-1:-1;696:24:1;;;;:12;:24;;;;;;:33;;-1:-1:-1;;696:33:1;;;;;;;;;;603:130::o;385:42:40:-;;;;;;;;;;;;;;;:::o;234:45:1:-;;;;;;;;;;;;;;;:::o;212:70:40:-;;;-1:-1:-1;;;;;212:70:40;;:::o;364:45:1:-;;;;;;;;;;;;;;;:::o;1414:154:40:-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;1512:10;:24;;-1:-1:-1;;;;;1512:24:40;;;-1:-1:-1;;1512:24:40;;;;;;;1540:10;:24;;;;;;;;;;;1414:154::o;48:24::-;;;-1:-1:-1;;;;;48:24:40;;:::o;801:102::-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;875:9;:24;;-1:-1:-1;;875:24:40;-1:-1:-1;;;;;875:24:40;;;;;;;;;;801:102::o",
+	"source": "pragma solidity ^0.4.24;\n\nimport './developed.sol';\n\n/**\n * @title AOBoolSetting\n *\n * This contract stores all AO bool setting variables\n */\ncontract AOBoolSetting is developed {\n\t// Mapping from settingId to it's actual bool value\n\tmapping (uint256 => bool) public settingValue;\n\n\t// Mapping from settingId to it's potential bool value that is at pending state\n\tmapping (uint256 => bool) public pendingValue;\n\n\t/**\n\t * @dev Constructor function\n\t */\n\tconstructor() public {}\n\n\t/**\n\t * @dev Set pending value\n\t * @param _settingId The ID of the setting\n\t * @param _value The bool value to be set\n\t */\n\tfunction setPendingValue(uint256 _settingId, bool _value) public inWhitelist(msg.sender) {\n\t\tpendingValue[_settingId] = _value;\n\t}\n\n\t/**\n\t * @dev Move value from pending to setting\n\t * @param _settingId The ID of the setting\n\t */\n\tfunction movePendingToSetting(uint256 _settingId) public inWhitelist(msg.sender) {\n\t\tbool _tempValue = pendingValue[_settingId];\n\t\tdelete pendingValue[_settingId];\n\t\tsettingValue[_settingId] = _tempValue;\n\t}\n}\n",
+	"sourcePath": "/home/jmulyono/ao-contracts/contracts/AOBoolSetting.sol",
+	"ast": {
+		"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOBoolSetting.sol",
+		"exportedSymbols": {
+			"AOBoolSetting": [125]
+		},
+		"id": 126,
+		"nodeType": "SourceUnit",
+		"nodes": [
+			{
+				"id": 64,
+				"literals": ["solidity", "^", "0.4", ".24"],
+				"nodeType": "PragmaDirective",
+				"src": "0:24:1"
+			},
+			{
+				"absolutePath": "/home/jmulyono/ao-contracts/contracts/developed.sol",
+				"file": "./developed.sol",
+				"id": 65,
+				"nodeType": "ImportDirective",
+				"scope": 126,
+				"sourceUnit": 18366,
+				"src": "26:25:1",
+				"symbolAliases": [],
+				"unitAlias": ""
+			},
+			{
+				"baseContracts": [
+					{
+						"arguments": null,
+						"baseName": {
+							"contractScope": null,
+							"id": 66,
+							"name": "developed",
+							"nodeType": "UserDefinedTypeName",
+							"referencedDeclaration": 18365,
+							"src": "168:9:1",
+							"typeDescriptions": {
+								"typeIdentifier": "t_contract$_developed_$18365",
+								"typeString": "contract developed"
+							}
+						},
+						"id": 67,
+						"nodeType": "InheritanceSpecifier",
+						"src": "168:9:1"
+					}
+				],
+				"contractDependencies": [18365],
+				"contractKind": "contract",
+				"documentation": "@title AOBoolSetting\n * This contract stores all AO bool setting variables",
+				"fullyImplemented": true,
+				"id": 125,
+				"linearizedBaseContracts": [125, 18365],
+				"name": "AOBoolSetting",
+				"nodeType": "ContractDefinition",
+				"nodes": [
+					{
+						"constant": false,
+						"id": 71,
+						"name": "settingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 125,
+						"src": "234:45:1",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+							"typeString": "mapping(uint256 => bool)"
+						},
+						"typeName": {
+							"id": 70,
+							"keyType": {
+								"id": 68,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "243:7:1",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "234:25:1",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+								"typeString": "mapping(uint256 => bool)"
+							},
+							"valueType": {
+								"id": 69,
+								"name": "bool",
+								"nodeType": "ElementaryTypeName",
+								"src": "254:4:1",
+								"typeDescriptions": {
+									"typeIdentifier": "t_bool",
+									"typeString": "bool"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"constant": false,
+						"id": 75,
+						"name": "pendingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 125,
+						"src": "364:45:1",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+							"typeString": "mapping(uint256 => bool)"
+						},
+						"typeName": {
+							"id": 74,
+							"keyType": {
+								"id": 72,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "373:7:1",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "364:25:1",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+								"typeString": "mapping(uint256 => bool)"
+							},
+							"valueType": {
+								"id": 73,
+								"name": "bool",
+								"nodeType": "ElementaryTypeName",
+								"src": "384:4:1",
+								"typeDescriptions": {
+									"typeIdentifier": "t_bool",
+									"typeString": "bool"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 78,
+							"nodeType": "Block",
+							"src": "474:2:1",
+							"statements": []
+						},
+						"documentation": "@dev Constructor function",
+						"id": 79,
+						"implemented": true,
+						"isConstructor": true,
+						"isDeclaredConst": false,
+						"modifiers": [],
+						"name": "",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 76,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "464:2:1"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 77,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "474:0:1"
+						},
+						"scope": 125,
+						"src": "453:23:1",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 96,
+							"nodeType": "Block",
+							"src": "692:41:1",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 94,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 90,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 75,
+												"src": "696:12:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+													"typeString": "mapping(uint256 => bool)"
+												}
+											},
+											"id": 92,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 91,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 81,
+												"src": "709:10:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "696:24:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bool",
+												"typeString": "bool"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 93,
+											"name": "_value",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 83,
+											"src": "723:6:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bool",
+												"typeString": "bool"
+											}
+										},
+										"src": "696:33:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bool",
+											"typeString": "bool"
+										}
+									},
+									"id": 95,
+									"nodeType": "ExpressionStatement",
+									"src": "696:33:1"
+								}
+							]
+						},
+						"documentation": "@dev Set pending value\n@param _settingId The ID of the setting\n@param _value The bool value to be set",
+						"id": 97,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 86,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "680:3:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 87,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "680:10:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 88,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 85,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "668:11:1",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "668:23:1"
+							}
+						],
+						"name": "setPendingValue",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 84,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 81,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 97,
+									"src": "628:18:1",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 80,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "628:7:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 83,
+									"name": "_value",
+									"nodeType": "VariableDeclaration",
+									"scope": 97,
+									"src": "648:11:1",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_bool",
+										"typeString": "bool"
+									},
+									"typeName": {
+										"id": 82,
+										"name": "bool",
+										"nodeType": "ElementaryTypeName",
+										"src": "648:4:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bool",
+											"typeString": "bool"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "627:33:1"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 89,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "692:0:1"
+						},
+						"scope": 125,
+						"src": "603:130:1",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 123,
+							"nodeType": "Block",
+							"src": "915:126:1",
+							"statements": [
+								{
+									"assignments": [107],
+									"declarations": [
+										{
+											"constant": false,
+											"id": 107,
+											"name": "_tempValue",
+											"nodeType": "VariableDeclaration",
+											"scope": 124,
+											"src": "919:15:1",
+											"stateVariable": false,
+											"storageLocation": "default",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bool",
+												"typeString": "bool"
+											},
+											"typeName": {
+												"id": 106,
+												"name": "bool",
+												"nodeType": "ElementaryTypeName",
+												"src": "919:4:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bool",
+													"typeString": "bool"
+												}
+											},
+											"value": null,
+											"visibility": "internal"
+										}
+									],
+									"id": 111,
+									"initialValue": {
+										"argumentTypes": null,
+										"baseExpression": {
+											"argumentTypes": null,
+											"id": 108,
+											"name": "pendingValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 75,
+											"src": "937:12:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+												"typeString": "mapping(uint256 => bool)"
+											}
+										},
+										"id": 110,
+										"indexExpression": {
+											"argumentTypes": null,
+											"id": 109,
+											"name": "_settingId",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 99,
+											"src": "950:10:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"isConstant": false,
+										"isLValue": true,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "IndexAccess",
+										"src": "937:24:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bool",
+											"typeString": "bool"
+										}
+									},
+									"nodeType": "VariableDeclarationStatement",
+									"src": "919:42:1"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 115,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "UnaryOperation",
+										"operator": "delete",
+										"prefix": true,
+										"src": "965:31:1",
+										"subExpression": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 112,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 75,
+												"src": "972:12:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+													"typeString": "mapping(uint256 => bool)"
+												}
+											},
+											"id": 114,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 113,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 99,
+												"src": "985:10:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "972:24:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bool",
+												"typeString": "bool"
+											}
+										},
+										"typeDescriptions": {
+											"typeIdentifier": "t_tuple$__$",
+											"typeString": "tuple()"
+										}
+									},
+									"id": 116,
+									"nodeType": "ExpressionStatement",
+									"src": "965:31:1"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 121,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 117,
+												"name": "settingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 71,
+												"src": "1000:12:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+													"typeString": "mapping(uint256 => bool)"
+												}
+											},
+											"id": 119,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 118,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 99,
+												"src": "1013:10:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "1000:24:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bool",
+												"typeString": "bool"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 120,
+											"name": "_tempValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 107,
+											"src": "1027:10:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bool",
+												"typeString": "bool"
+											}
+										},
+										"src": "1000:37:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bool",
+											"typeString": "bool"
+										}
+									},
+									"id": 122,
+									"nodeType": "ExpressionStatement",
+									"src": "1000:37:1"
+								}
+							]
+						},
+						"documentation": "@dev Move value from pending to setting\n@param _settingId The ID of the setting",
+						"id": 124,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 102,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "903:3:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 103,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "903:10:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 104,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 101,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "891:11:1",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "891:23:1"
+							}
+						],
+						"name": "movePendingToSetting",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 100,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 99,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 124,
+									"src": "864:18:1",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 98,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "864:7:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "863:20:1"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 105,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "915:0:1"
+						},
+						"scope": 125,
+						"src": "834:207:1",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					}
+				],
+				"scope": 126,
+				"src": "142:901:1"
+			}
+		],
+		"src": "0:1044:1"
+	},
+	"legacyAST": {
+		"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOBoolSetting.sol",
+		"exportedSymbols": {
+			"AOBoolSetting": [125]
+		},
+		"id": 126,
+		"nodeType": "SourceUnit",
+		"nodes": [
+			{
+				"id": 64,
+				"literals": ["solidity", "^", "0.4", ".24"],
+				"nodeType": "PragmaDirective",
+				"src": "0:24:1"
+			},
+			{
+				"absolutePath": "/home/jmulyono/ao-contracts/contracts/developed.sol",
+				"file": "./developed.sol",
+				"id": 65,
+				"nodeType": "ImportDirective",
+				"scope": 126,
+				"sourceUnit": 18366,
+				"src": "26:25:1",
+				"symbolAliases": [],
+				"unitAlias": ""
+			},
+			{
+				"baseContracts": [
+					{
+						"arguments": null,
+						"baseName": {
+							"contractScope": null,
+							"id": 66,
+							"name": "developed",
+							"nodeType": "UserDefinedTypeName",
+							"referencedDeclaration": 18365,
+							"src": "168:9:1",
+							"typeDescriptions": {
+								"typeIdentifier": "t_contract$_developed_$18365",
+								"typeString": "contract developed"
+							}
+						},
+						"id": 67,
+						"nodeType": "InheritanceSpecifier",
+						"src": "168:9:1"
+					}
+				],
+				"contractDependencies": [18365],
+				"contractKind": "contract",
+				"documentation": "@title AOBoolSetting\n * This contract stores all AO bool setting variables",
+				"fullyImplemented": true,
+				"id": 125,
+				"linearizedBaseContracts": [125, 18365],
+				"name": "AOBoolSetting",
+				"nodeType": "ContractDefinition",
+				"nodes": [
+					{
+						"constant": false,
+						"id": 71,
+						"name": "settingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 125,
+						"src": "234:45:1",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+							"typeString": "mapping(uint256 => bool)"
+						},
+						"typeName": {
+							"id": 70,
+							"keyType": {
+								"id": 68,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "243:7:1",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "234:25:1",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+								"typeString": "mapping(uint256 => bool)"
+							},
+							"valueType": {
+								"id": 69,
+								"name": "bool",
+								"nodeType": "ElementaryTypeName",
+								"src": "254:4:1",
+								"typeDescriptions": {
+									"typeIdentifier": "t_bool",
+									"typeString": "bool"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"constant": false,
+						"id": 75,
+						"name": "pendingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 125,
+						"src": "364:45:1",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+							"typeString": "mapping(uint256 => bool)"
+						},
+						"typeName": {
+							"id": 74,
+							"keyType": {
+								"id": 72,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "373:7:1",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "364:25:1",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+								"typeString": "mapping(uint256 => bool)"
+							},
+							"valueType": {
+								"id": 73,
+								"name": "bool",
+								"nodeType": "ElementaryTypeName",
+								"src": "384:4:1",
+								"typeDescriptions": {
+									"typeIdentifier": "t_bool",
+									"typeString": "bool"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 78,
+							"nodeType": "Block",
+							"src": "474:2:1",
+							"statements": []
+						},
+						"documentation": "@dev Constructor function",
+						"id": 79,
+						"implemented": true,
+						"isConstructor": true,
+						"isDeclaredConst": false,
+						"modifiers": [],
+						"name": "",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 76,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "464:2:1"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 77,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "474:0:1"
+						},
+						"scope": 125,
+						"src": "453:23:1",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 96,
+							"nodeType": "Block",
+							"src": "692:41:1",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 94,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 90,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 75,
+												"src": "696:12:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+													"typeString": "mapping(uint256 => bool)"
+												}
+											},
+											"id": 92,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 91,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 81,
+												"src": "709:10:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "696:24:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bool",
+												"typeString": "bool"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 93,
+											"name": "_value",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 83,
+											"src": "723:6:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bool",
+												"typeString": "bool"
+											}
+										},
+										"src": "696:33:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bool",
+											"typeString": "bool"
+										}
+									},
+									"id": 95,
+									"nodeType": "ExpressionStatement",
+									"src": "696:33:1"
+								}
+							]
+						},
+						"documentation": "@dev Set pending value\n@param _settingId The ID of the setting\n@param _value The bool value to be set",
+						"id": 97,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 86,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "680:3:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 87,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "680:10:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 88,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 85,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "668:11:1",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "668:23:1"
+							}
+						],
+						"name": "setPendingValue",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 84,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 81,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 97,
+									"src": "628:18:1",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 80,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "628:7:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 83,
+									"name": "_value",
+									"nodeType": "VariableDeclaration",
+									"scope": 97,
+									"src": "648:11:1",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_bool",
+										"typeString": "bool"
+									},
+									"typeName": {
+										"id": 82,
+										"name": "bool",
+										"nodeType": "ElementaryTypeName",
+										"src": "648:4:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bool",
+											"typeString": "bool"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "627:33:1"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 89,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "692:0:1"
+						},
+						"scope": 125,
+						"src": "603:130:1",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 123,
+							"nodeType": "Block",
+							"src": "915:126:1",
+							"statements": [
+								{
+									"assignments": [107],
+									"declarations": [
+										{
+											"constant": false,
+											"id": 107,
+											"name": "_tempValue",
+											"nodeType": "VariableDeclaration",
+											"scope": 124,
+											"src": "919:15:1",
+											"stateVariable": false,
+											"storageLocation": "default",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bool",
+												"typeString": "bool"
+											},
+											"typeName": {
+												"id": 106,
+												"name": "bool",
+												"nodeType": "ElementaryTypeName",
+												"src": "919:4:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bool",
+													"typeString": "bool"
+												}
+											},
+											"value": null,
+											"visibility": "internal"
+										}
+									],
+									"id": 111,
+									"initialValue": {
+										"argumentTypes": null,
+										"baseExpression": {
+											"argumentTypes": null,
+											"id": 108,
+											"name": "pendingValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 75,
+											"src": "937:12:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+												"typeString": "mapping(uint256 => bool)"
+											}
+										},
+										"id": 110,
+										"indexExpression": {
+											"argumentTypes": null,
+											"id": 109,
+											"name": "_settingId",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 99,
+											"src": "950:10:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"isConstant": false,
+										"isLValue": true,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "IndexAccess",
+										"src": "937:24:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bool",
+											"typeString": "bool"
+										}
+									},
+									"nodeType": "VariableDeclarationStatement",
+									"src": "919:42:1"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 115,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "UnaryOperation",
+										"operator": "delete",
+										"prefix": true,
+										"src": "965:31:1",
+										"subExpression": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 112,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 75,
+												"src": "972:12:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+													"typeString": "mapping(uint256 => bool)"
+												}
+											},
+											"id": 114,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 113,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 99,
+												"src": "985:10:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "972:24:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bool",
+												"typeString": "bool"
+											}
+										},
+										"typeDescriptions": {
+											"typeIdentifier": "t_tuple$__$",
+											"typeString": "tuple()"
+										}
+									},
+									"id": 116,
+									"nodeType": "ExpressionStatement",
+									"src": "965:31:1"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 121,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 117,
+												"name": "settingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 71,
+												"src": "1000:12:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+													"typeString": "mapping(uint256 => bool)"
+												}
+											},
+											"id": 119,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 118,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 99,
+												"src": "1013:10:1",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "1000:24:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bool",
+												"typeString": "bool"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 120,
+											"name": "_tempValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 107,
+											"src": "1027:10:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bool",
+												"typeString": "bool"
+											}
+										},
+										"src": "1000:37:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bool",
+											"typeString": "bool"
+										}
+									},
+									"id": 122,
+									"nodeType": "ExpressionStatement",
+									"src": "1000:37:1"
+								}
+							]
+						},
+						"documentation": "@dev Move value from pending to setting\n@param _settingId The ID of the setting",
+						"id": 124,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 102,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "903:3:1",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 103,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "903:10:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 104,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 101,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "891:11:1",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "891:23:1"
+							}
+						],
+						"name": "movePendingToSetting",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 100,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 99,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 124,
+									"src": "864:18:1",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 98,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "864:7:1",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "863:20:1"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 105,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "915:0:1"
+						},
+						"scope": 125,
+						"src": "834:207:1",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					}
+				],
+				"scope": 126,
+				"src": "142:901:1"
+			}
+		],
+		"src": "0:1044:1"
+	},
+	"compiler": {
+		"name": "solc",
+		"version": "0.4.24+commit.e67f0147.Emscripten.clang"
+	},
+	"networks": {
+		"4": {
+			"events": {},
+			"links": {},
+			"address": "0xd697478c2a8f5efd55ec6089f89ed79a6b6dc1a4",
+			"transactionHash": "0x468efee30cb70ca230219dde8d8b142227b68467f2d126a7dbf88334eec38f3e"
+		}
+	},
+	"schemaVersion": "2.0.1",
+	"updatedAt": "2018-12-11T08:43:54.411Z"
+}

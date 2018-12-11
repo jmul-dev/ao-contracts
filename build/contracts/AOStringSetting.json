@@ -1,0 +1,1646 @@
+{
+	"contractName": "AOStringSetting",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoDevTeam1",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_account",
+					"type": "address"
+				},
+				{
+					"name": "_whitelist",
+					"type": "bool"
+				}
+			],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"name": "whitelist",
+			"outputs": [
+				{
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "settingValue",
+			"outputs": [
+				{
+					"name": "",
+					"type": "string"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoDevTeam2",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "pendingValue",
+			"outputs": [
+				{
+					"name": "",
+					"type": "string"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_aoDevTeam1",
+					"type": "address"
+				},
+				{
+					"name": "_aoDevTeam2",
+					"type": "address"
+				}
+			],
+			"name": "setAODevTeamAddresses",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "developer",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "newDeveloper",
+					"type": "address"
+				}
+			],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_settingId",
+					"type": "uint256"
+				},
+				{
+					"name": "_value",
+					"type": "string"
+				}
+			],
+			"name": "setPendingValue",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_settingId",
+					"type": "uint256"
+				}
+			],
+			"name": "movePendingToSetting",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+	],
+	"bytecode": "0x608060405260018054600160a060020a0319908116735c63644d01ba385ebac5bcf2ddc1e6dbc1182b52179091556002805490911673156c79bf4347d1891da834ea30662a14177cbf2817905534801561005857600080fd5b5060008054600160a060020a0319163317905561076d8061007a6000396000f3006080604052600436106100ae5763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663088fc1a881146100b35780630ce64868146100cd57806315227aa71461012b57806353d6fd591461015c5780639b19251a146101825780639ba535ce146101b7578063a99433a614610244578063af9e8b1614610259578063b24626e914610271578063ca4b208b14610298578063f2fde38b146102ad575b600080fd5b3480156100bf57600080fd5b506100cb6004356102ce565b005b3480156100d957600080fd5b5060408051602060046024803582810135601f81018590048502860185019096528585526100cb9583359536956044949193909101919081908401838280828437509497506103e69650505050505050565b34801561013757600080fd5b50610140610440565b60408051600160a060020a039092168252519081900360200190f35b34801561016857600080fd5b506100cb600160a060020a0360043516602435151561044f565b34801561018e57600080fd5b506101a3600160a060020a0360043516610491565b604080519115158252519081900360200190f35b3480156101c357600080fd5b506101cf6004356104a6565b6040805160208082528351818301528351919283929083019185019080838360005b838110156102095781810151838201526020016101f1565b50505050905090810190601f1680156102365780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b34801561025057600080fd5b50610140610541565b34801561026557600080fd5b506101cf600435610550565b34801561027d57600080fd5b506100cb600160a060020a03600435811690602435166105b8565b3480156102a457600080fd5b5061014061060a565b3480156102b957600080fd5b506100cb600160a060020a0360043516610619565b336000818152600360205260409020546060919060ff161515600114806103025750600054600160a060020a038281169116145b151561030d57600080fd5b60008381526005602090815260409182902080548351601f6002600019610100600186161502019093169290920491820184900484028101840190945280845290918301828280156103a05780601f10610375576101008083540402835291602001916103a0565b820191906000526020600020905b81548152906001019060200180831161038357829003601f168201915b50505060008681526005602052604081209395506103c1939250905061065f565b600083815260046020908152604090912083516103e0928501906106a6565b50505050565b3360008181526003602052604090205460ff161515600114806104165750600054600160a060020a038281169116145b151561042157600080fd5b600083815260056020908152604090912083516103e0928501906106a6565b600154600160a060020a031681565b600054600160a060020a0316331461046657600080fd5b600160a060020a03919091166000908152600360205260409020805460ff1916911515919091179055565b60036020526000908152604090205460ff1681565b60046020908152600091825260409182902080548351601f6002600019610100600186161502019093169290920491820184900484028101840190945280845290918301828280156105395780601f1061050e57610100808354040283529160200191610539565b820191906000526020600020905b81548152906001019060200180831161051c57829003601f168201915b505050505081565b600254600160a060020a031681565b60056020908152600091825260409182902080548351601f6002600019610100600186161502019093169290920491820184900484028101840190945280845290918301828280156105395780601f1061050e57610100808354040283529160200191610539565b600054600160a060020a031633146105cf57600080fd5b60018054600160a060020a0393841673ffffffffffffffffffffffffffffffffffffffff199182161790915560028054929093169116179055565b600054600160a060020a031681565b600054600160a060020a0316331461063057600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b50805460018160011615610100020316600290046000825580601f1061068557506106a3565b601f0160209004906000526020600020908101906106a39190610724565b50565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106106e757805160ff1916838001178555610714565b82800160010185558215610714579182015b828111156107145782518255916020019190600101906106f9565b50610720929150610724565b5090565b61073e91905b80821115610720576000815560010161072a565b905600a165627a7a7230582056fb15f79647c01f6c7e5ebef7e87fe9d5ca77d7369fc3092c383ba26a8adae40029",
+	"deployedBytecode": "0x6080604052600436106100ae5763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663088fc1a881146100b35780630ce64868146100cd57806315227aa71461012b57806353d6fd591461015c5780639b19251a146101825780639ba535ce146101b7578063a99433a614610244578063af9e8b1614610259578063b24626e914610271578063ca4b208b14610298578063f2fde38b146102ad575b600080fd5b3480156100bf57600080fd5b506100cb6004356102ce565b005b3480156100d957600080fd5b5060408051602060046024803582810135601f81018590048502860185019096528585526100cb9583359536956044949193909101919081908401838280828437509497506103e69650505050505050565b34801561013757600080fd5b50610140610440565b60408051600160a060020a039092168252519081900360200190f35b34801561016857600080fd5b506100cb600160a060020a0360043516602435151561044f565b34801561018e57600080fd5b506101a3600160a060020a0360043516610491565b604080519115158252519081900360200190f35b3480156101c357600080fd5b506101cf6004356104a6565b6040805160208082528351818301528351919283929083019185019080838360005b838110156102095781810151838201526020016101f1565b50505050905090810190601f1680156102365780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b34801561025057600080fd5b50610140610541565b34801561026557600080fd5b506101cf600435610550565b34801561027d57600080fd5b506100cb600160a060020a03600435811690602435166105b8565b3480156102a457600080fd5b5061014061060a565b3480156102b957600080fd5b506100cb600160a060020a0360043516610619565b336000818152600360205260409020546060919060ff161515600114806103025750600054600160a060020a038281169116145b151561030d57600080fd5b60008381526005602090815260409182902080548351601f6002600019610100600186161502019093169290920491820184900484028101840190945280845290918301828280156103a05780601f10610375576101008083540402835291602001916103a0565b820191906000526020600020905b81548152906001019060200180831161038357829003601f168201915b50505060008681526005602052604081209395506103c1939250905061065f565b600083815260046020908152604090912083516103e0928501906106a6565b50505050565b3360008181526003602052604090205460ff161515600114806104165750600054600160a060020a038281169116145b151561042157600080fd5b600083815260056020908152604090912083516103e0928501906106a6565b600154600160a060020a031681565b600054600160a060020a0316331461046657600080fd5b600160a060020a03919091166000908152600360205260409020805460ff1916911515919091179055565b60036020526000908152604090205460ff1681565b60046020908152600091825260409182902080548351601f6002600019610100600186161502019093169290920491820184900484028101840190945280845290918301828280156105395780601f1061050e57610100808354040283529160200191610539565b820191906000526020600020905b81548152906001019060200180831161051c57829003601f168201915b505050505081565b600254600160a060020a031681565b60056020908152600091825260409182902080548351601f6002600019610100600186161502019093169290920491820184900484028101840190945280845290918301828280156105395780601f1061050e57610100808354040283529160200191610539565b600054600160a060020a031633146105cf57600080fd5b60018054600160a060020a0393841673ffffffffffffffffffffffffffffffffffffffff199182161790915560028054929093169116179055565b600054600160a060020a031681565b600054600160a060020a0316331461063057600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b50805460018160011615610100020316600290046000825580601f1061068557506106a3565b601f0160209004906000526020600020908101906106a39190610724565b50565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106106e757805160ff1916838001178555610714565b82800160010185558215610714579182015b828111156107145782518255916020019190600101906106f9565b50610720929150610724565b5090565b61073e91905b80821115610720576000815560010161072a565b905600a165627a7a7230582056fb15f79647c01f6c7e5ebef7e87fe9d5ca77d7369fc3092c383ba26a8adae40029",
+	"sourceMap": "146:924:14:-;;;139:70:40;;;-1:-1:-1;;;;;;139:70:40;;;167:42;139:70;;;;212;;;;;;240:42;212:70;;;467:23:14;5:2:-1;;;;30:1;27;20:12;5:2;-1:-1;456:9:40;:22;;-1:-1:-1;;;;;;456:22:40;468:10;456:22;;;146:924:14;;;;;;",
+	"deployedSourceMap": "146:924:14:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;852:216;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;852:216:14;;;;;;;619:132;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;619:132:14;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;619:132:14;;-1:-1:-1;619:132:14;;-1:-1:-1;;;;;;;619:132:14;139:70:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;139:70:40;;;;;;;;-1:-1:-1;;;;;139:70:40;;;;;;;;;;;;;;1080:118;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1080:118:40;-1:-1:-1;;;;;1080:118:40;;;;;;;;;385:42;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;385:42:40;-1:-1:-1;;;;;385:42:40;;;;;;;;;;;;;;;;;;;;;;;242:47:14;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;242:47:14;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:100:-1;33:3;30:1;27:10;8:100;;;90:11;;;84:18;71:11;;;64:39;52:2;45:10;8:100;;;12:14;242:47:14;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;212:70:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;212:70:40;;;;376:47:14;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;376:47:14;;;;;1414:154:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1414:154:40;-1:-1:-1;;;;;1414:154:40;;;;;;;;;;48:24;;8:9:-1;5:2;;;30:1;27;20:12;5:2;48:24:40;;;;801:102;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;801:102:40;-1:-1:-1;;;;;801:102:40;;;;;852:216:14;921:10;736:19:40;;;;:9;:19;;;;;;937:24:14;;921:10;736:19:40;;:27;;:19;:27;;:52;;-1:-1:-1;779:9:40;;-1:-1:-1;;;;;767:21:40;;;779:9;;767:21;736:52;727:62;;;;;;;;964:24:14;;;;:12;:24;;;;;;;;;937:51;;;;;;-1:-1:-1;;937:51:14;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;964:24;;937:51;;964:24;937:51;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;999:24:14;;;;:12;:24;;;;;937:51;;-1:-1:-1;992:31:14;;999:24;-1:-1:-1;999:24:14;-1:-1:-1;992:31:14;:::i;:::-;1027:24;;;;:12;:24;;;;;;;;:37;;;;;;;;:::i;:::-;;852:216;;;:::o;619:132::-;698:10;736:19:40;;;;:9;:19;;;;;;;;:27;;:19;:27;;:52;;-1:-1:-1;779:9:40;;-1:-1:-1;;;;;767:21:40;;;779:9;;767:21;736:52;727:62;;;;;;;;714:24:14;;;;:12;:24;;;;;;;;:33;;;;;;;;:::i;139:70:40:-;;;-1:-1:-1;;;;;139:70:40;;:::o;1080:118::-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;-1:-1:-1;;;;;1162:19:40;;;;;;;;:9;:19;;;;;:32;;-1:-1:-1;;1162:32:40;;;;;;;;;;1080:118::o;385:42::-;;;;;;;;;;;;;;;:::o;242:47:14:-;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;242:47:14;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;212:70:40:-;;;-1:-1:-1;;;;;212:70:40;;:::o;376:47:14:-;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;376:47:14;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1414:154:40;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;1512:10;:24;;-1:-1:-1;;;;;1512:24:40;;;-1:-1:-1;;1512:24:40;;;;;;;1540:10;:24;;;;;;;;;;;1414:154::o;48:24::-;;;-1:-1:-1;;;;;48:24:40;;:::o;801:102::-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;875:9;:24;;-1:-1:-1;;875:24:40;-1:-1:-1;;;;;875:24:40;;;;;;;;;;801:102::o;146:924:14:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;:::o;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;146:924:14;;;-1:-1:-1;146:924:14;:::i;:::-;;;:::o;:::-;;;;;;;;;;;;;;;;;;;;:::o",
+	"source": "pragma solidity ^0.4.24;\n\nimport './developed.sol';\n\n/**\n * @title AOStringSetting\n *\n * This contract stores all AO string setting variables\n */\ncontract AOStringSetting is developed {\n\t// Mapping from settingId to it's actual string value\n\tmapping (uint256 => string) public settingValue;\n\n\t// Mapping from settingId to it's potential string value that is at pending state\n\tmapping (uint256 => string) public pendingValue;\n\n\t/**\n\t * @dev Constructor function\n\t */\n\tconstructor() public {}\n\n\t/**\n\t * @dev Set pending value\n\t * @param _settingId The ID of the setting\n\t * @param _value The string value to be set\n\t */\n\tfunction setPendingValue(uint256 _settingId, string _value) public inWhitelist(msg.sender) {\n\t\tpendingValue[_settingId] = _value;\n\t}\n\n\t/**\n\t * @dev Move value from pending to setting\n\t * @param _settingId The ID of the setting\n\t */\n\tfunction movePendingToSetting(uint256 _settingId) public inWhitelist(msg.sender) {\n\t\tstring memory _tempValue = pendingValue[_settingId];\n\t\tdelete pendingValue[_settingId];\n\t\tsettingValue[_settingId] = _tempValue;\n\t}\n}\n",
+	"sourcePath": "/home/jmulyono/ao-contracts/contracts/AOStringSetting.sol",
+	"ast": {
+		"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOStringSetting.sol",
+		"exportedSymbols": {
+			"AOStringSetting": [10866]
+		},
+		"id": 10867,
+		"nodeType": "SourceUnit",
+		"nodes": [
+			{
+				"id": 10805,
+				"literals": ["solidity", "^", "0.4", ".24"],
+				"nodeType": "PragmaDirective",
+				"src": "0:24:14"
+			},
+			{
+				"absolutePath": "/home/jmulyono/ao-contracts/contracts/developed.sol",
+				"file": "./developed.sol",
+				"id": 10806,
+				"nodeType": "ImportDirective",
+				"scope": 10867,
+				"sourceUnit": 18366,
+				"src": "26:25:14",
+				"symbolAliases": [],
+				"unitAlias": ""
+			},
+			{
+				"baseContracts": [
+					{
+						"arguments": null,
+						"baseName": {
+							"contractScope": null,
+							"id": 10807,
+							"name": "developed",
+							"nodeType": "UserDefinedTypeName",
+							"referencedDeclaration": 18365,
+							"src": "174:9:14",
+							"typeDescriptions": {
+								"typeIdentifier": "t_contract$_developed_$18365",
+								"typeString": "contract developed"
+							}
+						},
+						"id": 10808,
+						"nodeType": "InheritanceSpecifier",
+						"src": "174:9:14"
+					}
+				],
+				"contractDependencies": [18365],
+				"contractKind": "contract",
+				"documentation": "@title AOStringSetting\n * This contract stores all AO string setting variables",
+				"fullyImplemented": true,
+				"id": 10866,
+				"linearizedBaseContracts": [10866, 18365],
+				"name": "AOStringSetting",
+				"nodeType": "ContractDefinition",
+				"nodes": [
+					{
+						"constant": false,
+						"id": 10812,
+						"name": "settingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 10866,
+						"src": "242:47:14",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+							"typeString": "mapping(uint256 => string)"
+						},
+						"typeName": {
+							"id": 10811,
+							"keyType": {
+								"id": 10809,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "251:7:14",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "242:27:14",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+								"typeString": "mapping(uint256 => string)"
+							},
+							"valueType": {
+								"id": 10810,
+								"name": "string",
+								"nodeType": "ElementaryTypeName",
+								"src": "262:6:14",
+								"typeDescriptions": {
+									"typeIdentifier": "t_string_storage_ptr",
+									"typeString": "string"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"constant": false,
+						"id": 10816,
+						"name": "pendingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 10866,
+						"src": "376:47:14",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+							"typeString": "mapping(uint256 => string)"
+						},
+						"typeName": {
+							"id": 10815,
+							"keyType": {
+								"id": 10813,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "385:7:14",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "376:27:14",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+								"typeString": "mapping(uint256 => string)"
+							},
+							"valueType": {
+								"id": 10814,
+								"name": "string",
+								"nodeType": "ElementaryTypeName",
+								"src": "396:6:14",
+								"typeDescriptions": {
+									"typeIdentifier": "t_string_storage_ptr",
+									"typeString": "string"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 10819,
+							"nodeType": "Block",
+							"src": "488:2:14",
+							"statements": []
+						},
+						"documentation": "@dev Constructor function",
+						"id": 10820,
+						"implemented": true,
+						"isConstructor": true,
+						"isDeclaredConst": false,
+						"modifiers": [],
+						"name": "",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 10817,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "478:2:14"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 10818,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "488:0:14"
+						},
+						"scope": 10866,
+						"src": "467:23:14",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 10837,
+							"nodeType": "Block",
+							"src": "710:41:14",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 10835,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 10831,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 10816,
+												"src": "714:12:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+													"typeString": "mapping(uint256 => string storage ref)"
+												}
+											},
+											"id": 10833,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 10832,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 10822,
+												"src": "727:10:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "714:24:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_string_storage",
+												"typeString": "string storage ref"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 10834,
+											"name": "_value",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 10824,
+											"src": "741:6:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_string_memory_ptr",
+												"typeString": "string memory"
+											}
+										},
+										"src": "714:33:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_storage",
+											"typeString": "string storage ref"
+										}
+									},
+									"id": 10836,
+									"nodeType": "ExpressionStatement",
+									"src": "714:33:14"
+								}
+							]
+						},
+						"documentation": "@dev Set pending value\n@param _settingId The ID of the setting\n@param _value The string value to be set",
+						"id": 10838,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 10827,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "698:3:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 10828,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "698:10:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 10829,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 10826,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "686:11:14",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "686:23:14"
+							}
+						],
+						"name": "setPendingValue",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 10825,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 10822,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 10838,
+									"src": "644:18:14",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 10821,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "644:7:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 10824,
+									"name": "_value",
+									"nodeType": "VariableDeclaration",
+									"scope": 10838,
+									"src": "664:13:14",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_string_memory_ptr",
+										"typeString": "string"
+									},
+									"typeName": {
+										"id": 10823,
+										"name": "string",
+										"nodeType": "ElementaryTypeName",
+										"src": "664:6:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_storage_ptr",
+											"typeString": "string"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "643:35:14"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 10830,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "710:0:14"
+						},
+						"scope": 10866,
+						"src": "619:132:14",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 10864,
+							"nodeType": "Block",
+							"src": "933:135:14",
+							"statements": [
+								{
+									"assignments": [10848],
+									"declarations": [
+										{
+											"constant": false,
+											"id": 10848,
+											"name": "_tempValue",
+											"nodeType": "VariableDeclaration",
+											"scope": 10865,
+											"src": "937:24:14",
+											"stateVariable": false,
+											"storageLocation": "memory",
+											"typeDescriptions": {
+												"typeIdentifier": "t_string_memory_ptr",
+												"typeString": "string"
+											},
+											"typeName": {
+												"id": 10847,
+												"name": "string",
+												"nodeType": "ElementaryTypeName",
+												"src": "937:6:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_string_storage_ptr",
+													"typeString": "string"
+												}
+											},
+											"value": null,
+											"visibility": "internal"
+										}
+									],
+									"id": 10852,
+									"initialValue": {
+										"argumentTypes": null,
+										"baseExpression": {
+											"argumentTypes": null,
+											"id": 10849,
+											"name": "pendingValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 10816,
+											"src": "964:12:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+												"typeString": "mapping(uint256 => string storage ref)"
+											}
+										},
+										"id": 10851,
+										"indexExpression": {
+											"argumentTypes": null,
+											"id": 10850,
+											"name": "_settingId",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 10840,
+											"src": "977:10:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"isConstant": false,
+										"isLValue": true,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "IndexAccess",
+										"src": "964:24:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_storage",
+											"typeString": "string storage ref"
+										}
+									},
+									"nodeType": "VariableDeclarationStatement",
+									"src": "937:51:14"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 10856,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "UnaryOperation",
+										"operator": "delete",
+										"prefix": true,
+										"src": "992:31:14",
+										"subExpression": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 10853,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 10816,
+												"src": "999:12:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+													"typeString": "mapping(uint256 => string storage ref)"
+												}
+											},
+											"id": 10855,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 10854,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 10840,
+												"src": "1012:10:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "999:24:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_string_storage",
+												"typeString": "string storage ref"
+											}
+										},
+										"typeDescriptions": {
+											"typeIdentifier": "t_tuple$__$",
+											"typeString": "tuple()"
+										}
+									},
+									"id": 10857,
+									"nodeType": "ExpressionStatement",
+									"src": "992:31:14"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 10862,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 10858,
+												"name": "settingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 10812,
+												"src": "1027:12:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+													"typeString": "mapping(uint256 => string storage ref)"
+												}
+											},
+											"id": 10860,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 10859,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 10840,
+												"src": "1040:10:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "1027:24:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_string_storage",
+												"typeString": "string storage ref"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 10861,
+											"name": "_tempValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 10848,
+											"src": "1054:10:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_string_memory_ptr",
+												"typeString": "string memory"
+											}
+										},
+										"src": "1027:37:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_storage",
+											"typeString": "string storage ref"
+										}
+									},
+									"id": 10863,
+									"nodeType": "ExpressionStatement",
+									"src": "1027:37:14"
+								}
+							]
+						},
+						"documentation": "@dev Move value from pending to setting\n@param _settingId The ID of the setting",
+						"id": 10865,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 10843,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "921:3:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 10844,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "921:10:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 10845,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 10842,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "909:11:14",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "909:23:14"
+							}
+						],
+						"name": "movePendingToSetting",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 10841,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 10840,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 10865,
+									"src": "882:18:14",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 10839,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "882:7:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "881:20:14"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 10846,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "933:0:14"
+						},
+						"scope": 10866,
+						"src": "852:216:14",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					}
+				],
+				"scope": 10867,
+				"src": "146:924:14"
+			}
+		],
+		"src": "0:1071:14"
+	},
+	"legacyAST": {
+		"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOStringSetting.sol",
+		"exportedSymbols": {
+			"AOStringSetting": [10866]
+		},
+		"id": 10867,
+		"nodeType": "SourceUnit",
+		"nodes": [
+			{
+				"id": 10805,
+				"literals": ["solidity", "^", "0.4", ".24"],
+				"nodeType": "PragmaDirective",
+				"src": "0:24:14"
+			},
+			{
+				"absolutePath": "/home/jmulyono/ao-contracts/contracts/developed.sol",
+				"file": "./developed.sol",
+				"id": 10806,
+				"nodeType": "ImportDirective",
+				"scope": 10867,
+				"sourceUnit": 18366,
+				"src": "26:25:14",
+				"symbolAliases": [],
+				"unitAlias": ""
+			},
+			{
+				"baseContracts": [
+					{
+						"arguments": null,
+						"baseName": {
+							"contractScope": null,
+							"id": 10807,
+							"name": "developed",
+							"nodeType": "UserDefinedTypeName",
+							"referencedDeclaration": 18365,
+							"src": "174:9:14",
+							"typeDescriptions": {
+								"typeIdentifier": "t_contract$_developed_$18365",
+								"typeString": "contract developed"
+							}
+						},
+						"id": 10808,
+						"nodeType": "InheritanceSpecifier",
+						"src": "174:9:14"
+					}
+				],
+				"contractDependencies": [18365],
+				"contractKind": "contract",
+				"documentation": "@title AOStringSetting\n * This contract stores all AO string setting variables",
+				"fullyImplemented": true,
+				"id": 10866,
+				"linearizedBaseContracts": [10866, 18365],
+				"name": "AOStringSetting",
+				"nodeType": "ContractDefinition",
+				"nodes": [
+					{
+						"constant": false,
+						"id": 10812,
+						"name": "settingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 10866,
+						"src": "242:47:14",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+							"typeString": "mapping(uint256 => string)"
+						},
+						"typeName": {
+							"id": 10811,
+							"keyType": {
+								"id": 10809,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "251:7:14",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "242:27:14",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+								"typeString": "mapping(uint256 => string)"
+							},
+							"valueType": {
+								"id": 10810,
+								"name": "string",
+								"nodeType": "ElementaryTypeName",
+								"src": "262:6:14",
+								"typeDescriptions": {
+									"typeIdentifier": "t_string_storage_ptr",
+									"typeString": "string"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"constant": false,
+						"id": 10816,
+						"name": "pendingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 10866,
+						"src": "376:47:14",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+							"typeString": "mapping(uint256 => string)"
+						},
+						"typeName": {
+							"id": 10815,
+							"keyType": {
+								"id": 10813,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "385:7:14",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "376:27:14",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+								"typeString": "mapping(uint256 => string)"
+							},
+							"valueType": {
+								"id": 10814,
+								"name": "string",
+								"nodeType": "ElementaryTypeName",
+								"src": "396:6:14",
+								"typeDescriptions": {
+									"typeIdentifier": "t_string_storage_ptr",
+									"typeString": "string"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 10819,
+							"nodeType": "Block",
+							"src": "488:2:14",
+							"statements": []
+						},
+						"documentation": "@dev Constructor function",
+						"id": 10820,
+						"implemented": true,
+						"isConstructor": true,
+						"isDeclaredConst": false,
+						"modifiers": [],
+						"name": "",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 10817,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "478:2:14"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 10818,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "488:0:14"
+						},
+						"scope": 10866,
+						"src": "467:23:14",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 10837,
+							"nodeType": "Block",
+							"src": "710:41:14",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 10835,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 10831,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 10816,
+												"src": "714:12:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+													"typeString": "mapping(uint256 => string storage ref)"
+												}
+											},
+											"id": 10833,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 10832,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 10822,
+												"src": "727:10:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "714:24:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_string_storage",
+												"typeString": "string storage ref"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 10834,
+											"name": "_value",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 10824,
+											"src": "741:6:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_string_memory_ptr",
+												"typeString": "string memory"
+											}
+										},
+										"src": "714:33:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_storage",
+											"typeString": "string storage ref"
+										}
+									},
+									"id": 10836,
+									"nodeType": "ExpressionStatement",
+									"src": "714:33:14"
+								}
+							]
+						},
+						"documentation": "@dev Set pending value\n@param _settingId The ID of the setting\n@param _value The string value to be set",
+						"id": 10838,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 10827,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "698:3:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 10828,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "698:10:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 10829,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 10826,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "686:11:14",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "686:23:14"
+							}
+						],
+						"name": "setPendingValue",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 10825,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 10822,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 10838,
+									"src": "644:18:14",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 10821,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "644:7:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 10824,
+									"name": "_value",
+									"nodeType": "VariableDeclaration",
+									"scope": 10838,
+									"src": "664:13:14",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_string_memory_ptr",
+										"typeString": "string"
+									},
+									"typeName": {
+										"id": 10823,
+										"name": "string",
+										"nodeType": "ElementaryTypeName",
+										"src": "664:6:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_storage_ptr",
+											"typeString": "string"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "643:35:14"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 10830,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "710:0:14"
+						},
+						"scope": 10866,
+						"src": "619:132:14",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 10864,
+							"nodeType": "Block",
+							"src": "933:135:14",
+							"statements": [
+								{
+									"assignments": [10848],
+									"declarations": [
+										{
+											"constant": false,
+											"id": 10848,
+											"name": "_tempValue",
+											"nodeType": "VariableDeclaration",
+											"scope": 10865,
+											"src": "937:24:14",
+											"stateVariable": false,
+											"storageLocation": "memory",
+											"typeDescriptions": {
+												"typeIdentifier": "t_string_memory_ptr",
+												"typeString": "string"
+											},
+											"typeName": {
+												"id": 10847,
+												"name": "string",
+												"nodeType": "ElementaryTypeName",
+												"src": "937:6:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_string_storage_ptr",
+													"typeString": "string"
+												}
+											},
+											"value": null,
+											"visibility": "internal"
+										}
+									],
+									"id": 10852,
+									"initialValue": {
+										"argumentTypes": null,
+										"baseExpression": {
+											"argumentTypes": null,
+											"id": 10849,
+											"name": "pendingValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 10816,
+											"src": "964:12:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+												"typeString": "mapping(uint256 => string storage ref)"
+											}
+										},
+										"id": 10851,
+										"indexExpression": {
+											"argumentTypes": null,
+											"id": 10850,
+											"name": "_settingId",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 10840,
+											"src": "977:10:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"isConstant": false,
+										"isLValue": true,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "IndexAccess",
+										"src": "964:24:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_storage",
+											"typeString": "string storage ref"
+										}
+									},
+									"nodeType": "VariableDeclarationStatement",
+									"src": "937:51:14"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 10856,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "UnaryOperation",
+										"operator": "delete",
+										"prefix": true,
+										"src": "992:31:14",
+										"subExpression": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 10853,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 10816,
+												"src": "999:12:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+													"typeString": "mapping(uint256 => string storage ref)"
+												}
+											},
+											"id": 10855,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 10854,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 10840,
+												"src": "1012:10:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "999:24:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_string_storage",
+												"typeString": "string storage ref"
+											}
+										},
+										"typeDescriptions": {
+											"typeIdentifier": "t_tuple$__$",
+											"typeString": "tuple()"
+										}
+									},
+									"id": 10857,
+									"nodeType": "ExpressionStatement",
+									"src": "992:31:14"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 10862,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 10858,
+												"name": "settingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 10812,
+												"src": "1027:12:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
+													"typeString": "mapping(uint256 => string storage ref)"
+												}
+											},
+											"id": 10860,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 10859,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 10840,
+												"src": "1040:10:14",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "1027:24:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_string_storage",
+												"typeString": "string storage ref"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 10861,
+											"name": "_tempValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 10848,
+											"src": "1054:10:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_string_memory_ptr",
+												"typeString": "string memory"
+											}
+										},
+										"src": "1027:37:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_storage",
+											"typeString": "string storage ref"
+										}
+									},
+									"id": 10863,
+									"nodeType": "ExpressionStatement",
+									"src": "1027:37:14"
+								}
+							]
+						},
+						"documentation": "@dev Move value from pending to setting\n@param _settingId The ID of the setting",
+						"id": 10865,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 10843,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "921:3:14",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 10844,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "921:10:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 10845,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 10842,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "909:11:14",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "909:23:14"
+							}
+						],
+						"name": "movePendingToSetting",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 10841,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 10840,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 10865,
+									"src": "882:18:14",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 10839,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "882:7:14",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "881:20:14"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 10846,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "933:0:14"
+						},
+						"scope": 10866,
+						"src": "852:216:14",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					}
+				],
+				"scope": 10867,
+				"src": "146:924:14"
+			}
+		],
+		"src": "0:1071:14"
+	},
+	"compiler": {
+		"name": "solc",
+		"version": "0.4.24+commit.e67f0147.Emscripten.clang"
+	},
+	"networks": {
+		"4": {
+			"events": {},
+			"links": {},
+			"address": "0x49abd70e7c82ea3eead8e9f3dc17faeec14b0dd8",
+			"transactionHash": "0x8dcf82e5efc736499032057ab6fea9f1810003225ae3e0e3d7cc3b935d893706"
+		}
+	},
+	"schemaVersion": "2.0.1",
+	"updatedAt": "2018-12-11T08:43:54.418Z"
+}

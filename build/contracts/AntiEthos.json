@@ -1,0 +1,850 @@
+{
+	"contractName": "AntiEthos",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "name",
+			"outputs": [
+				{
+					"name": "",
+					"type": "string"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoDevTeam1",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "totalSupply",
+			"outputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "sign",
+			"outputs": [
+				{
+					"name": "",
+					"type": "int8"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "decimals",
+			"outputs": [
+				{
+					"name": "",
+					"type": "uint8"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_account",
+					"type": "address"
+				},
+				{
+					"name": "_whitelist",
+					"type": "bool"
+				}
+			],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"name": "balanceOf",
+			"outputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "target",
+					"type": "address"
+				},
+				{
+					"name": "mintedAmount",
+					"type": "uint256"
+				}
+			],
+			"name": "mintToken",
+			"outputs": [
+				{
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "symbol",
+			"outputs": [
+				{
+					"name": "",
+					"type": "string"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"name": "whitelist",
+			"outputs": [
+				{
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "internalName",
+			"outputs": [
+				{
+					"name": "",
+					"type": "bytes32"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoDevTeam2",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_aoDevTeam1",
+					"type": "address"
+				},
+				{
+					"name": "_aoDevTeam2",
+					"type": "address"
+				}
+			],
+			"name": "setAODevTeamAddresses",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "developer",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "newDeveloper",
+					"type": "address"
+				}
+			],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"name": "initialSupply",
+					"type": "uint256"
+				},
+				{
+					"name": "tokenName",
+					"type": "string"
+				},
+				{
+					"name": "tokenSymbol",
+					"type": "string"
+				},
+				{
+					"name": "tokenInternalName",
+					"type": "bytes32"
+				}
+			],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"name": "target",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"name": "value",
+					"type": "uint256"
+				}
+			],
+			"name": "Mint",
+			"type": "event"
+		}
+	],
+	"bytecode": "0x608060405260018054600160a060020a0319908116735c63644d01ba385ebac5bcf2ddc1e6dbc1182b521782556002805490911673156c79bf4347d1891da834ea30662a14177cbf281790556006805460ff1990811690915560088054909116909117905534801561007057600080fd5b50604051610875380380610875833981016040908152815160208084015183850151606086015160008054600160a060020a03191633908117825560098790558152600a8552959095208490559085018051939590949101929091859185918591859185918591859185916100ea91600491860190610120565b5081516100fe906005906020850190610120565b5060075550506008805460ff191660ff179055506101bb975050505050505050565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061016157805160ff191683800117855561018e565b8280016001018555821561018e579182015b8281111561018e578251825591602001919060010190610173565b5061019a92915061019e565b5090565b6101b891905b8082111561019a57600081556001016101a4565b90565b6106ab806101ca6000396000f3006080604052600436106100da5763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166306fdde0381146100df57806315227aa71461016957806318160ddd1461019a5780632ca15122146101c1578063313ce567146101ef57806353d6fd591461021a57806370a082311461024257806379c650681461026357806395d89b411461029b5780639b19251a146102b05780639bba68b5146102d1578063a99433a6146102e6578063b24626e9146102fb578063ca4b208b14610322578063f2fde38b14610337575b600080fd5b3480156100eb57600080fd5b506100f4610358565b6040805160208082528351818301528351919283929083019185019080838360005b8381101561012e578181015183820152602001610116565b50505050905090810190601f16801561015b5780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b34801561017557600080fd5b5061017e6103e6565b60408051600160a060020a039092168252519081900360200190f35b3480156101a657600080fd5b506101af6103f5565b60408051918252519081900360200190f35b3480156101cd57600080fd5b506101d66103fb565b60408051600092830b90920b8252519081900360200190f35b3480156101fb57600080fd5b50610204610404565b6040805160ff9092168252519081900360200190f35b34801561022657600080fd5b50610240600160a060020a0360043516602435151561040d565b005b34801561024e57600080fd5b506101af600160a060020a036004351661044f565b34801561026f57600080fd5b50610287600160a060020a0360043516602435610461565b604080519115158252519081900360200190f35b3480156102a757600080fd5b506100f4610540565b3480156102bc57600080fd5b50610287600160a060020a036004351661059b565b3480156102dd57600080fd5b506101af6105b0565b3480156102f257600080fd5b5061017e6105b6565b34801561030757600080fd5b50610240600160a060020a03600435811690602435166105c5565b34801561032e57600080fd5b5061017e610617565b34801561034357600080fd5b50610240600160a060020a0360043516610626565b6004805460408051602060026001851615610100026000190190941693909304601f810184900484028201840190925281815292918301828280156103de5780601f106103b3576101008083540402835291602001916103de565b820191906000526020600020905b8154815290600101906020018083116103c157829003601f168201915b505050505081565b600154600160a060020a031681565b60095481565b60085460000b81565b60065460ff1681565b600054600160a060020a0316331461042457600080fd5b600160a060020a03919091166000908152600360205260409020805460ff1916911515919091179055565b600a6020526000908152604090205481565b3360008181526003602052604081205490919060ff161515600114806104945750600054600160a060020a038281169116145b151561049f57600080fd5b600160a060020a0384166000908152600a60205260409020546104c8908463ffffffff61066c16565b600160a060020a0385166000908152600a60205260409020556009546104f4908463ffffffff61066c16565b600955604080518481529051600160a060020a038616917f0f6798a560793a54c3bcfe86a93cde1e73087d944c0ea20544137d4121396885919081900360200190a25060019392505050565b6005805460408051602060026001851615610100026000190190941693909304601f810184900484028201840190925281815292918301828280156103de5780601f106103b3576101008083540402835291602001916103de565b60036020526000908152604090205460ff1681565b60075481565b600254600160a060020a031681565b600054600160a060020a031633146105dc57600080fd5b60018054600160a060020a0393841673ffffffffffffffffffffffffffffffffffffffff199182161790915560028054929093169116179055565b600054600160a060020a031681565b600054600160a060020a0316331461063d57600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b8181018281101561067957fe5b929150505600a165627a7a72305820b3df6be214035041193cbc421026d1277261c97c282a771481a96550da561e8b0029",
+	"deployedBytecode": "0x6080604052600436106100da5763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166306fdde0381146100df57806315227aa71461016957806318160ddd1461019a5780632ca15122146101c1578063313ce567146101ef57806353d6fd591461021a57806370a082311461024257806379c650681461026357806395d89b411461029b5780639b19251a146102b05780639bba68b5146102d1578063a99433a6146102e6578063b24626e9146102fb578063ca4b208b14610322578063f2fde38b14610337575b600080fd5b3480156100eb57600080fd5b506100f4610358565b6040805160208082528351818301528351919283929083019185019080838360005b8381101561012e578181015183820152602001610116565b50505050905090810190601f16801561015b5780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b34801561017557600080fd5b5061017e6103e6565b60408051600160a060020a039092168252519081900360200190f35b3480156101a657600080fd5b506101af6103f5565b60408051918252519081900360200190f35b3480156101cd57600080fd5b506101d66103fb565b60408051600092830b90920b8252519081900360200190f35b3480156101fb57600080fd5b50610204610404565b6040805160ff9092168252519081900360200190f35b34801561022657600080fd5b50610240600160a060020a0360043516602435151561040d565b005b34801561024e57600080fd5b506101af600160a060020a036004351661044f565b34801561026f57600080fd5b50610287600160a060020a0360043516602435610461565b604080519115158252519081900360200190f35b3480156102a757600080fd5b506100f4610540565b3480156102bc57600080fd5b50610287600160a060020a036004351661059b565b3480156102dd57600080fd5b506101af6105b0565b3480156102f257600080fd5b5061017e6105b6565b34801561030757600080fd5b50610240600160a060020a03600435811690602435166105c5565b34801561032e57600080fd5b5061017e610617565b34801561034357600080fd5b50610240600160a060020a0360043516610626565b6004805460408051602060026001851615610100026000190190941693909304601f810184900484028201840190925281815292918301828280156103de5780601f106103b3576101008083540402835291602001916103de565b820191906000526020600020905b8154815290600101906020018083116103c157829003601f168201915b505050505081565b600154600160a060020a031681565b60095481565b60085460000b81565b60065460ff1681565b600054600160a060020a0316331461042457600080fd5b600160a060020a03919091166000908152600360205260409020805460ff1916911515919091179055565b600a6020526000908152604090205481565b3360008181526003602052604081205490919060ff161515600114806104945750600054600160a060020a038281169116145b151561049f57600080fd5b600160a060020a0384166000908152600a60205260409020546104c8908463ffffffff61066c16565b600160a060020a0385166000908152600a60205260409020556009546104f4908463ffffffff61066c16565b600955604080518481529051600160a060020a038616917f0f6798a560793a54c3bcfe86a93cde1e73087d944c0ea20544137d4121396885919081900360200190a25060019392505050565b6005805460408051602060026001851615610100026000190190941693909304601f810184900484028201840190925281815292918301828280156103de5780601f106103b3576101008083540402835291602001916103de565b60036020526000908152604090205460ff1681565b60075481565b600254600160a060020a031681565b600054600160a060020a031633146105dc57600080fd5b60018054600160a060020a0393841673ffffffffffffffffffffffffffffffffffffffff199182161790915560028054929093169116179055565b600054600160a060020a031681565b600054600160a060020a0316331461063d57600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b8181018281101561067957fe5b929150505600a165627a7a72305820b3df6be214035041193cbc421026d1277261c97c282a771481a96550da561e8b0029",
+	"sourceMap": "63:276:22:-;;;139:70:40;;;-1:-1:-1;;;;;;139:70:40;;;167:42;139:70;;;212;;;;;;240:42;212:70;;;261:25:36;;;-1:-1:-1;;261:25:36;;;;;;319:20;;;;;;;;;;;148:189:22;5:2:-1;;;;30:1;27;20:12;5:2;148:189:22;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;456:9:40;:22;;-1:-1:-1;;;;;;456:22:40;468:10;456:22;;;;;803:11:36;:27;;;859:21;;:9;:21;;;;;;:35;;;148:189:22;;;937:16:36;;148:189:22;;;;;;;;;;;;;;;;;;;;;;;;;937:16:36;;:4;;:16;;;;:::i;:::-;-1:-1:-1;999:20:36;;;;:6;;:20;;;;;:::i;:::-;-1:-1:-1;1066:12:36;:32;-1:-1:-1;;337:4:25;:9;;-1:-1:-1;;337:9:25;;;;;-1:-1:-1;63:276:22;;-1:-1:-1;;;;;;;;63:276:22;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;63:276:22;;;-1:-1:-1;63:276:22;:::i;:::-;;;:::o;:::-;;;;;;;;;;;;;;;;;;;;:::o;:::-;;;;;;;",
+	"deployedSourceMap": "63:276:22:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;217:18:36;;8:9:-1;5:2;;;30:1;27;20:12;5:2;217:18:36;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:100:-1;33:3;30:1;27:10;8:100;;;90:11;;;84:18;71:11;;;64:39;52:2;45:10;8:100;;;12:14;217:18:36;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;139:70:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;139:70:40;;;;;;;;-1:-1:-1;;;;;139:70:40;;;;;;;;;;;;;;343:26:36;;8:9:-1;5:2;;;30:1;27;20:12;5:2;343:26:36;;;;;;;;;;;;;;;;;;;;319:20;;8:9:-1;5:2;;;30:1;27;20:12;5:2;319:20:36;;;;;;;;;;;;;;;;;;;;;;;;;;261:25;;8:9:-1;5:2;;;30:1;27;20:12;5:2;261:25:36;;;;;;;;;;;;;;;;;;;;;;;1080:118:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1080:118:40;-1:-1:-1;;;;;1080:118:40;;;;;;;;;;;417:45:36;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;417:45:36;-1:-1:-1;;;;;417:45:36;;;;;1391:263;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1391:263:36;-1:-1:-1;;;;;1391:263:36;;;;;;;;;;;;;;;;;;;;;;;;;238:20;;8:9:-1;5:2;;;30:1;27;20:12;5:2;238:20:36;;;;385:42:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;385:42:40;-1:-1:-1;;;;;385:42:40;;;;;289:27:36;;8:9:-1;5:2;;;30:1;27;20:12;5:2;289:27:36;;;;212:70:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;212:70:40;;;;1414:154;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1414:154:40;-1:-1:-1;;;;;1414:154:40;;;;;;;;;;48:24;;8:9:-1;5:2;;;30:1;27;20:12;5:2;48:24:40;;;;801:102;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;801:102:40;-1:-1:-1;;;;;801:102:40;;;;;217:18:36;;;;;;;;;;;;;;;-1:-1:-1;;217:18:36;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;139:70:40:-;;;-1:-1:-1;;;;;139:70:40;;:::o;343:26:36:-;;;;:::o;319:20::-;;;;;;:::o;261:25::-;;;;;;:::o;1080:118:40:-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;-1:-1:-1;;;;;1162:19:40;;;;;;;;:9;:19;;;;;:32;;-1:-1:-1;;1162:32:40;;;;;;;;;;1080:118::o;417:45:36:-;;;;;;;;;;;;;:::o;1391:263::-;1467:10;1488:4;736:19:40;;;:9;:19;;;;;;1488:4:36;;1467:10;736:19:40;;:27;;:19;:27;;:52;;-1:-1:-1;779:9:40;;-1:-1:-1;;;;;767:21:40;;;779:9;;767:21;736:52;727:62;;;;;;;;-1:-1:-1;;;;;1518:17:36;;;;;;:9;:17;;;;;;:35;;1540:12;1518:35;:21;:35;:::i;:::-;-1:-1:-1;;;;;1498:17:36;;;;;;:9;:17;;;;;:55;1571:11;;:29;;1587:12;1571:29;:15;:29;:::i;:::-;1557:11;:43;1609:26;;;;;;;;-1:-1:-1;;;;;1609:26:36;;;;;;;;;;;;;-1:-1:-1;1646:4:36;;1391:263;-1:-1:-1;;;1391:263:36:o;238:20::-;;;;;;;;;;;;;;;-1:-1:-1;;238:20:36;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;385:42:40;;;;;;;;;;;;;;;:::o;289:27:36:-;;;;:::o;212:70:40:-;;;-1:-1:-1;;;;;212:70:40;;:::o;1414:154::-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;1512:10;:24;;-1:-1:-1;;;;;1512:24:40;;;-1:-1:-1;;1512:24:40;;;;;;;1540:10;:24;;;;;;;;;;;1414:154::o;48:24::-;;;-1:-1:-1;;;;;48:24:40;;:::o;801:102::-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;875:9;:24;;-1:-1:-1;;875:24:40;-1:-1:-1;;;;;875:24:40;;;;;;;;;;801:102::o;1171:116:33:-;1248:5;;;1264:6;;;;1257:14;;;;1171:116;;;;:::o",
+	"source": "pragma solidity ^0.4.24;\n\nimport \"./AntiThoughtCurrency.sol\";\n\ncontract AntiEthos is AntiThoughtCurrency {\n\t/**\n\t * @dev Constructor function\n\t */\n\tconstructor(uint256 initialSupply, string tokenName, string tokenSymbol, bytes32 tokenInternalName)\n\t\tAntiThoughtCurrency(initialSupply, tokenName, tokenSymbol, tokenInternalName) public {}\n}\n",
+	"sourcePath": "/home/jmulyono/ao-contracts/contracts/AntiEthos.sol",
+	"ast": {
+		"absolutePath": "/home/jmulyono/ao-contracts/contracts/AntiEthos.sol",
+		"exportedSymbols": {
+			"AntiEthos": [14918]
+		},
+		"id": 14919,
+		"nodeType": "SourceUnit",
+		"nodes": [
+			{
+				"id": 14896,
+				"literals": ["solidity", "^", "0.4", ".24"],
+				"nodeType": "PragmaDirective",
+				"src": "0:24:22"
+			},
+			{
+				"absolutePath": "/home/jmulyono/ao-contracts/contracts/AntiThoughtCurrency.sol",
+				"file": "./AntiThoughtCurrency.sol",
+				"id": 14897,
+				"nodeType": "ImportDirective",
+				"scope": 14919,
+				"sourceUnit": 14996,
+				"src": "26:35:22",
+				"symbolAliases": [],
+				"unitAlias": ""
+			},
+			{
+				"baseContracts": [
+					{
+						"arguments": null,
+						"baseName": {
+							"contractScope": null,
+							"id": 14898,
+							"name": "AntiThoughtCurrency",
+							"nodeType": "UserDefinedTypeName",
+							"referencedDeclaration": 14995,
+							"src": "85:19:22",
+							"typeDescriptions": {
+								"typeIdentifier": "t_contract$_AntiThoughtCurrency_$14995",
+								"typeString": "contract AntiThoughtCurrency"
+							}
+						},
+						"id": 14899,
+						"nodeType": "InheritanceSpecifier",
+						"src": "85:19:22"
+					}
+				],
+				"contractDependencies": [14995, 16933, 18365],
+				"contractKind": "contract",
+				"documentation": null,
+				"fullyImplemented": true,
+				"id": 14918,
+				"linearizedBaseContracts": [14918, 14995, 16933, 18365],
+				"name": "AntiEthos",
+				"nodeType": "ContractDefinition",
+				"nodes": [
+					{
+						"body": {
+							"id": 14916,
+							"nodeType": "Block",
+							"src": "335:2:22",
+							"statements": []
+						},
+						"documentation": "@dev Constructor function",
+						"id": 14917,
+						"implemented": true,
+						"isConstructor": true,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"id": 14910,
+										"name": "initialSupply",
+										"nodeType": "Identifier",
+										"overloadedDeclarations": [],
+										"referencedDeclaration": 14901,
+										"src": "270:13:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									{
+										"argumentTypes": null,
+										"id": 14911,
+										"name": "tokenName",
+										"nodeType": "Identifier",
+										"overloadedDeclarations": [],
+										"referencedDeclaration": 14903,
+										"src": "285:9:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_memory_ptr",
+											"typeString": "string memory"
+										}
+									},
+									{
+										"argumentTypes": null,
+										"id": 14912,
+										"name": "tokenSymbol",
+										"nodeType": "Identifier",
+										"overloadedDeclarations": [],
+										"referencedDeclaration": 14905,
+										"src": "296:11:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_memory_ptr",
+											"typeString": "string memory"
+										}
+									},
+									{
+										"argumentTypes": null,
+										"id": 14913,
+										"name": "tokenInternalName",
+										"nodeType": "Identifier",
+										"overloadedDeclarations": [],
+										"referencedDeclaration": 14907,
+										"src": "309:17:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bytes32",
+											"typeString": "bytes32"
+										}
+									}
+								],
+								"id": 14914,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 14909,
+									"name": "AntiThoughtCurrency",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 14995,
+									"src": "250:19:22",
+									"typeDescriptions": {
+										"typeIdentifier": "t_type$_t_contract$_AntiThoughtCurrency_$14995_$",
+										"typeString": "type(contract AntiThoughtCurrency)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "250:77:22"
+							}
+						],
+						"name": "",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 14908,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 14901,
+									"name": "initialSupply",
+									"nodeType": "VariableDeclaration",
+									"scope": 14917,
+									"src": "160:21:22",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 14900,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "160:7:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 14903,
+									"name": "tokenName",
+									"nodeType": "VariableDeclaration",
+									"scope": 14917,
+									"src": "183:16:22",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_string_memory_ptr",
+										"typeString": "string"
+									},
+									"typeName": {
+										"id": 14902,
+										"name": "string",
+										"nodeType": "ElementaryTypeName",
+										"src": "183:6:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_storage_ptr",
+											"typeString": "string"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 14905,
+									"name": "tokenSymbol",
+									"nodeType": "VariableDeclaration",
+									"scope": 14917,
+									"src": "201:18:22",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_string_memory_ptr",
+										"typeString": "string"
+									},
+									"typeName": {
+										"id": 14904,
+										"name": "string",
+										"nodeType": "ElementaryTypeName",
+										"src": "201:6:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_storage_ptr",
+											"typeString": "string"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 14907,
+									"name": "tokenInternalName",
+									"nodeType": "VariableDeclaration",
+									"scope": 14917,
+									"src": "221:25:22",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_bytes32",
+										"typeString": "bytes32"
+									},
+									"typeName": {
+										"id": 14906,
+										"name": "bytes32",
+										"nodeType": "ElementaryTypeName",
+										"src": "221:7:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bytes32",
+											"typeString": "bytes32"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "159:88:22"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 14915,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "335:0:22"
+						},
+						"scope": 14918,
+						"src": "148:189:22",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					}
+				],
+				"scope": 14919,
+				"src": "63:276:22"
+			}
+		],
+		"src": "0:340:22"
+	},
+	"legacyAST": {
+		"absolutePath": "/home/jmulyono/ao-contracts/contracts/AntiEthos.sol",
+		"exportedSymbols": {
+			"AntiEthos": [14918]
+		},
+		"id": 14919,
+		"nodeType": "SourceUnit",
+		"nodes": [
+			{
+				"id": 14896,
+				"literals": ["solidity", "^", "0.4", ".24"],
+				"nodeType": "PragmaDirective",
+				"src": "0:24:22"
+			},
+			{
+				"absolutePath": "/home/jmulyono/ao-contracts/contracts/AntiThoughtCurrency.sol",
+				"file": "./AntiThoughtCurrency.sol",
+				"id": 14897,
+				"nodeType": "ImportDirective",
+				"scope": 14919,
+				"sourceUnit": 14996,
+				"src": "26:35:22",
+				"symbolAliases": [],
+				"unitAlias": ""
+			},
+			{
+				"baseContracts": [
+					{
+						"arguments": null,
+						"baseName": {
+							"contractScope": null,
+							"id": 14898,
+							"name": "AntiThoughtCurrency",
+							"nodeType": "UserDefinedTypeName",
+							"referencedDeclaration": 14995,
+							"src": "85:19:22",
+							"typeDescriptions": {
+								"typeIdentifier": "t_contract$_AntiThoughtCurrency_$14995",
+								"typeString": "contract AntiThoughtCurrency"
+							}
+						},
+						"id": 14899,
+						"nodeType": "InheritanceSpecifier",
+						"src": "85:19:22"
+					}
+				],
+				"contractDependencies": [14995, 16933, 18365],
+				"contractKind": "contract",
+				"documentation": null,
+				"fullyImplemented": true,
+				"id": 14918,
+				"linearizedBaseContracts": [14918, 14995, 16933, 18365],
+				"name": "AntiEthos",
+				"nodeType": "ContractDefinition",
+				"nodes": [
+					{
+						"body": {
+							"id": 14916,
+							"nodeType": "Block",
+							"src": "335:2:22",
+							"statements": []
+						},
+						"documentation": "@dev Constructor function",
+						"id": 14917,
+						"implemented": true,
+						"isConstructor": true,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"id": 14910,
+										"name": "initialSupply",
+										"nodeType": "Identifier",
+										"overloadedDeclarations": [],
+										"referencedDeclaration": 14901,
+										"src": "270:13:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									{
+										"argumentTypes": null,
+										"id": 14911,
+										"name": "tokenName",
+										"nodeType": "Identifier",
+										"overloadedDeclarations": [],
+										"referencedDeclaration": 14903,
+										"src": "285:9:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_memory_ptr",
+											"typeString": "string memory"
+										}
+									},
+									{
+										"argumentTypes": null,
+										"id": 14912,
+										"name": "tokenSymbol",
+										"nodeType": "Identifier",
+										"overloadedDeclarations": [],
+										"referencedDeclaration": 14905,
+										"src": "296:11:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_memory_ptr",
+											"typeString": "string memory"
+										}
+									},
+									{
+										"argumentTypes": null,
+										"id": 14913,
+										"name": "tokenInternalName",
+										"nodeType": "Identifier",
+										"overloadedDeclarations": [],
+										"referencedDeclaration": 14907,
+										"src": "309:17:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bytes32",
+											"typeString": "bytes32"
+										}
+									}
+								],
+								"id": 14914,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 14909,
+									"name": "AntiThoughtCurrency",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 14995,
+									"src": "250:19:22",
+									"typeDescriptions": {
+										"typeIdentifier": "t_type$_t_contract$_AntiThoughtCurrency_$14995_$",
+										"typeString": "type(contract AntiThoughtCurrency)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "250:77:22"
+							}
+						],
+						"name": "",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 14908,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 14901,
+									"name": "initialSupply",
+									"nodeType": "VariableDeclaration",
+									"scope": 14917,
+									"src": "160:21:22",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 14900,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "160:7:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 14903,
+									"name": "tokenName",
+									"nodeType": "VariableDeclaration",
+									"scope": 14917,
+									"src": "183:16:22",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_string_memory_ptr",
+										"typeString": "string"
+									},
+									"typeName": {
+										"id": 14902,
+										"name": "string",
+										"nodeType": "ElementaryTypeName",
+										"src": "183:6:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_storage_ptr",
+											"typeString": "string"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 14905,
+									"name": "tokenSymbol",
+									"nodeType": "VariableDeclaration",
+									"scope": 14917,
+									"src": "201:18:22",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_string_memory_ptr",
+										"typeString": "string"
+									},
+									"typeName": {
+										"id": 14904,
+										"name": "string",
+										"nodeType": "ElementaryTypeName",
+										"src": "201:6:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_string_storage_ptr",
+											"typeString": "string"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 14907,
+									"name": "tokenInternalName",
+									"nodeType": "VariableDeclaration",
+									"scope": 14917,
+									"src": "221:25:22",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_bytes32",
+										"typeString": "bytes32"
+									},
+									"typeName": {
+										"id": 14906,
+										"name": "bytes32",
+										"nodeType": "ElementaryTypeName",
+										"src": "221:7:22",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bytes32",
+											"typeString": "bytes32"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "159:88:22"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 14915,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "335:0:22"
+						},
+						"scope": 14918,
+						"src": "148:189:22",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					}
+				],
+				"scope": 14919,
+				"src": "63:276:22"
+			}
+		],
+		"src": "0:340:22"
+	},
+	"compiler": {
+		"name": "solc",
+		"version": "0.4.24+commit.e67f0147.Emscripten.clang"
+	},
+	"networks": {
+		"4": {
+			"events": {},
+			"links": {},
+			"address": "0xa7eb6f79fc2ca2d095dc8b1655bbaa71b848b3b6",
+			"transactionHash": "0x3c3080f156c5688a7a2820d16748722ef74049e3e6afdf2e0b392a7dd38ea5fa"
+		}
+	},
+	"schemaVersion": "2.0.1",
+	"updatedAt": "2018-12-11T08:43:54.353Z"
+}

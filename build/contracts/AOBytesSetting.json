@@ -1,0 +1,1646 @@
+{
+	"contractName": "AOBytesSetting",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoDevTeam1",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_account",
+					"type": "address"
+				},
+				{
+					"name": "_whitelist",
+					"type": "bool"
+				}
+			],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"name": "whitelist",
+			"outputs": [
+				{
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "settingValue",
+			"outputs": [
+				{
+					"name": "",
+					"type": "bytes32"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoDevTeam2",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "pendingValue",
+			"outputs": [
+				{
+					"name": "",
+					"type": "bytes32"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_aoDevTeam1",
+					"type": "address"
+				},
+				{
+					"name": "_aoDevTeam2",
+					"type": "address"
+				}
+			],
+			"name": "setAODevTeamAddresses",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "developer",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "newDeveloper",
+					"type": "address"
+				}
+			],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_settingId",
+					"type": "uint256"
+				},
+				{
+					"name": "_value",
+					"type": "bytes32"
+				}
+			],
+			"name": "setPendingValue",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{
+					"name": "_settingId",
+					"type": "uint256"
+				}
+			],
+			"name": "movePendingToSetting",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+	],
+	"bytecode": "0x608060405260018054600160a060020a0319908116735c63644d01ba385ebac5bcf2ddc1e6dbc1182b52179091556002805490911673156c79bf4347d1891da834ea30662a14177cbf2817905534801561005857600080fd5b5060008054600160a060020a031916331790556104448061007a6000396000f3006080604052600436106100ae5763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663088fc1a881146100b357806315227aa7146100cd57806331629388146100fe57806353d6fd59146101195780639b19251a1461013f5780639ba535ce14610174578063a99433a61461019e578063af9e8b16146101b3578063b24626e9146101cb578063ca4b208b146101f2578063f2fde38b14610207575b600080fd5b3480156100bf57600080fd5b506100cb600435610228565b005b3480156100d957600080fd5b506100e261028a565b60408051600160a060020a039092168252519081900360200190f35b34801561010a57600080fd5b506100cb600435602435610299565b34801561012557600080fd5b506100cb600160a060020a036004351660243515156102e7565b34801561014b57600080fd5b50610160600160a060020a0360043516610329565b604080519115158252519081900360200190f35b34801561018057600080fd5b5061018c60043561033e565b60408051918252519081900360200190f35b3480156101aa57600080fd5b506100e2610350565b3480156101bf57600080fd5b5061018c60043561035f565b3480156101d757600080fd5b506100cb600160a060020a0360043581169060243516610371565b3480156101fe57600080fd5b506100e26103c3565b34801561021357600080fd5b506100cb600160a060020a03600435166103d2565b3360008181526003602052604081205490919060ff1615156001148061025b5750600054600160a060020a038281169116145b151561026657600080fd5b50506000908152600560209081526040808320805490849055600490925290912055565b600154600160a060020a031681565b3360008181526003602052604090205460ff161515600114806102c95750600054600160a060020a038281169116145b15156102d457600080fd5b5060009182526005602052604090912055565b600054600160a060020a031633146102fe57600080fd5b600160a060020a03919091166000908152600360205260409020805460ff1916911515919091179055565b60036020526000908152604090205460ff1681565b60046020526000908152604090205481565b600254600160a060020a031681565b60056020526000908152604090205481565b600054600160a060020a0316331461038857600080fd5b60018054600160a060020a0393841673ffffffffffffffffffffffffffffffffffffffff199182161790915560028054929093169116179055565b600054600160a060020a031681565b600054600160a060020a031633146103e957600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a03929092169190911790555600a165627a7a72305820417b59401f25bef87444de7e8d9a0fd7a106511cb55f7327a870a8fdf9979b730029",
+	"deployedBytecode": "0x6080604052600436106100ae5763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663088fc1a881146100b357806315227aa7146100cd57806331629388146100fe57806353d6fd59146101195780639b19251a1461013f5780639ba535ce14610174578063a99433a61461019e578063af9e8b16146101b3578063b24626e9146101cb578063ca4b208b146101f2578063f2fde38b14610207575b600080fd5b3480156100bf57600080fd5b506100cb600435610228565b005b3480156100d957600080fd5b506100e261028a565b60408051600160a060020a039092168252519081900360200190f35b34801561010a57600080fd5b506100cb600435602435610299565b34801561012557600080fd5b506100cb600160a060020a036004351660243515156102e7565b34801561014b57600080fd5b50610160600160a060020a0360043516610329565b604080519115158252519081900360200190f35b34801561018057600080fd5b5061018c60043561033e565b60408051918252519081900360200190f35b3480156101aa57600080fd5b506100e2610350565b3480156101bf57600080fd5b5061018c60043561035f565b3480156101d757600080fd5b506100cb600160a060020a0360043581169060243516610371565b3480156101fe57600080fd5b506100e26103c3565b34801561021357600080fd5b506100cb600160a060020a03600435166103d2565b3360008181526003602052604081205490919060ff1615156001148061025b5750600054600160a060020a038281169116145b151561026657600080fd5b50506000908152600560209081526040808320805490849055600490925290912055565b600154600160a060020a031681565b3360008181526003602052604090205460ff161515600114806102c95750600054600160a060020a038281169116145b15156102d457600080fd5b5060009182526005602052604090912055565b600054600160a060020a031633146102fe57600080fd5b600160a060020a03919091166000908152600360205260409020805460ff1916911515919091179055565b60036020526000908152604090205460ff1681565b60046020526000908152604090205481565b600254600160a060020a031681565b60056020526000908152604090205481565b600054600160a060020a0316331461038857600080fd5b60018054600160a060020a0393841673ffffffffffffffffffffffffffffffffffffffff199182161790915560028054929093169116179055565b600054600160a060020a031681565b600054600160a060020a031633146103e957600080fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a03929092169190911790555600a165627a7a72305820417b59401f25bef87444de7e8d9a0fd7a106511cb55f7327a870a8fdf9979b730029",
+	"sourceMap": "146:923:2:-;;;139:70:40;;;-1:-1:-1;;;;;;139:70:40;;;167:42;139:70;;;;212;;;;;;240:42;212:70;;;470:23:2;5:2:-1;;;;30:1;27;20:12;5:2;-1:-1;456:9:40;:22;;-1:-1:-1;;;;;;456:22:40;468:10;456:22;;;146:923:2;;;;;;",
+	"deployedSourceMap": "146:923:2:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;857:210;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;857:210:2;;;;;;;139:70:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;139:70:40;;;;;;;;-1:-1:-1;;;;;139:70:40;;;;;;;;;;;;;;623:133:2;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;623:133:2;;;;;;;1080:118:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1080:118:40;-1:-1:-1;;;;;1080:118:40;;;;;;;;;385:42;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;385:42:40;-1:-1:-1;;;;;385:42:40;;;;;;;;;;;;;;;;;;;;;;;242:48:2;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;242:48:2;;;;;;;;;;;;;;;;;;;;;212:70:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;212:70:40;;;;378:48:2;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;378:48:2;;;;;1414:154:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1414:154:40;-1:-1:-1;;;;;1414:154:40;;;;;;;;;;48:24;;8:9:-1;5:2;;;30:1;27;20:12;5:2;48:24:40;;;;801:102;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;801:102:40;-1:-1:-1;;;;;801:102:40;;;;;857:210:2;926:10;942:18;736:19:40;;;:9;:19;;;;;;942:18:2;;926:10;736:19:40;;:27;;:19;:27;;:52;;-1:-1:-1;779:9:40;;-1:-1:-1;;;;;767:21:40;;;779:9;;767:21;736:52;727:62;;;;;;;;-1:-1:-1;;963:24:2;;;;:12;:24;;;;;;;;;;991:31;;;;1026:12;:24;;;;;;:37;857:210::o;139:70:40:-;;;-1:-1:-1;;;;;139:70:40;;:::o;623:133:2:-;703:10;736:19:40;;;;:9;:19;;;;;;;;:27;;:19;:27;;:52;;-1:-1:-1;779:9:40;;-1:-1:-1;;;;;767:21:40;;;779:9;;767:21;736:52;727:62;;;;;;;;-1:-1:-1;719:24:2;;;;:12;:24;;;;;;:33;623:133::o;1080:118:40:-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;-1:-1:-1;;;;;1162:19:40;;;;;;;;:9;:19;;;;;:32;;-1:-1:-1;;1162:32:40;;;;;;;;;;1080:118::o;385:42::-;;;;;;;;;;;;;;;:::o;242:48:2:-;;;;;;;;;;;;;:::o;212:70:40:-;;;-1:-1:-1;;;;;212:70:40;;:::o;378:48:2:-;;;;;;;;;;;;;:::o;1414:154:40:-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;1512:10;:24;;-1:-1:-1;;;;;1512:24:40;;;-1:-1:-1;;1512:24:40;;;;;;;1540:10;:24;;;;;;;;;;;1414:154::o;48:24::-;;;-1:-1:-1;;;;;48:24:40;;:::o;801:102::-;534:9;;-1:-1:-1;;;;;534:9:40;520:10;:23;512:32;;;;;;875:9;:24;;-1:-1:-1;;875:24:40;-1:-1:-1;;;;;875:24:40;;;;;;;;;;801:102::o",
+	"source": "pragma solidity ^0.4.24;\n\nimport './developed.sol';\n\n/**\n * @title AOBytesSetting\n *\n * This contract stores all AO bytes32 setting variables\n */\ncontract AOBytesSetting is developed {\n\t// Mapping from settingId to it's actual bytes32 value\n\tmapping (uint256 => bytes32) public settingValue;\n\n\t// Mapping from settingId to it's potential bytes32 value that is at pending state\n\tmapping (uint256 => bytes32) public pendingValue;\n\n\t/**\n\t * @dev Constructor function\n\t */\n\tconstructor() public {}\n\n\t/**\n\t * @dev Set pending value\n\t * @param _settingId The ID of the setting\n\t * @param _value The bytes32 value to be set\n\t */\n\tfunction setPendingValue(uint256 _settingId, bytes32 _value) public inWhitelist(msg.sender) {\n\t\tpendingValue[_settingId] = _value;\n\t}\n\n\t/**\n\t * @dev Move value from pending to setting\n\t * @param _settingId The ID of the setting\n\t */\n\tfunction movePendingToSetting(uint256 _settingId) public inWhitelist(msg.sender) {\n\t\tbytes32 _tempValue = pendingValue[_settingId];\n\t\tdelete pendingValue[_settingId];\n\t\tsettingValue[_settingId] = _tempValue;\n\t}\n}\n",
+	"sourcePath": "/home/jmulyono/ao-contracts/contracts/AOBytesSetting.sol",
+	"ast": {
+		"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOBytesSetting.sol",
+		"exportedSymbols": {
+			"AOBytesSetting": [188]
+		},
+		"id": 189,
+		"nodeType": "SourceUnit",
+		"nodes": [
+			{
+				"id": 127,
+				"literals": ["solidity", "^", "0.4", ".24"],
+				"nodeType": "PragmaDirective",
+				"src": "0:24:2"
+			},
+			{
+				"absolutePath": "/home/jmulyono/ao-contracts/contracts/developed.sol",
+				"file": "./developed.sol",
+				"id": 128,
+				"nodeType": "ImportDirective",
+				"scope": 189,
+				"sourceUnit": 18366,
+				"src": "26:25:2",
+				"symbolAliases": [],
+				"unitAlias": ""
+			},
+			{
+				"baseContracts": [
+					{
+						"arguments": null,
+						"baseName": {
+							"contractScope": null,
+							"id": 129,
+							"name": "developed",
+							"nodeType": "UserDefinedTypeName",
+							"referencedDeclaration": 18365,
+							"src": "173:9:2",
+							"typeDescriptions": {
+								"typeIdentifier": "t_contract$_developed_$18365",
+								"typeString": "contract developed"
+							}
+						},
+						"id": 130,
+						"nodeType": "InheritanceSpecifier",
+						"src": "173:9:2"
+					}
+				],
+				"contractDependencies": [18365],
+				"contractKind": "contract",
+				"documentation": "@title AOBytesSetting\n * This contract stores all AO bytes32 setting variables",
+				"fullyImplemented": true,
+				"id": 188,
+				"linearizedBaseContracts": [188, 18365],
+				"name": "AOBytesSetting",
+				"nodeType": "ContractDefinition",
+				"nodes": [
+					{
+						"constant": false,
+						"id": 134,
+						"name": "settingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 188,
+						"src": "242:48:2",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+							"typeString": "mapping(uint256 => bytes32)"
+						},
+						"typeName": {
+							"id": 133,
+							"keyType": {
+								"id": 131,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "251:7:2",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "242:28:2",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+								"typeString": "mapping(uint256 => bytes32)"
+							},
+							"valueType": {
+								"id": 132,
+								"name": "bytes32",
+								"nodeType": "ElementaryTypeName",
+								"src": "262:7:2",
+								"typeDescriptions": {
+									"typeIdentifier": "t_bytes32",
+									"typeString": "bytes32"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"constant": false,
+						"id": 138,
+						"name": "pendingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 188,
+						"src": "378:48:2",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+							"typeString": "mapping(uint256 => bytes32)"
+						},
+						"typeName": {
+							"id": 137,
+							"keyType": {
+								"id": 135,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "387:7:2",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "378:28:2",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+								"typeString": "mapping(uint256 => bytes32)"
+							},
+							"valueType": {
+								"id": 136,
+								"name": "bytes32",
+								"nodeType": "ElementaryTypeName",
+								"src": "398:7:2",
+								"typeDescriptions": {
+									"typeIdentifier": "t_bytes32",
+									"typeString": "bytes32"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 141,
+							"nodeType": "Block",
+							"src": "491:2:2",
+							"statements": []
+						},
+						"documentation": "@dev Constructor function",
+						"id": 142,
+						"implemented": true,
+						"isConstructor": true,
+						"isDeclaredConst": false,
+						"modifiers": [],
+						"name": "",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 139,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "481:2:2"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 140,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "491:0:2"
+						},
+						"scope": 188,
+						"src": "470:23:2",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 159,
+							"nodeType": "Block",
+							"src": "715:41:2",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 157,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 153,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 138,
+												"src": "719:12:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+													"typeString": "mapping(uint256 => bytes32)"
+												}
+											},
+											"id": 155,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 154,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 144,
+												"src": "732:10:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "719:24:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bytes32",
+												"typeString": "bytes32"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 156,
+											"name": "_value",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 146,
+											"src": "746:6:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bytes32",
+												"typeString": "bytes32"
+											}
+										},
+										"src": "719:33:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bytes32",
+											"typeString": "bytes32"
+										}
+									},
+									"id": 158,
+									"nodeType": "ExpressionStatement",
+									"src": "719:33:2"
+								}
+							]
+						},
+						"documentation": "@dev Set pending value\n@param _settingId The ID of the setting\n@param _value The bytes32 value to be set",
+						"id": 160,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 149,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "703:3:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 150,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "703:10:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 151,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 148,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "691:11:2",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "691:23:2"
+							}
+						],
+						"name": "setPendingValue",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 147,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 144,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 160,
+									"src": "648:18:2",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 143,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "648:7:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 146,
+									"name": "_value",
+									"nodeType": "VariableDeclaration",
+									"scope": 160,
+									"src": "668:14:2",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_bytes32",
+										"typeString": "bytes32"
+									},
+									"typeName": {
+										"id": 145,
+										"name": "bytes32",
+										"nodeType": "ElementaryTypeName",
+										"src": "668:7:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bytes32",
+											"typeString": "bytes32"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "647:36:2"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 152,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "715:0:2"
+						},
+						"scope": 188,
+						"src": "623:133:2",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 186,
+							"nodeType": "Block",
+							"src": "938:129:2",
+							"statements": [
+								{
+									"assignments": [170],
+									"declarations": [
+										{
+											"constant": false,
+											"id": 170,
+											"name": "_tempValue",
+											"nodeType": "VariableDeclaration",
+											"scope": 187,
+											"src": "942:18:2",
+											"stateVariable": false,
+											"storageLocation": "default",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bytes32",
+												"typeString": "bytes32"
+											},
+											"typeName": {
+												"id": 169,
+												"name": "bytes32",
+												"nodeType": "ElementaryTypeName",
+												"src": "942:7:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes32",
+													"typeString": "bytes32"
+												}
+											},
+											"value": null,
+											"visibility": "internal"
+										}
+									],
+									"id": 174,
+									"initialValue": {
+										"argumentTypes": null,
+										"baseExpression": {
+											"argumentTypes": null,
+											"id": 171,
+											"name": "pendingValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 138,
+											"src": "963:12:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+												"typeString": "mapping(uint256 => bytes32)"
+											}
+										},
+										"id": 173,
+										"indexExpression": {
+											"argumentTypes": null,
+											"id": 172,
+											"name": "_settingId",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 162,
+											"src": "976:10:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"isConstant": false,
+										"isLValue": true,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "IndexAccess",
+										"src": "963:24:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bytes32",
+											"typeString": "bytes32"
+										}
+									},
+									"nodeType": "VariableDeclarationStatement",
+									"src": "942:45:2"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 178,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "UnaryOperation",
+										"operator": "delete",
+										"prefix": true,
+										"src": "991:31:2",
+										"subExpression": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 175,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 138,
+												"src": "998:12:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+													"typeString": "mapping(uint256 => bytes32)"
+												}
+											},
+											"id": 177,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 176,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 162,
+												"src": "1011:10:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "998:24:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bytes32",
+												"typeString": "bytes32"
+											}
+										},
+										"typeDescriptions": {
+											"typeIdentifier": "t_tuple$__$",
+											"typeString": "tuple()"
+										}
+									},
+									"id": 179,
+									"nodeType": "ExpressionStatement",
+									"src": "991:31:2"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 184,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 180,
+												"name": "settingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 134,
+												"src": "1026:12:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+													"typeString": "mapping(uint256 => bytes32)"
+												}
+											},
+											"id": 182,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 181,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 162,
+												"src": "1039:10:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "1026:24:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bytes32",
+												"typeString": "bytes32"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 183,
+											"name": "_tempValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 170,
+											"src": "1053:10:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bytes32",
+												"typeString": "bytes32"
+											}
+										},
+										"src": "1026:37:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bytes32",
+											"typeString": "bytes32"
+										}
+									},
+									"id": 185,
+									"nodeType": "ExpressionStatement",
+									"src": "1026:37:2"
+								}
+							]
+						},
+						"documentation": "@dev Move value from pending to setting\n@param _settingId The ID of the setting",
+						"id": 187,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 165,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "926:3:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 166,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "926:10:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 167,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 164,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "914:11:2",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "914:23:2"
+							}
+						],
+						"name": "movePendingToSetting",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 163,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 162,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 187,
+									"src": "887:18:2",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 161,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "887:7:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "886:20:2"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 168,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "938:0:2"
+						},
+						"scope": 188,
+						"src": "857:210:2",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					}
+				],
+				"scope": 189,
+				"src": "146:923:2"
+			}
+		],
+		"src": "0:1070:2"
+	},
+	"legacyAST": {
+		"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOBytesSetting.sol",
+		"exportedSymbols": {
+			"AOBytesSetting": [188]
+		},
+		"id": 189,
+		"nodeType": "SourceUnit",
+		"nodes": [
+			{
+				"id": 127,
+				"literals": ["solidity", "^", "0.4", ".24"],
+				"nodeType": "PragmaDirective",
+				"src": "0:24:2"
+			},
+			{
+				"absolutePath": "/home/jmulyono/ao-contracts/contracts/developed.sol",
+				"file": "./developed.sol",
+				"id": 128,
+				"nodeType": "ImportDirective",
+				"scope": 189,
+				"sourceUnit": 18366,
+				"src": "26:25:2",
+				"symbolAliases": [],
+				"unitAlias": ""
+			},
+			{
+				"baseContracts": [
+					{
+						"arguments": null,
+						"baseName": {
+							"contractScope": null,
+							"id": 129,
+							"name": "developed",
+							"nodeType": "UserDefinedTypeName",
+							"referencedDeclaration": 18365,
+							"src": "173:9:2",
+							"typeDescriptions": {
+								"typeIdentifier": "t_contract$_developed_$18365",
+								"typeString": "contract developed"
+							}
+						},
+						"id": 130,
+						"nodeType": "InheritanceSpecifier",
+						"src": "173:9:2"
+					}
+				],
+				"contractDependencies": [18365],
+				"contractKind": "contract",
+				"documentation": "@title AOBytesSetting\n * This contract stores all AO bytes32 setting variables",
+				"fullyImplemented": true,
+				"id": 188,
+				"linearizedBaseContracts": [188, 18365],
+				"name": "AOBytesSetting",
+				"nodeType": "ContractDefinition",
+				"nodes": [
+					{
+						"constant": false,
+						"id": 134,
+						"name": "settingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 188,
+						"src": "242:48:2",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+							"typeString": "mapping(uint256 => bytes32)"
+						},
+						"typeName": {
+							"id": 133,
+							"keyType": {
+								"id": 131,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "251:7:2",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "242:28:2",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+								"typeString": "mapping(uint256 => bytes32)"
+							},
+							"valueType": {
+								"id": 132,
+								"name": "bytes32",
+								"nodeType": "ElementaryTypeName",
+								"src": "262:7:2",
+								"typeDescriptions": {
+									"typeIdentifier": "t_bytes32",
+									"typeString": "bytes32"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"constant": false,
+						"id": 138,
+						"name": "pendingValue",
+						"nodeType": "VariableDeclaration",
+						"scope": 188,
+						"src": "378:48:2",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+							"typeString": "mapping(uint256 => bytes32)"
+						},
+						"typeName": {
+							"id": 137,
+							"keyType": {
+								"id": 135,
+								"name": "uint256",
+								"nodeType": "ElementaryTypeName",
+								"src": "387:7:2",
+								"typeDescriptions": {
+									"typeIdentifier": "t_uint256",
+									"typeString": "uint256"
+								}
+							},
+							"nodeType": "Mapping",
+							"src": "378:28:2",
+							"typeDescriptions": {
+								"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+								"typeString": "mapping(uint256 => bytes32)"
+							},
+							"valueType": {
+								"id": 136,
+								"name": "bytes32",
+								"nodeType": "ElementaryTypeName",
+								"src": "398:7:2",
+								"typeDescriptions": {
+									"typeIdentifier": "t_bytes32",
+									"typeString": "bytes32"
+								}
+							}
+						},
+						"value": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 141,
+							"nodeType": "Block",
+							"src": "491:2:2",
+							"statements": []
+						},
+						"documentation": "@dev Constructor function",
+						"id": 142,
+						"implemented": true,
+						"isConstructor": true,
+						"isDeclaredConst": false,
+						"modifiers": [],
+						"name": "",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 139,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "481:2:2"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 140,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "491:0:2"
+						},
+						"scope": 188,
+						"src": "470:23:2",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 159,
+							"nodeType": "Block",
+							"src": "715:41:2",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 157,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 153,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 138,
+												"src": "719:12:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+													"typeString": "mapping(uint256 => bytes32)"
+												}
+											},
+											"id": 155,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 154,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 144,
+												"src": "732:10:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "719:24:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bytes32",
+												"typeString": "bytes32"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 156,
+											"name": "_value",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 146,
+											"src": "746:6:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bytes32",
+												"typeString": "bytes32"
+											}
+										},
+										"src": "719:33:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bytes32",
+											"typeString": "bytes32"
+										}
+									},
+									"id": 158,
+									"nodeType": "ExpressionStatement",
+									"src": "719:33:2"
+								}
+							]
+						},
+						"documentation": "@dev Set pending value\n@param _settingId The ID of the setting\n@param _value The bytes32 value to be set",
+						"id": 160,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 149,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "703:3:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 150,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "703:10:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 151,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 148,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "691:11:2",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "691:23:2"
+							}
+						],
+						"name": "setPendingValue",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 147,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 144,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 160,
+									"src": "648:18:2",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 143,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "648:7:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 146,
+									"name": "_value",
+									"nodeType": "VariableDeclaration",
+									"scope": 160,
+									"src": "668:14:2",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_bytes32",
+										"typeString": "bytes32"
+									},
+									"typeName": {
+										"id": 145,
+										"name": "bytes32",
+										"nodeType": "ElementaryTypeName",
+										"src": "668:7:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bytes32",
+											"typeString": "bytes32"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "647:36:2"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 152,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "715:0:2"
+						},
+						"scope": 188,
+						"src": "623:133:2",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					},
+					{
+						"body": {
+							"id": 186,
+							"nodeType": "Block",
+							"src": "938:129:2",
+							"statements": [
+								{
+									"assignments": [170],
+									"declarations": [
+										{
+											"constant": false,
+											"id": 170,
+											"name": "_tempValue",
+											"nodeType": "VariableDeclaration",
+											"scope": 187,
+											"src": "942:18:2",
+											"stateVariable": false,
+											"storageLocation": "default",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bytes32",
+												"typeString": "bytes32"
+											},
+											"typeName": {
+												"id": 169,
+												"name": "bytes32",
+												"nodeType": "ElementaryTypeName",
+												"src": "942:7:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes32",
+													"typeString": "bytes32"
+												}
+											},
+											"value": null,
+											"visibility": "internal"
+										}
+									],
+									"id": 174,
+									"initialValue": {
+										"argumentTypes": null,
+										"baseExpression": {
+											"argumentTypes": null,
+											"id": 171,
+											"name": "pendingValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 138,
+											"src": "963:12:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+												"typeString": "mapping(uint256 => bytes32)"
+											}
+										},
+										"id": 173,
+										"indexExpression": {
+											"argumentTypes": null,
+											"id": 172,
+											"name": "_settingId",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 162,
+											"src": "976:10:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											}
+										},
+										"isConstant": false,
+										"isLValue": true,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "IndexAccess",
+										"src": "963:24:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bytes32",
+											"typeString": "bytes32"
+										}
+									},
+									"nodeType": "VariableDeclarationStatement",
+									"src": "942:45:2"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 178,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"nodeType": "UnaryOperation",
+										"operator": "delete",
+										"prefix": true,
+										"src": "991:31:2",
+										"subExpression": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 175,
+												"name": "pendingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 138,
+												"src": "998:12:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+													"typeString": "mapping(uint256 => bytes32)"
+												}
+											},
+											"id": 177,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 176,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 162,
+												"src": "1011:10:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "998:24:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bytes32",
+												"typeString": "bytes32"
+											}
+										},
+										"typeDescriptions": {
+											"typeIdentifier": "t_tuple$__$",
+											"typeString": "tuple()"
+										}
+									},
+									"id": 179,
+									"nodeType": "ExpressionStatement",
+									"src": "991:31:2"
+								},
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 184,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"baseExpression": {
+												"argumentTypes": null,
+												"id": 180,
+												"name": "settingValue",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 134,
+												"src": "1026:12:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+													"typeString": "mapping(uint256 => bytes32)"
+												}
+											},
+											"id": 182,
+											"indexExpression": {
+												"argumentTypes": null,
+												"id": 181,
+												"name": "_settingId",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 162,
+												"src": "1039:10:2",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"isConstant": false,
+											"isLValue": true,
+											"isPure": false,
+											"lValueRequested": true,
+											"nodeType": "IndexAccess",
+											"src": "1026:24:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bytes32",
+												"typeString": "bytes32"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"id": 183,
+											"name": "_tempValue",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 170,
+											"src": "1053:10:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bytes32",
+												"typeString": "bytes32"
+											}
+										},
+										"src": "1026:37:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bytes32",
+											"typeString": "bytes32"
+										}
+									},
+									"id": 185,
+									"nodeType": "ExpressionStatement",
+									"src": "1026:37:2"
+								}
+							]
+						},
+						"documentation": "@dev Move value from pending to setting\n@param _settingId The ID of the setting",
+						"id": 187,
+						"implemented": true,
+						"isConstructor": false,
+						"isDeclaredConst": false,
+						"modifiers": [
+							{
+								"arguments": [
+									{
+										"argumentTypes": null,
+										"expression": {
+											"argumentTypes": null,
+											"id": 165,
+											"name": "msg",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 18394,
+											"src": "926:3:2",
+											"typeDescriptions": {
+												"typeIdentifier": "t_magic_message",
+												"typeString": "msg"
+											}
+										},
+										"id": 166,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"memberName": "sender",
+										"nodeType": "MemberAccess",
+										"referencedDeclaration": null,
+										"src": "926:10:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									}
+								],
+								"id": 167,
+								"modifierName": {
+									"argumentTypes": null,
+									"id": 164,
+									"name": "inWhitelist",
+									"nodeType": "Identifier",
+									"overloadedDeclarations": [],
+									"referencedDeclaration": 18318,
+									"src": "914:11:2",
+									"typeDescriptions": {
+										"typeIdentifier": "t_modifier$_t_address_$",
+										"typeString": "modifier (address)"
+									}
+								},
+								"nodeType": "ModifierInvocation",
+								"src": "914:23:2"
+							}
+						],
+						"name": "movePendingToSetting",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 163,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 162,
+									"name": "_settingId",
+									"nodeType": "VariableDeclaration",
+									"scope": 187,
+									"src": "887:18:2",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_uint256",
+										"typeString": "uint256"
+									},
+									"typeName": {
+										"id": 161,
+										"name": "uint256",
+										"nodeType": "ElementaryTypeName",
+										"src": "887:7:2",
+										"typeDescriptions": {
+											"typeIdentifier": "t_uint256",
+											"typeString": "uint256"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "886:20:2"
+						},
+						"payable": false,
+						"returnParameters": {
+							"id": 168,
+							"nodeType": "ParameterList",
+							"parameters": [],
+							"src": "938:0:2"
+						},
+						"scope": 188,
+						"src": "857:210:2",
+						"stateMutability": "nonpayable",
+						"superFunction": null,
+						"visibility": "public"
+					}
+				],
+				"scope": 189,
+				"src": "146:923:2"
+			}
+		],
+		"src": "0:1070:2"
+	},
+	"compiler": {
+		"name": "solc",
+		"version": "0.4.24+commit.e67f0147.Emscripten.clang"
+	},
+	"networks": {
+		"4": {
+			"events": {},
+			"links": {},
+			"address": "0xa60479b2ebc8373cbc3e4c85b5938e984ff7fd72",
+			"transactionHash": "0xd78eff49f0e33b520e1446b5df363abb269f94a04870526e1b41e11917bff3d2"
+		}
+	},
+	"schemaVersion": "2.0.1",
+	"updatedAt": "2018-12-11T08:43:54.415Z"
+}

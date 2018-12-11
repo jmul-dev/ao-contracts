@@ -32,22 +32,21 @@
 	"deployedBytecode": "0x",
 	"sourceMap": "",
 	"deployedSourceMap": "",
-	"source":
-		"pragma solidity ^0.4.24;\n\ninterface tokenRecipient { function receiveApproval(address _from, uint256 _value, address _token, bytes _extraData) external; }\n",
+	"source": "pragma solidity ^0.4.24;\n\ninterface tokenRecipient { function receiveApproval(address _from, uint256 _value, address _token, bytes _extraData) external; }\n",
 	"sourcePath": "/home/jmulyono/ao-contracts/contracts/tokenRecipient.sol",
 	"ast": {
 		"absolutePath": "/home/jmulyono/ao-contracts/contracts/tokenRecipient.sol",
 		"exportedSymbols": {
-			"tokenRecipient": [11033]
+			"tokenRecipient": [18379]
 		},
-		"id": 11034,
+		"id": 18380,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 11021,
+				"id": 18367,
 				"literals": ["solidity", "^", "0.4", ".24"],
 				"nodeType": "PragmaDirective",
-				"src": "0:24:19"
+				"src": "0:24:41"
 			},
 			{
 				"baseContracts": [],
@@ -55,15 +54,15 @@
 				"contractKind": "interface",
 				"documentation": null,
 				"fullyImplemented": false,
-				"id": 11033,
-				"linearizedBaseContracts": [11033],
+				"id": 18379,
+				"linearizedBaseContracts": [18379],
 				"name": "tokenRecipient",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
 						"body": null,
 						"documentation": null,
-						"id": 11032,
+						"id": 18378,
 						"implemented": false,
 						"isConstructor": false,
 						"isDeclaredConst": false,
@@ -71,16 +70,16 @@
 						"name": "receiveApproval",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 11030,
+							"id": 18376,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 11023,
+									"id": 18369,
 									"name": "_from",
 									"nodeType": "VariableDeclaration",
-									"scope": 11032,
-									"src": "78:13:19",
+									"scope": 18378,
+									"src": "78:13:41",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -88,10 +87,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 11022,
+										"id": 18368,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "78:7:19",
+										"src": "78:7:41",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -102,11 +101,11 @@
 								},
 								{
 									"constant": false,
-									"id": 11025,
+									"id": 18371,
 									"name": "_value",
 									"nodeType": "VariableDeclaration",
-									"scope": 11032,
-									"src": "93:14:19",
+									"scope": 18378,
+									"src": "93:14:41",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -114,10 +113,10 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 11024,
+										"id": 18370,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
-										"src": "93:7:19",
+										"src": "93:7:41",
 										"typeDescriptions": {
 											"typeIdentifier": "t_uint256",
 											"typeString": "uint256"
@@ -128,11 +127,11 @@
 								},
 								{
 									"constant": false,
-									"id": 11027,
+									"id": 18373,
 									"name": "_token",
 									"nodeType": "VariableDeclaration",
-									"scope": 11032,
-									"src": "109:14:19",
+									"scope": 18378,
+									"src": "109:14:41",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -140,10 +139,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 11026,
+										"id": 18372,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "109:7:19",
+										"src": "109:7:41",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -154,11 +153,11 @@
 								},
 								{
 									"constant": false,
-									"id": 11029,
+									"id": 18375,
 									"name": "_extraData",
 									"nodeType": "VariableDeclaration",
-									"scope": 11032,
-									"src": "125:16:19",
+									"scope": 18378,
+									"src": "125:16:41",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -166,10 +165,10 @@
 										"typeString": "bytes"
 									},
 									"typeName": {
-										"id": 11028,
+										"id": 18374,
 										"name": "bytes",
 										"nodeType": "ElementaryTypeName",
-										"src": "125:5:19",
+										"src": "125:5:41",
 										"typeDescriptions": {
 											"typeIdentifier": "t_bytes_storage_ptr",
 											"typeString": "bytes"
@@ -179,41 +178,41 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "77:65:19"
+							"src": "77:65:41"
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 11031,
+							"id": 18377,
 							"nodeType": "ParameterList",
 							"parameters": [],
-							"src": "151:0:19"
+							"src": "151:0:41"
 						},
-						"scope": 11033,
-						"src": "53:99:19",
+						"scope": 18379,
+						"src": "53:99:41",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "external"
 					}
 				],
-				"scope": 11034,
-				"src": "26:128:19"
+				"scope": 18380,
+				"src": "26:128:41"
 			}
 		],
-		"src": "0:155:19"
+		"src": "0:155:41"
 	},
 	"legacyAST": {
 		"absolutePath": "/home/jmulyono/ao-contracts/contracts/tokenRecipient.sol",
 		"exportedSymbols": {
-			"tokenRecipient": [11033]
+			"tokenRecipient": [18379]
 		},
-		"id": 11034,
+		"id": 18380,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 11021,
+				"id": 18367,
 				"literals": ["solidity", "^", "0.4", ".24"],
 				"nodeType": "PragmaDirective",
-				"src": "0:24:19"
+				"src": "0:24:41"
 			},
 			{
 				"baseContracts": [],
@@ -221,15 +220,15 @@
 				"contractKind": "interface",
 				"documentation": null,
 				"fullyImplemented": false,
-				"id": 11033,
-				"linearizedBaseContracts": [11033],
+				"id": 18379,
+				"linearizedBaseContracts": [18379],
 				"name": "tokenRecipient",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
 						"body": null,
 						"documentation": null,
-						"id": 11032,
+						"id": 18378,
 						"implemented": false,
 						"isConstructor": false,
 						"isDeclaredConst": false,
@@ -237,16 +236,16 @@
 						"name": "receiveApproval",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 11030,
+							"id": 18376,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 11023,
+									"id": 18369,
 									"name": "_from",
 									"nodeType": "VariableDeclaration",
-									"scope": 11032,
-									"src": "78:13:19",
+									"scope": 18378,
+									"src": "78:13:41",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -254,10 +253,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 11022,
+										"id": 18368,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "78:7:19",
+										"src": "78:7:41",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -268,11 +267,11 @@
 								},
 								{
 									"constant": false,
-									"id": 11025,
+									"id": 18371,
 									"name": "_value",
 									"nodeType": "VariableDeclaration",
-									"scope": 11032,
-									"src": "93:14:19",
+									"scope": 18378,
+									"src": "93:14:41",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -280,10 +279,10 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 11024,
+										"id": 18370,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
-										"src": "93:7:19",
+										"src": "93:7:41",
 										"typeDescriptions": {
 											"typeIdentifier": "t_uint256",
 											"typeString": "uint256"
@@ -294,11 +293,11 @@
 								},
 								{
 									"constant": false,
-									"id": 11027,
+									"id": 18373,
 									"name": "_token",
 									"nodeType": "VariableDeclaration",
-									"scope": 11032,
-									"src": "109:14:19",
+									"scope": 18378,
+									"src": "109:14:41",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -306,10 +305,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 11026,
+										"id": 18372,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "109:7:19",
+										"src": "109:7:41",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -320,11 +319,11 @@
 								},
 								{
 									"constant": false,
-									"id": 11029,
+									"id": 18375,
 									"name": "_extraData",
 									"nodeType": "VariableDeclaration",
-									"scope": 11032,
-									"src": "125:16:19",
+									"scope": 18378,
+									"src": "125:16:41",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -332,10 +331,10 @@
 										"typeString": "bytes"
 									},
 									"typeName": {
-										"id": 11028,
+										"id": 18374,
 										"name": "bytes",
 										"nodeType": "ElementaryTypeName",
-										"src": "125:5:19",
+										"src": "125:5:41",
 										"typeDescriptions": {
 											"typeIdentifier": "t_bytes_storage_ptr",
 											"typeString": "bytes"
@@ -345,27 +344,27 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "77:65:19"
+							"src": "77:65:41"
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 11031,
+							"id": 18377,
 							"nodeType": "ParameterList",
 							"parameters": [],
-							"src": "151:0:19"
+							"src": "151:0:41"
 						},
-						"scope": 11033,
-						"src": "53:99:19",
+						"scope": 18379,
+						"src": "53:99:41",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "external"
 					}
 				],
-				"scope": 11034,
-				"src": "26:128:19"
+				"scope": 18380,
+				"src": "26:128:41"
 			}
 		],
-		"src": "0:155:19"
+		"src": "0:155:41"
 	},
 	"compiler": {
 		"name": "solc",
@@ -373,5 +372,5 @@
 	},
 	"networks": {},
 	"schemaVersion": "2.0.1",
-	"updatedAt": "2018-10-22T05:32:35.805Z"
+	"updatedAt": "2018-12-11T07:35:34.209Z"
 }
