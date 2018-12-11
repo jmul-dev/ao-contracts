@@ -473,6 +473,65 @@ module.exports = function(deployer, network, accounts) {
 				console.log("Unable to add taoContentState_acceptedToTAO setting", e);
 			}
 
+			/**
+			 * ingressUrl = https://www.ingress.one
+			 */
+			try {
+				var result = await aosetting.addStringSetting(
+					"ingressUrl",
+					"https://www.ingress.one",
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add ingressUrl setting", e);
+			}
+
+			/**
+			 * developerUrl = https://gitlab.paramation.com/AO-core/aodb
+			 */
+			try {
+				var result = await aosetting.addStringSetting(
+					"developerUrl",
+					"https://gitlab.paramation.com/AO-core/aodb",
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add developerUrl setting", e);
+			}
+
+			/**
+			 * aoUrl = ao.network
+			 */
+			try {
+				var result = await aosetting.addStringSetting("aoUrl", "ao.network", primordialThoughtId, settingThoughtId, "", {
+					from: primordialAccount
+				});
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add aoUrl setting", e);
+			}
+
 			// Deploy AOToken and all of the denominations
 			return deployer.deploy([
 				[AOToken, 0, "AO Token", "AOTKN", settingThoughtId, aosetting.address],
