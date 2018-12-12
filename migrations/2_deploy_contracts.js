@@ -532,6 +532,28 @@ module.exports = function(deployer, network, accounts) {
 				console.log("Unable to add aoUrl setting", e);
 			}
 
+			/**
+			 * taoDbKey = b9b874b28cc2792b0becdf2c40c9254f874be3efa1a48cd61903fb62e883f271
+			 */
+			try {
+				var result = await aosetting.addStringSetting(
+					"taoDbKey",
+					"b9b874b28cc2792b0becdf2c40c9254f874be3efa1a48cd61903fb62e883f271",
+					primordialThoughtId,
+					settingThoughtId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add taoDbKey setting", e);
+			}
+
 			// Deploy AOToken and all of the denominations
 			return deployer.deploy([
 				[AOToken, 0, "AO Token", "AOTKN", settingThoughtId, aosetting.address],
@@ -670,5 +692,8 @@ module.exports = function(deployer, network, accounts) {
 
 			// aoearning grant access to aocontent
 			await aoearning.setWhitelist(aocontent.address, true, { from: primordialAccount });
+
+			console.log("Primordial Thought ID", primordialThoughtId);
+			console.log("Setting Thought ID", settingThoughtId);
 		});
 };
