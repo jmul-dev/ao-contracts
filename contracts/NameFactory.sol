@@ -18,7 +18,7 @@ contract NameFactory {
 
 	address[] internal names;
 
-	mapping (bytes32 => bool) internal originNames;
+	mapping (bytes32 => address) internal originNamesLookup;
 	mapping (address => address) public ethAddressToNameId;
 
 	// Event to be broadcasted to public when a Name is created
@@ -44,7 +44,7 @@ contract NameFactory {
 	 * @return true if taken, false otherwise
 	 */
 	function isNameTaken(string _name) public view returns (bool) {
-		return originNames[keccak256(abi.encodePacked(_name))];
+		return (originNamesLookup[keccak256(abi.encodePacked(_name))] != address(0));
 	}
 
 	/**
@@ -60,11 +60,10 @@ contract NameFactory {
 		// Only one Name per ETH address
 		require (ethAddressToNameId[msg.sender] == address(0));
 
-		originNames[keccak256(abi.encodePacked(_name))] = true;
-
 		// The address is the Name ID (which is also a Thought ID)
 		address nameId = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId);
 		ethAddressToNameId[msg.sender] = nameId;
+		originNamesLookup[keccak256(abi.encodePacked(_name))] = nameId;
 		names.push(nameId);
 
 		// Need to mint Position token for this Name
@@ -101,6 +100,15 @@ contract NameFactory {
 			_name.contentId(),
 			_name.thoughtTypeId()
 		);
+	}
+
+	/**
+	 * @dev Get the nameId given a username
+	 * @param _name The username  to check
+	 * @return nameId of the username
+	 */
+	function getNameIdByOriginName(string _name) public view returns (address) {
+		return originNamesLookup[keccak256(abi.encodePacked(_name))];
 	}
 
 	/**
