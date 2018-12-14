@@ -13,6 +13,7 @@ import './AOStringSetting.sol';
 import './Thought.sol';
 import './NameFactory.sol';
 import './AOSetting.sol';
+import './ThoughtCurrency.sol';
 
 /**
  * @title AOLibrary
@@ -473,6 +474,89 @@ library AOLibrary {
 		require (_nameId != address(0));
 		require (isThought(_thoughtId));
 		return (_nameId == Thought(_thoughtId).advocateId() || _nameId == Thought(_thoughtId).listenerId() || _nameId == Thought(_thoughtId).speakerId());
+	}
+
+	/**
+	 * @dev Get Thought Currency Balances given a nameId
+	 * @param _nameId The ID of the Name
+	 * @param _logosAddress The address of Logos
+	 * @param _ethosAddress The address of Ethos
+	 * @param _pathosAddress The address of Pathos
+	 * @return Logos balance of the Name ID
+	 * @return Ethos balance of the Name ID
+	 * @return Pathos balance of the Name ID
+	 */
+	function getThoughtCurrencyBalances(
+		address _nameId,
+		address _logosAddress,
+		address _ethosAddress,
+		address _pathosAddress
+	) public view returns (uint256[]) {
+		uint256[] memory balances = new uint256[](3);
+		balances[0] = ThoughtCurrency(_logosAddress).balanceOf(_nameId);
+		balances[1] = ThoughtCurrency(_ethosAddress).balanceOf(_nameId);
+		balances[2] = ThoughtCurrency(_pathosAddress).balanceOf(_nameId);
+		return balances;
+	}
+
+	/**
+	 * @dev Get Anti Thought Currency Balances given a nameId
+	 * @param _nameId The ID of the Name
+	 * @param _antiLogosAddress The address of AntiLogos
+	 * @param _antiEthosAddress The address of AntiEthos
+	 * @param _antiPathosAddress The address of AntiPathos
+	 * @return AntiLogos balance of the Name ID
+	 * @return AntiEthos balance of the Name ID
+	 * @return AntiPathos balance of the Name ID
+	 */
+	function getAntiThoughtCurrencyBalances(
+		address _nameId,
+		address _antiLogosAddress,
+		address _antiEthosAddress,
+		address _antiPathosAddress
+	) public view returns (uint256[]) {
+		uint256[] memory balances = new uint256[](3);
+		balances[0] = ThoughtCurrency(_antiLogosAddress).balanceOf(_nameId);
+		balances[1] = ThoughtCurrency(_antiEthosAddress).balanceOf(_nameId);
+		balances[2] = ThoughtCurrency(_antiPathosAddress).balanceOf(_nameId);
+		return balances;
+	}
+
+	/**
+	 * @dev Get all Thought/AntiThought Currency Balances given a nameId
+	 * @param _nameId The ID of the Name
+	 * @param _logosAddress The address of Logos
+	 * @param _ethosAddress The address of Ethos
+	 * @param _pathosAddress The address of Pathos
+	 * @param _antiLogosAddress The address of AntiLogos
+	 * @param _antiEthosAddress The address of AntiEthos
+	 * @param _antiPathosAddress The address of AntiPathos
+	 * @return Logos balance of the Name ID
+	 * @return Ethos balance of the Name ID
+	 * @return Pathos balance of the Name ID
+	 * @return AntiLogos balance of the Name ID
+	 * @return AntiEthos balance of the Name ID
+	 * @return AntiPathos balance of the Name ID
+	 */
+	function getAllThoughtCurrencyBalances(
+		address _nameId,
+		address _logosAddress,
+		address _ethosAddress,
+		address _pathosAddress,
+		address _antiLogosAddress,
+		address _antiEthosAddress,
+		address _antiPathosAddress
+	) public view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
+		uint256[] memory thoughtCurrencyBalances = getThoughtCurrencyBalances(_nameId, _logosAddress, _ethosAddress, _pathosAddress);
+		uint256[] memory antiThoughtCurrencyBalances = getAntiThoughtCurrencyBalances(_nameId, _antiLogosAddress, _antiEthosAddress, _antiPathosAddress);
+		return (
+			thoughtCurrencyBalances[0],
+			thoughtCurrencyBalances[1],
+			thoughtCurrencyBalances[2],
+			antiThoughtCurrencyBalances[0],
+			antiThoughtCurrencyBalances[1],
+			antiThoughtCurrencyBalances[2]
+		);
 	}
 
 	/***** Internal Methods *****/
