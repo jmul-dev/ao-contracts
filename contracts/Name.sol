@@ -15,13 +15,13 @@ contract Name is Thought {
 	address public defaultPublicKey;
 
 	// Event to be broadcasted to public when a publicKey is added
-	event AddPublicKey(address publicKey);
+	event AddPublicKey(address publicKey, uint256 nonce);
 
 	// Event to be broadcasted to public when a publicKey is deleted
-	event DeletePublicKey(address publicKey);
+	event DeletePublicKey(address publicKey, uint256 nonce);
 
 	// Event to be broadcasted to public when setting a defaut publicKey
-	event SetDefaultPublicKey(address publicKey);
+	event SetDefaultPublicKey(address publicKey, uint256 nonce);
 
 	/**
 	 * @dev Constructor function
@@ -100,7 +100,7 @@ contract Name is Thought {
 		require (!isPublicKeyExist(_publicKey));
 		publicKeys.push(_publicKey);
 		nonce++;
-		emit AddPublicKey(_publicKey);
+		emit AddPublicKey(_publicKey, nonce);
 	}
 
 	/**
@@ -115,7 +115,7 @@ contract Name is Thought {
 				delete publicKeys[i];
 				publicKeys.length--;
 				nonce++;
-				emit DeletePublicKey(_publicKey);
+				emit DeletePublicKey(_publicKey, nonce);
 				break;
 			}
 		}
@@ -130,6 +130,6 @@ contract Name is Thought {
 		require (isPublicKeyExist(_publicKey));
 		defaultPublicKey = _publicKey;
 		nonce++;
-		emit SetDefaultPublicKey(_publicKey);
+		emit SetDefaultPublicKey(_publicKey, nonce);
 	}
 }
