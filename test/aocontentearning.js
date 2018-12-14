@@ -2354,8 +2354,11 @@ contract("AOContent & AOEarning", function(accounts) {
 				var hostBalanceBefore = await aotoken.balanceOf(host);
 				var foundationBalanceBefore = await aotoken.balanceOf(developer);
 
-				var stakeOwnerPathosBalanceBefore = await pathos.balanceOf(stakeOwner);
-				var hostAntiLogosBalanceBefore = await antilogos.balanceOf(host);
+				var stakeOwnerNameId = await namefactory.ethAddressToNameId(stakeOwner);
+				var hostNameId = await namefactory.ethAddressToNameId(host);
+
+				var stakeOwnerPathosBalanceBefore = await pathos.balanceOf(stakeOwnerNameId);
+				var hostAntiLogosBalanceBefore = await antilogos.balanceOf(hostNameId);
 
 				var price = await aocontent.contentHostPrice(contentHostId);
 				var stakedContent = await aocontent.stakedContentById(stakeId);
@@ -2509,8 +2512,8 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.notEqual(canBuyContent, true, "Account can buy the same content more than once");
 
 				// Verify Thought Currencies balance
-				var stakeOwnerPathosBalanceAfter = await pathos.balanceOf(stakeOwner);
-				var hostAntiLogosBalanceAfter = await antilogos.balanceOf(host);
+				var stakeOwnerPathosBalanceAfter = await pathos.balanceOf(stakeOwnerNameId);
+				var hostAntiLogosBalanceAfter = await antilogos.balanceOf(hostNameId);
 
 				assert.equal(
 					stakeOwnerPathosBalanceAfter.toString(),

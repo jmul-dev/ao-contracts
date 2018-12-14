@@ -608,7 +608,16 @@ module.exports = function(deployer, network, accounts) {
 
 			return deployer.deploy([
 				[AOPool, aotoken.address],
-				[AOEarning, settingThoughtId, aosetting.address, aotoken.address, aotreasury.address, pathos.address, antilogos.address]
+				[
+					AOEarning,
+					settingThoughtId,
+					aosetting.address,
+					aotoken.address,
+					aotreasury.address,
+					namefactory.address,
+					pathos.address,
+					antilogos.address
+				]
 			]);
 		})
 		.then(async function() {

@@ -8,6 +8,7 @@ import './Pathos.sol';
 import './AntiLogos.sol';
 import './AOSetting.sol';
 import './AOLibrary.sol';
+import './NameFactory.sol';
 
 /**
  * @title AOEarning
@@ -24,12 +25,14 @@ contract AOEarning is developed {
 	address public aoSettingAddress;
 	address public baseDenominationAddress;
 	address public treasuryAddress;
+	address public nameFactoryAddress;
 	address public pathosAddress;
 	address public antiLogosAddress;
 
 	AOToken internal _baseAO;
 	AOTreasury internal _treasury;
 	Pathos internal _pathos;
+	NameFactory internal _nameFactory;
 	AntiLogos internal _antiLogos;
 	AOSetting internal _aoSetting;
 
@@ -106,11 +109,11 @@ contract AOEarning is developed {
 	// 2 => Foundation
 	event EarningUnescrowed(address indexed recipient, bytes32 indexed purchaseId, uint256 paymentEarning, uint256 inflationBonus, uint8 recipientType);
 
-	// Event to be broadcasted to public when content creator earns Pathos when a node buys a content
-	event PathosEarned(address indexed stakeOwner, bytes32 indexed purchaseId, uint256 amount);
+	// Event to be broadcasted to public when content creator's Name earns Pathos when a node buys a content
+	event PathosEarned(address indexed nameId, bytes32 indexed purchaseId, uint256 amount);
 
-	// Event to be broadcasted to public when host earns AntiLogos when a node buys a content
-	event AntiLogosEarned(address indexed host, bytes32 indexed purchaseId, uint256 amount);
+	// Event to be broadcasted to public when host's Name earns AntiLogos when a node buys a content
+	event AntiLogosEarned(address indexed nameId, bytes32 indexed purchaseId, uint256 amount);
 
 	// Event to be broadcasted to public when emergency mode is triggered
 	event EscapeHatch();
@@ -121,8 +124,11 @@ contract AOEarning is developed {
 	 * @param _aoSettingAddress The address of AOSetting
 	 * @param _baseDenominationAddress The address of AO base token
 	 * @param _treasuryAddress The address of AOTreasury
+	 * @param _nameFactoryAddress The address of NameFactory
+	 * @param _pathosAddress The address of Pathos
+	 * @param _antiLogosAddress The address of AntiLogos
 	 */
-	constructor(address _settingThoughtId, address _aoSettingAddress, address _baseDenominationAddress, address _treasuryAddress, address _pathosAddress, address _antiLogosAddress) public {
+	constructor(address _settingThoughtId, address _aoSettingAddress, address _baseDenominationAddress, address _treasuryAddress, address _nameFactoryAddress, address _pathosAddress, address _antiLogosAddress) public {
 		settingThoughtId = _settingThoughtId;
 		aoSettingAddress = _aoSettingAddress;
 		baseDenominationAddress = _baseDenominationAddress;
@@ -133,6 +139,7 @@ contract AOEarning is developed {
 		_aoSetting = AOSetting(_aoSettingAddress);
 		_baseAO = AOToken(_baseDenominationAddress);
 		_treasury = AOTreasury(_treasuryAddress);
+		_nameFactory = NameFactory(_nameFactoryAddress);
 		_pathos = Pathos(_pathosAddress);
 		_antiLogos = AntiLogos(_antiLogosAddress);
 	}
@@ -210,12 +217,12 @@ contract AOEarning is developed {
 		_escrowInflationBonus(_purchaseId, _calculateInflationBonus(_networkAmountStaked, _primordialAmountStaked, _primordialWeightedMultiplierStaked), _profitPercentage, _stakeOwner, _host, _isAOContentUsageType);
 
 		// Reward the content creator/stake owner with some Pathos
-		require (_pathos.mintToken(_stakeOwner, _networkAmountStaked.add(_primordialAmountStaked)));
-		emit PathosEarned(_stakeOwner, _purchaseId, _networkAmountStaked.add(_primordialAmountStaked));
+		require (_pathos.mintToken(_nameFactory.ethAddressToNameId(_stakeOwner), _networkAmountStaked.add(_primordialAmountStaked)));
+		emit PathosEarned(_nameFactory.ethAddressToNameId(_stakeOwner), _purchaseId, _networkAmountStaked.add(_primordialAmountStaked));
 
 		// Reward the host with some AntiLogos
-		require (_antiLogos.mintToken(_host, _fileSize));
-		emit AntiLogosEarned(_host, _purchaseId, _fileSize);
+		require (_antiLogos.mintToken(_nameFactory.ethAddressToNameId(_host), _fileSize));
+		emit AntiLogosEarned(_nameFactory.ethAddressToNameId(_host), _purchaseId, _fileSize);
 		return true;
 	}
 
