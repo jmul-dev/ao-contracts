@@ -1,14 +1,79 @@
 var AOLibrary = artifacts.require("./AOLibrary.sol");
+var NameFactory = artifacts.require("./NameFactory.sol");
+var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
+var Logos = artifacts.require("./Logos.sol");
+var Ethos = artifacts.require("./Ethos.sol");
+var Pathos = artifacts.require("./Pathos.sol");
+var AntiLogos = artifacts.require("./AntiLogos.sol");
+var AntiEthos = artifacts.require("./AntiEthos.sol");
+var AntiPathos = artifacts.require("./AntiPathos.sol");
+
 var BigNumber = require("bignumber.js");
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1 }); // no rounding
 
 contract("AOLibrary", function(accounts) {
-	var library, percentageDivisor, multiplierDivisor;
+	var library,
+		percentageDivisor,
+		multiplierDivisor,
+		namefactory,
+		thoughtfactory,
+		logos,
+		ethos,
+		pathos,
+		antilogos,
+		antiethos,
+		antipathos,
+		nameId1,
+		nameId2,
+		thoughtId;
+	var developer = accounts[0];
+	var account1 = accounts[1];
+	var account2 = accounts[2];
+	var whitelistedAddress = accounts[3];
+	var someAddress = accounts[9];
 
-	before(function() {
-		return AOLibrary.deployed().then(function(instance) {
-			library = instance;
+	before(async function() {
+		library = await AOLibrary.deployed();
+		namefactory = await NameFactory.deployed();
+		thoughtfactory = await ThoughtFactory.deployed();
+		logos = await Logos.deployed();
+		ethos = await Ethos.deployed();
+		pathos = await Pathos.deployed();
+		antilogos = await AntiLogos.deployed();
+		antiethos = await AntiEthos.deployed();
+		antipathos = await AntiPathos.deployed();
+
+		// Create Name
+		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+			from: account1
 		});
+		nameId1 = await namefactory.ethAddressToNameId(account1);
+
+		result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+			from: account2
+		});
+		nameId2 = await namefactory.ethAddressToNameId(account2);
+
+		result = await thoughtfactory.createThought("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId1, {
+			from: account1
+		});
+		var createThoughtEvent = result.logs[0];
+		thoughtId = createThoughtEvent.args.thoughtId;
+
+		await logos.setWhitelist(whitelistedAddress, true, { from: developer });
+		await ethos.setWhitelist(whitelistedAddress, true, { from: developer });
+		await pathos.setWhitelist(whitelistedAddress, true, { from: developer });
+		await antilogos.setWhitelist(whitelistedAddress, true, { from: developer });
+		await antiethos.setWhitelist(whitelistedAddress, true, { from: developer });
+		await antipathos.setWhitelist(whitelistedAddress, true, { from: developer });
+
+		// mint some ThoughtCurrencies to nameId
+		await logos.mintToken(nameId1, 10, { from: whitelistedAddress });
+		await ethos.mintToken(nameId1, 20, { from: whitelistedAddress });
+		await pathos.mintToken(nameId1, 30, { from: whitelistedAddress });
+		await antilogos.mintToken(nameId1, 40, { from: whitelistedAddress });
+		await antiethos.mintToken(nameId1, 50, { from: whitelistedAddress });
+		await antipathos.mintToken(nameId1, 60, { from: whitelistedAddress });
 	});
 
 	it("should have the correct percentage divisor value", async function() {
@@ -177,5 +242,71 @@ contract("AOLibrary", function(accounts) {
 		var newMultiplier = await library.calculateMultiplierAfterConversion(P.toString(), M.toString(), C.toString());
 		var _newMultiplier = P.times(M).div(P.plus(C));
 		assert.equal(newMultiplier.toString(), _newMultiplier.toString(), "Library returns incorrect new multiplier after conversion");
+	});
+
+	it("isThought() - should return true if Thought ID is a Thought", async function() {
+		var isThought = await library.isThought(thoughtId);
+		assert.equal(isThought, true, "Library returns incorrect bool value when a Thought ID is a Thought");
+	});
+
+	it("isName() - should return true if Name ID is a Name", async function() {
+		var isName = await library.isName(nameId1);
+		assert.equal(isName, true, "Library returns incorrect bool value when a Name ID is a Name");
+	});
+
+	it("addressIsThoughtAdvocateListenerSpeaker() - should return true if the address is either Thought's Advocate/Listener/Speaker", async function() {
+		var addressIsThoughtAdvocateListenerSpeaker = await library.addressIsThoughtAdvocateListenerSpeaker(
+			namefactory.address,
+			account2,
+			thoughtId
+		);
+		assert.equal(
+			addressIsThoughtAdvocateListenerSpeaker,
+			false,
+			"Library returns incorrect bool value when address is not Thought's Advocate/Listener/Speaker"
+		);
+
+		var addressIsThoughtAdvocateListenerSpeaker = await library.addressIsThoughtAdvocateListenerSpeaker(
+			namefactory.address,
+			account1,
+			thoughtId
+		);
+		assert.equal(
+			addressIsThoughtAdvocateListenerSpeaker,
+			true,
+			"Library returns incorrect bool value when address is Thought's Advocate/Listener/Speaker"
+		);
+	});
+
+	it("getThoughtCurrencyBalances() - should return Logos/Ethos/Pathos balances of a Name ID", async function() {
+		var balances = await library.getThoughtCurrencyBalances(nameId1, logos.address, ethos.address, pathos.address);
+		assert.equal(balances[0].toNumber(), 10, "getThoughtCurrencyBalances() returns incorrect Logos balance");
+		assert.equal(balances[1].toNumber(), 20, "getThoughtCurrencyBalances() returns incorrect Ethos balance");
+		assert.equal(balances[2].toNumber(), 30, "getThoughtCurrencyBalances() returns incorrect Pathos balance");
+	});
+
+	it("getAntiThoughtCurrencyBalances() - should return AntiLogos/AntiEthos/AntiPathos balances of a Name ID", async function() {
+		var balances = await library.getAntiThoughtCurrencyBalances(nameId1, antilogos.address, antiethos.address, antipathos.address);
+		assert.equal(balances[0].toNumber(), 40, "getAntiThoughtCurrencyBalances() returns incorrect AntiLogos balance");
+		assert.equal(balances[1].toNumber(), 50, "getAntiThoughtCurrencyBalances() returns incorrect AntiEthos balance");
+		assert.equal(balances[2].toNumber(), 60, "getAntiThoughtCurrencyBalances() returns incorrect AntiPathos balance");
+	});
+
+	it("getAllThoughtCurrencyBalances() - should return Logos/Ethos/Pathos/AntiLogos/AntiEthos/AntiPathos balances of a Name ID", async function() {
+		var balances = await library.getAllThoughtCurrencyBalances(
+			nameId1,
+			logos.address,
+			ethos.address,
+			pathos.address,
+			antilogos.address,
+			antiethos.address,
+			antipathos.address
+		);
+		assert.equal(balances[0].toNumber(), 10, "getAllThoughtCurrencyBalances() returns incorrect Logos balance");
+		assert.equal(balances[1].toNumber(), 20, "getAllThoughtCurrencyBalances() returns incorrect Ethos balance");
+		assert.equal(balances[2].toNumber(), 30, "getAllThoughtCurrencyBalances() returns incorrect Pathos balance");
+		assert.equal(balances[3].toNumber(), 40, "getAllThoughtCurrencyBalances() returns incorrect AntiLogos balance");
+		assert.equal(balances[4].toNumber(), 50, "getAllThoughtCurrencyBalances() returns incorrect AntiEthos balance");
+		assert.equal(balances[5].toNumber(), 60, "getAllThoughtCurrencyBalances() returns incorrect AntiPathos balance");
 	});
 });
