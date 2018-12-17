@@ -262,4 +262,42 @@ contract NameFactory {
 	function isNamePublicKeyExist(address _nameId, address _publicKey) public isName(_nameId) view returns (bool) {
 		return Name(_nameId).isPublicKeyExist(_publicKey);
 	}
+
+	/**
+	 * @dev Add publicKey for a Name
+	 * @param _nameId The ID of the Name
+	 * @param _publicKey The publicKey to be added
+	 */
+	function addNamePublicKey(address _nameId, address _publicKey) public isName(_nameId) onlyAdvocateOfName(_nameId) {
+		uint256 _nonce = Name(_nameId).addPublicKey(_publicKey);
+		require (_nonce > 0);
+		emit AddNamePublicKey(_nameId, _publicKey, _nonce);
+	}
+
+	/**
+	 * @dev Delete publicKey from a Name
+	 * @param _nameId The ID of the Name
+	 * @param _publicKey The publicKey to be deleted
+	 */
+	function deleteNamePublicKey(address _nameId, address _publicKey) public isName(_nameId) onlyAdvocateOfName(_nameId) {
+		uint256 _nonce = Name(_nameId).deletePublicKey(_publicKey);
+		require (_nonce > 0);
+		emit DeleteNamePublicKey(_nameId, _publicKey, _nonce);
+	}
+
+	/**
+	 * @dev Set a publicKey as the default for a Name
+	 * @param _nameId The ID of the Name
+	 * @param _publicKey The publicKey to be set
+	 * @param _signatureV The V part of the signature for this update
+	 * @param _signatureR The R part of the signature for this update
+	 * @param _signatureS The S part of the signature for this update
+	 */
+	function setNameDefaultPublicKey(address _nameId, address _publicKey, uint8 _signatureV, bytes32 _signatureR, bytes32 _signatureS) public isName(_nameId) onlyAdvocateOfName(_nameId) {
+		bytes32 _hash = keccak256(abi.encodePacked(address(this), _nameId, _publicKey));
+		require (ecrecover(_hash, _signatureV, _signatureR, _signatureS) == msg.sender);
+		uint256 _nonce = Name(_nameId).setDefaultPublicKey(_publicKey);
+		require (_nonce > 0);
+		emit SetNameDefaultPublicKey(_nameId, _publicKey, _nonce);
+	}
 }

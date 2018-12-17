@@ -2,6 +2,7 @@ var NameFactory = artifacts.require("./NameFactory.sol");
 var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
 var ThoughtPosition = artifacts.require("./ThoughtPosition.sol");
 var Position = artifacts.require("./Position.sol");
+var EthCrypto = require("eth-crypto");
 
 contract("Name & Thought", function(accounts) {
 	var namefactory,
@@ -23,11 +24,30 @@ contract("Name & Thought", function(accounts) {
 	var account3 = accounts[3];
 	var account4 = accounts[4];
 	var account5 = accounts[5];
+	var someAddress1 = accounts[9];
+	var someAddress2 = accounts[8];
 	var datHash = "somehash";
 	var database = "hyperdb";
 	var keyValue = "somevalue";
 	var contentId = "somecontentid";
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
+
+	// Retrieve private key from ganache
+	var account1PrivateKey = "0xfa372b56eac0e71de587267f0a59989719b2325aeb4579912379641cf93ccaab";
+	var account2PrivateKey = "0x6a35c58d0acad0ceca9c03d37aa2d2288d70afe0690f5e5f5e05aeab93b95dad";
+	var account3PrivateKey = "0xf4bab2d2f0c5119cc6aad0735bbf0a017d229cbf430c0041af382b93e713a1c3";
+	var account1LocalIdentity = {
+		publicKey: EthCrypto.publicKeyByPrivateKey(account1PrivateKey),
+		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account1PrivateKey))
+	};
+	var account2LocalIdentity = {
+		publicKey: EthCrypto.publicKeyByPrivateKey(account2PrivateKey),
+		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account2PrivateKey))
+	};
+	var account3LocalIdentity = {
+		publicKey: EthCrypto.publicKeyByPrivateKey(account3PrivateKey),
+		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account3PrivateKey))
+	};
 
 	before(async function() {
 		namefactory = await NameFactory.deployed();
@@ -222,7 +242,7 @@ contract("Name & Thought", function(accounts) {
 			return thoughtId;
 		};
 
-		it("createName()", async function() {
+		it("createName() - should be able to create a Name for an ETH address", async function() {
 			nameId1 = await createName("account1", account1);
 
 			try {
@@ -246,7 +266,7 @@ contract("Name & Thought", function(accounts) {
 			assert.notEqual(canCreateName, true, "ETH address is able to create Name even though it already has a Name");
 		});
 
-		it("isNameTaken()", async function() {
+		it("isNameTaken() - should be able to check whether or not a username has been taken", async function() {
 			var isNameTaken = await namefactory.isNameTaken("account2");
 			assert.equal(isNameTaken, false, "isNameTaken() returns true even though name is not taken");
 
@@ -254,7 +274,7 @@ contract("Name & Thought", function(accounts) {
 			assert.equal(isNameTaken, true, "isNameTaken() returns false even though name is taken");
 		});
 
-		it("setNameListener()", async function() {
+		it("setNameListener() - should be able to set a Listener for a Name", async function() {
 			nameId2 = await createName("account2", account2);
 
 			var _newListenerId = nameId2;
@@ -304,7 +324,7 @@ contract("Name & Thought", function(accounts) {
 			assert.equal(_namePosition[1], _newListenerId, "Name has incorrect listenerId after the update");
 		});
 
-		it("setNameSpeaker()", async function() {
+		it("setNameSpeaker() - should be able to set a Speaker for a Name", async function() {
 			nameId3 = await createName("account3", account3);
 
 			var _newSpeakerId = nameId3;
@@ -353,6 +373,418 @@ contract("Name & Thought", function(accounts) {
 			var _namePosition = await namefactory.getNamePosition(nameId1);
 			assert.equal(_namePosition[2], _newSpeakerId, "Name has incorrect speakerId after the update");
 		});
+
+		it("getNamePosition() - should return the Advocate/Listener/Speaker of a Name", async function() {
+			var canGetNamePosition, position;
+			try {
+				position = await namefactory.getNamePosition(someAddress1);
+				canGetNamePosition = true;
+			} catch (e) {
+				canGetNamePosition = false;
+				position = null;
+			}
+			assert.notEqual(canGetNamePosition, true, "Contract can get position for non-exiting Name");
+
+			try {
+				position = await namefactory.getNamePosition(nameId1);
+				canGetNamePosition = true;
+			} catch (e) {
+				canGetNamePosition = false;
+				position = null;
+			}
+			assert.equal(canGetNamePosition, true, "Contract can't get position for a Name");
+
+			assert.equal(position[0], nameId1, "getNamePosition() returns incorrect Advocate for a Name");
+			assert.equal(position[1], nameId2, "getNamePosition() returns incorrect Listener for a Name");
+			assert.equal(position[2], nameId3, "getNamePosition() returns incorrect Speaker for a Name");
+		});
+
+		it("getNameIdByOriginName() - should return the correct nameId given a username", async function() {
+			var nameId = await namefactory.getNameIdByOriginName("somename");
+			assert.equal(nameId, emptyAddress, "getNameIdByOriginName() returns incorrect nameId");
+
+			var nameId = await namefactory.getNameIdByOriginName("account1");
+			assert.equal(nameId, nameId1, "getNameIdByOriginName() returns incorrect nameId");
+		});
+
+		it("getNameTotalPublicKeysCount() - should return the count of publicKeys given a nameId", async function() {
+			var canGetNameTotalPublicKeysCount, totalPublicKeysCount;
+			try {
+				totalPublicKeysCount = await namefactory.getNameTotalPublicKeysCount(someAddress1);
+				canGetNameTotalPublicKeysCount = true;
+			} catch (e) {
+				canGetNameTotalPublicKeysCount = false;
+			}
+			assert.notEqual(canGetNameTotalPublicKeysCount, true, "Contract can get total publicKeys count of a non-existing Name");
+
+			try {
+				totalPublicKeysCount = await namefactory.getNameTotalPublicKeysCount(nameId1);
+				canGetNameTotalPublicKeysCount = true;
+			} catch (e) {
+				canGetNameTotalPublicKeysCount = false;
+			}
+			assert.equal(canGetNameTotalPublicKeysCount, true, "Contract can't get total publicKeys count of a Name");
+			assert.equal(totalPublicKeysCount.toNumber(), 1, "Contract returns incorrect total publicKeys count of a Name");
+		});
+
+		it("getNamePublicKeys() - should return the correct list of publicKeys given a nameId", async function() {
+			var canGetNamePublicKeys, publicKeys;
+			try {
+				publicKeys = await namefactory.getNamePublicKeys(someAddress1, 0, 0);
+				canGetNamePublicKeys = true;
+			} catch (e) {
+				canGetNamePublicKeys = false;
+			}
+			assert.notEqual(canGetNamePublicKeys, true, "Contract can get publicKeys of a non-existing Name");
+
+			try {
+				publicKeys = await namefactory.getNamePublicKeys(nameId1, 1, 0);
+				canGetNamePublicKeys = true;
+			} catch (e) {
+				canGetNamePublicKeys = false;
+			}
+			assert.notEqual(canGetNamePublicKeys, true, "Contract can get publicKeys with invalid from/to value");
+
+			var totalPublicKeysCount = await namefactory.getNameTotalPublicKeysCount(nameId1);
+			try {
+				publicKeys = await namefactory.getNamePublicKeys(nameId1, 0, totalPublicKeysCount.plus(10).toNumber());
+				canGetNamePublicKeys = true;
+			} catch (e) {
+				canGetNamePublicKeys = false;
+			}
+			assert.equal(
+				canGetNamePublicKeys,
+				true,
+				"Contract can't get publicKeys for a Name even though the to value is greater than the public keys length"
+			);
+
+			try {
+				publicKeys = await namefactory.getNamePublicKeys(nameId1, 0, 0);
+				canGetNamePublicKeys = true;
+			} catch (e) {
+				canGetNamePublicKeys = false;
+			}
+			assert.equal(canGetNamePublicKeys, true, "Contract can't get publicKeys of a Name");
+			assert.lengthOf(publicKeys, 1, "Contract returns incorrect num of publicKeys");
+			assert.equal(publicKeys[0], account1, "Contract returns incorrect publicKeys of a Name");
+		});
+
+		it("isNamePublicKeyExist() - should return whether or not a publicKey exist inside a Name", async function() {
+			var canCall, publicKeyExist;
+			try {
+				publicKeyExist = await namefactory.isNamePublicKeyExist(someAddress1, account1);
+				canCall = true;
+			} catch (e) {
+				canCall = false;
+			}
+			assert.notEqual(canCall, true, "Contract can check isNamePublicKeyExist on a non-existing Name");
+
+			try {
+				publicKeyExist = await namefactory.isNamePublicKeyExist(nameId1, someAddress1);
+				canCall = true;
+			} catch (e) {
+				canCall = false;
+			}
+			assert.equal(canCall, true, "Contract can't check isNamePublicKeyExist on a Name");
+			assert.equal(publicKeyExist, false, "Contract returns incorrect public key exist for a Name");
+
+			try {
+				publicKeyExist = await namefactory.isNamePublicKeyExist(nameId1, account1);
+				canCall = true;
+			} catch (e) {
+				canCall = false;
+			}
+			assert.equal(canCall, true, "Contract can't check isNamePublicKeyExist on a Name");
+			assert.equal(publicKeyExist, true, "Contract returns incorrect public key exist for a Name");
+		});
+
+		it("addNamePublicKey() - should be able to add more publicKey to a Name", async function() {
+			var canAddNamePublicKey, addNamePublicKeyEvent;
+			try {
+				var result = await namefactory.addNamePublicKey(someAddress, someAddress1, { from: account1 });
+				canAddNamePublicKey = true;
+				addNamePublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canAddNamePublicKey = false;
+				addNamePublicKeyEvent = null;
+			}
+			assert.notEqual(canAddNamePublicKey, true, "Contract can add publicKey for a non-existing Name");
+
+			try {
+				var result = await namefactory.addNamePublicKey(nameId1, account1, { from: account1 });
+				canAddNamePublicKey = true;
+				addNamePublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canAddNamePublicKey = false;
+				addNamePublicKeyEvent = null;
+			}
+			assert.notEqual(canAddNamePublicKey, true, "Contract can add duplicate publicKey for a Name");
+
+			try {
+				var result = await namefactory.addNamePublicKey(nameId1, someAddress1, { from: account2 });
+				canAddNamePublicKey = true;
+				addNamePublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canAddNamePublicKey = false;
+				addNamePublicKeyEvent = null;
+			}
+			assert.notEqual(canAddNamePublicKey, true, "Non-Advocate of Name can add publicKey");
+
+			var isNamePublicKeyExist = await namefactory.isNamePublicKeyExist(nameId1, someAddress1);
+			assert.equal(isNamePublicKeyExist, false, "Contract returns incorrect public key exist for a Name");
+
+			var totalPublicKeysBefore = await namefactory.getNameTotalPublicKeysCount(nameId1);
+			var nameBefore = await namefactory.getName(nameId1);
+			try {
+				var result = await namefactory.addNamePublicKey(nameId1, someAddress1, { from: account1 });
+				canAddNamePublicKey = true;
+				addNamePublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canAddNamePublicKey = false;
+				addNamePublicKeyEvent = null;
+			}
+			assert.equal(canAddNamePublicKey, true, "Contract can't add publicKey for a Name");
+
+			isNamePublicKeyExist = await namefactory.isNamePublicKeyExist(nameId1, someAddress1);
+			assert.equal(isNamePublicKeyExist, true, "Contract returns incorrect public key exist for a Name");
+
+			var totalPublicKeysAfter = await namefactory.getNameTotalPublicKeysCount(nameId1);
+			assert.equal(totalPublicKeysAfter.toNumber(), totalPublicKeysBefore.plus(1).toNumber(), "Name has incorrect total public keys");
+
+			var publicKeys = await namefactory.getNamePublicKeys(nameId1, 0, totalPublicKeysAfter.minus(1).toNumber());
+			assert.include(publicKeys, someAddress1, "Name's publicKeys list is missing an address");
+
+			var nameAfter = await namefactory.getName(nameId1);
+			assert.equal(nameAfter[8].toNumber(), nameBefore[8].plus(1).toNumber(), "Name has incorrect nonce after adding publicKey");
+
+			assert.equal(addNamePublicKeyEvent.args.nameId, nameId1, "AddNamePublicKey event has incorrect nameId");
+			assert.equal(addNamePublicKeyEvent.args.publicKey, someAddress1, "AddNamePublicKey event has incorrect publicKey");
+			assert.equal(
+				addNamePublicKeyEvent.args.nonce.toNumber(),
+				nameAfter[8].toNumber(),
+				"AddNamePublicKey event has incorrect nonce"
+			);
+		});
+
+		it("deleteNamePublicKey() - should be able to delete publicKey from a Name", async function() {
+			var canDeleteNamePublicKey, deleteNamePublicKeyEvent;
+			try {
+				var result = await namefactory.deleteNamePublicKey(someAddress1, someAddress1, { from: account1 });
+				canDeleteNamePublicKey = true;
+				deleteNamePublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canDeleteNamePublicKey = false;
+				deleteNamePublicKeyEvent = null;
+			}
+			assert.notEqual(canDeleteNamePublicKey, true, "Contract can delete publicKey for a non-existing Name");
+
+			try {
+				var result = await namefactory.deleteNamePublicKey(nameId1, someAddress2, { from: account1 });
+				canDeleteNamePublicKey = true;
+				deleteNamePublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canDeleteNamePublicKey = false;
+				deleteNamePublicKeyEvent = null;
+			}
+			assert.notEqual(canDeleteNamePublicKey, true, "Contract can delete non-existing publicKey for a Name");
+
+			try {
+				var result = await namefactory.deleteNamePublicKey(nameId1, someAddress1, { from: account2 });
+				canDeleteNamePublicKey = true;
+				deleteNamePublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canDeleteNamePublicKey = false;
+				deleteNamePublicKeyEvent = null;
+			}
+			assert.notEqual(canDeleteNamePublicKey, true, "Non-Advocate of Name can delete publicKey");
+
+			var isNamePublicKeyExist = await namefactory.isNamePublicKeyExist(nameId1, someAddress1);
+			assert.equal(isNamePublicKeyExist, true, "Contract returns incorrect public key exist for a Name");
+
+			var totalPublicKeysBefore = await namefactory.getNameTotalPublicKeysCount(nameId1);
+			var nameBefore = await namefactory.getName(nameId1);
+			try {
+				var result = await namefactory.deleteNamePublicKey(nameId1, someAddress1, { from: account1 });
+				canDeleteNamePublicKey = true;
+				deleteNamePublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canDeleteNamePublicKey = false;
+				deleteNamePublicKeyEvent = null;
+			}
+			assert.equal(canDeleteNamePublicKey, true, "Contract can't delete publicKey for a Name");
+
+			isNamePublicKeyExist = await namefactory.isNamePublicKeyExist(nameId1, someAddress1);
+			assert.equal(isNamePublicKeyExist, false, "Contract returns incorrect public key exist for a Name");
+
+			var totalPublicKeysAfter = await namefactory.getNameTotalPublicKeysCount(nameId1);
+			assert.equal(
+				totalPublicKeysAfter.toNumber(),
+				totalPublicKeysBefore.minus(1).toNumber(),
+				"Name has incorrect total public keys"
+			);
+
+			var publicKeys = await namefactory.getNamePublicKeys(nameId1, 0, totalPublicKeysAfter.minus(1).toNumber());
+			assert.notInclude(publicKeys, someAddress1, "Name's publicKeys list is missing an deleteress");
+
+			var nameAfter = await namefactory.getName(nameId1);
+			assert.equal(nameAfter[8].toNumber(), nameBefore[8].plus(1).toNumber(), "Name has incorrect nonce after deleteing publicKey");
+
+			assert.equal(deleteNamePublicKeyEvent.args.nameId, nameId1, "DeleteNamePublicKey event has incorrect nameId");
+			assert.equal(deleteNamePublicKeyEvent.args.publicKey, someAddress1, "DeleteNamePublicKey event has incorrect publicKey");
+			assert.equal(
+				deleteNamePublicKeyEvent.args.nonce.toNumber(),
+				nameAfter[8].toNumber(),
+				"DeleteNamePublicKey event has incorrect nonce"
+			);
+
+			try {
+				var result = await namefactory.deleteNamePublicKey(nameId1, account1, { from: account1 });
+				canDeleteNamePublicKey = true;
+				deleteNamePublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canDeleteNamePublicKey = false;
+				deleteNamePublicKeyEvent = null;
+			}
+			assert.notEqual(
+				canDeleteNamePublicKey,
+				true,
+				"Contract can delete all publicKey for a Name, even though a Name has to have at least 1 publicKey"
+			);
+		});
+
+		it("setNameDefaultPublicKey() - should be able to set a default publicKey for a Name", async function() {
+			// Add the publicKey back
+			await namefactory.addNamePublicKey(nameId1, someAddress1, { from: account1 });
+
+			var sign = function(privateKey, nameId, publicKey) {
+				var signHash = EthCrypto.hash.keccak256([
+					{
+						type: "address",
+						value: namefactory.address
+					},
+					{
+						type: "address",
+						value: nameId
+					},
+					{
+						type: "address",
+						value: publicKey
+					}
+				]);
+
+				var signature = EthCrypto.sign(privateKey, signHash);
+				return EthCrypto.vrs.fromString(signature);
+			};
+
+			var canSetNameDefaultPublicKey, setNameDefaultPublicKeyEvent;
+			try {
+				var vrs = sign(account1PrivateKey, nameId1, someAddress1);
+				var result = await namefactory.setNameDefaultPublicKey(nameId1, someAddress1, "", vrs.r, vrs.s, { from: account1 });
+				canSetNameDefaultPublicKey = true;
+				setNameDefaultPublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canSetNameDefaultPublicKey = false;
+				setNameDefaultPublicKeyEvent = null;
+			}
+			assert.notEqual(canSetNameDefaultPublicKey, true, "Contract can set publicKey as a default without v part of signature");
+
+			try {
+				var vrs = sign(account1PrivateKey, nameId1, someAddress1);
+				var result = await namefactory.setNameDefaultPublicKey(nameId1, someAddress1, vrs.v, "", vrs.s, { from: account1 });
+				canSetNameDefaultPublicKey = true;
+				setNameDefaultPublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canSetNameDefaultPublicKey = false;
+				setNameDefaultPublicKeyEvent = null;
+			}
+			assert.notEqual(canSetNameDefaultPublicKey, true, "Contract can set publicKey as a default without r part of signature");
+
+			try {
+				var vrs = sign(account1PrivateKey, nameId1, someAddress1);
+				var result = await namefactory.setNameDefaultPublicKey(nameId1, someAddress1, vrs.v, vrs.r, "", { from: account1 });
+				canSetNameDefaultPublicKey = true;
+				setNameDefaultPublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canSetNameDefaultPublicKey = false;
+				setNameDefaultPublicKeyEvent = null;
+			}
+			assert.notEqual(canSetNameDefaultPublicKey, true, "Contract can set publicKey as a default without s part of signature");
+
+			try {
+				var vrs = sign(account2PrivateKey, nameId1, someAddress1);
+				var result = await namefactory.setNameDefaultPublicKey(nameId1, someAddress1, vrs.v, vrs.r, "", { from: account1 });
+				canSetNameDefaultPublicKey = true;
+				setNameDefaultPublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canSetNameDefaultPublicKey = false;
+				setNameDefaultPublicKeyEvent = null;
+			}
+			assert.notEqual(canSetNameDefaultPublicKey, true, "Contract can set publicKey as a default with incorrect signature");
+
+			try {
+				var vrs = sign(account1PrivateKey, someAddress1, someAddress1);
+				var result = await namefactory.setNameDefaultPublicKey(someAddress1, someAddress1, vrs.v, vrs.r, vrs.s, { from: account1 });
+				canSetNameDefaultPublicKey = true;
+				setNameDefaultPublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canSetNameDefaultPublicKey = false;
+				setNameDefaultPublicKeyEvent = null;
+			}
+			assert.notEqual(canSetNameDefaultPublicKey, true, "Contract can set publicKey as a default for a non-existing Name");
+
+			try {
+				var vrs = sign(account1PrivateKey, nameId1, someAddress2);
+				var result = await namefactory.setNameDefaultPublicKey(nameId1, someAddress2, vrs.v, vrs.r, vrs.s, { from: account1 });
+				canSetNameDefaultPublicKey = true;
+				setNameDefaultPublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canSetNameDefaultPublicKey = false;
+				setNameDefaultPublicKeyEvent = null;
+			}
+			assert.notEqual(canSetNameDefaultPublicKey, true, "Contract can set non-existing publicKey as a default for a Name");
+
+			try {
+				var vrs = sign(account2PrivateKey, nameId1, someAddress1);
+				var result = await namefactory.setNameDefaultPublicKey(nameId1, someAddress1, vrs.v, vrs.r, vrs.s, { from: account2 });
+				canSetNameDefaultPublicKey = true;
+				setNameDefaultPublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canSetNameDefaultPublicKey = false;
+				setNameDefaultPublicKeyEvent = null;
+			}
+			assert.notEqual(canSetNameDefaultPublicKey, true, "Non-Advocate of Name can set default publicKey");
+
+			var nameBefore = await namefactory.getName(nameId1);
+
+			try {
+				var vrs = sign(account1PrivateKey, nameId1, someAddress1);
+				var result = await namefactory.setNameDefaultPublicKey(nameId1, someAddress1, vrs.v, vrs.r, vrs.s, { from: account1 });
+				canSetNameDefaultPublicKey = true;
+				setNameDefaultPublicKeyEvent = result.logs[0];
+			} catch (e) {
+				canSetNameDefaultPublicKey = false;
+				setNameDefaultPublicKeyEvent = null;
+			}
+			assert.equal(canSetNameDefaultPublicKey, true, "Contract can't set publicKey as default for a Name");
+
+			var nameAfter = await namefactory.getName(nameId1);
+			assert.equal(nameAfter[7], someAddress1, "Name has incorrect defautPublicKey");
+			assert.equal(nameAfter[8].toNumber(), nameBefore[8].plus(1).toNumber(), "Name has incorrect nonce after set default publicKey");
+
+			assert.equal(setNameDefaultPublicKeyEvent.args.nameId, nameId1, "SetNameDefaultPublicKey event has incorrect nameId");
+			assert.equal(
+				setNameDefaultPublicKeyEvent.args.publicKey,
+				someAddress1,
+				"SetNameDefaultPublicKey event has incorrect publicKey"
+			);
+			assert.equal(
+				setNameDefaultPublicKeyEvent.args.nonce.toNumber(),
+				nameAfter[8].toNumber(),
+				"SetNameDefaultPublicKey event has incorrect nonce"
+			);
+		});
+
+		return;
 
 		it("createThought()", async function() {
 			var canCreateThought;

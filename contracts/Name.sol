@@ -75,23 +75,24 @@ contract Name is Thought {
 	/**
 	 * @dev Add publicKey to list
 	 * @param _publicKey The publicKey to be added
-	 * @return true on success
+	 * @return the nonce for this transaction
 	 */
-	function addPublicKey(address _publicKey) public isActive onlyFactory returns (bool) {
+	function addPublicKey(address _publicKey) public isActive onlyFactory returns (uint256) {
 		require (!isPublicKeyExist(_publicKey));
 		publicKeys.push(_publicKey);
 		nonce++;
-		return true;
+		return nonce;
 	}
 
 	/**
 	 * @dev Delete publicKey from the list
 	 * @param _publicKey The publicKey to be deleted
-	 * @return true on success
+	 * @return the nonce for this transaction
 	 */
-	function deletePublicKey(address _publicKey) public isActive onlyFactory returns (bool) {
+	function deletePublicKey(address _publicKey) public isActive onlyFactory returns (uint256) {
 		require (publicKeys.length > 1);
 		require (isPublicKeyExist(_publicKey));
+		uint256 _nonce = nonce;
 		for (uint256 i = 0; i < publicKeys.length; i++) {
 			if (publicKeys[i] == _publicKey) {
 				delete publicKeys[i];
@@ -100,24 +101,19 @@ contract Name is Thought {
 				break;
 			}
 		}
-		return true;
+		require (nonce > _nonce);
+		return nonce;
 	}
 
 	/**
 	 * @dev Set a publicKey as the default
 	 * @param _publicKey The publicKey to be set
-	 * @param _signatureV The V part of the signature for this update
-	 * @param _signatureR The R part of the signature for this update
-	 * @param _signatureS The S part of the signature for this update
-	 * @return true on success
+	 * @return the nonce for this transaction
 	 */
-	function setDefaultPublicKey(address _publicKey, uint8 _signatureV, bytes32 _signatureR, bytes32 _signatureS) public isActive onlyFactory returns (bool) {
+	function setDefaultPublicKey(address _publicKey) public isActive onlyFactory returns (uint256) {
 		require (isPublicKeyExist(_publicKey));
-		bytes32 _hash = keccak256(abi.encodePacked(address(this), _publicKey));
-		require (ecrecover(_hash, _signatureV, _signatureR, _signatureS) == msg.sender);
-
 		defaultPublicKey = _publicKey;
 		nonce++;
-		return true;
+		return nonce;
 	}
 }
