@@ -1,8 +1,9 @@
 pragma solidity ^0.4.24;
 
-import './Name.sol';
 import './SafeMath.sol';
+import './AOLibrary.sol';
 import './Position.sol';
+import './Name.sol';
 
 /**
  * @title NameFactory
@@ -30,6 +31,15 @@ contract NameFactory {
 	// Event to be broadcasted to public when current Advocate sets New Speaker for a Name
 	event SetNameSpeaker(address nameId, address oldSpeakerId, address newSpeakerId);
 
+	// Event to be broadcasted to public when a publicKey is added
+	event AddNamePublicKey(address publicKey, uint256 nonce);
+
+	// Event to be broadcasted to public when a publicKey is deleted
+	event DeleteNamePublicKey(address publicKey, uint256 nonce);
+
+	// Event to be broadcasted to public when setting a defaut publicKey
+	event SetNameDefaultPublicKey(address publicKey, uint256 nonce);
+
 	/**
 	 * @dev Constructor function
 	 */
@@ -37,6 +47,32 @@ contract NameFactory {
 		positionAddress = _positionAddress;
 		_position = Position(positionAddress);
 	}
+
+	/**
+	 * @dev Check if `_nameId` is a Name
+	 */
+	modifier isName(address _nameId) {
+		require (AOLibrary.isName(_nameId));
+		_;
+	}
+
+	/**
+	 * @dev Check if msg.sender address is the current advocate of a `_nameId`.
+	 *		Since there is no way to change the Advocate of a Name, the Advocate's eth address
+	 *		is the same as the Name's Origin Name ID
+	 */
+	modifier onlyAdvocateOfName(address _nameId) {
+		require (AOLibrary.isAdvocateOfName(msg.sender, _nameId));
+		_;
+	}
+
+	/**
+	 * @dev Check is msg.sender address is a Name
+	 */
+	 modifier senderIsName() {
+		require (ethAddressToNameId[msg.sender] != address(0));
+		_;
+	 }
 
 	/**
 	 * @dev Check whether or not `_name` is taken
@@ -158,19 +194,8 @@ contract NameFactory {
 	 * @param _nameId The ID of the Name
 	 * @param _newListenerId The new listener ID to be set
 	 */
-	function setNameListener(address _nameId, address _newListenerId) public {
+	function setNameListener(address _nameId, address _newListenerId) public isName(_nameId) isName(_newListenerId) onlyAdvocateOfName(_nameId) {
 		Name _name = Name(_nameId);
-
-		// Make sure the Name exist
-		require (_name.originNameId() != address(0) && _name.thoughtTypeId() == 1);
-
-		// Make sure the new Listener ID is a Name
-		Name _newListener = Name(_newListenerId);
-		require (_newListener.originNameId() != address(0) && _newListener.thoughtTypeId() == 1);
-
-		// Only Name's current advocate can set new advocate
-		require (ethAddressToNameId[msg.sender] != address(0) && Name(_name.advocateId()).originNameId() == msg.sender);
-
 		// Set the new listener
 		address _currentListenerId = _name.listenerId();
 		require (_name.setListener(_newListenerId));
@@ -183,19 +208,8 @@ contract NameFactory {
 	 * @param _nameId The ID of the Name
 	 * @param _newSpeakerId The new speaker ID to be set
 	 */
-	function setNameSpeaker(address _nameId, address _newSpeakerId) public {
+	function setNameSpeaker(address _nameId, address _newSpeakerId) public isName(_nameId) isName(_newSpeakerId) onlyAdvocateOfName(_nameId) {
 		Name _name = Name(_nameId);
-
-		// Make sure the Name exist
-		require (_name.originNameId() != address(0) && _name.thoughtTypeId() == 1);
-
-		// Make sure the new Speaker ID is a Name
-		Name _newSpeaker = Name(_newSpeakerId);
-		require (_newSpeaker.originNameId() != address(0) && _newSpeaker.thoughtTypeId() == 1);
-
-		// Only Name's current advocate can set new advocate
-		require (ethAddressToNameId[msg.sender] != address(0) && Name(_name.advocateId()).originNameId() == msg.sender);
-
 		// Set the new speaker
 		address _currentSpeakerId = _name.speakerId();
 		require (_name.setSpeaker(_newSpeakerId));
@@ -218,4 +232,14 @@ contract NameFactory {
 			_name.toId()
 		);
 	}
+
+	/**
+	 * @dev Get Name's publicKeys total count
+	 * @param _nameId The ID of the Name
+	 * @return total publicKeys count
+	 */
+	function getTotalPublicKeysCount(address _nameId) public isName(_nameId) view returns (uint256) {
+		return Name(_nameId).getTotalPublicKeysCount();
+	}
+
 }

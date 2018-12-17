@@ -48,7 +48,7 @@ contract ThoughtFactory is ThoughtController {
 	 * @param _contentId The contentId related to this Thought
 	 * @param _from The origin of this Thought (has to be a Name or Thought)
 	 */
-	function createThought(string _datHash, string _database, string _keyValue, bytes32 _contentId, address _from) public senderIsName(msg.sender) {
+	function createThought(string _datHash, string _database, string _keyValue, bytes32 _contentId, address _from) public senderIsName() {
 		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
 
 		// Make sure _from is a Thought/Name
@@ -151,7 +151,7 @@ contract ThoughtFactory is ThoughtController {
 	 * @param _thoughtId The ID of the Thought
 	 * @param _newAdvocateId The new advocate ID to be set
 	 */
-	function setThoughtAdvocate(address _thoughtId, address _newAdvocateId) public isThought(_thoughtId) isName(_newAdvocateId) senderIsName(msg.sender) onlyAdvocateOf(msg.sender, _thoughtId) {
+	function setThoughtAdvocate(address _thoughtId, address _newAdvocateId) public isThought(_thoughtId) isName(_newAdvocateId) senderIsName() onlyAdvocateOfThought(_thoughtId) {
 		Thought _thought = Thought(_thoughtId);
 
 		address _currentAdvocateId = _thought.advocateId();
@@ -167,7 +167,7 @@ contract ThoughtFactory is ThoughtController {
 	 * @param _thoughtId The ID of the Thought
 	 * @param _newListenerId The new listener ID to be set
 	 */
-	function setThoughtListener(address _thoughtId, address _newListenerId) public isThought(_thoughtId) isName(_newListenerId) senderIsName(msg.sender) onlyAdvocateOf(msg.sender, _thoughtId) {
+	function setThoughtListener(address _thoughtId, address _newListenerId) public isThought(_thoughtId) isName(_newListenerId) senderIsName() onlyAdvocateOfThought(_thoughtId) {
 		Thought _thought = Thought(_thoughtId);
 
 		// Set the new listener
@@ -182,7 +182,7 @@ contract ThoughtFactory is ThoughtController {
 	 * @param _thoughtId The ID of the Thought
 	 * @param _newSpeakerId The new speaker ID to be set
 	 */
-	function setThoughtSpeaker(address _thoughtId, address _newSpeakerId) public isThought(_thoughtId) isName(_newSpeakerId) senderIsName(msg.sender) onlyAdvocateOf(msg.sender, _thoughtId) {
+	function setThoughtSpeaker(address _thoughtId, address _newSpeakerId) public isThought(_thoughtId) isName(_newSpeakerId) senderIsName() onlyAdvocateOfThought(_thoughtId) {
 		Thought _thought = Thought(_thoughtId);
 
 		// Set the new speaker
@@ -273,7 +273,7 @@ contract ThoughtFactory is ThoughtController {
 	 * @param _thoughtId The ID of the parent Thought
 	 * @param _orphanThoughtId The orphan Thought ID to approve
 	 */
-	function approveOrphanThought(address _thoughtId, address _orphanThoughtId) public senderIsName(msg.sender) {
+	function approveOrphanThought(address _thoughtId, address _orphanThoughtId) public senderIsName() {
 		require (isOrphanThoughtOfThought(_thoughtId, _orphanThoughtId));
 
 		Thought _thought = Thought(_thoughtId);
@@ -293,7 +293,7 @@ contract ThoughtFactory is ThoughtController {
 	 * @param _thoughtId The ID of the Thought
 	 * @param _locked The bool value to be set
 	 */
-	function setThoughtLocked(address _thoughtId, bool _locked) public isThought(_thoughtId) senderIsName(msg.sender) onlyAdvocateOf(msg.sender, _thoughtId) {
+	function setThoughtLocked(address _thoughtId, bool _locked) public isThought(_thoughtId) senderIsName() onlyAdvocateOfThought(_thoughtId) {
 		require (Thought(_thoughtId).setLocked(_locked));
 
 		emit SetThoughtLocked(_thoughtId, _locked);

@@ -10,6 +10,7 @@ import './AOBoolSetting.sol';
 import './AOAddressSetting.sol';
 import './AOBytesSetting.sol';
 import './AOStringSetting.sol';
+import './Name.sol';
 import './Thought.sol';
 import './NameFactory.sol';
 import './AOSetting.sol';
@@ -463,6 +464,15 @@ library AOLibrary {
 	}
 
 	/**
+	 * @dev Check whether or not the given Name ID is a Name
+	 * @param _nameId The ID of the Name
+	 * @return true if yes. false otherwise
+	 */
+	function isName(address _nameId) public view returns (bool) {
+		return (_nameId != address(0) && Name(_nameId).originNameId() != address(0) && Name(_nameId).thoughtTypeId() == 1);
+	}
+
+	/**
 	 * @dev Check whether or not _from address is Advocate/Listener/Speaker of the Thought
 	 * @param _nameFactoryAddress The address of NameFactory
 	 * @param _from The address that wants to update the TAO Content State
@@ -557,6 +567,28 @@ library AOLibrary {
 			antiThoughtCurrencyBalances[1],
 			antiThoughtCurrencyBalances[2]
 		);
+	}
+
+	/**
+	 * @dev Check if `_sender` address is the current advocate of a `_nameId`
+	 *		Since there is no way to change the Advocate of a Name, the Advocate's eth address
+	 *		is the same as the Name's Origin Name ID
+	 * @param _sender The address to check
+	 * @param _nameId The ID of the Name
+	 * @return true if yes. false otherwise
+	 */
+	function isAdvocateOfName(address _sender, address _nameId) public view returns (bool) {
+		return (Name(_nameId).originNameId() == _sender);
+	}
+
+	/**
+	 * @dev Check if `_sender` address is the current advocate of a `_thoughtId`
+	 * @param _sender The address to check
+	 * @param _thoughtId The ID of the Thought
+	 * @return true if yes. false otherwise
+	 */
+	function isAdvocateOfThought(address _sender, address _thoughtId) public view returns (bool) {
+		return (Name(Thought(_thoughtId).advocateId()).originNameId() == _sender);
 	}
 
 	/***** Internal Methods *****/

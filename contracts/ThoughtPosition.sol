@@ -41,7 +41,7 @@ contract ThoughtPosition is ThoughtController {
 	 * @param _thoughtId The ID of the Thought
 	 * @param _positionAmount The amount of Position to stake
 	 */
-	function stakePosition(address _thoughtId, uint256 _positionAmount) public isThought(_thoughtId) senderIsName(msg.sender) isActiveThought(_thoughtId) {
+	function stakePosition(address _thoughtId, uint256 _positionAmount) public isThought(_thoughtId) senderIsName() isActiveThought(_thoughtId) {
 		uint256 _previousStakedBalance = _position.totalThoughtStakedBalance(_thoughtId);
 		require (_position.stake(_nameFactory.ethAddressToNameId(msg.sender), _thoughtId, _positionAmount));
 		if (_previousStakedBalance == 0 && _position.totalThoughtStakedBalance(_thoughtId) > 0) {
@@ -54,7 +54,7 @@ contract ThoughtPosition is ThoughtController {
 	 * @param _thoughtId The ID of the Thought
 	 * @param _positionAmount The amount of Position to unstake
 	 */
-	function unstakePosition(address _thoughtId, uint256 _positionAmount) public isThought(_thoughtId) senderIsName(msg.sender) isActiveThought(_thoughtId) {
+	function unstakePosition(address _thoughtId, uint256 _positionAmount) public isThought(_thoughtId) senderIsName() isActiveThought(_thoughtId) {
 		uint256 _previousStakedBalance = _position.totalThoughtStakedBalance(_thoughtId);
 		require (_position.unstake(_nameFactory.ethAddressToNameId(msg.sender), _thoughtId, _positionAmount));
 		if (_previousStakedBalance > 0 && _position.totalThoughtStakedBalance(_thoughtId) == 0) {

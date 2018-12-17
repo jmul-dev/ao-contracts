@@ -87,6 +87,9 @@ module.exports = function(deployer, network, accounts) {
 		aosetting;
 
 	deployer.deploy(AOLibrary);
+	deployer.link(AOLibrary, NameFactory);
+	deployer.link(AOLibrary, ThoughtFactory);
+	deployer.link(AOLibrary, ThoughtPosition);
 	deployer.link(AOLibrary, AOSetting);
 	deployer.link(AOLibrary, AOToken);
 	deployer.link(AOLibrary, AOKilo);

@@ -87,6 +87,9 @@ contract("Name & Thought", function(accounts) {
 				"Name has incorrect Position token balance after creation"
 			);
 
+			var totalPublicKeysCount = await namefactory.getTotalPublicKeysCount(nameId);
+			assert.equal(totalPublicKeysCount.toNumber(), 1, "Name has incorrect publicKeys count");
+
 			return nameId;
 		};
 

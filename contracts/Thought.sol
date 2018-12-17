@@ -93,12 +93,13 @@ contract Thought {
 	}
 
 	/**
-	 * @dev Set advocate
+	 * @dev Set advocate (only works for a Thought)
 	 * @param _advocateId The advocate ID to be set
 	 * @return true on success
 	 */
 	function setAdvocate(address _advocateId) public isActive onlyFactory returns (bool) {
 		require (_advocateId != address(0));
+		require (thoughtTypeId == 0);
 		advocateId = _advocateId;
 		return true;
 	}

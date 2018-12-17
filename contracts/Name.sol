@@ -9,17 +9,8 @@ import './SafeMath.sol';
 contract Name is Thought {
 	using SafeMath for uint256;
 
-	address[] public publicKeys;
+	address[] internal publicKeys;
 	address public defaultPublicKey;
-
-	// Event to be broadcasted to public when a publicKey is added
-	event AddPublicKey(address publicKey, uint256 nonce);
-
-	// Event to be broadcasted to public when a publicKey is deleted
-	event DeletePublicKey(address publicKey, uint256 nonce);
-
-	// Event to be broadcasted to public when setting a defaut publicKey
-	event SetDefaultPublicKey(address publicKey, uint256 nonce);
 
 	/**
 	 * @dev Constructor function
@@ -36,14 +27,6 @@ contract Name is Thought {
 		// Store the publicKey
 		publicKeys.push(_originNameId);
 		defaultPublicKey = _originNameId;
-	}
-
-	/**
-	 * Check if the sender is the same as the origin Name
-	 */
-	modifier senderIsOriginName() {
-		require (msg.sender == originNameId);
-		_;
 	}
 
 	/**
@@ -91,19 +74,21 @@ contract Name is Thought {
 	/**
 	 * @dev Add publicKey to list
 	 * @param _publicKey The publicKey to be added
+	 * @return true on success
 	 */
-	function addPublicKey(address _publicKey) public senderIsOriginName {
+	function addPublicKey(address _publicKey) public isActive onlyFactory returns (bool) {
 		require (!isPublicKeyExist(_publicKey));
 		publicKeys.push(_publicKey);
 		nonce++;
-		emit AddPublicKey(_publicKey, nonce);
+		return true;
 	}
 
 	/**
 	 * @dev Delete publicKey from the list
 	 * @param _publicKey The publicKey to be deleted
+	 * @return true on success
 	 */
-	function deletePublicKey(address _publicKey) public senderIsOriginName {
+	function deletePublicKey(address _publicKey) public isActive onlyFactory returns (bool) {
 		require (publicKeys.length > 1);
 		require (isPublicKeyExist(_publicKey));
 		for (uint256 i = 0; i < publicKeys.length; i++) {
@@ -111,11 +96,10 @@ contract Name is Thought {
 				delete publicKeys[i];
 				publicKeys.length--;
 				nonce++;
-				emit DeletePublicKey(_publicKey, nonce);
 				break;
 			}
 		}
-		return;
+		return true;
 	}
 
 	/**
@@ -124,14 +108,15 @@ contract Name is Thought {
 	 * @param _signatureV The V part of the signature for this update
 	 * @param _signatureR The R part of the signature for this update
 	 * @param _signatureS The S part of the signature for this update
+	 * @return true on success
 	 */
-	function setDefaultPublicKey(address _publicKey, uint8 _signatureV, bytes32 _signatureR, bytes32 _signatureS) public senderIsOriginName {
+	function setDefaultPublicKey(address _publicKey, uint8 _signatureV, bytes32 _signatureR, bytes32 _signatureS) public isActive onlyFactory returns (bool) {
 		require (isPublicKeyExist(_publicKey));
 		bytes32 _hash = keccak256(abi.encodePacked(address(this), _publicKey));
 		require (ecrecover(_hash, _signatureV, _signatureR, _signatureS) == msg.sender);
 
 		defaultPublicKey = _publicKey;
 		nonce++;
-		emit SetDefaultPublicKey(_publicKey, nonce);
+		return true;
 	}
 }
