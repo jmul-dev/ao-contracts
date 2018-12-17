@@ -63,6 +63,7 @@ contract Name is Thought {
 	 * @return true if yes. false otherwise
 	 */
 	function isPublicKeyExist(address _publicKey) public view returns (bool) {
+		require (_publicKey != address(0));
 		for (uint256 i = 0; i < publicKeys.length; i++) {
 			if (publicKeys[i] == _publicKey) {
 				return true;

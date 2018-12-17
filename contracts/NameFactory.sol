@@ -252,4 +252,14 @@ contract NameFactory {
 	function getNamePublicKeys(address _nameId, uint256 _from, uint256 _to) public isName(_nameId) view returns (address[]) {
 		return Name(_nameId).getPublicKeys(_from, _to);
 	}
+
+	/**
+	 * @dev Check whether or not a publicKey exist in a Name
+	 * @param _nameId The ID of the Name
+	 * @param _publicKey The publicKey to check
+	 * @return true if yes. false otherwise
+	 */
+	function isNamePublicKeyExist(address _nameId, address _publicKey) public isName(_nameId) view returns (bool) {
+		return Name(_nameId).isPublicKeyExist(_publicKey);
+	}
 }
