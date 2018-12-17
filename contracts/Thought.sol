@@ -41,6 +41,7 @@ contract Thought {
 	uint256 public totalSubThoughts;
 
 	uint256 public balance;
+	uint256 public nonce;
 
 	struct SubThought {
 		address thoughtId;
@@ -71,6 +72,8 @@ contract Thought {
 
 		// Creating Thought
 		thoughtTypeId = 0;
+
+		nonce = 1;
 	}
 
 	/**

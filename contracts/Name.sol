@@ -9,8 +9,6 @@ import './SafeMath.sol';
 contract Name is Thought {
 	using SafeMath for uint256;
 
-	uint256 public nonce;
-
 	address[] public publicKeys;
 	address public defaultPublicKey;
 
@@ -38,8 +36,6 @@ contract Name is Thought {
 		// Store the publicKey
 		publicKeys.push(_originNameId);
 		defaultPublicKey = _originNameId;
-
-		nonce = 1;
 	}
 
 	/**
