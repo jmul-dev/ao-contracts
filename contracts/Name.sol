@@ -125,9 +125,15 @@ contract Name is Thought {
 	/**
 	 * @dev Set a publicKey as the default
 	 * @param _publicKey The publicKey to be set
+	 * @param _signatureV The V part of the signature for this update
+	 * @param _signatureR The R part of the signature for this update
+	 * @param _signatureS The S part of the signature for this update
 	 */
-	function setDefaultPublicKey(address _publicKey) public senderIsOriginName {
+	function setDefaultPublicKey(address _publicKey, uint8 _signatureV, bytes32 _signatureR, bytes32 _signatureS) public senderIsOriginName {
 		require (isPublicKeyExist(_publicKey));
+		bytes32 _hash = keccak256(abi.encodePacked(address(this), _publicKey));
+		require (ecrecover(_hash, _signatureV, _signatureR, _signatureS) == msg.sender);
+
 		defaultPublicKey = _publicKey;
 		nonce++;
 		emit SetDefaultPublicKey(_publicKey, nonce);
