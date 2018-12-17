@@ -23,22 +23,22 @@ contract NameFactory {
 	mapping (address => address) public ethAddressToNameId;
 
 	// Event to be broadcasted to public when a Name is created
-	event CreateName(address ethAddress, address nameId, uint256 index, string name);
+	event CreateName(address indexed ethAddress, address nameId, uint256 index, string name);
 
 	// Event to be broadcasted to public when current Advocate sets New Listener for a Name
-	event SetNameListener(address nameId, address oldListenerId, address newListenerId);
+	event SetNameListener(address indexed nameId, address oldListenerId, address newListenerId);
 
 	// Event to be broadcasted to public when current Advocate sets New Speaker for a Name
-	event SetNameSpeaker(address nameId, address oldSpeakerId, address newSpeakerId);
+	event SetNameSpeaker(address indexed nameId, address oldSpeakerId, address newSpeakerId);
 
-	// Event to be broadcasted to public when a publicKey is added
-	event AddNamePublicKey(address publicKey, uint256 nonce);
+	// Event to be broadcasted to public when a publicKey is added to a Name
+	event AddNamePublicKey(address indexed nameId, address publicKey, uint256 nonce);
 
-	// Event to be broadcasted to public when a publicKey is deleted
-	event DeleteNamePublicKey(address publicKey, uint256 nonce);
+	// Event to be broadcasted to public when a publicKey is deleted from a Name
+	event DeleteNamePublicKey(address indexed nameId, address publicKey, uint256 nonce);
 
-	// Event to be broadcasted to public when setting a defaut publicKey
-	event SetNameDefaultPublicKey(address publicKey, uint256 nonce);
+	// Event to be broadcasted to public when a publicKey is set as default for a Name
+	event SetNameDefaultPublicKey(address indexed nameId, address publicKey, uint256 nonce);
 
 	/**
 	 * @dev Constructor function
@@ -170,7 +170,7 @@ contract NameFactory {
 	}
 
 	/**
-	 * @dev Get list of Name IDs (or Thought IDs)
+	 * @dev Get list of Name IDs
 	 * @param _from The starting index
 	 * @param _to The ending index
 	 * @return list of Name IDs
@@ -238,8 +238,18 @@ contract NameFactory {
 	 * @param _nameId The ID of the Name
 	 * @return total publicKeys count
 	 */
-	function getTotalPublicKeysCount(address _nameId) public isName(_nameId) view returns (uint256) {
+	function getNameTotalPublicKeysCount(address _nameId) public isName(_nameId) view returns (uint256) {
 		return Name(_nameId).getTotalPublicKeysCount();
 	}
 
+	/**
+	 * @dev Get list of publicKeys of a Name
+	 * @param _nameId The ID of the Name
+	 * @param _from The starting index
+	 * @param _to The ending index
+	 * @return list of publicKeys
+	 */
+	function getNamePublicKeys(address _nameId, uint256 _from, uint256 _to) public isName(_nameId) view returns (address[]) {
+		return Name(_nameId).getPublicKeys(_from, _to);
+	}
 }
