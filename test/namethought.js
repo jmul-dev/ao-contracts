@@ -64,14 +64,13 @@ contract("Name & Thought", function(accounts) {
 			var _name = await namefactory.getName(nameId);
 			assert.equal(_name[0], name, "Name has incorrect originName");
 			assert.equal(_name[1], account, "Name has incorrect originNameId");
-			assert.equal(_name[2], nameId, "Name has incorrect advocateId");
-			assert.equal(_name[3], nameId, "Name has incorrect listenerId");
-			assert.equal(_name[4], nameId, "Name has incorrect speakerId");
-			assert.equal(_name[5], datHash, "Name has incorrect datHash");
-			assert.equal(_name[6], database, "Name has incorrect database");
-			assert.equal(_name[7], keyValue, "Name has incorrect keyValue");
-			assert.equal(web3.toAscii(_name[8]).replace(/\0/g, ""), contentId, "Name has incorrect contentId");
-			assert.equal(_name[9].toString(), 1, "Name has incorrect thoughtTypeId");
+			assert.equal(_name[2], datHash, "Name has incorrect datHash");
+			assert.equal(_name[3], database, "Name has incorrect database");
+			assert.equal(_name[4], keyValue, "Name has incorrect keyValue");
+			assert.equal(web3.toAscii(_name[5]).replace(/\0/g, ""), contentId, "Name has incorrect contentId");
+			assert.equal(_name[6].toString(), 1, "Name has incorrect thoughtTypeId");
+			assert.equal(_name[7], account, "Name has incorrect defaultPublicKey");
+			assert.equal(_name[8].toNumber(), 1, "Name has incorrect nonce");
 
 			var ethAddressToNameId = await namefactory.ethAddressToNameId(account);
 			assert.equal(ethAddressToNameId, nameId, "Contract stores incorrect nameId for ETH address");
@@ -298,8 +297,8 @@ contract("Name & Thought", function(accounts) {
 			}
 			assert.equal(canSetNameListener, true, "Name's advocate can't set a new Listener");
 
-			var _name = await namefactory.getName(nameId1);
-			assert.equal(_name[3], _newListenerId, "Name has incorrect listenerId after the update");
+			var _namePosition = await namefactory.getNamePosition(nameId1);
+			assert.equal(_namePosition[1], _newListenerId, "Name has incorrect listenerId after the update");
 		});
 
 		it("setNameSpeaker()", async function() {
@@ -348,8 +347,8 @@ contract("Name & Thought", function(accounts) {
 			}
 			assert.equal(canSetNameSpeaker, true, "Name's advocate can't set a new Speaker");
 
-			var _name = await namefactory.getName(nameId1);
-			assert.equal(_name[4], _newSpeakerId, "Name has incorrect speakerId after the update");
+			var _namePosition = await namefactory.getNamePosition(nameId1);
+			assert.equal(_namePosition[2], _newSpeakerId, "Name has incorrect speakerId after the update");
 		});
 
 		it("createThought()", async function() {

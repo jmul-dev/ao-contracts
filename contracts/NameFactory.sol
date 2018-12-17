@@ -77,28 +77,42 @@ contract NameFactory {
 	 * @param _nameId The ID of the Name to be queried
 	 * @return The name of the Name
 	 * @return The nameId of the Name (in this case, it's the creator node's ETH address)
-	 * @return The advocateId of the Name
-	 * @return The listenerId of the Name
-	 * @return The speakerId of the Name
 	 * @return The datHash of the Name
 	 * @return The database of the Name
 	 * @return The keyValue of the Name
 	 * @return The contentId of the Name
 	 * @return The thoughtTypeId of the Name
+	 * @return The defaultPublicKey of the Name
+	 * @return The current nonce of the Name
 	 */
-	function getName(address _nameId) public view returns (string, address, address, address, address, string, string, string, bytes32, uint8) {
+	function getName(address _nameId) public view returns (string, address, string, string, string, bytes32, uint8, address, uint256) {
 		Name _name = Name(_nameId);
 		return (
 			_name.originName(),
 			_name.originNameId(),
-			_name.advocateId(),
-			_name.listenerId(),
-			_name.speakerId(),
 			_name.datHash(),
 			_name.database(),
 			_name.keyValue(),
 			_name.contentId(),
-			_name.thoughtTypeId()
+			_name.thoughtTypeId(),
+			_name.defaultPublicKey(),
+			_name.nonce()
+		);
+	}
+
+	/**
+	 * @dev Given a Name ID, wants to get the Name's Position, i.e Advocate/Listener/Speaker
+	 * @param _nameId The ID of the Name
+	 * @return The advocateId of the Name
+	 * @return The listenerId of the Name
+	 * @return The speakerId of the Name
+	 */
+	function getNamePosition(address _nameId) public view returns (address, address, address) {
+		Name _name = Name(_nameId);
+		return (
+			_name.advocateId(),
+			_name.listenerId(),
+			_name.speakerId()
 		);
 	}
 

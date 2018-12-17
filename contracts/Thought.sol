@@ -211,7 +211,7 @@ contract Thought {
 	 * @dev Mark Thought as closed
 	 * @return true on success
 	 */
-	function closeThought() public onlyFactory returns (bool) {
+	function close() public onlyFactory returns (bool) {
 		require (closed == false);
 		closed = true;
 		return true;
