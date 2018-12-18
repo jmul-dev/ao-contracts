@@ -24,16 +24,16 @@ contract Position is developed {
 	// Mapping from Name ID to its total available balance
 	mapping (address => uint256) public balanceOf;
 
-	// Mapping from Name's Thought ID to its staked amount
-	mapping (address => mapping(address => uint256)) public thoughtStakedBalance;
+	// Mapping from Name's TAO ID to its staked amount
+	mapping (address => mapping(address => uint256)) public taoStakedBalance;
 
-	// Mapping from Thought ID to its total staked amount
-	mapping (address => uint256) public totalThoughtStakedBalance;
+	// Mapping from TAO ID to its total staked amount
+	mapping (address => uint256) public totalTAOStakedBalance;
 
 	// This generates a public event on the blockchain that will notify clients
 	event Mint(address indexed nameId, uint256 value);
-	event Stake(address indexed nameId, address indexed thoughtId, uint256 value);
-	event Unstake(address indexed nameId, address indexed thoughtId, uint256 value);
+	event Stake(address indexed nameId, address indexed taoId, uint256 value);
+	event Unstake(address indexed nameId, address indexed taoId, uint256 value);
 
 	/**
 	 * Constructor function
@@ -74,37 +74,37 @@ contract Position is developed {
 	}
 
 	/**
-	 * @dev Stake `_value` tokens on `_thoughtId` from `_nameId`
+	 * @dev Stake `_value` tokens on `_taoId` from `_nameId`
 	 * @param _nameId The Name ID that wants to stake
-	 * @param _thoughtId The Thought ID to stake
+	 * @param _taoId The TAO ID to stake
 	 * @param _value The amount to stake
 	 * @return true on success
 	 */
-	function stake(address _nameId, address _thoughtId, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
+	function stake(address _nameId, address _taoId, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
 		require (_value > 0 && _value <= MAX_SUPPLY_PER_NAME);
 		require (balanceOf[_nameId] >= _value);							// Check if the targeted balance is enough
 		balanceOf[_nameId] = balanceOf[_nameId].sub(_value);			// Subtract from the targeted balance
-		thoughtStakedBalance[_nameId][_thoughtId] = thoughtStakedBalance[_nameId][_thoughtId].add(_value);	// Add to the targeted staked balance
-		totalThoughtStakedBalance[_thoughtId] = totalThoughtStakedBalance[_thoughtId].add(_value);
-		emit Stake(_nameId, _thoughtId, _value);
+		taoStakedBalance[_nameId][_taoId] = taoStakedBalance[_nameId][_taoId].add(_value);	// Add to the targeted staked balance
+		totalTAOStakedBalance[_taoId] = totalTAOStakedBalance[_taoId].add(_value);
+		emit Stake(_nameId, _taoId, _value);
 		return true;
 	}
 
 	/**
-	 * @dev Unstake `_value` tokens from `_nameId`'s `_thoughtId`
+	 * @dev Unstake `_value` tokens from `_nameId`'s `_taoId`
 	 * @param _nameId The Name ID that wants to unstake
-	 * @param _thoughtId The Thought ID to unstake
+	 * @param _taoId The TAO ID to unstake
 	 * @param _value The amount to unstake
 	 * @return true on success
 	 */
-	function unstake(address _nameId, address _thoughtId, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
+	function unstake(address _nameId, address _taoId, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
 		require (_value > 0 && _value <= MAX_SUPPLY_PER_NAME);
-		require (thoughtStakedBalance[_nameId][_thoughtId] >= _value);	// Check if the targeted staked balance is enough
-		require (totalThoughtStakedBalance[_thoughtId] >= _value);	// Check if the total targeted staked balance is enough
-		thoughtStakedBalance[_nameId][_thoughtId] = thoughtStakedBalance[_nameId][_thoughtId].sub(_value);	// Subtract from the targeted staked balance
-		totalThoughtStakedBalance[_thoughtId] = totalThoughtStakedBalance[_thoughtId].sub(_value);
+		require (taoStakedBalance[_nameId][_taoId] >= _value);	// Check if the targeted staked balance is enough
+		require (totalTAOStakedBalance[_taoId] >= _value);	// Check if the total targeted staked balance is enough
+		taoStakedBalance[_nameId][_taoId] = taoStakedBalance[_nameId][_taoId].sub(_value);	// Subtract from the targeted staked balance
+		totalTAOStakedBalance[_taoId] = totalTAOStakedBalance[_taoId].sub(_value);
 		balanceOf[_nameId] = balanceOf[_nameId].add(_value);			// Add to the targeted balance
-		emit Unstake(_nameId, _thoughtId, _value);
+		emit Unstake(_nameId, _taoId, _value);
 		return true;
 	}
 }

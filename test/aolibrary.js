@@ -1,6 +1,6 @@
 var AOLibrary = artifacts.require("./AOLibrary.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
-var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
+var TAOFactory = artifacts.require("./TAOFactory.sol");
 var Logos = artifacts.require("./Logos.sol");
 var Ethos = artifacts.require("./Ethos.sol");
 var Pathos = artifacts.require("./Pathos.sol");
@@ -16,7 +16,7 @@ contract("AOLibrary", function(accounts) {
 		percentageDivisor,
 		multiplierDivisor,
 		namefactory,
-		thoughtfactory,
+		taofactory,
 		logos,
 		ethos,
 		pathos,
@@ -25,7 +25,7 @@ contract("AOLibrary", function(accounts) {
 		antipathos,
 		nameId1,
 		nameId2,
-		thoughtId;
+		taoId;
 	var developer = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
@@ -35,7 +35,7 @@ contract("AOLibrary", function(accounts) {
 	before(async function() {
 		library = await AOLibrary.deployed();
 		namefactory = await NameFactory.deployed();
-		thoughtfactory = await ThoughtFactory.deployed();
+		taofactory = await TAOFactory.deployed();
 		logos = await Logos.deployed();
 		ethos = await Ethos.deployed();
 		pathos = await Pathos.deployed();
@@ -54,11 +54,11 @@ contract("AOLibrary", function(accounts) {
 		});
 		nameId2 = await namefactory.ethAddressToNameId(account2);
 
-		result = await thoughtfactory.createThought("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId1, {
+		result = await taofactory.createTAO("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId1, {
 			from: account1
 		});
-		var createThoughtEvent = result.logs[0];
-		thoughtId = createThoughtEvent.args.thoughtId;
+		var createTAOEvent = result.logs[0];
+		taoId = createTAOEvent.args.taoId;
 
 		await logos.setWhitelist(whitelistedAddress, true, { from: developer });
 		await ethos.setWhitelist(whitelistedAddress, true, { from: developer });
@@ -67,7 +67,7 @@ contract("AOLibrary", function(accounts) {
 		await antiethos.setWhitelist(whitelistedAddress, true, { from: developer });
 		await antipathos.setWhitelist(whitelistedAddress, true, { from: developer });
 
-		// mint some ThoughtCurrencies to nameId
+		// mint some TAOCurrencies to nameId
 		await logos.mintToken(nameId1, 10, { from: whitelistedAddress });
 		await ethos.mintToken(nameId1, 20, { from: whitelistedAddress });
 		await pathos.mintToken(nameId1, 30, { from: whitelistedAddress });
@@ -244,9 +244,9 @@ contract("AOLibrary", function(accounts) {
 		assert.equal(newMultiplier.toString(), _newMultiplier.toString(), "Library returns incorrect new multiplier after conversion");
 	});
 
-	it("isThought() - should return true if Thought ID is a Thought", async function() {
-		var isThought = await library.isThought(thoughtId);
-		assert.equal(isThought, true, "Library returns incorrect bool value when a Thought ID is a Thought");
+	it("isTAO() - should return true if TAO ID is a TAO", async function() {
+		var isTAO = await library.isTAO(taoId);
+		assert.equal(isTAO, true, "Library returns incorrect bool value when a TAO ID is a TAO");
 	});
 
 	it("isName() - should return true if Name ID is a Name", async function() {
@@ -254,46 +254,38 @@ contract("AOLibrary", function(accounts) {
 		assert.equal(isName, true, "Library returns incorrect bool value when a Name ID is a Name");
 	});
 
-	it("addressIsThoughtAdvocateListenerSpeaker() - should return true if the address is either Thought's Advocate/Listener/Speaker", async function() {
-		var addressIsThoughtAdvocateListenerSpeaker = await library.addressIsThoughtAdvocateListenerSpeaker(
-			namefactory.address,
-			account2,
-			thoughtId
-		);
+	it("addressIsTAOAdvocateListenerSpeaker() - should return true if the address is either TAO's Advocate/Listener/Speaker", async function() {
+		var addressIsTAOAdvocateListenerSpeaker = await library.addressIsTAOAdvocateListenerSpeaker(namefactory.address, account2, taoId);
 		assert.equal(
-			addressIsThoughtAdvocateListenerSpeaker,
+			addressIsTAOAdvocateListenerSpeaker,
 			false,
-			"Library returns incorrect bool value when address is not Thought's Advocate/Listener/Speaker"
+			"Library returns incorrect bool value when address is not TAO's Advocate/Listener/Speaker"
 		);
 
-		var addressIsThoughtAdvocateListenerSpeaker = await library.addressIsThoughtAdvocateListenerSpeaker(
-			namefactory.address,
-			account1,
-			thoughtId
-		);
+		var addressIsTAOAdvocateListenerSpeaker = await library.addressIsTAOAdvocateListenerSpeaker(namefactory.address, account1, taoId);
 		assert.equal(
-			addressIsThoughtAdvocateListenerSpeaker,
+			addressIsTAOAdvocateListenerSpeaker,
 			true,
-			"Library returns incorrect bool value when address is Thought's Advocate/Listener/Speaker"
+			"Library returns incorrect bool value when address is TAO's Advocate/Listener/Speaker"
 		);
 	});
 
-	it("getThoughtCurrencyBalances() - should return Logos/Ethos/Pathos balances of a Name ID", async function() {
-		var balances = await library.getThoughtCurrencyBalances(nameId1, logos.address, ethos.address, pathos.address);
-		assert.equal(balances[0].toNumber(), 10, "getThoughtCurrencyBalances() returns incorrect Logos balance");
-		assert.equal(balances[1].toNumber(), 20, "getThoughtCurrencyBalances() returns incorrect Ethos balance");
-		assert.equal(balances[2].toNumber(), 30, "getThoughtCurrencyBalances() returns incorrect Pathos balance");
+	it("getTAOCurrencyBalances() - should return Logos/Ethos/Pathos balances of a Name ID", async function() {
+		var balances = await library.getTAOCurrencyBalances(nameId1, logos.address, ethos.address, pathos.address);
+		assert.equal(balances[0].toNumber(), 10, "getTAOCurrencyBalances() returns incorrect Logos balance");
+		assert.equal(balances[1].toNumber(), 20, "getTAOCurrencyBalances() returns incorrect Ethos balance");
+		assert.equal(balances[2].toNumber(), 30, "getTAOCurrencyBalances() returns incorrect Pathos balance");
 	});
 
-	it("getAntiThoughtCurrencyBalances() - should return AntiLogos/AntiEthos/AntiPathos balances of a Name ID", async function() {
-		var balances = await library.getAntiThoughtCurrencyBalances(nameId1, antilogos.address, antiethos.address, antipathos.address);
-		assert.equal(balances[0].toNumber(), 40, "getAntiThoughtCurrencyBalances() returns incorrect AntiLogos balance");
-		assert.equal(balances[1].toNumber(), 50, "getAntiThoughtCurrencyBalances() returns incorrect AntiEthos balance");
-		assert.equal(balances[2].toNumber(), 60, "getAntiThoughtCurrencyBalances() returns incorrect AntiPathos balance");
+	it("getAntiTAOCurrencyBalances() - should return AntiLogos/AntiEthos/AntiPathos balances of a Name ID", async function() {
+		var balances = await library.getAntiTAOCurrencyBalances(nameId1, antilogos.address, antiethos.address, antipathos.address);
+		assert.equal(balances[0].toNumber(), 40, "getAntiTAOCurrencyBalances() returns incorrect AntiLogos balance");
+		assert.equal(balances[1].toNumber(), 50, "getAntiTAOCurrencyBalances() returns incorrect AntiEthos balance");
+		assert.equal(balances[2].toNumber(), 60, "getAntiTAOCurrencyBalances() returns incorrect AntiPathos balance");
 	});
 
-	it("getAllThoughtCurrencyBalances() - should return Logos/Ethos/Pathos/AntiLogos/AntiEthos/AntiPathos balances of a Name ID", async function() {
-		var balances = await library.getAllThoughtCurrencyBalances(
+	it("getAllTAOCurrencyBalances() - should return Logos/Ethos/Pathos/AntiLogos/AntiEthos/AntiPathos balances of a Name ID", async function() {
+		var balances = await library.getAllTAOCurrencyBalances(
 			nameId1,
 			logos.address,
 			ethos.address,
@@ -302,11 +294,11 @@ contract("AOLibrary", function(accounts) {
 			antiethos.address,
 			antipathos.address
 		);
-		assert.equal(balances[0].toNumber(), 10, "getAllThoughtCurrencyBalances() returns incorrect Logos balance");
-		assert.equal(balances[1].toNumber(), 20, "getAllThoughtCurrencyBalances() returns incorrect Ethos balance");
-		assert.equal(balances[2].toNumber(), 30, "getAllThoughtCurrencyBalances() returns incorrect Pathos balance");
-		assert.equal(balances[3].toNumber(), 40, "getAllThoughtCurrencyBalances() returns incorrect AntiLogos balance");
-		assert.equal(balances[4].toNumber(), 50, "getAllThoughtCurrencyBalances() returns incorrect AntiEthos balance");
-		assert.equal(balances[5].toNumber(), 60, "getAllThoughtCurrencyBalances() returns incorrect AntiPathos balance");
+		assert.equal(balances[0].toNumber(), 10, "getAllTAOCurrencyBalances() returns incorrect Logos balance");
+		assert.equal(balances[1].toNumber(), 20, "getAllTAOCurrencyBalances() returns incorrect Ethos balance");
+		assert.equal(balances[2].toNumber(), 30, "getAllTAOCurrencyBalances() returns incorrect Pathos balance");
+		assert.equal(balances[3].toNumber(), 40, "getAllTAOCurrencyBalances() returns incorrect AntiLogos balance");
+		assert.equal(balances[4].toNumber(), 50, "getAllTAOCurrencyBalances() returns incorrect AntiEthos balance");
+		assert.equal(balances[5].toNumber(), 60, "getAllTAOCurrencyBalances() returns incorrect AntiPathos balance");
 	});
 });

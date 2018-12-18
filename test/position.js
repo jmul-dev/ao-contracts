@@ -4,10 +4,10 @@ contract("Position", function(accounts) {
 	var position;
 	var developer = accounts[0];
 	var nameId = accounts[1];
-	var thoughtId = accounts[2];
+	var taoId = accounts[2];
 	var account3 = accounts[3];
 	var nameId2 = accounts[5];
-	var thoughtId2 = accounts[6];
+	var taoId2 = accounts[6];
 	var whitelistedAccount = accounts[4];
 	var maxSupplyPerName;
 	before(async function() {
@@ -75,7 +75,7 @@ contract("Position", function(accounts) {
 		it("stake()", async function() {
 			var canStake;
 			try {
-				await position.stake(nameId, thoughtId, 800000, { from: account3 });
+				await position.stake(nameId, taoId, 800000, { from: account3 });
 				canStake = true;
 			} catch (e) {
 				canStake = false;
@@ -83,7 +83,7 @@ contract("Position", function(accounts) {
 			assert.notEqual(canStake, true, "Non-whitelisted account can stake Position on behalf of nameId");
 
 			try {
-				await position.stake(nameId2, thoughtId, 800000, { from: whitelistedAccount });
+				await position.stake(nameId2, taoId, 800000, { from: whitelistedAccount });
 				canStake = true;
 			} catch (e) {
 				canStake = false;
@@ -91,7 +91,7 @@ contract("Position", function(accounts) {
 			assert.notEqual(canStake, true, "Whitelisted account can stake Position for Name with no balance");
 
 			try {
-				await position.stake(nameId, thoughtId, 10000000, { from: whitelistedAccount });
+				await position.stake(nameId, taoId, 10000000, { from: whitelistedAccount });
 				canStake = true;
 			} catch (e) {
 				canStake = false;
@@ -99,15 +99,15 @@ contract("Position", function(accounts) {
 			assert.notEqual(canStake, true, "Whitelisted account can stake Position more than MAX_SUPPLY_PER_NAME (100%)");
 
 			try {
-				await position.stake(nameId, thoughtId, 800000, { from: whitelistedAccount });
+				await position.stake(nameId, taoId, 800000, { from: whitelistedAccount });
 				canStake = true;
 			} catch (e) {
 				canStake = false;
 			}
-			assert.equal(canStake, true, "Whitelisted account can't stake Position for Name's Thought ID");
+			assert.equal(canStake, true, "Whitelisted account can't stake Position for Name's TAO ID");
 
 			try {
-				await position.stake(nameId, thoughtId2, 300000, { from: whitelistedAccount });
+				await position.stake(nameId, taoId2, 300000, { from: whitelistedAccount });
 				canStake = true;
 			} catch (e) {
 				canStake = false;
@@ -117,11 +117,11 @@ contract("Position", function(accounts) {
 			var nameIdBalance = await position.balanceOf(nameId);
 			assert.equal(nameIdBalance.toString(), maxSupplyPerName.minus(800000).toString(), "Name has incorrect balance");
 
-			var thoughtStakedBalance = await position.thoughtStakedBalance(nameId, thoughtId);
-			assert.equal(thoughtStakedBalance.toString(), 800000, "Thought has incorrect staked balance");
+			var taoStakedBalance = await position.taoStakedBalance(nameId, taoId);
+			assert.equal(taoStakedBalance.toString(), 800000, "TAO has incorrect staked balance");
 
-			var totalThoughtStakedBalance = await position.totalThoughtStakedBalance(thoughtId);
-			assert.equal(totalThoughtStakedBalance.toString(), 800000, "Thought has incorrect total staked balance");
+			var totalTAOStakedBalance = await position.totalTAOStakedBalance(taoId);
+			assert.equal(totalTAOStakedBalance.toString(), 800000, "TAO has incorrect total staked balance");
 		});
 
 		it("stakedBalance()", async function() {
@@ -132,7 +132,7 @@ contract("Position", function(accounts) {
 		it("unstake()", async function() {
 			var canUnstake;
 			try {
-				await position.unstake(nameId, thoughtId, 200000, { from: account3 });
+				await position.unstake(nameId, taoId, 200000, { from: account3 });
 				canUnstake = true;
 			} catch (e) {
 				canUnstake = false;
@@ -140,7 +140,7 @@ contract("Position", function(accounts) {
 			assert.notEqual(canUnstake, true, "Non-whitelisted account can unstake Position on behalf of nameId");
 
 			try {
-				await position.unstake(nameId, thoughtId, 10000000, { from: whitelistedAccount });
+				await position.unstake(nameId, taoId, 10000000, { from: whitelistedAccount });
 				canUnstake = true;
 			} catch (e) {
 				canUnstake = false;
@@ -148,38 +148,38 @@ contract("Position", function(accounts) {
 			assert.notEqual(canUnstake, true, "Whitelisted account can unstake Position more than MAX_SUPPLY_PER_NAME");
 
 			try {
-				await position.unstake(nameId, thoughtId, 900000, { from: whitelistedAccount });
+				await position.unstake(nameId, taoId, 900000, { from: whitelistedAccount });
 				canUnstake = true;
 			} catch (e) {
 				canUnstake = false;
 			}
-			assert.notEqual(canUnstake, true, "Whitelisted account can unstake Position more than Thought's staked balance");
+			assert.notEqual(canUnstake, true, "Whitelisted account can unstake Position more than TAO's staked balance");
 
 			var balanceBefore = await position.balanceOf(nameId);
-			var thoughtStakedBalanceBefore = await position.thoughtStakedBalance(nameId, thoughtId);
-			var totalThoughtStakedBalanceBefore = await position.totalThoughtStakedBalance(thoughtId);
+			var taoStakedBalanceBefore = await position.taoStakedBalance(nameId, taoId);
+			var totalTAOStakedBalanceBefore = await position.totalTAOStakedBalance(taoId);
 			try {
-				await position.unstake(nameId, thoughtId, 300000, { from: whitelistedAccount });
+				await position.unstake(nameId, taoId, 300000, { from: whitelistedAccount });
 				canUnstake = true;
 			} catch (e) {
 				canUnstake = false;
 			}
-			assert.equal(canUnstake, true, "Whitelisted account can't unstake Position of a Name's Thought");
+			assert.equal(canUnstake, true, "Whitelisted account can't unstake Position of a Name's TAO");
 
 			var balanceAfter = await position.balanceOf(nameId);
 			assert.equal(balanceAfter.toString(), balanceBefore.plus(300000).toString(), "Name has incorrect balance after unstaking");
 
-			var thoughtStakedBalanceAfter = await position.thoughtStakedBalance(nameId, thoughtId);
+			var taoStakedBalanceAfter = await position.taoStakedBalance(nameId, taoId);
 			assert.equal(
-				thoughtStakedBalanceAfter.toString(),
-				thoughtStakedBalanceBefore.minus(300000).toString(),
-				"Thought has incorrect staked balance after unstaking"
+				taoStakedBalanceAfter.toString(),
+				taoStakedBalanceBefore.minus(300000).toString(),
+				"TAO has incorrect staked balance after unstaking"
 			);
-			var totalThoughtStakedBalanceAfter = await position.totalThoughtStakedBalance(thoughtId);
+			var totalTAOStakedBalanceAfter = await position.totalTAOStakedBalance(taoId);
 			assert.equal(
-				totalThoughtStakedBalanceAfter.toString(),
-				totalThoughtStakedBalanceBefore.minus(300000).toString(),
-				"Thought has incorrect total staked balance after unstaking"
+				totalTAOStakedBalanceAfter.toString(),
+				totalTAOStakedBalanceBefore.minus(300000).toString(),
+				"TAO has incorrect total staked balance after unstaking"
 			);
 		});
 	});

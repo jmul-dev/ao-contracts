@@ -4,9 +4,9 @@ import './SafeMath.sol';
 import './developed.sol';
 
 /**
- * @title ThoughtCurrency
+ * @title TAOCurrency
  */
-contract ThoughtCurrency is developed {
+contract TAOCurrency is developed {
 	using SafeMath for uint256;
 
 	// Public variables of the token

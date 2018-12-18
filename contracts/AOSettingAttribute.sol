@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "./developed.sol";
-import './Thought.sol';
+import './TAO.sol';
 
 /**
  * @title AOSettingAttribute
@@ -12,8 +12,8 @@ contract AOSettingAttribute is developed {
 	struct SettingData {
 		uint256 settingId;				// Identifier of this setting
 		address creatorNameId;			// The nameId that created the setting
-		address creatorThoughtId;		// The thoughtId that created the setting
-		address associatedThoughtId;	// The thoughtId that the setting affects
+		address creatorTAOId;		// The taoId that created the setting
+		address associatedTAOId;	// The taoId that the setting affects
 		string settingName;				// The human-readable name of the setting
 		/**
 		 * 1 => uint256
@@ -23,9 +23,9 @@ contract AOSettingAttribute is developed {
 		 * 5 => string (catch all)
 		 */
 		uint8 settingType;
-		bool pendingCreate;				// State when associatedThoughtId has not accepted setting
+		bool pendingCreate;				// State when associatedTAOId has not accepted setting
 		bool locked;					// State when pending anything (cannot change if locked)
-		bool rejected;					// State when associatedThoughtId rejected this setting
+		bool rejected;					// State when associatedTAOId rejected this setting
 		string settingDataJSON;			// Catch-all
 	}
 
@@ -35,23 +35,23 @@ contract AOSettingAttribute is developed {
 		address updateAdvocateNameId;	// The nameId of the Advocate that performed the update
 
 		/**
-		 * A child of the associatedThoughtId with the update Logos.
-		 * This tells the setting contract that there is a proposal Thought that is a Child Thought
-		 * of the associated Thought, which will be responsible for deciding if the update to the
+		 * A child of the associatedTAOId with the update Logos.
+		 * This tells the setting contract that there is a proposal TAO that is a Child TAO
+		 * of the associated TAO, which will be responsible for deciding if the update to the
 		 * setting is accepted or rejected.
 		 */
-		address proposalThoughtId;
+		address proposalTAOId;
 
 		/**
-		 * Signature of the proposalThoughtId and update value by the associatedThoughtId
+		 * Signature of the proposalTAOId and update value by the associatedTAOId
 		 * Advocate's Name's address.
 		 */
 		string updateSignature;
 
 		/**
-		 * The proposalThoughtId moves here when setting value changes successfully
+		 * The proposalTAOId moves here when setting value changes successfully
 		 */
-		address lastUpdateThoughtId;
+		address lastUpdateTAOId;
 
 		string settingStateJSON;		// Catch-all
 	}
@@ -59,17 +59,17 @@ contract AOSettingAttribute is developed {
 	struct SettingDeprecation {
 		uint256 settingId;				// Identifier of this setting
 		address creatorNameId;			// The nameId that created this deprecation
-		address creatorThoughtId;		// The thoughtId that created this deprecation
-		address associatedThoughtId;	// The thoughtId that the setting affects
-		bool pendingDeprecated;			// State when associatedThoughtId has not accepted setting
+		address creatorTAOId;		// The taoId that created this deprecation
+		address associatedTAOId;	// The taoId that the setting affects
+		bool pendingDeprecated;			// State when associatedTAOId has not accepted setting
 		bool locked;					// State when pending anything (cannot change if locked)
-		bool rejected;					// State when associatedThoughtId rejected this setting
+		bool rejected;					// State when associatedTAOId rejected this setting
 		bool migrated;					// State when this setting is fully migrated
 
 		// holds the pending new settingId value when a deprecation is set
 		uint256 pendingNewSettingId;
 
-		// holds the new settingId that has been approved by associatedThoughtId
+		// holds the new settingId that has been approved by associatedTAOId
 		uint256 newSettingId;
 
 		// holds the pending new contract address for this setting
@@ -79,28 +79,28 @@ contract AOSettingAttribute is developed {
 		address newSettingContractAddress;
 	}
 
-	struct AssociatedThoughtSetting {
-		bytes32 associatedThoughtSettingId;		// Identifier
-		address associatedThoughtId;			// The Thought ID that the setting is associated to
-		uint256 settingId;						// The Setting ID that is associated with the Thought ID
+	struct AssociatedTAOSetting {
+		bytes32 associatedTAOSettingId;		// Identifier
+		address associatedTAOId;			// The TAO ID that the setting is associated to
+		uint256 settingId;						// The Setting ID that is associated with the TAO ID
 	}
 
-	struct CreatorThoughtSetting {
-		bytes32 creatorThoughtSettingId;		// Identifier
-		address creatorThoughtId;				// The Thought ID that the setting was created from
-		uint256 settingId;						// The Setting ID created from the Thought ID
+	struct CreatorTAOSetting {
+		bytes32 creatorTAOSettingId;		// Identifier
+		address creatorTAOId;				// The TAO ID that the setting was created from
+		uint256 settingId;						// The Setting ID created from the TAO ID
 	}
 
-	struct AssociatedThoughtSettingDeprecation {
-		bytes32 associatedThoughtSettingDeprecationId;		// Identifier
-		address associatedThoughtId;						// The Thought ID that the setting is associated to
-		uint256 settingId;									// The Setting ID that is associated with the Thought ID
+	struct AssociatedTAOSettingDeprecation {
+		bytes32 associatedTAOSettingDeprecationId;		// Identifier
+		address associatedTAOId;						// The TAO ID that the setting is associated to
+		uint256 settingId;									// The Setting ID that is associated with the TAO ID
 	}
 
-	struct CreatorThoughtSettingDeprecation {
-		bytes32 creatorThoughtSettingDeprecationId;			// Identifier
-		address creatorThoughtId;							// The Thought ID that the setting was created from
-		uint256 settingId;									// The Setting ID created from the Thought ID
+	struct CreatorTAOSettingDeprecation {
+		bytes32 creatorTAOSettingDeprecationId;			// Identifier
+		address creatorTAOId;							// The TAO ID that the setting was created from
+		uint256 settingId;									// The Setting ID created from the TAO ID
 	}
 
 	// Mapping from settingId to it's data
@@ -112,17 +112,17 @@ contract AOSettingAttribute is developed {
 	// Mapping from settingId to it's deprecation info
 	mapping (uint256 => SettingDeprecation) internal settingDeprecations;
 
-	// Mapping from associatedThoughtSettingId to AssociatedThoughtSetting
-	mapping (bytes32 => AssociatedThoughtSetting) internal associatedThoughtSettings;
+	// Mapping from associatedTAOSettingId to AssociatedTAOSetting
+	mapping (bytes32 => AssociatedTAOSetting) internal associatedTAOSettings;
 
-	// Mapping from creatorThoughtSettingId to CreatorThoughtSetting
-	mapping (bytes32 => CreatorThoughtSetting) internal creatorThoughtSettings;
+	// Mapping from creatorTAOSettingId to CreatorTAOSetting
+	mapping (bytes32 => CreatorTAOSetting) internal creatorTAOSettings;
 
-	// Mapping from associatedThoughtSettingDeprecationId to AssociatedThoughtSettingDeprecation
-	mapping (bytes32 => AssociatedThoughtSettingDeprecation) internal associatedThoughtSettingDeprecations;
+	// Mapping from associatedTAOSettingDeprecationId to AssociatedTAOSettingDeprecation
+	mapping (bytes32 => AssociatedTAOSettingDeprecation) internal associatedTAOSettingDeprecations;
 
-	// Mapping from creatorThoughtSettingDeprecationId to CreatorThoughtSettingDeprecation
-	mapping (bytes32 => CreatorThoughtSettingDeprecation) internal creatorThoughtSettingDeprecations;
+	// Mapping from creatorTAOSettingDeprecationId to CreatorTAOSettingDeprecation
+	mapping (bytes32 => CreatorTAOSettingDeprecation) internal creatorTAOSettingDeprecations;
 
 	/**
 	 * @dev Constructor function
@@ -135,31 +135,31 @@ contract AOSettingAttribute is developed {
 	 * @param _creatorNameId The nameId that created the setting
 	 * @param _settingType The type of this setting. 1 => uint256, 2 => bool, 3 => address, 4 => bytes32, 5 => string
 	 * @param _settingName The human-readable name of the setting
-	 * @param _creatorThoughtId The thoughtId that created the setting
-	 * @param _associatedThoughtId The thoughtId that the setting affects
+	 * @param _creatorTAOId The taoId that created the setting
+	 * @param _associatedTAOId The taoId that the setting affects
 	 * @param _extraData Catch-all string value to be stored if exist
 	 * @return The ID of the "Associated" setting
 	 * @return The ID of the "Creator" setting
 	 */
-	function add(uint256 _settingId, address _creatorNameId, uint8 _settingType, string _settingName, address _creatorThoughtId, address _associatedThoughtId, string _extraData) public inWhitelist(msg.sender) returns (bytes32, bytes32) {
+	function add(uint256 _settingId, address _creatorNameId, uint8 _settingType, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) public inWhitelist(msg.sender) returns (bytes32, bytes32) {
 		// Store setting data/state
-		require (_storeSettingDataState(_settingId, _creatorNameId, _settingType, _settingName, _creatorThoughtId, _associatedThoughtId, _extraData));
+		require (_storeSettingDataState(_settingId, _creatorNameId, _settingType, _settingName, _creatorTAOId, _associatedTAOId, _extraData));
 
-		// Store the associatedThoughtSetting info
-		bytes32 _associatedThoughtSettingId = keccak256(abi.encodePacked(this, _associatedThoughtId, _settingId));
-		AssociatedThoughtSetting storage _associatedThoughtSetting = associatedThoughtSettings[_associatedThoughtSettingId];
-		_associatedThoughtSetting.associatedThoughtSettingId = _associatedThoughtSettingId;
-		_associatedThoughtSetting.associatedThoughtId = _associatedThoughtId;
-		_associatedThoughtSetting.settingId = _settingId;
+		// Store the associatedTAOSetting info
+		bytes32 _associatedTAOSettingId = keccak256(abi.encodePacked(this, _associatedTAOId, _settingId));
+		AssociatedTAOSetting storage _associatedTAOSetting = associatedTAOSettings[_associatedTAOSettingId];
+		_associatedTAOSetting.associatedTAOSettingId = _associatedTAOSettingId;
+		_associatedTAOSetting.associatedTAOId = _associatedTAOId;
+		_associatedTAOSetting.settingId = _settingId;
 
-		// Store the creatorThoughtSetting info
-		bytes32 _creatorThoughtSettingId = keccak256(abi.encodePacked(this, _creatorThoughtId, _settingId));
-		CreatorThoughtSetting storage _creatorThoughtSetting = creatorThoughtSettings[_creatorThoughtSettingId];
-		_creatorThoughtSetting.creatorThoughtSettingId = _creatorThoughtSettingId;
-		_creatorThoughtSetting.creatorThoughtId = _creatorThoughtId;
-		_creatorThoughtSetting.settingId = _settingId;
+		// Store the creatorTAOSetting info
+		bytes32 _creatorTAOSettingId = keccak256(abi.encodePacked(this, _creatorTAOId, _settingId));
+		CreatorTAOSetting storage _creatorTAOSetting = creatorTAOSettings[_creatorTAOSettingId];
+		_creatorTAOSetting.creatorTAOSettingId = _creatorTAOSettingId;
+		_creatorTAOSetting.creatorTAOId = _creatorTAOId;
+		_creatorTAOSetting.settingId = _settingId;
 
-		return (_associatedThoughtSettingId, _creatorThoughtSettingId);
+		return (_associatedTAOSettingId, _creatorTAOSettingId);
 	}
 
 	/**
@@ -171,8 +171,8 @@ contract AOSettingAttribute is developed {
 		return (
 			_settingData.settingId,
 			_settingData.creatorNameId,
-			_settingData.creatorThoughtId,
-			_settingData.associatedThoughtId,
+			_settingData.creatorTAOId,
+			_settingData.associatedTAOId,
 			_settingData.settingName,
 			_settingData.settingType,
 			_settingData.pendingCreate,
@@ -183,45 +183,45 @@ contract AOSettingAttribute is developed {
 	}
 
 	/**
-	 * @dev Get Associated Thought Setting info
-	 * @param _associatedThoughtSettingId The ID of the associated thought setting
+	 * @dev Get Associated TAO Setting info
+	 * @param _associatedTAOSettingId The ID of the associated tao setting
 	 */
-	function getAssociatedThoughtSetting(bytes32 _associatedThoughtSettingId) public view returns (bytes32, address, uint256) {
-		AssociatedThoughtSetting memory _associatedThoughtSetting = associatedThoughtSettings[_associatedThoughtSettingId];
+	function getAssociatedTAOSetting(bytes32 _associatedTAOSettingId) public view returns (bytes32, address, uint256) {
+		AssociatedTAOSetting memory _associatedTAOSetting = associatedTAOSettings[_associatedTAOSettingId];
 		return (
-			_associatedThoughtSetting.associatedThoughtSettingId,
-			_associatedThoughtSetting.associatedThoughtId,
-			_associatedThoughtSetting.settingId
+			_associatedTAOSetting.associatedTAOSettingId,
+			_associatedTAOSetting.associatedTAOId,
+			_associatedTAOSetting.settingId
 		);
 	}
 
 	/**
-	 * @dev Get Creator Thought Setting info
-	 * @param _creatorThoughtSettingId The ID of the creator thought setting
+	 * @dev Get Creator TAO Setting info
+	 * @param _creatorTAOSettingId The ID of the creator tao setting
 	 */
-	function getCreatorThoughtSetting(bytes32 _creatorThoughtSettingId) public view returns (bytes32, address, uint256) {
-		CreatorThoughtSetting memory _creatorThoughtSetting = creatorThoughtSettings[_creatorThoughtSettingId];
+	function getCreatorTAOSetting(bytes32 _creatorTAOSettingId) public view returns (bytes32, address, uint256) {
+		CreatorTAOSetting memory _creatorTAOSetting = creatorTAOSettings[_creatorTAOSettingId];
 		return (
-			_creatorThoughtSetting.creatorThoughtSettingId,
-			_creatorThoughtSetting.creatorThoughtId,
-			_creatorThoughtSetting.settingId
+			_creatorTAOSetting.creatorTAOSettingId,
+			_creatorTAOSetting.creatorTAOId,
+			_creatorTAOSetting.settingId
 		);
 	}
 
 	/**
-	 * @dev Advocate of Setting's _associatedThoughtId approves setting creation
+	 * @dev Advocate of Setting's _associatedTAOId approves setting creation
 	 * @param _settingId The ID of the setting to approve
-	 * @param _associatedThoughtAdvocate The advocate of the associated Thought
+	 * @param _associatedTAOAdvocate The advocate of the associated TAO
 	 * @param _approved Whether to approve or reject
 	 * @return true on success
 	 */
-	function approveAdd(uint256 _settingId, address _associatedThoughtAdvocate, bool _approved) public inWhitelist(msg.sender) returns (bool) {
+	function approveAdd(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingData storage _settingData = settingDatas[_settingId];
-		require (_settingData.settingId == _settingId && _settingData.pendingCreate == true && _settingData.locked == true && _settingData.rejected == false && _associatedThoughtAdvocate != address(0) && _associatedThoughtAdvocate == Thought(_settingData.associatedThoughtId).advocateId());
+		require (_settingData.settingId == _settingId && _settingData.pendingCreate == true && _settingData.locked == true && _settingData.rejected == false && _associatedTAOAdvocate != address(0) && _associatedTAOAdvocate == TAO(_settingData.associatedTAOId).advocateId());
 
 		if (_approved) {
-			// Unlock the setting so that advocate of creatorThoughtId can finalize the creation
+			// Unlock the setting so that advocate of creatorTAOId can finalize the creation
 			_settingData.locked = false;
 		} else {
 			// Reject the setting
@@ -233,15 +233,15 @@ contract AOSettingAttribute is developed {
 	}
 
 	/**
-	 * @dev Advocate of Setting's _creatorThoughtId finalizes the setting creation once the setting is approved
+	 * @dev Advocate of Setting's _creatorTAOId finalizes the setting creation once the setting is approved
 	 * @param _settingId The ID of the setting to be finalized
-	 * @param _creatorThoughtAdvocate The advocate of the creator Thought
+	 * @param _creatorTAOAdvocate The advocate of the creator TAO
 	 * @return true on success
 	 */
-	function finalizeAdd(uint256 _settingId, address _creatorThoughtAdvocate) public inWhitelist(msg.sender) returns (bool) {
+	function finalizeAdd(uint256 _settingId, address _creatorTAOAdvocate) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingData storage _settingData = settingDatas[_settingId];
-		require (_settingData.settingId == _settingId && _settingData.pendingCreate == true && _settingData.locked == false && _settingData.rejected == false && _creatorThoughtAdvocate != address(0) && _creatorThoughtAdvocate == Thought(_settingData.creatorThoughtId).advocateId());
+		require (_settingData.settingId == _settingId && _settingData.pendingCreate == true && _settingData.locked == false && _settingData.rejected == false && _creatorTAOAdvocate != address(0) && _creatorTAOAdvocate == TAO(_settingData.creatorTAOId).advocateId());
 
 		// Update the setting data
 		_settingData.pendingCreate = false;
@@ -254,16 +254,16 @@ contract AOSettingAttribute is developed {
 	 * @dev Store setting update data
 	 * @param _settingId The ID of the setting to be updated
 	 * @param _settingType The type of this setting
-	 * @param _associatedThoughtAdvocate The setting's associatedThoughtId's advocate's name address
-	 * @param _proposalThoughtId The child of the associatedThoughtId with the update Logos
-	 * @param _updateSignature A signature of the proposalThoughtId and update value by _associatedThoughtAdvocate
+	 * @param _associatedTAOAdvocate The setting's associatedTAOId's advocate's name address
+	 * @param _proposalTAOId The child of the associatedTAOId with the update Logos
+	 * @param _updateSignature A signature of the proposalTAOId and update value by _associatedTAOAdvocate
 	 * @param _extraData Catch-all string value to be stored if exist
 	 * @return true on success
 	 */
-	function update(uint256 _settingId, uint8 _settingType, address _associatedThoughtAdvocate, address _proposalThoughtId, string _updateSignature, string _extraData) public inWhitelist(msg.sender) returns (bool) {
+	function update(uint256 _settingId, uint8 _settingType, address _associatedTAOAdvocate, address _proposalTAOId, string _updateSignature, string _extraData) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting is created
 		SettingData memory _settingData = settingDatas[_settingId];
-		require (_settingData.settingId == _settingId && _settingData.settingType == _settingType && _settingData.pendingCreate == false && _settingData.locked == true && _settingData.rejected == false && _associatedThoughtAdvocate != address(0) && _associatedThoughtAdvocate == Thought(_settingData.associatedThoughtId).advocateId() && bytes(_updateSignature).length > 0);
+		require (_settingData.settingId == _settingId && _settingData.settingType == _settingType && _settingData.pendingCreate == false && _settingData.locked == true && _settingData.rejected == false && _associatedTAOAdvocate != address(0) && _associatedTAOAdvocate == TAO(_settingData.associatedTAOId).advocateId() && bytes(_updateSignature).length > 0);
 
 		// Make sure setting is not in the middle of updating
 		SettingState storage _settingState = settingStates[_settingId];
@@ -277,8 +277,8 @@ contract AOSettingAttribute is developed {
 
 		// Store the SettingState data
 		_settingState.pendingUpdate = true;
-		_settingState.updateAdvocateNameId = _associatedThoughtAdvocate;
-		_settingState.proposalThoughtId = _proposalThoughtId;
+		_settingState.updateAdvocateNameId = _associatedTAOAdvocate;
+		_settingState.proposalTAOId = _proposalTAOId;
 		_settingState.updateSignature = _updateSignature;
 		_settingState.settingStateJSON = _extraData;
 
@@ -295,64 +295,64 @@ contract AOSettingAttribute is developed {
 			_settingState.settingId,
 			_settingState.pendingUpdate,
 			_settingState.updateAdvocateNameId,
-			_settingState.proposalThoughtId,
+			_settingState.proposalTAOId,
 			_settingState.updateSignature,
-			_settingState.lastUpdateThoughtId,
+			_settingState.lastUpdateTAOId,
 			_settingState.settingStateJSON
 		);
 	}
 
 	/**
-	 * @dev Advocate of Setting's proposalThoughtId approves the setting update
+	 * @dev Advocate of Setting's proposalTAOId approves the setting update
 	 * @param _settingId The ID of the setting to be approved
-	 * @param _proposalThoughtAdvocate The advocate of the proposal Thought
+	 * @param _proposalTAOAdvocate The advocate of the proposal TAO
 	 * @param _approved Whether to approve or reject
 	 * @return true on success
 	 */
-	function approveUpdate(uint256 _settingId, address _proposalThoughtAdvocate, bool _approved) public inWhitelist(msg.sender) returns (bool) {
+	function approveUpdate(uint256 _settingId, address _proposalTAOAdvocate, bool _approved) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting is created
 		SettingData storage _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == true && _settingData.rejected == false);
 
 		// Make sure setting update exists and needs approval
 		SettingState storage _settingState = settingStates[_settingId];
-		require (_settingState.settingId == _settingId && _settingState.pendingUpdate == true && _proposalThoughtAdvocate != address(0) && _proposalThoughtAdvocate == Thought(_settingState.proposalThoughtId).advocateId());
+		require (_settingState.settingId == _settingId && _settingState.pendingUpdate == true && _proposalTAOAdvocate != address(0) && _proposalTAOAdvocate == TAO(_settingState.proposalTAOId).advocateId());
 
 		if (_approved) {
-			// Unlock the setting so that advocate of associatedThoughtId can finalize the update
+			// Unlock the setting so that advocate of associatedTAOId can finalize the update
 			_settingData.locked = false;
 		} else {
 			// Set pendingUpdate to false
 			_settingState.pendingUpdate = false;
-			_settingState.proposalThoughtId = address(0);
+			_settingState.proposalTAOId = address(0);
 		}
 		return true;
 	}
 
 	/**
-	 * @dev Advocate of Setting's _associatedThoughtId finalizes the setting update once the setting is approved
+	 * @dev Advocate of Setting's _associatedTAOId finalizes the setting update once the setting is approved
 	 * @param _settingId The ID of the setting to be finalized
-	 * @param _associatedThoughtAdvocate The advocate of the associated Thought
+	 * @param _associatedTAOAdvocate The advocate of the associated TAO
 	 * @return true on success
 	 */
-	function finalizeUpdate(uint256 _settingId, address _associatedThoughtAdvocate) public inWhitelist(msg.sender) returns (bool) {
+	function finalizeUpdate(uint256 _settingId, address _associatedTAOAdvocate) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting is created
 		SettingData storage _settingData = settingDatas[_settingId];
-		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == false && _settingData.rejected == false && _associatedThoughtAdvocate != address(0) && _associatedThoughtAdvocate == Thought(_settingData.associatedThoughtId).advocateId());
+		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == false && _settingData.rejected == false && _associatedTAOAdvocate != address(0) && _associatedTAOAdvocate == TAO(_settingData.associatedTAOId).advocateId());
 
 		// Make sure setting update exists and needs approval
 		SettingState storage _settingState = settingStates[_settingId];
-		require (_settingState.settingId == _settingId && _settingState.pendingUpdate == true && _settingState.proposalThoughtId != address(0));
+		require (_settingState.settingId == _settingId && _settingState.pendingUpdate == true && _settingState.proposalTAOId != address(0));
 
 		// Update the setting data
 		_settingData.locked = true;
 
 		// Update the setting state
 		_settingState.pendingUpdate = false;
-		_settingState.updateAdvocateNameId = _associatedThoughtAdvocate;
-		address _proposalThoughtId = _settingState.proposalThoughtId;
-		_settingState.proposalThoughtId = address(0);
-		_settingState.lastUpdateThoughtId = _proposalThoughtId;
+		_settingState.updateAdvocateNameId = _associatedTAOAdvocate;
+		address _proposalTAOId = _settingState.proposalTAOId;
+		_settingState.proposalTAOId = address(0);
+		_settingState.lastUpdateTAOId = _proposalTAOId;
 
 		return true;
 	}
@@ -361,31 +361,31 @@ contract AOSettingAttribute is developed {
 	 * @dev Add setting deprecation
 	 * @param _settingId The ID of the setting
 	 * @param _creatorNameId The nameId that created the setting
-	 * @param _creatorThoughtId The thoughtId that created the setting
-	 * @param _associatedThoughtId The thoughtId that the setting affects
+	 * @param _creatorTAOId The taoId that created the setting
+	 * @param _associatedTAOId The taoId that the setting affects
 	 * @param _newSettingId The new settingId value to route
 	 * @param _newSettingContractAddress The address of the new setting contract to route
 	 * @return The ID of the "Associated" setting deprecation
 	 * @return The ID of the "Creator" setting deprecation
 	 */
-	function addDeprecation(uint256 _settingId, address _creatorNameId, address _creatorThoughtId, address _associatedThoughtId, uint256 _newSettingId, address _newSettingContractAddress) public inWhitelist(msg.sender) returns (bytes32, bytes32) {
-		require (_storeSettingDeprecation(_settingId, _creatorNameId, _creatorThoughtId, _associatedThoughtId, _newSettingId, _newSettingContractAddress));
+	function addDeprecation(uint256 _settingId, address _creatorNameId, address _creatorTAOId, address _associatedTAOId, uint256 _newSettingId, address _newSettingContractAddress) public inWhitelist(msg.sender) returns (bytes32, bytes32) {
+		require (_storeSettingDeprecation(_settingId, _creatorNameId, _creatorTAOId, _associatedTAOId, _newSettingId, _newSettingContractAddress));
 
-		// Store the associatedThoughtSettingDeprecation info
-		bytes32 _associatedThoughtSettingDeprecationId = keccak256(abi.encodePacked(this, _associatedThoughtId, _settingId));
-		AssociatedThoughtSettingDeprecation storage _associatedThoughtSettingDeprecation = associatedThoughtSettingDeprecations[_associatedThoughtSettingDeprecationId];
-		_associatedThoughtSettingDeprecation.associatedThoughtSettingDeprecationId = _associatedThoughtSettingDeprecationId;
-		_associatedThoughtSettingDeprecation.associatedThoughtId = _associatedThoughtId;
-		_associatedThoughtSettingDeprecation.settingId = _settingId;
+		// Store the associatedTAOSettingDeprecation info
+		bytes32 _associatedTAOSettingDeprecationId = keccak256(abi.encodePacked(this, _associatedTAOId, _settingId));
+		AssociatedTAOSettingDeprecation storage _associatedTAOSettingDeprecation = associatedTAOSettingDeprecations[_associatedTAOSettingDeprecationId];
+		_associatedTAOSettingDeprecation.associatedTAOSettingDeprecationId = _associatedTAOSettingDeprecationId;
+		_associatedTAOSettingDeprecation.associatedTAOId = _associatedTAOId;
+		_associatedTAOSettingDeprecation.settingId = _settingId;
 
-		// Store the creatorThoughtSettingDeprecation info
-		bytes32 _creatorThoughtSettingDeprecationId = keccak256(abi.encodePacked(this, _creatorThoughtId, _settingId));
-		CreatorThoughtSettingDeprecation storage _creatorThoughtSettingDeprecation = creatorThoughtSettingDeprecations[_creatorThoughtSettingDeprecationId];
-		_creatorThoughtSettingDeprecation.creatorThoughtSettingDeprecationId = _creatorThoughtSettingDeprecationId;
-		_creatorThoughtSettingDeprecation.creatorThoughtId = _creatorThoughtId;
-		_creatorThoughtSettingDeprecation.settingId = _settingId;
+		// Store the creatorTAOSettingDeprecation info
+		bytes32 _creatorTAOSettingDeprecationId = keccak256(abi.encodePacked(this, _creatorTAOId, _settingId));
+		CreatorTAOSettingDeprecation storage _creatorTAOSettingDeprecation = creatorTAOSettingDeprecations[_creatorTAOSettingDeprecationId];
+		_creatorTAOSettingDeprecation.creatorTAOSettingDeprecationId = _creatorTAOSettingDeprecationId;
+		_creatorTAOSettingDeprecation.creatorTAOId = _creatorTAOId;
+		_creatorTAOSettingDeprecation.settingId = _settingId;
 
-		return (_associatedThoughtSettingDeprecationId, _creatorThoughtSettingDeprecationId);
+		return (_associatedTAOSettingDeprecationId, _creatorTAOSettingDeprecationId);
 	}
 
 	/**
@@ -397,8 +397,8 @@ contract AOSettingAttribute is developed {
 		return (
 			_settingDeprecation.settingId,
 			_settingDeprecation.creatorNameId,
-			_settingDeprecation.creatorThoughtId,
-			_settingDeprecation.associatedThoughtId,
+			_settingDeprecation.creatorTAOId,
+			_settingDeprecation.associatedTAOId,
 			_settingDeprecation.pendingDeprecated,
 			_settingDeprecation.locked,
 			_settingDeprecation.rejected,
@@ -411,45 +411,45 @@ contract AOSettingAttribute is developed {
 	}
 
 	/**
-	 * @dev Get Associated Thought Setting Deprecation info
-	 * @param _associatedThoughtSettingDeprecationId The ID of the associated thought setting deprecation
+	 * @dev Get Associated TAO Setting Deprecation info
+	 * @param _associatedTAOSettingDeprecationId The ID of the associated tao setting deprecation
 	 */
-	function getAssociatedThoughtSettingDeprecation(bytes32 _associatedThoughtSettingDeprecationId) public view returns (bytes32, address, uint256) {
-		AssociatedThoughtSettingDeprecation memory _associatedThoughtSettingDeprecation = associatedThoughtSettingDeprecations[_associatedThoughtSettingDeprecationId];
+	function getAssociatedTAOSettingDeprecation(bytes32 _associatedTAOSettingDeprecationId) public view returns (bytes32, address, uint256) {
+		AssociatedTAOSettingDeprecation memory _associatedTAOSettingDeprecation = associatedTAOSettingDeprecations[_associatedTAOSettingDeprecationId];
 		return (
-			_associatedThoughtSettingDeprecation.associatedThoughtSettingDeprecationId,
-			_associatedThoughtSettingDeprecation.associatedThoughtId,
-			_associatedThoughtSettingDeprecation.settingId
+			_associatedTAOSettingDeprecation.associatedTAOSettingDeprecationId,
+			_associatedTAOSettingDeprecation.associatedTAOId,
+			_associatedTAOSettingDeprecation.settingId
 		);
 	}
 
 	/**
-	 * @dev Get Creator Thought Setting Deprecation info
-	 * @param _creatorThoughtSettingDeprecationId The ID of the creator thought setting deprecation
+	 * @dev Get Creator TAO Setting Deprecation info
+	 * @param _creatorTAOSettingDeprecationId The ID of the creator tao setting deprecation
 	 */
-	function getCreatorThoughtSettingDeprecation(bytes32 _creatorThoughtSettingDeprecationId) public view returns (bytes32, address, uint256) {
-		CreatorThoughtSettingDeprecation memory _creatorThoughtSettingDeprecation = creatorThoughtSettingDeprecations[_creatorThoughtSettingDeprecationId];
+	function getCreatorTAOSettingDeprecation(bytes32 _creatorTAOSettingDeprecationId) public view returns (bytes32, address, uint256) {
+		CreatorTAOSettingDeprecation memory _creatorTAOSettingDeprecation = creatorTAOSettingDeprecations[_creatorTAOSettingDeprecationId];
 		return (
-			_creatorThoughtSettingDeprecation.creatorThoughtSettingDeprecationId,
-			_creatorThoughtSettingDeprecation.creatorThoughtId,
-			_creatorThoughtSettingDeprecation.settingId
+			_creatorTAOSettingDeprecation.creatorTAOSettingDeprecationId,
+			_creatorTAOSettingDeprecation.creatorTAOId,
+			_creatorTAOSettingDeprecation.settingId
 		);
 	}
 
 	/**
-	 * @dev Advocate of SettingDeprecation's _associatedThoughtId approves deprecation
+	 * @dev Advocate of SettingDeprecation's _associatedTAOId approves deprecation
 	 * @param _settingId The ID of the setting to approve
-	 * @param _associatedThoughtAdvocate The advocate of the associated Thought
+	 * @param _associatedTAOAdvocate The advocate of the associated TAO
 	 * @param _approved Whether to approve or reject
 	 * @return true on success
 	 */
-	function approveDeprecation(uint256 _settingId, address _associatedThoughtAdvocate, bool _approved) public inWhitelist(msg.sender) returns (bool) {
+	function approveDeprecation(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingDeprecation storage _settingDeprecation = settingDeprecations[_settingId];
-		require (_settingDeprecation.settingId == _settingId && _settingDeprecation.migrated == false && _settingDeprecation.pendingDeprecated == true && _settingDeprecation.locked == true && _settingDeprecation.rejected == false && _associatedThoughtAdvocate != address(0) && _associatedThoughtAdvocate == Thought(_settingDeprecation.associatedThoughtId).advocateId());
+		require (_settingDeprecation.settingId == _settingId && _settingDeprecation.migrated == false && _settingDeprecation.pendingDeprecated == true && _settingDeprecation.locked == true && _settingDeprecation.rejected == false && _associatedTAOAdvocate != address(0) && _associatedTAOAdvocate == TAO(_settingDeprecation.associatedTAOId).advocateId());
 
 		if (_approved) {
-			// Unlock the setting so that advocate of creatorThoughtId can finalize the creation
+			// Unlock the setting so that advocate of creatorTAOId can finalize the creation
 			_settingDeprecation.locked = false;
 		} else {
 			// Reject the setting
@@ -460,15 +460,15 @@ contract AOSettingAttribute is developed {
 	}
 
 	/**
-	 * @dev Advocate of SettingDeprecation's _creatorThoughtId finalizes the deprecation once the setting deprecation is approved
+	 * @dev Advocate of SettingDeprecation's _creatorTAOId finalizes the deprecation once the setting deprecation is approved
 	 * @param _settingId The ID of the setting to be finalized
-	 * @param _creatorThoughtAdvocate The advocate of the creator Thought
+	 * @param _creatorTAOAdvocate The advocate of the creator TAO
 	 * @return true on success
 	 */
-	function finalizeDeprecation(uint256 _settingId, address _creatorThoughtAdvocate) public inWhitelist(msg.sender) returns (bool) {
+	function finalizeDeprecation(uint256 _settingId, address _creatorTAOAdvocate) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingDeprecation storage _settingDeprecation = settingDeprecations[_settingId];
-		require (_settingDeprecation.settingId == _settingId && _settingDeprecation.migrated == false && _settingDeprecation.pendingDeprecated == true && _settingDeprecation.locked == false && _settingDeprecation.rejected == false && _creatorThoughtAdvocate != address(0) && _creatorThoughtAdvocate == Thought(_settingDeprecation.creatorThoughtId).advocateId());
+		require (_settingDeprecation.settingId == _settingId && _settingDeprecation.migrated == false && _settingDeprecation.pendingDeprecated == true && _settingDeprecation.locked == false && _settingDeprecation.rejected == false && _creatorTAOAdvocate != address(0) && _creatorTAOAdvocate == TAO(_settingDeprecation.creatorTAOId).advocateId());
 
 		// Update the setting data
 		_settingDeprecation.pendingDeprecated = false;
@@ -491,18 +491,18 @@ contract AOSettingAttribute is developed {
 	 * @param _creatorNameId The nameId that created the setting
 	 * @param _settingType The type of this setting. 1 => uint256, 2 => bool, 3 => address, 4 => bytes32, 5 => string
 	 * @param _settingName The human-readable name of the setting
-	 * @param _creatorThoughtId The thoughtId that created the setting
-	 * @param _associatedThoughtId The thoughtId that the setting affects
+	 * @param _creatorTAOId The taoId that created the setting
+	 * @param _associatedTAOId The taoId that the setting affects
 	 * @param _extraData Catch-all string value to be stored if exist
 	 * @return true on success
 	 */
-	function _storeSettingDataState(uint256 _settingId, address _creatorNameId, uint8 _settingType, string _settingName, address _creatorThoughtId, address _associatedThoughtId, string _extraData) internal returns (bool) {
+	function _storeSettingDataState(uint256 _settingId, address _creatorNameId, uint8 _settingType, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) internal returns (bool) {
 		// Store setting data
 		SettingData storage _settingData = settingDatas[_settingId];
 		_settingData.settingId = _settingId;
 		_settingData.creatorNameId = _creatorNameId;
-		_settingData.creatorThoughtId = _creatorThoughtId;
-		_settingData.associatedThoughtId = _associatedThoughtId;
+		_settingData.creatorTAOId = _creatorTAOId;
+		_settingData.associatedTAOId = _associatedTAOId;
 		_settingData.settingName = _settingName;
 		_settingData.settingType = _settingType;
 		_settingData.pendingCreate = true;
@@ -519,13 +519,13 @@ contract AOSettingAttribute is developed {
 	 * @dev Store setting deprecation
 	 * @param _settingId The ID of the setting
 	 * @param _creatorNameId The nameId that created the setting
-	 * @param _creatorThoughtId The thoughtId that created the setting
-	 * @param _associatedThoughtId The thoughtId that the setting affects
+	 * @param _creatorTAOId The taoId that created the setting
+	 * @param _associatedTAOId The taoId that the setting affects
 	 * @param _newSettingId The new settingId value to route
 	 * @param _newSettingContractAddress The address of the new setting contract to route
 	 * @return true on success
 	 */
-	function _storeSettingDeprecation(uint256 _settingId, address _creatorNameId, address _creatorThoughtId, address _associatedThoughtId, uint256 _newSettingId, address _newSettingContractAddress) internal returns (bool) {
+	function _storeSettingDeprecation(uint256 _settingId, address _creatorNameId, address _creatorTAOId, address _associatedTAOId, uint256 _newSettingId, address _newSettingContractAddress) internal returns (bool) {
 		// Make sure this setting exists
 		require (settingDatas[_settingId].creatorNameId != address(0) && settingDatas[_settingId].rejected == false && settingDatas[_settingId].pendingCreate == false);
 
@@ -542,8 +542,8 @@ contract AOSettingAttribute is developed {
 		SettingDeprecation storage _settingDeprecation = settingDeprecations[_settingId];
 		_settingDeprecation.settingId = _settingId;
 		_settingDeprecation.creatorNameId = _creatorNameId;
-		_settingDeprecation.creatorThoughtId = _creatorThoughtId;
-		_settingDeprecation.associatedThoughtId = _associatedThoughtId;
+		_settingDeprecation.creatorTAOId = _creatorTAOId;
+		_settingDeprecation.associatedTAOId = _associatedTAOId;
 		_settingDeprecation.pendingDeprecated = true;
 		_settingDeprecation.locked = true;
 		_settingDeprecation.pendingNewSettingId = _newSettingId;

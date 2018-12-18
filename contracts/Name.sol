@@ -1,12 +1,12 @@
 pragma solidity ^0.4.24;
 
-import './Thought.sol';
+import './TAO.sol';
 import './SafeMath.sol';
 
 /**
  * @title Name
  */
-contract Name is Thought {
+contract Name is TAO {
 	using SafeMath for uint256;
 
 	address[] internal publicKeys;
@@ -16,9 +16,9 @@ contract Name is Thought {
 	 * @dev Constructor function
 	 */
 	constructor (string _originName, address _originNameId, string _datHash, string _database, string _keyValue, bytes32 _contentId)
-		Thought (_originName, _originNameId, _datHash, _database, _keyValue, _contentId, _originNameId, address(0)) public {
+		TAO (_originName, _originNameId, _datHash, _database, _keyValue, _contentId, _originNameId, address(0)) public {
 		// Creating Name
-		thoughtTypeId = 1;
+		taoTypeId = 1;
 
 		advocateId = address(this);
 		listenerId = advocateId;

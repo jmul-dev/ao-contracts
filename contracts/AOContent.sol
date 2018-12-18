@@ -24,7 +24,7 @@ contract AOContent is developed {
 	uint256 public totalStakedContents;
 	uint256 public totalPurchaseReceipts;
 
-	address public settingThoughtId;
+	address public settingTAOId;
 	address public baseDenominationAddress;
 	address public treasuryAddress;
 	address public nameFactoryAddress;
@@ -141,22 +141,22 @@ contract AOContent is developed {
 	event BuyContent(address indexed buyer, bytes32 indexed purchaseId, bytes32 indexed contentHostId, uint256 paidNetworkAmount, string publicKey, address publicAddress, uint256 createdOnTimestamp);
 
 	// Event to be broadcasted to public when Advocate/Listener/Speaker wants to update the TAO Content's State
-	event UpdateTAOContentState(bytes32 indexed contentId, address indexed thoughtId, address signer, bytes32 taoContentState);
+	event UpdateTAOContentState(bytes32 indexed contentId, address indexed taoId, address signer, bytes32 taoContentState);
 
 	// Event to be broadcasted to public when emergency mode is triggered
 	event EscapeHatch();
 
 	/**
 	 * @dev Constructor function
-	 * @param _settingThoughtId The Thought ID that controls the setting
+	 * @param _settingTAOId The TAO ID that controls the setting
 	 * @param _aoSettingAddress The address of AOSetting
 	 * @param _baseDenominationAddress The address of AO base token
 	 * @param _treasuryAddress The address of AOTreasury
 	 * @param _earningAddress The address of AOEarning
 	 * @param _nameFactoryAddress The address of NameFactory
 	 */
-	constructor(address _settingThoughtId, address _aoSettingAddress, address _baseDenominationAddress, address _treasuryAddress, address _earningAddress, address _nameFactoryAddress) public {
-		settingThoughtId = _settingThoughtId;
+	constructor(address _settingTAOId, address _aoSettingAddress, address _baseDenominationAddress, address _treasuryAddress, address _earningAddress, address _nameFactoryAddress) public {
+		settingTAOId = _settingTAOId;
 		baseDenominationAddress = _baseDenominationAddress;
 		treasuryAddress = _treasuryAddress;
 		nameFactoryAddress = _nameFactoryAddress;
@@ -328,7 +328,7 @@ contract AOContent is developed {
 	 * @param _contentDatKey The dat key of the content
 	 * @param _metadataDatKey The dat key of the content's metadata
 	 * @param _fileSize The size of the file
-	 * @param _taoId The TAO (Thought) ID for this content (if this is a T(AO) Content)
+	 * @param _taoId The TAO (TAO) ID for this content (if this is a T(AO) Content)
 	 */
 	function stakeTAOContent(
 		uint256 _networkIntegerAmount,
@@ -345,7 +345,7 @@ contract AOContent is developed {
 		require (AOLibrary.canStake(treasuryAddress, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _baseChallenge, _encChallenge, _contentDatKey, _metadataDatKey, _fileSize, 0));
 		require (
 			_treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) == _fileSize &&
-			AOLibrary.addressIsThoughtAdvocateListenerSpeaker(nameFactoryAddress, msg.sender, _taoId)
+			AOLibrary.addressIsTAOAdvocateListenerSpeaker(nameFactoryAddress, msg.sender, _taoId)
 		);
 
 		(,,bytes32 _contentUsageType_taoContent,,,) = _getSettingVariables();
@@ -761,7 +761,7 @@ contract AOContent is developed {
 	/**
 	 * @dev Update the TAO Content State of a T(AO) Content
 	 * @param _contentId The ID of the Content
-	 * @param _thoughtId The ID of the Thought that initiates the update
+	 * @param _taoId The ID of the TAO that initiates the update
 	 * @param _taoContentState The TAO Content state value, i.e Submitted, Pending Review, or Accepted to TAO
 	 * @param _updateTAOContentStateV The V part of the signature for this update
 	 * @param _updateTAOContentStateR The R part of the signature for this update
@@ -769,7 +769,7 @@ contract AOContent is developed {
 	 */
 	function updateTAOContentState(
 		bytes32 _contentId,
-		address _thoughtId,
+		address _taoId,
 		bytes32 _taoContentState,
 		uint8 _updateTAOContentStateV,
 		bytes32 _updateTAOContentStateR,
@@ -777,15 +777,15 @@ contract AOContent is developed {
 	) public isActive {
 		// Make sure the content exist
 		require (contentIndex[_contentId] > 0);
-		require (AOLibrary.isThought(_thoughtId));
+		require (AOLibrary.isTAO(_taoId));
 		(,, bytes32 _contentUsageType_taoContent, bytes32 taoContentState_submitted, bytes32 taoContentState_pendingReview, bytes32 taoContentState_acceptedToTAO) = _getSettingVariables();
 		require (_taoContentState == taoContentState_submitted || _taoContentState == taoContentState_pendingReview || _taoContentState == taoContentState_acceptedToTAO);
 
-		address _signatureAddress = AOLibrary.getUpdateTAOContentStateSignatureAddress(address(this), _contentId, _thoughtId, _taoContentState, _updateTAOContentStateV, _updateTAOContentStateR, _updateTAOContentStateS);
+		address _signatureAddress = AOLibrary.getUpdateTAOContentStateSignatureAddress(address(this), _contentId, _taoId, _taoContentState, _updateTAOContentStateV, _updateTAOContentStateR, _updateTAOContentStateS);
 
 		Content storage _content = contents[contentIndex[_contentId]];
 		// Make sure that the signature address is one of content's TAO ID's Advocate/Listener/Speaker
-		require (_signatureAddress == msg.sender && AOLibrary.addressIsThoughtAdvocateListenerSpeaker(nameFactoryAddress, _signatureAddress, _content.taoId));
+		require (_signatureAddress == msg.sender && AOLibrary.addressIsTAOAdvocateListenerSpeaker(nameFactoryAddress, _signatureAddress, _content.taoId));
 
 		require (_content.contentUsageType == _contentUsageType_taoContent);
 
@@ -794,7 +794,7 @@ contract AOContent is developed {
 		_content.updateTAOContentStateR = _updateTAOContentStateR;
 		_content.updateTAOContentStateS = _updateTAOContentStateS;
 
-		emit UpdateTAOContentState(_contentId, _thoughtId, _signatureAddress, _taoContentState);
+		emit UpdateTAOContentState(_contentId, _taoId, _signatureAddress, _taoContentState);
 	}
 
 	/***** INTERNAL METHODS *****/
@@ -804,7 +804,7 @@ contract AOContent is developed {
 	 * @param _baseChallenge The base challenge string (PUBLIC KEY) of the content
 	 * @param _fileSize The size of the file
 	 * @param _contentUsageType The content usage type, i.e AO Content, Creative Commons, or T(AO) Content
-	 * @param _taoId The TAO (Thought) ID for this content (if this is a T(AO) Content)
+	 * @param _taoId The TAO (TAO) ID for this content (if this is a T(AO) Content)
 	 * @return the ID of the content
 	 */
 	function _storeContent(address _creator, string _baseChallenge, uint256 _fileSize, bytes32 _contentUsageType, address _taoId) internal returns (bytes32) {
@@ -933,12 +933,12 @@ contract AOContent is developed {
 	 * @return taoContentState_acceptedToTAO TAO Content State = Accepted to TAO
 	 */
 	function _getSettingVariables() internal view returns (bytes32, bytes32, bytes32, bytes32, bytes32, bytes32) {
-		(,,,bytes32 contentUsageType_aoContent,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'contentUsageType_aoContent');
-		(,,,bytes32 contentUsageType_creativeCommons,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'contentUsageType_creativeCommons');
-		(,,,bytes32 contentUsageType_taoContent,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'contentUsageType_taoContent');
-		(,,,bytes32 taoContentState_submitted,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'taoContentState_submitted');
-		(,,,bytes32 taoContentState_pendingReview,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'taoContentState_pendingReview');
-		(,,,bytes32 taoContentState_acceptedToTAO,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'taoContentState_acceptedToTAO');
+		(,,,bytes32 contentUsageType_aoContent,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'contentUsageType_aoContent');
+		(,,,bytes32 contentUsageType_creativeCommons,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'contentUsageType_creativeCommons');
+		(,,,bytes32 contentUsageType_taoContent,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'contentUsageType_taoContent');
+		(,,,bytes32 taoContentState_submitted,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'taoContentState_submitted');
+		(,,,bytes32 taoContentState_pendingReview,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'taoContentState_pendingReview');
+		(,,,bytes32 taoContentState_acceptedToTAO,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'taoContentState_acceptedToTAO');
 
 		return (
 			contentUsageType_aoContent,

@@ -5,7 +5,7 @@ var BigNumber = require("bignumber.js");
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
 contract("AOToken", function(accounts) {
-	var tokenMeta, library, aosetting, settingThoughtId;
+	var tokenMeta, library, aosetting, settingTAOId;
 	var developer = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
@@ -41,7 +41,7 @@ contract("AOToken", function(accounts) {
 		library = await AOLibrary.deployed();
 		aosetting = await AOSetting.deployed();
 
-		settingThoughtId = await tokenMeta.settingThoughtId();
+		settingTAOId = await tokenMeta.settingTAOId();
 
 		percentageDivisor = await library.PERCENTAGE_DIVISOR();
 	});
@@ -89,17 +89,17 @@ contract("AOToken", function(accounts) {
 			assert.equal(aoDevTeam, aoDevTeam2, "Contract has incorrect aoDevTeam2");
 		});
 		it("should have the correct starting multiplier for calculating primordial multiplier", async function() {
-			var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "startingPrimordialMultiplier");
+			var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "startingPrimordialMultiplier");
 			startingPrimordialMultiplier = new BigNumber(settingValues[0]);
 			assert.equal(startingPrimordialMultiplier.toNumber(), 50 * 10 ** 6, "Contract has incorrect startingPrimordialMultiplier");
 		});
 		it("should have the correct ending multiplier for calculating primordial multiplier", async function() {
-			var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "endingPrimordialMultiplier");
+			var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "endingPrimordialMultiplier");
 			endingPrimordialMultiplier = new BigNumber(settingValues[0]);
 			assert.equal(endingPrimordialMultiplier.toNumber(), 3 * 10 ** 6, "Contract has incorrect endingPrimordialMultiplier");
 		});
 		it("should have the correct starting network token bonus multiplier for calculating network token bonus amount", async function() {
-			var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "startingNetworkTokenBonusMultiplier");
+			var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "startingNetworkTokenBonusMultiplier");
 			startingNetworkTokenBonusMultiplier = new BigNumber(settingValues[0]);
 			assert.equal(
 				startingNetworkTokenBonusMultiplier.toNumber(),
@@ -108,7 +108,7 @@ contract("AOToken", function(accounts) {
 			);
 		});
 		it("should have the correct ending network token bonus multiplier for calculating network token bonus amount", async function() {
-			var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "endingNetworkTokenBonusMultiplier");
+			var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "endingNetworkTokenBonusMultiplier");
 			endingNetworkTokenBonusMultiplier = new BigNumber(settingValues[0]);
 			assert.equal(endingNetworkTokenBonusMultiplier.toNumber(), 250000, "Contract has incorrect endingNetworkTokenBonusMultiplier");
 		});

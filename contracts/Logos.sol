@@ -1,11 +1,11 @@
 pragma solidity ^0.4.24;
 
-import "./ThoughtCurrency.sol";
+import "./TAOCurrency.sol";
 
-contract Logos is ThoughtCurrency {
+contract Logos is TAOCurrency {
 	/**
 	 * @dev Constructor function
 	 */
 	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, bytes32 tokenInternalName)
-		ThoughtCurrency(initialSupply, tokenName, tokenSymbol, tokenInternalName) public {}
+		TAOCurrency(initialSupply, tokenName, tokenSymbol, tokenInternalName) public {}
 }

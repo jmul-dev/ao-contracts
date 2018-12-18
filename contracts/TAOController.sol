@@ -1,15 +1,15 @@
 pragma solidity ^0.4.24;
 
 import './AOLibrary.sol';
-import './Thought.sol';
+import './TAO.sol';
 import './NameFactory.sol';
 import './Position.sol';
 import './SafeMath.sol';
 
 /**
- * @title ThoughtController
+ * @title TAOController
  */
-contract ThoughtController {
+contract TAOController {
 	using SafeMath for uint256;
 
 	address public nameFactoryAddress;
@@ -29,10 +29,10 @@ contract ThoughtController {
 	}
 
 	/**
-	 * @dev Check if `_thoughtId` is a Thought
+	 * @dev Check if `_taoId` is a TAO
 	 */
-	modifier isThought(address _thoughtId) {
-		require (AOLibrary.isThought(_thoughtId));
+	modifier isTAO(address _taoId) {
+		require (AOLibrary.isTAO(_taoId));
 		_;
 	}
 
@@ -45,10 +45,10 @@ contract ThoughtController {
 	}
 
 	/**
-	 * @dev Check if msg.sender is the current advocate of a `_thoughtId`
+	 * @dev Check if msg.sender is the current advocate of a `_taoId`
 	 */
-	modifier onlyAdvocateOfThought(address _thoughtId) {
-		require (AOLibrary.isAdvocateOfThought(msg.sender, _thoughtId));
+	modifier onlyAdvocateOfTAO(address _taoId) {
+		require (AOLibrary.isAdvocateOfTAO(msg.sender, _taoId));
 		_;
 	}
 

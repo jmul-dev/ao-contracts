@@ -1,6 +1,6 @@
 var AOLibrary = artifacts.require("./AOLibrary.sol");
 
-// Thought Currencies
+// TAO Currencies
 var Logos = artifacts.require("./Logos.sol");
 var Ethos = artifacts.require("./Ethos.sol");
 var Pathos = artifacts.require("./Pathos.sol");
@@ -8,11 +8,11 @@ var AntiLogos = artifacts.require("./AntiLogos.sol");
 var AntiEthos = artifacts.require("./AntiEthos.sol");
 var AntiPathos = artifacts.require("./AntiPathos.sol");
 
-// Name/Thought Contracts
+// Name/TAO Contracts
 var Position = artifacts.require("./Position.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
-var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
-var ThoughtPosition = artifacts.require("./ThoughtPosition.sol");
+var TAOFactory = artifacts.require("./TAOFactory.sol");
+var TAOPosition = artifacts.require("./TAOPosition.sol");
 
 // Settings
 var AOSettingAttribute = artifacts.require("./AOSettingAttribute.sol");
@@ -44,7 +44,7 @@ var AOEarning = artifacts.require("./AOEarning.sol");
 var AOPool = artifacts.require("./AOPool.sol");
 
 module.exports = function(deployer, network, accounts) {
-	var primordialAccount, settingAccount, primordialNameId, settingNameId, primordialThoughtId, settingThoughtId;
+	var primordialAccount, settingAccount, primordialNameId, settingNameId, primordialTAOId, settingTAOId;
 	if (network === "rinkeby") {
 		primordialAccount = "0x16a038099561ac8ad73c497c18207e6c88ff6593";
 		settingAccount = "0xd2021e918ed447797fb66c48efa2899ea17dbddb";
@@ -76,8 +76,8 @@ module.exports = function(deployer, network, accounts) {
 		antipathos,
 		position,
 		namefactory,
-		thoughtfactory,
-		thoughtposition,
+		taofactory,
+		taoposition,
 		aosettingattribute,
 		aouintsetting,
 		aoboolsetting,
@@ -88,8 +88,8 @@ module.exports = function(deployer, network, accounts) {
 
 	deployer.deploy(AOLibrary);
 	deployer.link(AOLibrary, NameFactory);
-	deployer.link(AOLibrary, ThoughtFactory);
-	deployer.link(AOLibrary, ThoughtPosition);
+	deployer.link(AOLibrary, TAOFactory);
+	deployer.link(AOLibrary, TAOPosition);
 	deployer.link(AOLibrary, AOSetting);
 	deployer.link(AOLibrary, AOToken);
 	deployer.link(AOLibrary, AOKilo);
@@ -168,10 +168,10 @@ module.exports = function(deployer, network, accounts) {
 				return;
 			}
 
-			// Deploy ThoughtFactory, ThoughtPosition, AOSetting
+			// Deploy TAOFactory, TAOPosition, AOSetting
 			return deployer.deploy([
-				[ThoughtFactory, namefactory.address, position.address],
-				[ThoughtPosition, namefactory.address, position.address],
+				[TAOFactory, namefactory.address, position.address],
+				[TAOPosition, namefactory.address, position.address],
 				[
 					AOSetting,
 					namefactory.address,
@@ -185,35 +185,35 @@ module.exports = function(deployer, network, accounts) {
 			]);
 		})
 		.then(async function() {
-			thoughtfactory = await ThoughtFactory.deployed();
-			thoughtposition = await ThoughtPosition.deployed();
+			taofactory = await TAOFactory.deployed();
+			taoposition = await TAOPosition.deployed();
 			aosetting = await AOSetting.deployed();
 
-			// position grant access to thoughtposition
-			await position.setWhitelist(thoughtposition.address, true, { from: primordialAccount });
+			// position grant access to taoposition
+			await position.setWhitelist(taoposition.address, true, { from: primordialAccount });
 
 			/**
-			 * Create Primordial Thought and Associated Thought that proposes Content Usage Setting creation
+			 * Create Primordial TAO and Associated TAO that proposes Content Usage Setting creation
 			 */
 			try {
-				var result = await thoughtfactory.createThought("", "", "", "", primordialNameId, {
+				var result = await taofactory.createTAO("", "", "", "", primordialNameId, {
 					from: primordialAccount
 				});
-				var createThoughtEvent = result.logs[0];
-				primordialThoughtId = createThoughtEvent.args.thoughtId;
+				var createTAOEvent = result.logs[0];
+				primordialTAOId = createTAOEvent.args.taoId;
 			} catch (e) {
-				console.log("Unable to create Primordial Thought", e);
+				console.log("Unable to create Primordial TAO", e);
 				return;
 			}
 
 			try {
-				var result = await thoughtfactory.createThought("", "", "", "", primordialThoughtId, {
+				var result = await taofactory.createTAO("", "", "", "", primordialTAOId, {
 					from: settingAccount
 				});
-				var createThoughtEvent = result.logs[0];
-				settingThoughtId = createThoughtEvent.args.thoughtId;
+				var createTAOEvent = result.logs[0];
+				settingTAOId = createTAOEvent.args.taoId;
 			} catch (e) {
-				console.log("Unable to create Associated Thought", e);
+				console.log("Unable to create Associated TAO", e);
 				return;
 			}
 
@@ -233,8 +233,8 @@ module.exports = function(deployer, network, accounts) {
 				var result = await aosetting.addUintSetting(
 					"startingPrimordialMultiplier",
 					50 * 10 ** 6,
-					primordialThoughtId,
-					settingThoughtId,
+					primordialTAOId,
+					settingTAOId,
 					"",
 					{
 						from: primordialAccount
@@ -252,16 +252,9 @@ module.exports = function(deployer, network, accounts) {
 			 * endingPrimordialMultiplier 3 * (1000000) = 3
 			 */
 			try {
-				var result = await aosetting.addUintSetting(
-					"endingPrimordialMultiplier",
-					3 * 10 ** 6,
-					primordialThoughtId,
-					settingThoughtId,
-					"",
-					{
-						from: primordialAccount
-					}
-				);
+				var result = await aosetting.addUintSetting("endingPrimordialMultiplier", 3 * 10 ** 6, primordialTAOId, settingTAOId, "", {
+					from: primordialAccount
+				});
 				var settingId = result.logs[0].args.settingId;
 
 				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
@@ -277,8 +270,8 @@ module.exports = function(deployer, network, accounts) {
 				var result = await aosetting.addUintSetting(
 					"startingNetworkTokenBonusMultiplier",
 					10 ** 6,
-					primordialThoughtId,
-					settingThoughtId,
+					primordialTAOId,
+					settingTAOId,
 					"",
 					{
 						from: primordialAccount
@@ -299,8 +292,8 @@ module.exports = function(deployer, network, accounts) {
 				var result = await aosetting.addUintSetting(
 					"endingNetworkTokenBonusMultiplier",
 					250000,
-					primordialThoughtId,
-					settingThoughtId,
+					primordialTAOId,
+					settingTAOId,
 					"",
 					{
 						from: primordialAccount
@@ -318,7 +311,7 @@ module.exports = function(deployer, network, accounts) {
 			 * Inflation Rate 1%
 			 */
 			try {
-				var result = await aosetting.addUintSetting("inflationRate", 10000, primordialThoughtId, settingThoughtId, "", {
+				var result = await aosetting.addUintSetting("inflationRate", 10000, primordialTAOId, settingTAOId, "", {
 					from: primordialAccount
 				});
 				var settingId = result.logs[0].args.settingId;
@@ -333,7 +326,7 @@ module.exports = function(deployer, network, accounts) {
 			 * Foundation Cut 0.5%
 			 */
 			try {
-				var result = await aosetting.addUintSetting("foundationCut", 5000, primordialThoughtId, settingThoughtId, "", {
+				var result = await aosetting.addUintSetting("foundationCut", 5000, primordialTAOId, settingTAOId, "", {
 					from: primordialAccount
 				});
 				var settingId = result.logs[0].args.settingId;
@@ -351,8 +344,8 @@ module.exports = function(deployer, network, accounts) {
 				var result = await aosetting.addBytesSetting(
 					"contentUsageType_aoContent",
 					"AO Content",
-					primordialThoughtId,
-					settingThoughtId,
+					primordialTAOId,
+					settingTAOId,
 					"",
 					{
 						from: primordialAccount
@@ -373,8 +366,8 @@ module.exports = function(deployer, network, accounts) {
 				var result = await aosetting.addBytesSetting(
 					"contentUsageType_creativeCommons",
 					"Creative Commons",
-					primordialThoughtId,
-					settingThoughtId,
+					primordialTAOId,
+					settingTAOId,
 					"",
 					{
 						from: primordialAccount
@@ -395,8 +388,8 @@ module.exports = function(deployer, network, accounts) {
 				var result = await aosetting.addBytesSetting(
 					"contentUsageType_taoContent",
 					"T(AO) Content",
-					primordialThoughtId,
-					settingThoughtId,
+					primordialTAOId,
+					settingTAOId,
 					"",
 					{
 						from: primordialAccount
@@ -414,16 +407,9 @@ module.exports = function(deployer, network, accounts) {
 			 * TAO Content State Submitted = Submitted
 			 */
 			try {
-				var result = await aosetting.addBytesSetting(
-					"taoContentState_submitted",
-					"Submitted",
-					primordialThoughtId,
-					settingThoughtId,
-					"",
-					{
-						from: primordialAccount
-					}
-				);
+				var result = await aosetting.addBytesSetting("taoContentState_submitted", "Submitted", primordialTAOId, settingTAOId, "", {
+					from: primordialAccount
+				});
 				var settingId = result.logs[0].args.settingId;
 
 				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
@@ -439,8 +425,8 @@ module.exports = function(deployer, network, accounts) {
 				var result = await aosetting.addBytesSetting(
 					"taoContentState_pendingReview",
 					"Pending Review",
-					primordialThoughtId,
-					settingThoughtId,
+					primordialTAOId,
+					settingTAOId,
 					"",
 					{
 						from: primordialAccount
@@ -461,8 +447,8 @@ module.exports = function(deployer, network, accounts) {
 				var result = await aosetting.addBytesSetting(
 					"taoContentState_acceptedToTAO",
 					"Accepted to TAO",
-					primordialThoughtId,
-					settingThoughtId,
+					primordialTAOId,
+					settingTAOId,
 					"",
 					{
 						from: primordialAccount
@@ -480,16 +466,9 @@ module.exports = function(deployer, network, accounts) {
 			 * ingressUrl = https://www.ingress.one
 			 */
 			try {
-				var result = await aosetting.addStringSetting(
-					"ingressUrl",
-					"https://www.ingress.one",
-					primordialThoughtId,
-					settingThoughtId,
-					"",
-					{
-						from: primordialAccount
-					}
-				);
+				var result = await aosetting.addStringSetting("ingressUrl", "https://www.ingress.one", primordialTAOId, settingTAOId, "", {
+					from: primordialAccount
+				});
 				var settingId = result.logs[0].args.settingId;
 
 				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
@@ -505,8 +484,8 @@ module.exports = function(deployer, network, accounts) {
 				var result = await aosetting.addStringSetting(
 					"developerUrl",
 					"https://gitlab.paramation.com/AO-core/aodb",
-					primordialThoughtId,
-					settingThoughtId,
+					primordialTAOId,
+					settingTAOId,
 					"",
 					{
 						from: primordialAccount
@@ -524,7 +503,7 @@ module.exports = function(deployer, network, accounts) {
 			 * aoUrl = ao.network
 			 */
 			try {
-				var result = await aosetting.addStringSetting("aoUrl", "ao.network", primordialThoughtId, settingThoughtId, "", {
+				var result = await aosetting.addStringSetting("aoUrl", "ao.network", primordialTAOId, settingTAOId, "", {
 					from: primordialAccount
 				});
 				var settingId = result.logs[0].args.settingId;
@@ -542,8 +521,8 @@ module.exports = function(deployer, network, accounts) {
 				var result = await aosetting.addStringSetting(
 					"taoDbKey",
 					"b9b874b28cc2792b0becdf2c40c9254f874be3efa1a48cd61903fb62e883f271",
-					primordialThoughtId,
-					settingThoughtId,
+					primordialTAOId,
+					settingTAOId,
 					"",
 					{
 						from: primordialAccount
@@ -559,16 +538,16 @@ module.exports = function(deployer, network, accounts) {
 
 			// Deploy AOToken and all of the denominations
 			return deployer.deploy([
-				[AOToken, 0, "AO Token", "AOTKN", settingThoughtId, aosetting.address],
-				[AOKilo, 0, "AO Kilo", "AOKILO", settingThoughtId, aosetting.address],
-				[AOMega, 0, "AO Mega", "AOMEGA", settingThoughtId, aosetting.address],
-				[AOGiga, 0, "AO Giga", "AOGIGA", settingThoughtId, aosetting.address],
-				[AOTera, 0, "AO Tera", "AOTERA", settingThoughtId, aosetting.address],
-				[AOPeta, 0, "AO Peta", "AOPETA", settingThoughtId, aosetting.address],
-				[AOExa, 0, "AO Exa", "AOEXA", settingThoughtId, aosetting.address],
-				[AOZetta, 0, "AO Zetta", "AOZETTA", settingThoughtId, aosetting.address],
-				[AOYotta, 0, "AO Yotta", "AOYOTTA", settingThoughtId, aosetting.address],
-				[AOXona, 0, "AO Xona", "AOXONA", settingThoughtId, aosetting.address],
+				[AOToken, 0, "AO Token", "AOTKN", settingTAOId, aosetting.address],
+				[AOKilo, 0, "AO Kilo", "AOKILO", settingTAOId, aosetting.address],
+				[AOMega, 0, "AO Mega", "AOMEGA", settingTAOId, aosetting.address],
+				[AOGiga, 0, "AO Giga", "AOGIGA", settingTAOId, aosetting.address],
+				[AOTera, 0, "AO Tera", "AOTERA", settingTAOId, aosetting.address],
+				[AOPeta, 0, "AO Peta", "AOPETA", settingTAOId, aosetting.address],
+				[AOExa, 0, "AO Exa", "AOEXA", settingTAOId, aosetting.address],
+				[AOZetta, 0, "AO Zetta", "AOZETTA", settingTAOId, aosetting.address],
+				[AOYotta, 0, "AO Yotta", "AOYOTTA", settingTAOId, aosetting.address],
+				[AOXona, 0, "AO Xona", "AOXONA", settingTAOId, aosetting.address],
 				AOTreasury
 			]);
 		})
@@ -613,7 +592,7 @@ module.exports = function(deployer, network, accounts) {
 				[AOPool, aotoken.address],
 				[
 					AOEarning,
-					settingThoughtId,
+					settingTAOId,
 					aosetting.address,
 					aotoken.address,
 					aotreasury.address,
@@ -688,7 +667,7 @@ module.exports = function(deployer, network, accounts) {
 
 			return deployer.deploy(
 				AOContent,
-				settingThoughtId,
+				settingTAOId,
 				aosetting.address,
 				aotoken.address,
 				aotreasury.address,
@@ -705,7 +684,7 @@ module.exports = function(deployer, network, accounts) {
 			// aoearning grant access to aocontent
 			await aoearning.setWhitelist(aocontent.address, true, { from: primordialAccount });
 
-			console.log("Primordial Thought ID", primordialThoughtId);
-			console.log("Setting Thought ID", settingThoughtId);
+			console.log("Primordial TAO ID", primordialTAOId);
+			console.log("Setting TAO ID", settingTAOId);
 		});
 };

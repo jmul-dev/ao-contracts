@@ -21,7 +21,7 @@ contract AOEarning is developed {
 	bool public paused;
 	bool public killed;
 
-	address public settingThoughtId;
+	address public settingTAOId;
 	address public aoSettingAddress;
 	address public baseDenominationAddress;
 	address public treasuryAddress;
@@ -120,7 +120,7 @@ contract AOEarning is developed {
 
 	/**
 	 * @dev Constructor function
-	 * @param _settingThoughtId The Thought ID that controls the setting
+	 * @param _settingTAOId The TAO ID that controls the setting
 	 * @param _aoSettingAddress The address of AOSetting
 	 * @param _baseDenominationAddress The address of AO base token
 	 * @param _treasuryAddress The address of AOTreasury
@@ -128,8 +128,8 @@ contract AOEarning is developed {
 	 * @param _pathosAddress The address of Pathos
 	 * @param _antiLogosAddress The address of AntiLogos
 	 */
-	constructor(address _settingThoughtId, address _aoSettingAddress, address _baseDenominationAddress, address _treasuryAddress, address _nameFactoryAddress, address _pathosAddress, address _antiLogosAddress) public {
-		settingThoughtId = _settingThoughtId;
+	constructor(address _settingTAOId, address _aoSettingAddress, address _baseDenominationAddress, address _treasuryAddress, address _nameFactoryAddress, address _pathosAddress, address _antiLogosAddress) public {
+		settingTAOId = _settingTAOId;
 		aoSettingAddress = _aoSettingAddress;
 		baseDenominationAddress = _baseDenominationAddress;
 		treasuryAddress = _treasuryAddress;
@@ -422,8 +422,8 @@ contract AOEarning is developed {
 	 * @return foundationCut The rate to use when calculation the foundation earning
 	 */
 	function _getSettingVariables() internal view returns (uint256, uint256) {
-		(uint256 inflationRate,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'inflationRate');
-		(uint256 foundationCut,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'foundationCut');
+		(uint256 inflationRate,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'inflationRate');
+		(uint256 foundationCut,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'foundationCut');
 		return (inflationRate, foundationCut);
 	}
 }

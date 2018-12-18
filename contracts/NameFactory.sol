@@ -96,7 +96,7 @@ contract NameFactory {
 		// Only one Name per ETH address
 		require (ethAddressToNameId[msg.sender] == address(0));
 
-		// The address is the Name ID (which is also a Thought ID)
+		// The address is the Name ID (which is also a TAO ID)
 		address nameId = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId);
 		ethAddressToNameId[msg.sender] = nameId;
 		originNamesLookup[keccak256(abi.encodePacked(_name))] = nameId;
@@ -117,7 +117,7 @@ contract NameFactory {
 	 * @return The database of the Name
 	 * @return The keyValue of the Name
 	 * @return The contentId of the Name
-	 * @return The thoughtTypeId of the Name
+	 * @return The taoTypeId of the Name
 	 * @return The defaultPublicKey of the Name
 	 * @return The current nonce of the Name
 	 */
@@ -130,7 +130,7 @@ contract NameFactory {
 			_name.database(),
 			_name.keyValue(),
 			_name.contentId(),
-			_name.thoughtTypeId(),
+			_name.taoTypeId(),
 			_name.defaultPublicKey(),
 			_name.nonce()
 		);

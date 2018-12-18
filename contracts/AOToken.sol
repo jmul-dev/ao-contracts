@@ -13,7 +13,7 @@ import './AOSetting.sol';
 contract AOToken is developed, TokenERC20 {
 	using SafeMath for uint256;
 
-	address public settingThoughtId;
+	address public settingTAOId;
 	address public aoSettingAddress;
 
 	AOSetting internal _aoSetting;
@@ -129,9 +129,9 @@ contract AOToken is developed, TokenERC20 {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _settingThoughtId, address _aoSettingAddress)
+	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _settingTAOId, address _aoSettingAddress)
 		TokenERC20(initialSupply, tokenName, tokenSymbol) public {
-		settingThoughtId = _settingThoughtId;
+		settingTAOId = _settingTAOId;
 		aoSettingAddress = _aoSettingAddress;
 		_aoSetting = AOSetting(_aoSettingAddress);
 
@@ -1003,11 +1003,11 @@ contract AOToken is developed, TokenERC20 {
 	 * @return endingNetworkTokenBonusMultiplier The ending multiplier used to calculate network token bonus
 	 */
 	function _getSettingVariables() internal view returns (uint256, uint256, uint256, uint256) {
-		(uint256 startingPrimordialMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'startingPrimordialMultiplier');
-		(uint256 endingPrimordialMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'endingPrimordialMultiplier');
+		(uint256 startingPrimordialMultiplier,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'startingPrimordialMultiplier');
+		(uint256 endingPrimordialMultiplier,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'endingPrimordialMultiplier');
 
-		(uint256 startingNetworkTokenBonusMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'startingNetworkTokenBonusMultiplier');
-		(uint256 endingNetworkTokenBonusMultiplier,,,,) = _aoSetting.getSettingValuesByThoughtName(settingThoughtId, 'endingNetworkTokenBonusMultiplier');
+		(uint256 startingNetworkTokenBonusMultiplier,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'startingNetworkTokenBonusMultiplier');
+		(uint256 endingNetworkTokenBonusMultiplier,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'endingNetworkTokenBonusMultiplier');
 
 		return (startingPrimordialMultiplier, endingPrimordialMultiplier, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier);
 	}

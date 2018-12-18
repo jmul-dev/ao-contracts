@@ -7,7 +7,7 @@ var Pathos = artifacts.require("./Pathos.sol");
 var AntiLogos = artifacts.require("./AntiLogos.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
-var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
+var TAOFactory = artifacts.require("./TAOFactory.sol");
 var EthCrypto = require("eth-crypto");
 
 contract("AOContent & AOEarning", function(accounts) {
@@ -19,10 +19,10 @@ contract("AOContent & AOEarning", function(accounts) {
 		library,
 		pathos,
 		antilogos,
-		settingThoughtId,
+		settingTAOId,
 		aosetting,
 		namefactory,
-		thoughtfactory,
+		taofactory,
 		inflationRate,
 		foundationCut,
 		percentageDivisor,
@@ -75,13 +75,13 @@ contract("AOContent & AOEarning", function(accounts) {
 	var nullBytesValue = "0x0000000000000000000000000000000000000000000000000000000000000000";
 	var extraData = JSON.stringify({ extraData: "value" });
 
-	var nameId1, // Name that creates a TAO, i.e thoughtId1
-		nameId2, // Other Name that creates a Thought
+	var nameId1, // Name that creates a TAO, i.e taoId1
+		nameId2, // Other Name that creates a TAO
 		nameId3, // Name that also creates a TAO but has 0 token balance
-		thoughtId1, // A TAO created by nameId1
-		thoughtId2, // A Thought created by nameId1 to update TAO Content State
-		thoughtId3, // A Thought created by nameId2
-		thoughtId4; // A TAO created by nameId3
+		taoId1, // A TAO created by nameId1
+		taoId2, // A TAO created by nameId1 to update TAO Content State
+		taoId3, // A TAO created by nameId2
+		taoId4; // A TAO created by nameId3
 
 	before(async function() {
 		aocontent = await AOContent.deployed();
@@ -90,7 +90,7 @@ contract("AOContent & AOEarning", function(accounts) {
 		aoearning = await AOEarning.deployed();
 		aosetting = await AOSetting.deployed();
 		namefactory = await NameFactory.deployed();
-		thoughtfactory = await ThoughtFactory.deployed();
+		taofactory = await TAOFactory.deployed();
 
 		// Get the decimals
 		aodecimals = await aotoken.decimals();
@@ -100,33 +100,33 @@ contract("AOContent & AOEarning", function(accounts) {
 		pathos = await Pathos.deployed();
 		antilogos = await AntiLogos.deployed();
 
-		settingThoughtId = await aoearning.settingThoughtId();
+		settingTAOId = await aoearning.settingTAOId();
 
-		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "inflationRate");
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "inflationRate");
 		inflationRate = settingValues[0];
 
-		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "foundationCut");
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "foundationCut");
 		foundationCut = settingValues[0];
 
 		percentageDivisor = await library.PERCENTAGE_DIVISOR();
 		multiplierDivisor = await library.MULTIPLIER_DIVISOR();
 
-		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "contentUsageType_aoContent");
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "contentUsageType_aoContent");
 		contentUsageType_aoContent = settingValues[3];
 
-		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "contentUsageType_creativeCommons");
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "contentUsageType_creativeCommons");
 		contentUsageType_creativeCommons = settingValues[3];
 
-		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "contentUsageType_taoContent");
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "contentUsageType_taoContent");
 		contentUsageType_taoContent = settingValues[3];
 
-		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "taoContentState_submitted");
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "taoContentState_submitted");
 		taoContentState_submitted = settingValues[3];
 
-		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "taoContentState_pendingReview");
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "taoContentState_pendingReview");
 		taoContentState_pendingReview = settingValues[3];
 
-		var settingValues = await aosetting.getSettingValuesByThoughtName(settingThoughtId, "taoContentState_acceptedToTAO");
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "taoContentState_acceptedToTAO");
 		taoContentState_acceptedToTAO = settingValues[3];
 	});
 
@@ -923,30 +923,30 @@ contract("AOContent & AOEarning", function(accounts) {
 			});
 			nameId3 = await namefactory.ethAddressToNameId(account3);
 
-			// Create Thoughts
-			result = await thoughtfactory.createThought("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId1, {
+			// Create TAOs
+			result = await taofactory.createTAO("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId1, {
 				from: account1
 			});
-			var createThoughtEvent = result.logs[0];
-			thoughtId1 = createThoughtEvent.args.thoughtId;
+			var createTAOEvent = result.logs[0];
+			taoId1 = createTAOEvent.args.taoId;
 
-			result = await thoughtfactory.createThought("somedathash", "somedatabase", "somekeyvalue", "somecontentid", thoughtId1, {
+			result = await taofactory.createTAO("somedathash", "somedatabase", "somekeyvalue", "somecontentid", taoId1, {
 				from: account1
 			});
-			createThoughtEvent = result.logs[0];
-			thoughtId2 = createThoughtEvent.args.thoughtId;
+			createTAOEvent = result.logs[0];
+			taoId2 = createTAOEvent.args.taoId;
 
-			result = await thoughtfactory.createThought("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId2, {
+			result = await taofactory.createTAO("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId2, {
 				from: account2
 			});
-			createThoughtEvent = result.logs[0];
-			thoughtId3 = createThoughtEvent.args.thoughtId;
+			createTAOEvent = result.logs[0];
+			taoId3 = createTAOEvent.args.taoId;
 
-			result = await thoughtfactory.createThought("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId3, {
+			result = await taofactory.createTAO("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId3, {
 				from: account3
 			});
-			createThoughtEvent = result.logs[0];
-			thoughtId4 = createThoughtEvent.args.thoughtId;
+			createTAOEvent = result.logs[0];
+			taoId4 = createTAOEvent.args.taoId;
 		});
 
 		it("stakeAOContent() - should NOT stake content if params provided are not valid", async function() {
@@ -1283,7 +1283,7 @@ contract("AOContent & AOEarning", function(accounts) {
 		it("stakeTAOContent() - should NOT stake content if params provided are not valid", async function() {
 			var canStake;
 			try {
-				await aocontent.stakeTAOContent(1, 0, "mega", 0, "", encChallenge, contentDatKey, metadataDatKey, fileSize, thoughtId1, {
+				await aocontent.stakeTAOContent(1, 0, "mega", 0, "", encChallenge, contentDatKey, metadataDatKey, fileSize, taoId1, {
 					from: account1
 				});
 				canStake = true;
@@ -1293,7 +1293,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canStake, true, "account1 can stake content even though it's missing baseChallenge");
 
 			try {
-				await aocontent.stakeTAOContent(1, 0, "mega", 0, baseChallenge, "", contentDatKey, metadataDatKey, fileSize, thoughtId1, {
+				await aocontent.stakeTAOContent(1, 0, "mega", 0, baseChallenge, "", contentDatKey, metadataDatKey, fileSize, taoId1, {
 					from: account1
 				});
 				canStake = true;
@@ -1303,7 +1303,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canStake, true, "account1 can stake content even though it's missing encChallenge");
 
 			try {
-				await aocontent.stakeTAOContent(1, 0, "mega", 0, baseChallenge, encChallenge, "", metadataDatKey, fileSize, thoughtId1, {
+				await aocontent.stakeTAOContent(1, 0, "mega", 0, baseChallenge, encChallenge, "", metadataDatKey, fileSize, taoId1, {
 					from: account1
 				});
 				canStake = true;
@@ -1312,7 +1312,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			}
 			assert.notEqual(canStake, true, "account1 can stake content even though it's missing contentDatKey");
 			try {
-				await aocontent.stakeTAOContent(1, 0, "mega", 0, baseChallenge, encChallenge, contentDatKey, "", fileSize, thoughtId1, {
+				await aocontent.stakeTAOContent(1, 0, "mega", 0, baseChallenge, encChallenge, contentDatKey, "", fileSize, taoId1, {
 					from: account1
 				});
 				canStake = true;
@@ -1321,19 +1321,9 @@ contract("AOContent & AOEarning", function(accounts) {
 			}
 			assert.notEqual(canStake, true, "account1 can stake content even though it's missing metadataDatKey");
 			try {
-				await aocontent.stakeTAOContent(
-					1,
-					0,
-					"mega",
-					0,
-					baseChallenge,
-					encChallenge,
-					contentDatKey,
-					metadataDatKey,
-					0,
-					thoughtId1,
-					{ from: account1 }
-				);
+				await aocontent.stakeTAOContent(1, 0, "mega", 0, baseChallenge, encChallenge, contentDatKey, metadataDatKey, 0, taoId1, {
+					from: account1
+				});
 				canStake = true;
 			} catch (e) {
 				canStake = false;
@@ -1351,7 +1341,7 @@ contract("AOContent & AOEarning", function(accounts) {
 					contentDatKey,
 					metadataDatKey,
 					fileSize,
-					thoughtId1,
+					taoId1,
 					{ from: account1 }
 				);
 				canStake = true;
@@ -1391,7 +1381,7 @@ contract("AOContent & AOEarning", function(accounts) {
 					contentDatKey,
 					metadataDatKey,
 					fileSize,
-					thoughtId1,
+					taoId1,
 					{ from: account2 }
 				);
 				canStake = true;
@@ -1411,7 +1401,7 @@ contract("AOContent & AOEarning", function(accounts) {
 					contentDatKey,
 					metadataDatKey,
 					fileSize,
-					thoughtId1,
+					taoId1,
 					{ from: account1 }
 				);
 				canStake = true;
@@ -1434,7 +1424,7 @@ contract("AOContent & AOEarning", function(accounts) {
 					contentDatKey,
 					metadataDatKey,
 					fileSize,
-					thoughtId4,
+					taoId4,
 					{ from: account3 }
 				);
 				canStake = true;
@@ -1445,21 +1435,21 @@ contract("AOContent & AOEarning", function(accounts) {
 		});
 
 		it("stakeTAOContent() - should be able to stake content with only network tokens", async function() {
-			var response = await stakeTAOContent(account1, 1, 0, "mega", 0, thoughtId1);
+			var response = await stakeTAOContent(account1, 1, 0, "mega", 0, taoId1);
 			TAOContent_contentId1 = response.contentId;
 			TAOContent_stakeId1 = response.stakeId;
 			TAOContent_contentHostId1 = response.contentHostId;
 		});
 
 		it("stakeTAOContent() - should be able to stake content with only primordial tokens", async function() {
-			var response = await stakeTAOContent(account1, 0, 0, "", 1000000, thoughtId1);
+			var response = await stakeTAOContent(account1, 0, 0, "", 1000000, taoId1);
 			TAOContent_contentId2 = response.contentId;
 			TAOContent_stakeId2 = response.stakeId;
 			TAOContent_contentHostId2 = response.contentHostId;
 		});
 
 		it("stakeTAOContent() - should be able to stake content with both network Tokens and primordial tokens", async function() {
-			var response = await stakeTAOContent(account1, 0, 900000, "mega", 100000, thoughtId1);
+			var response = await stakeTAOContent(account1, 0, 900000, "mega", 100000, taoId1);
 			TAOContent_contentId3 = response.contentId;
 			TAOContent_stakeId3 = response.stakeId;
 			TAOContent_contentHostId3 = response.contentHostId;
@@ -1622,7 +1612,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				},
 				{
 					type: "address",
-					value: thoughtId2
+					value: taoId2
 				},
 				{
 					type: "bytes32",
@@ -1635,7 +1625,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 			var canUpdateTAOContentState;
 			try {
-				await aocontent.updateTAOContentState("someid", thoughtId2, taoContentState_acceptedToTAO, vrs.v, vrs.r, vrs.s, {
+				await aocontent.updateTAOContentState("someid", taoId2, taoContentState_acceptedToTAO, vrs.v, vrs.r, vrs.s, {
 					from: account1
 				});
 				canUpdateTAOContentState = true;
@@ -1645,15 +1635,9 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State for non-existing content");
 
 			try {
-				await aocontent.updateTAOContentState(
-					AOContent_contentId1,
-					thoughtId2,
-					taoContentState_acceptedToTAO,
-					vrs.v,
-					vrs.r,
-					vrs.s,
-					{ from: account1 }
-				);
+				await aocontent.updateTAOContentState(AOContent_contentId1, taoId2, taoContentState_acceptedToTAO, vrs.v, vrs.r, vrs.s, {
+					from: account1
+				});
 				canUpdateTAOContentState = true;
 			} catch (e) {
 				canUpdateTAOContentState = false;
@@ -1674,10 +1658,10 @@ contract("AOContent & AOEarning", function(accounts) {
 			} catch (e) {
 				canUpdateTAOContentState = false;
 			}
-			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State with invalid Thought");
+			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State with invalid TAO");
 
 			try {
-				await aocontent.updateTAOContentState(TAOContent_contentId1, thoughtId2, "somestate", vrs.v, vrs.r, vrs.s, {
+				await aocontent.updateTAOContentState(TAOContent_contentId1, taoId2, "somestate", vrs.v, vrs.r, vrs.s, {
 					from: account1
 				});
 				canUpdateTAOContentState = true;
@@ -1687,7 +1671,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State with invalid TAO Content State");
 
 			try {
-				await aocontent.updateTAOContentState(TAOContent_contentId1, thoughtId2, taoContentState_acceptedToTAO, 0, vrs.r, vrs.s, {
+				await aocontent.updateTAOContentState(TAOContent_contentId1, taoId2, taoContentState_acceptedToTAO, 0, vrs.r, vrs.s, {
 					from: account1
 				});
 				canUpdateTAOContentState = true;
@@ -1697,7 +1681,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State with missing v part of the signature");
 
 			try {
-				await aocontent.updateTAOContentState(TAOContent_contentId1, thoughtId2, taoContentState_acceptedToTAO, vrs.v, "", vrs.s, {
+				await aocontent.updateTAOContentState(TAOContent_contentId1, taoId2, taoContentState_acceptedToTAO, vrs.v, "", vrs.s, {
 					from: account1
 				});
 				canUpdateTAOContentState = true;
@@ -1707,7 +1691,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State with missing r part of the signature");
 
 			try {
-				await aocontent.updateTAOContentState(TAOContent_contentId1, thoughtId2, taoContentState_acceptedToTAO, vrs.v, vrs.r, "", {
+				await aocontent.updateTAOContentState(TAOContent_contentId1, taoId2, taoContentState_acceptedToTAO, vrs.v, vrs.r, "", {
 					from: account1
 				});
 				canUpdateTAOContentState = true;
@@ -1717,15 +1701,9 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canUpdateTAOContentState, true, "account1 can update TAO Content State with missing s part of the signature");
 
 			try {
-				await aocontent.updateTAOContentState(
-					TAOContent_contentId1,
-					thoughtId2,
-					taoContentState_acceptedToTAO,
-					vrs.v,
-					vrs.r,
-					vrs.s,
-					{ from: account2 }
-				);
+				await aocontent.updateTAOContentState(TAOContent_contentId1, taoId2, taoContentState_acceptedToTAO, vrs.v, vrs.r, vrs.s, {
+					from: account2
+				});
 				canUpdateTAOContentState = true;
 			} catch (e) {
 				canUpdateTAOContentState = false;
@@ -1743,7 +1721,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				},
 				{
 					type: "address",
-					value: thoughtId3
+					value: taoId3
 				},
 				{
 					type: "bytes32",
@@ -1755,15 +1733,9 @@ contract("AOContent & AOEarning", function(accounts) {
 			vrs = EthCrypto.vrs.fromString(signature);
 
 			try {
-				await aocontent.updateTAOContentState(
-					TAOContent_contentId1,
-					thoughtId3,
-					taoContentState_acceptedToTAO,
-					vrs.v,
-					vrs.r,
-					vrs.s,
-					{ from: account2 }
-				);
+				await aocontent.updateTAOContentState(TAOContent_contentId1, taoId3, taoContentState_acceptedToTAO, vrs.v, vrs.r, vrs.s, {
+					from: account2
+				});
 				canUpdateTAOContentState = true;
 			} catch (e) {
 				canUpdateTAOContentState = false;
@@ -1772,7 +1744,7 @@ contract("AOContent & AOEarning", function(accounts) {
 		});
 
 		it("updateTAOContentState() - should be able to update TAO Content State", async function() {
-			var updateTAOContentState = async function(account, contentId, thoughtId, taoContentState, privateKey) {
+			var updateTAOContentState = async function(account, contentId, taoId, taoContentState, privateKey) {
 				var signHash = EthCrypto.hash.keccak256([
 					{
 						type: "address",
@@ -1784,7 +1756,7 @@ contract("AOContent & AOEarning", function(accounts) {
 					},
 					{
 						type: "address",
-						value: thoughtId
+						value: taoId
 					},
 					{
 						type: "bytes32",
@@ -1797,7 +1769,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				var canUpdateTAOContentState, updateTAOContentStateEvent;
 				try {
-					var result = await aocontent.updateTAOContentState(contentId, thoughtId, taoContentState, vrs.v, vrs.r, vrs.s, {
+					var result = await aocontent.updateTAOContentState(contentId, taoId, taoContentState, vrs.v, vrs.r, vrs.s, {
 						from: account
 					});
 					canUpdateTAOContentState = true;
@@ -1809,7 +1781,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.equal(canUpdateTAOContentState, true, "account can't update TAO Content State");
 
 				assert.equal(updateTAOContentStateEvent.args.contentId, contentId, "UpdateTAOContent event has incorrect contentId");
-				assert.equal(updateTAOContentStateEvent.args.thoughtId, thoughtId, "UpdateTAOContent event has incorrect thoughtId");
+				assert.equal(updateTAOContentStateEvent.args.taoId, taoId, "UpdateTAOContent event has incorrect taoId");
 				assert.equal(updateTAOContentStateEvent.args.signer, account, "UpdateTAOContent event has incorrect signer");
 				assert.equal(
 					updateTAOContentStateEvent.args.taoContentState,
@@ -1823,9 +1795,9 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.equal(content[6], vrs.r, "Content has incorrect updateTAOContentStateR");
 				assert.equal(content[7], vrs.s, "Content has incorrect updateTAOContentStateS");
 			};
-			await updateTAOContentState(account1, TAOContent_contentId1, thoughtId2, taoContentState_acceptedToTAO, account1PrivateKey);
-			await updateTAOContentState(account1, TAOContent_contentId2, thoughtId2, taoContentState_pendingReview, account1PrivateKey);
-			await updateTAOContentState(account1, TAOContent_contentId3, thoughtId2, taoContentState_acceptedToTAO, account1PrivateKey);
+			await updateTAOContentState(account1, TAOContent_contentId1, taoId2, taoContentState_acceptedToTAO, account1PrivateKey);
+			await updateTAOContentState(account1, TAOContent_contentId2, taoId2, taoContentState_pendingReview, account1PrivateKey);
+			await updateTAOContentState(account1, TAOContent_contentId3, taoId2, taoContentState_acceptedToTAO, account1PrivateKey);
 		});
 
 		it("unstakePartialContent() - should NOT be able to partially unstake non-existing staked content", async function() {
@@ -2511,7 +2483,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				}
 				assert.notEqual(canBuyContent, true, "Account can buy the same content more than once");
 
-				// Verify Thought Currencies balance
+				// Verify TAO Currencies balance
 				var stakeOwnerPathosBalanceAfter = await pathos.balanceOf(stakeOwnerNameId);
 				var hostAntiLogosBalanceAfter = await antilogos.balanceOf(hostNameId);
 

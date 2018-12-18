@@ -11,10 +11,10 @@ import './AOAddressSetting.sol';
 import './AOBytesSetting.sol';
 import './AOStringSetting.sol';
 import './Name.sol';
-import './Thought.sol';
+import './TAO.sol';
 import './NameFactory.sol';
 import './AOSetting.sol';
-import './ThoughtCurrency.sol';
+import './TAOCurrency.sol';
 
 /**
  * @title AOLibrary
@@ -199,15 +199,15 @@ library AOLibrary {
 	 * @dev Return the address that signed the TAO content state update
 	 * @param _callingContractAddress the address of the calling contract
 	 * @param _contentId the ID of the content
-	 * @param _thoughtId the ID of the Thought
+	 * @param _taoId the ID of the TAO
 	 * @param _taoContentState the TAO Content State value, i.e Submitted, Pending Review, or Accepted to TAO
 	 * @param _v part of the signature
 	 * @param _r part of the signature
 	 * @param _s part of the signature
 	 * @return the address that signed the message
 	 */
-	function getUpdateTAOContentStateSignatureAddress(address _callingContractAddress, bytes32 _contentId, address _thoughtId, bytes32 _taoContentState, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
-		bytes32 _hash = keccak256(abi.encodePacked(_callingContractAddress, _contentId, _thoughtId, _taoContentState));
+	function getUpdateTAOContentStateSignatureAddress(address _callingContractAddress, bytes32 _contentId, address _taoId, bytes32 _taoContentState, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
+		bytes32 _hash = keccak256(abi.encodePacked(_callingContractAddress, _contentId, _taoId, _taoContentState));
 		return ecrecover(_hash, _v, _r, _s);
 	}
 
@@ -455,12 +455,12 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Check whether or not the given Thought ID is a Thought
-	 * @param _thoughtId The ID of the Thought
+	 * @dev Check whether or not the given TAO ID is a TAO
+	 * @param _taoId The ID of the TAO
 	 * @return true if yes. false otherwise
 	 */
-	function isThought(address _thoughtId) public view returns (bool) {
-		return (_thoughtId != address(0) && Thought(_thoughtId).originNameId() != address(0) && Thought(_thoughtId).thoughtTypeId() == 0);
+	function isTAO(address _taoId) public view returns (bool) {
+		return (_taoId != address(0) && TAO(_taoId).originNameId() != address(0) && TAO(_taoId).taoTypeId() == 0);
 	}
 
 	/**
@@ -469,25 +469,25 @@ library AOLibrary {
 	 * @return true if yes. false otherwise
 	 */
 	function isName(address _nameId) public view returns (bool) {
-		return (_nameId != address(0) && Name(_nameId).originNameId() != address(0) && Name(_nameId).thoughtTypeId() == 1);
+		return (_nameId != address(0) && Name(_nameId).originNameId() != address(0) && Name(_nameId).taoTypeId() == 1);
 	}
 
 	/**
-	 * @dev Check whether or not _from address is Advocate/Listener/Speaker of the Thought
+	 * @dev Check whether or not _from address is Advocate/Listener/Speaker of the TAO
 	 * @param _nameFactoryAddress The address of NameFactory
 	 * @param _from The address that wants to update the TAO Content State
-	 * @param _thoughtId The ID of the Thought
+	 * @param _taoId The ID of the TAO
 	 * @return true if yes. false otherwise
 	 */
-	function addressIsThoughtAdvocateListenerSpeaker(address _nameFactoryAddress, address _from, address _thoughtId) public view returns (bool) {
+	function addressIsTAOAdvocateListenerSpeaker(address _nameFactoryAddress, address _from, address _taoId) public view returns (bool) {
 		address _nameId = NameFactory(_nameFactoryAddress).ethAddressToNameId(_from);
 		require (_nameId != address(0));
-		require (isThought(_thoughtId));
-		return (_nameId == Thought(_thoughtId).advocateId() || _nameId == Thought(_thoughtId).listenerId() || _nameId == Thought(_thoughtId).speakerId());
+		require (isTAO(_taoId));
+		return (_nameId == TAO(_taoId).advocateId() || _nameId == TAO(_taoId).listenerId() || _nameId == TAO(_taoId).speakerId());
 	}
 
 	/**
-	 * @dev Get Thought Currency Balances given a nameId
+	 * @dev Get TAO Currency Balances given a nameId
 	 * @param _nameId The ID of the Name
 	 * @param _logosAddress The address of Logos
 	 * @param _ethosAddress The address of Ethos
@@ -496,21 +496,21 @@ library AOLibrary {
 	 * @return Ethos balance of the Name ID
 	 * @return Pathos balance of the Name ID
 	 */
-	function getThoughtCurrencyBalances(
+	function getTAOCurrencyBalances(
 		address _nameId,
 		address _logosAddress,
 		address _ethosAddress,
 		address _pathosAddress
 	) public view returns (uint256[]) {
 		uint256[] memory balances = new uint256[](3);
-		balances[0] = ThoughtCurrency(_logosAddress).balanceOf(_nameId);
-		balances[1] = ThoughtCurrency(_ethosAddress).balanceOf(_nameId);
-		balances[2] = ThoughtCurrency(_pathosAddress).balanceOf(_nameId);
+		balances[0] = TAOCurrency(_logosAddress).balanceOf(_nameId);
+		balances[1] = TAOCurrency(_ethosAddress).balanceOf(_nameId);
+		balances[2] = TAOCurrency(_pathosAddress).balanceOf(_nameId);
 		return balances;
 	}
 
 	/**
-	 * @dev Get Anti Thought Currency Balances given a nameId
+	 * @dev Get Anti TAO Currency Balances given a nameId
 	 * @param _nameId The ID of the Name
 	 * @param _antiLogosAddress The address of AntiLogos
 	 * @param _antiEthosAddress The address of AntiEthos
@@ -519,21 +519,21 @@ library AOLibrary {
 	 * @return AntiEthos balance of the Name ID
 	 * @return AntiPathos balance of the Name ID
 	 */
-	function getAntiThoughtCurrencyBalances(
+	function getAntiTAOCurrencyBalances(
 		address _nameId,
 		address _antiLogosAddress,
 		address _antiEthosAddress,
 		address _antiPathosAddress
 	) public view returns (uint256[]) {
 		uint256[] memory balances = new uint256[](3);
-		balances[0] = ThoughtCurrency(_antiLogosAddress).balanceOf(_nameId);
-		balances[1] = ThoughtCurrency(_antiEthosAddress).balanceOf(_nameId);
-		balances[2] = ThoughtCurrency(_antiPathosAddress).balanceOf(_nameId);
+		balances[0] = TAOCurrency(_antiLogosAddress).balanceOf(_nameId);
+		balances[1] = TAOCurrency(_antiEthosAddress).balanceOf(_nameId);
+		balances[2] = TAOCurrency(_antiPathosAddress).balanceOf(_nameId);
 		return balances;
 	}
 
 	/**
-	 * @dev Get all Thought/AntiThought Currency Balances given a nameId
+	 * @dev Get all TAO/AntiTAO Currency Balances given a nameId
 	 * @param _nameId The ID of the Name
 	 * @param _logosAddress The address of Logos
 	 * @param _ethosAddress The address of Ethos
@@ -548,7 +548,7 @@ library AOLibrary {
 	 * @return AntiEthos balance of the Name ID
 	 * @return AntiPathos balance of the Name ID
 	 */
-	function getAllThoughtCurrencyBalances(
+	function getAllTAOCurrencyBalances(
 		address _nameId,
 		address _logosAddress,
 		address _ethosAddress,
@@ -557,15 +557,15 @@ library AOLibrary {
 		address _antiEthosAddress,
 		address _antiPathosAddress
 	) public view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
-		uint256[] memory thoughtCurrencyBalances = getThoughtCurrencyBalances(_nameId, _logosAddress, _ethosAddress, _pathosAddress);
-		uint256[] memory antiThoughtCurrencyBalances = getAntiThoughtCurrencyBalances(_nameId, _antiLogosAddress, _antiEthosAddress, _antiPathosAddress);
+		uint256[] memory taoCurrencyBalances = getTAOCurrencyBalances(_nameId, _logosAddress, _ethosAddress, _pathosAddress);
+		uint256[] memory antiTAOCurrencyBalances = getAntiTAOCurrencyBalances(_nameId, _antiLogosAddress, _antiEthosAddress, _antiPathosAddress);
 		return (
-			thoughtCurrencyBalances[0],
-			thoughtCurrencyBalances[1],
-			thoughtCurrencyBalances[2],
-			antiThoughtCurrencyBalances[0],
-			antiThoughtCurrencyBalances[1],
-			antiThoughtCurrencyBalances[2]
+			taoCurrencyBalances[0],
+			taoCurrencyBalances[1],
+			taoCurrencyBalances[2],
+			antiTAOCurrencyBalances[0],
+			antiTAOCurrencyBalances[1],
+			antiTAOCurrencyBalances[2]
 		);
 	}
 
@@ -582,13 +582,13 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Check if `_sender` address is the current advocate of a `_thoughtId`
+	 * @dev Check if `_sender` address is the current advocate of a `_taoId`
 	 * @param _sender The address to check
-	 * @param _thoughtId The ID of the Thought
+	 * @param _taoId The ID of the TAO
 	 * @return true if yes. false otherwise
 	 */
-	function isAdvocateOfThought(address _sender, address _thoughtId) public view returns (bool) {
-		return (Name(Thought(_thoughtId).advocateId()).originNameId() == _sender);
+	function isAdvocateOfTAO(address _sender, address _taoId) public view returns (bool) {
+		return (Name(TAO(_taoId).advocateId()).originNameId() == _sender);
 	}
 
 	/***** Internal Methods *****/

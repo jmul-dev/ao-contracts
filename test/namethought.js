@@ -1,23 +1,23 @@
 var NameFactory = artifacts.require("./NameFactory.sol");
-var ThoughtFactory = artifacts.require("./ThoughtFactory.sol");
-var ThoughtPosition = artifacts.require("./ThoughtPosition.sol");
+var TAOFactory = artifacts.require("./TAOFactory.sol");
+var TAOPosition = artifacts.require("./TAOPosition.sol");
 var Position = artifacts.require("./Position.sol");
 var EthCrypto = require("eth-crypto");
 
-contract("Name & Thought", function(accounts) {
+contract("Name & TAO", function(accounts) {
 	var namefactory,
-		thoughtfactory,
-		thoughtposition,
+		taofactory,
+		taoposition,
 		position,
 		maxSupplyPerName,
 		nameId1,
 		nameId2,
 		nameId3,
 		nameId4,
-		thoughtId1,
-		thoughtId2,
-		thoughtId3,
-		thoughtId4;
+		taoId1,
+		taoId2,
+		taoId3,
+		taoId4;
 	var developer = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
@@ -51,8 +51,8 @@ contract("Name & Thought", function(accounts) {
 
 	before(async function() {
 		namefactory = await NameFactory.deployed();
-		thoughtfactory = await ThoughtFactory.deployed();
-		thoughtposition = await ThoughtPosition.deployed();
+		taofactory = await TAOFactory.deployed();
+		taoposition = await TAOPosition.deployed();
 		position = await Position.deployed();
 
 		maxSupplyPerName = await position.MAX_SUPPLY_PER_NAME();
@@ -88,7 +88,7 @@ contract("Name & Thought", function(accounts) {
 			assert.equal(_name[3], database, "Name has incorrect database");
 			assert.equal(_name[4], keyValue, "Name has incorrect keyValue");
 			assert.equal(web3.toAscii(_name[5]).replace(/\0/g, ""), contentId, "Name has incorrect contentId");
-			assert.equal(_name[6].toString(), 1, "Name has incorrect thoughtTypeId");
+			assert.equal(_name[6].toString(), 1, "Name has incorrect taoTypeId");
 			assert.equal(_name[7], account, "Name has incorrect defaultPublicKey");
 			assert.equal(_name[8].toNumber(), 1, "Name has incorrect nonce");
 
@@ -113,133 +113,117 @@ contract("Name & Thought", function(accounts) {
 			return nameId;
 		};
 
-		var createThought = async function(from, fromType, sameAdvocate, account) {
-			var totalThoughtsBefore = await thoughtfactory.getTotalThoughtsCount();
-			var totalSubThoughtsBefore,
-				totalChildThoughtsBefore,
-				totalChildThoughtsAfter,
-				totalOrphanThoughtsBefore,
-				totalOrphanThoughtsAfter;
-			if (fromType == "thought") {
-				totalSubThoughtsBefore = await thoughtfactory.getTotalSubThoughtsCount(from);
+		var createTAO = async function(from, fromType, sameAdvocate, account) {
+			var totalTAOsBefore = await taofactory.getTotalTAOsCount();
+			var totalSubTAOsBefore, totalChildTAOsBefore, totalChildTAOsAfter, totalOrphanTAOsBefore, totalOrphanTAOsAfter;
+			if (fromType == "tao") {
+				totalSubTAOsBefore = await taofactory.getTotalSubTAOsCount(from);
 				if (sameAdvocate) {
-					totalChildThoughtsBefore = await thoughtfactory.getTotalChildThoughtsCount(from);
+					totalChildTAOsBefore = await taofactory.getTotalChildTAOsCount(from);
 				} else {
-					totalOrphanThoughtsBefore = await thoughtfactory.getTotalOrphanThoughtsCount(from);
+					totalOrphanTAOsBefore = await taofactory.getTotalOrphanTAOsCount(from);
 				}
 			}
 
-			var canCreateThought, createThoughtEvent, addChildThoughtEvent, addOrphanThoughtEvent, thoughtId;
+			var canCreateTAO, createTAOEvent, addChildTAOEvent, addOrphanTAOEvent, taoId;
 			try {
-				var result = await thoughtfactory.createThought(datHash, database, keyValue, contentId, from, { from: account });
-				createThoughtEvent = result.logs[0];
-				if (fromType == "thought") {
+				var result = await taofactory.createTAO(datHash, database, keyValue, contentId, from, { from: account });
+				createTAOEvent = result.logs[0];
+				if (fromType == "tao") {
 					if (sameAdvocate) {
-						addChildThoughtEvent = result.logs[1];
+						addChildTAOEvent = result.logs[1];
 					} else {
-						addOrphanThoughtEvent = result.logs[1];
+						addOrphanTAOEvent = result.logs[1];
 					}
 				}
-				canCreateThought = true;
-				thoughtId = createThoughtEvent.args.thoughtId;
+				canCreateTAO = true;
+				taoId = createTAOEvent.args.taoId;
 			} catch (e) {
-				createThoughtEvent = null;
-				addChildThoughtEvent = null;
-				addOrphanThoughtEvent = null;
-				canCreateThought = false;
-				thoughtId = null;
+				createTAOEvent = null;
+				addChildTAOEvent = null;
+				addOrphanTAOEvent = null;
+				canCreateTAO = false;
+				taoId = null;
 			}
-			assert.equal(canCreateThought, true, "Advocate is unable to create Thought");
+			assert.equal(canCreateTAO, true, "Advocate is unable to create TAO");
 
-			var totalThoughtsAfter = await thoughtfactory.getTotalThoughtsCount();
-			assert.equal(totalThoughtsAfter.toString(), totalThoughtsBefore.plus(1).toString(), "Contract has incorrect thoughts length");
+			var totalTAOsAfter = await taofactory.getTotalTAOsCount();
+			assert.equal(totalTAOsAfter.toString(), totalTAOsBefore.plus(1).toString(), "Contract has incorrect taos length");
 
-			var thoughts = await thoughtfactory.getThoughtIds(0, totalThoughtsAfter.minus(1).toString());
-			assert.include(thoughts, thoughtId, "Newly created Thought ID is not in the list");
+			var taos = await taofactory.getTAOIds(0, totalTAOsAfter.minus(1).toString());
+			assert.include(taos, taoId, "Newly created TAO ID is not in the list");
 
-			var _thought = await thoughtfactory.getThought(thoughtId);
+			var _tao = await taofactory.getTAO(taoId);
 			var _advocateId = await namefactory.ethAddressToNameId(account);
 			var _advocate = await namefactory.getName(_advocateId);
-			assert.equal(_thought[0], _advocate[0], "Thought has incorrect originName");
-			assert.equal(_thought[1], _advocateId, "Thought has incorrect originNameId");
-			assert.equal(_thought[2], _advocateId, "Thought has incorrect advocateId");
-			assert.equal(_thought[3], _advocateId, "Thought has incorrect listenerId");
-			assert.equal(_thought[4], _advocateId, "Thought has incorrect speakerId");
-			assert.equal(_thought[5], datHash, "Thought has incorrect datHash");
-			assert.equal(_thought[6], database, "Thought has incorrect database");
-			assert.equal(_thought[7], keyValue, "Thought has incorrect keyValue");
-			assert.equal(web3.toAscii(_thought[8]).replace(/\0/g, ""), contentId, "Thought has incorrect contentId");
-			assert.equal(_thought[9].toString(), 0, "Thought has incorrect thoughtTypeId");
+			assert.equal(_tao[0], _advocate[0], "TAO has incorrect originName");
+			assert.equal(_tao[1], _advocateId, "TAO has incorrect originNameId");
+			assert.equal(_tao[2], _advocateId, "TAO has incorrect advocateId");
+			assert.equal(_tao[3], _advocateId, "TAO has incorrect listenerId");
+			assert.equal(_tao[4], _advocateId, "TAO has incorrect speakerId");
+			assert.equal(_tao[5], datHash, "TAO has incorrect datHash");
+			assert.equal(_tao[6], database, "TAO has incorrect database");
+			assert.equal(_tao[7], keyValue, "TAO has incorrect keyValue");
+			assert.equal(web3.toAscii(_tao[8]).replace(/\0/g, ""), contentId, "TAO has incorrect contentId");
+			assert.equal(_tao[9].toString(), 0, "TAO has incorrect taoTypeId");
 
-			var thoughtRelationship = await thoughtfactory.getThoughtRelationship(thoughtId);
-			if (fromType == "thought" && !sameAdvocate) {
-				assert.equal(thoughtRelationship[0], _advocateId, "Thought has incorrect fromId");
-				assert.equal(thoughtRelationship[2], from, "Thought has incorrect toId");
+			var taoRelationship = await taofactory.getTAORelationship(taoId);
+			if (fromType == "tao" && !sameAdvocate) {
+				assert.equal(taoRelationship[0], _advocateId, "TAO has incorrect fromId");
+				assert.equal(taoRelationship[2], from, "TAO has incorrect toId");
 			} else {
-				assert.equal(thoughtRelationship[0], from, "Thought has incorrect fromId");
-				assert.equal(thoughtRelationship[2], emptyAddress, "Thought has incorrect toId");
+				assert.equal(taoRelationship[0], from, "TAO has incorrect fromId");
+				assert.equal(taoRelationship[2], emptyAddress, "TAO has incorrect toId");
 			}
-			assert.equal(thoughtRelationship[1], emptyAddress, "Thought has incorrect throughId");
+			assert.equal(taoRelationship[1], emptyAddress, "TAO has incorrect throughId");
 
-			if (fromType == "thought") {
-				totalSubThoughtsAfter = await thoughtfactory.getTotalSubThoughtsCount(from);
+			if (fromType == "tao") {
+				totalSubTAOsAfter = await taofactory.getTotalSubTAOsCount(from);
 
 				assert.equal(
-					totalSubThoughtsAfter.toString(),
-					totalSubThoughtsBefore.plus(1).toString(),
-					"Parent Thought has incorrect count of sub Thoughts"
+					totalSubTAOsAfter.toString(),
+					totalSubTAOsBefore.plus(1).toString(),
+					"Parent TAO has incorrect count of sub TAOs"
 				);
 
-				var subThoughts = await thoughtfactory.getSubThoughtIds(from, 1, totalSubThoughtsAfter.toString());
-				assert.include(subThoughts, thoughtId, "Newly created Thought ID is not in the parent's list of sub Thoughts");
+				var subTAOs = await taofactory.getSubTAOIds(from, 1, totalSubTAOsAfter.toString());
+				assert.include(subTAOs, taoId, "Newly created TAO ID is not in the parent's list of sub TAOs");
 				if (sameAdvocate) {
-					assert.notEqual(addChildThoughtEvent, null, "Creating Thought didn't emit AddChildThought event");
-					assert.equal(addChildThoughtEvent.args.parentThoughtId, from, "AddChildThought event has incorrect parent Thought ID");
-					assert.equal(
-						addChildThoughtEvent.args.childThoughtId,
-						thoughtId,
-						"AddChildThought event has incorrect child Thought ID"
-					);
+					assert.notEqual(addChildTAOEvent, null, "Creating TAO didn't emit AddChildTAO event");
+					assert.equal(addChildTAOEvent.args.parentTAOId, from, "AddChildTAO event has incorrect parent TAO ID");
+					assert.equal(addChildTAOEvent.args.childTAOId, taoId, "AddChildTAO event has incorrect child TAO ID");
 
-					totalChildThoughtsAfter = await thoughtfactory.getTotalChildThoughtsCount(from);
+					totalChildTAOsAfter = await taofactory.getTotalChildTAOsCount(from);
 
 					assert.equal(
-						totalChildThoughtsAfter.toString(),
-						totalChildThoughtsBefore.plus(1).toString(),
-						"Parent Thought has incorrect count of child Thoughts"
+						totalChildTAOsAfter.toString(),
+						totalChildTAOsBefore.plus(1).toString(),
+						"Parent TAO has incorrect count of child TAOs"
 					);
 
-					var isChildThoughtOfThought = await thoughtfactory.isChildThoughtOfThought(from, thoughtId);
-					assert.equal(isChildThoughtOfThought, true, "Newly created Thought is not child Thought of `from`");
+					var isChildTAOOfTAO = await taofactory.isChildTAOOfTAO(from, taoId);
+					assert.equal(isChildTAOOfTAO, true, "Newly created TAO is not child TAO of `from`");
 				} else {
-					assert.notEqual(addOrphanThoughtEvent, null, "Creating Thought didn't emit AddOrphanThought event");
-					assert.equal(
-						addOrphanThoughtEvent.args.parentThoughtId,
-						from,
-						"AddOrphanThought event has incorrect parent Thought ID"
-					);
-					assert.equal(
-						addOrphanThoughtEvent.args.orphanThoughtId,
-						thoughtId,
-						"AddOrphanThought event has incorrect orphan Thought ID"
-					);
+					assert.notEqual(addOrphanTAOEvent, null, "Creating TAO didn't emit AddOrphanTAO event");
+					assert.equal(addOrphanTAOEvent.args.parentTAOId, from, "AddOrphanTAO event has incorrect parent TAO ID");
+					assert.equal(addOrphanTAOEvent.args.orphanTAOId, taoId, "AddOrphanTAO event has incorrect orphan TAO ID");
 
-					totalOrphanThoughtsAfter = await thoughtfactory.getTotalOrphanThoughtsCount(from);
+					totalOrphanTAOsAfter = await taofactory.getTotalOrphanTAOsCount(from);
 
 					assert.equal(
-						totalOrphanThoughtsAfter.toString(),
-						totalOrphanThoughtsBefore.plus(1).toString(),
-						"Parent Thought has incorrect count of orphan Thoughts"
+						totalOrphanTAOsAfter.toString(),
+						totalOrphanTAOsBefore.plus(1).toString(),
+						"Parent TAO has incorrect count of orphan TAOs"
 					);
 
-					var isOrphanThoughtOfThought = await thoughtfactory.isOrphanThoughtOfThought(from, thoughtId);
-					assert.equal(isOrphanThoughtOfThought, true, "Newly created Thought is not orphan Thought of `from`");
+					var isOrphanTAOOfTAO = await taofactory.isOrphanTAOOfTAO(from, taoId);
+					assert.equal(isOrphanTAOOfTAO, true, "Newly created TAO is not orphan TAO of `from`");
 				}
 			}
 
-			var isTAO = await thoughtposition.isTAO(thoughtId);
-			assert.equal(isTAO, false, "Thought has incorrect isTAO value");
-			return thoughtId;
+			var isTAO = await taoposition.isTAO(taoId);
+			assert.equal(isTAO, false, "TAO has incorrect isTAO value");
+			return taoId;
 		};
 
 		it("createName() - should be able to create a Name for an ETH address", async function() {
@@ -786,333 +770,329 @@ contract("Name & Thought", function(accounts) {
 
 		return;
 
-		it("createThought()", async function() {
-			var canCreateThought;
+		it("createTAO()", async function() {
+			var canCreateTAO;
 			try {
-				await thoughtfactory.createThought(datHash, database, keyValue, contentId, nameId1, { from: account5 });
-				canCreateThought = true;
+				await taofactory.createTAO(datHash, database, keyValue, contentId, nameId1, { from: account5 });
+				canCreateTAO = true;
 			} catch (e) {
-				canCreateThought = false;
+				canCreateTAO = false;
 			}
-			assert.notEqual(canCreateThought, true, "ETH address with no Name can create a Thought");
+			assert.notEqual(canCreateTAO, true, "ETH address with no Name can create a TAO");
 
-			// Create primordial Thought
-			thoughtId1 = await createThought(nameId1, "name", true, account1);
+			// Create primordial TAO
+			taoId1 = await createTAO(nameId1, "name", true, account1);
 
-			// Create Thought2 from Thought1 by the same Advocate
-			// thoughtId2 should be child Thought of thoughtId1
-			thoughtId2 = await createThought(thoughtId1, "thought", true, account1);
+			// Create TAO2 from TAO1 by the same Advocate
+			// taoId2 should be child TAO of taoId1
+			taoId2 = await createTAO(taoId1, "tao", true, account1);
 
-			// Create Thought3 to Thought1 by different Advocate
-			// thoughtId3 should be orphan Thought of thoughtId1
-			thoughtId3 = await createThought(thoughtId1, "thought", false, account2);
+			// Create TAO3 to TAO1 by different Advocate
+			// taoId3 should be orphan TAO of taoId1
+			taoId3 = await createTAO(taoId1, "tao", false, account2);
 		});
 
-		it("setThoughtAdvocate()", async function() {
+		it("setTAOAdvocate()", async function() {
 			var _newAdvocateId = nameId2;
 
-			var canSetThoughtAdvocate, setThoughtAdvocateEvent;
+			var canSetTAOAdvocate, setTAOAdvocateEvent;
 			try {
-				var result = await thoughtfactory.setThoughtAdvocate("someid", _newAdvocateId, { from: account1 });
-				setThoughtAdvocateEvent = result.logs[0];
-				canSetThoughtAdvocate = true;
+				var result = await taofactory.setTAOAdvocate("someid", _newAdvocateId, { from: account1 });
+				setTAOAdvocateEvent = result.logs[0];
+				canSetTAOAdvocate = true;
 			} catch (e) {
-				setThoughtAdvocateEvent = null;
-				canSetThoughtAdvocate = false;
+				setTAOAdvocateEvent = null;
+				canSetTAOAdvocate = false;
 			}
-			assert.notEqual(canSetThoughtAdvocate, true, "Advocate can set new Advocate on non-existing Thought");
+			assert.notEqual(canSetTAOAdvocate, true, "Advocate can set new Advocate on non-existing TAO");
 
 			try {
-				var result = await thoughtfactory.setThoughtAdvocate(thoughtId1, "someid", { from: account1 });
-				setThoughtAdvocateEvent = result.logs[0];
-				canSetThoughtAdvocate = true;
+				var result = await taofactory.setTAOAdvocate(taoId1, "someid", { from: account1 });
+				setTAOAdvocateEvent = result.logs[0];
+				canSetTAOAdvocate = true;
 			} catch (e) {
-				setThoughtAdvocateEvent = null;
-				canSetThoughtAdvocate = false;
+				setTAOAdvocateEvent = null;
+				canSetTAOAdvocate = false;
 			}
-			assert.notEqual(canSetThoughtAdvocate, true, "Advocate can set non-existing Advocate on a Thought");
+			assert.notEqual(canSetTAOAdvocate, true, "Advocate can set non-existing Advocate on a TAO");
 
 			try {
-				var result = await thoughtfactory.setThoughtAdvocate(thoughtId1, _newAdvocateId, { from: account2 });
-				setThoughtAdvocateEvent = result.logs[0];
-				canSetThoughtAdvocate = true;
+				var result = await taofactory.setTAOAdvocate(taoId1, _newAdvocateId, { from: account2 });
+				setTAOAdvocateEvent = result.logs[0];
+				canSetTAOAdvocate = true;
 			} catch (e) {
-				setThoughtAdvocateEvent = null;
-				canSetThoughtAdvocate = false;
+				setTAOAdvocateEvent = null;
+				canSetTAOAdvocate = false;
 			}
-			assert.notEqual(canSetThoughtAdvocate, true, "Non-Thought's advocate can set a new Advocate");
+			assert.notEqual(canSetTAOAdvocate, true, "Non-TAO's advocate can set a new Advocate");
 
 			try {
-				var result = await thoughtfactory.setThoughtAdvocate(thoughtId1, _newAdvocateId, { from: account1 });
-				setThoughtAdvocateEvent = result.logs[0];
-				canSetThoughtAdvocate = true;
+				var result = await taofactory.setTAOAdvocate(taoId1, _newAdvocateId, { from: account1 });
+				setTAOAdvocateEvent = result.logs[0];
+				canSetTAOAdvocate = true;
 			} catch (e) {
-				setThoughtAdvocateEvent = null;
-				canSetThoughtAdvocate = false;
+				setTAOAdvocateEvent = null;
+				canSetTAOAdvocate = false;
 			}
-			assert.equal(canSetThoughtAdvocate, true, "Thought's advocate can't set a new Advocate");
+			assert.equal(canSetTAOAdvocate, true, "TAO's advocate can't set a new Advocate");
 
-			var _thought = await thoughtfactory.getThought(thoughtId1);
-			assert.equal(_thought[2], _newAdvocateId, "Thought has incorrect advocateId after the update");
+			var _tao = await taofactory.getTAO(taoId1);
+			assert.equal(_tao[2], _newAdvocateId, "TAO has incorrect advocateId after the update");
 		});
 
-		it("setThoughtListener()", async function() {
+		it("setTAOListener()", async function() {
 			var _newListenerId = nameId3;
 
-			var canSetThoughtListener, setThoughtListenerEvent;
+			var canSetTAOListener, setTAOListenerEvent;
 			try {
-				var result = await thoughtfactory.setThoughtListener("someid", _newListenerId, { from: account2 });
-				setThoughtListenerEvent = result.logs[0];
-				canSetThoughtListener = true;
+				var result = await taofactory.setTAOListener("someid", _newListenerId, { from: account2 });
+				setTAOListenerEvent = result.logs[0];
+				canSetTAOListener = true;
 			} catch (e) {
-				setThoughtListenerEvent = null;
-				canSetThoughtListener = false;
+				setTAOListenerEvent = null;
+				canSetTAOListener = false;
 			}
-			assert.notEqual(canSetThoughtListener, true, "Advocate can set new Listener on non-existing Thought");
+			assert.notEqual(canSetTAOListener, true, "Advocate can set new Listener on non-existing TAO");
 
 			try {
-				var result = await thoughtfactory.setThoughtListener(thoughtId1, "someid", { from: account2 });
-				setThoughtListenerEvent = result.logs[0];
-				canSetThoughtListener = true;
+				var result = await taofactory.setTAOListener(taoId1, "someid", { from: account2 });
+				setTAOListenerEvent = result.logs[0];
+				canSetTAOListener = true;
 			} catch (e) {
-				setThoughtListenerEvent = null;
-				canSetThoughtListener = false;
+				setTAOListenerEvent = null;
+				canSetTAOListener = false;
 			}
-			assert.notEqual(canSetThoughtListener, true, "Advocate can set non-existing Listener on a Thought");
+			assert.notEqual(canSetTAOListener, true, "Advocate can set non-existing Listener on a TAO");
 
 			try {
-				var result = await thoughtfactory.setThoughtListener(thoughtId1, _newListenerId, { from: account3 });
-				setThoughtListenerEvent = result.logs[0];
-				canSetThoughtListener = true;
+				var result = await taofactory.setTAOListener(taoId1, _newListenerId, { from: account3 });
+				setTAOListenerEvent = result.logs[0];
+				canSetTAOListener = true;
 			} catch (e) {
-				setThoughtListenerEvent = null;
-				canSetThoughtListener = false;
+				setTAOListenerEvent = null;
+				canSetTAOListener = false;
 			}
-			assert.notEqual(canSetThoughtListener, true, "Non-Thought's advocate can set a new Listener");
+			assert.notEqual(canSetTAOListener, true, "Non-TAO's advocate can set a new Listener");
 
 			try {
-				var result = await thoughtfactory.setThoughtListener(thoughtId1, _newListenerId, { from: account2 });
-				setThoughtListenerEvent = result.logs[0];
-				canSetThoughtListener = true;
+				var result = await taofactory.setTAOListener(taoId1, _newListenerId, { from: account2 });
+				setTAOListenerEvent = result.logs[0];
+				canSetTAOListener = true;
 			} catch (e) {
-				setThoughtListenerEvent = null;
-				canSetThoughtListener = false;
+				setTAOListenerEvent = null;
+				canSetTAOListener = false;
 			}
-			assert.equal(canSetThoughtListener, true, "Thought's advocate can't set a new Listener");
+			assert.equal(canSetTAOListener, true, "TAO's advocate can't set a new Listener");
 
-			var _thought = await thoughtfactory.getThought(thoughtId1);
-			assert.equal(_thought[3], _newListenerId, "Thought has incorrect listenerId after the update");
+			var _tao = await taofactory.getTAO(taoId1);
+			assert.equal(_tao[3], _newListenerId, "TAO has incorrect listenerId after the update");
 		});
 
-		it("setThoughtSpeaker()", async function() {
+		it("setTAOSpeaker()", async function() {
 			nameId4 = await createName("account4", account4);
 
 			var _newSpeakerId = nameId4;
 
-			var canSetThoughtSpeaker, setThoughtSpeakerEvent;
+			var canSetTAOSpeaker, setTAOSpeakerEvent;
 			try {
-				var result = await thoughtfactory.setThoughtSpeaker("someid", _newSpeakerId, { from: account2 });
-				setThoughtSpeakerEvent = result.logs[0];
-				canSetThoughtSpeaker = true;
+				var result = await taofactory.setTAOSpeaker("someid", _newSpeakerId, { from: account2 });
+				setTAOSpeakerEvent = result.logs[0];
+				canSetTAOSpeaker = true;
 			} catch (e) {
-				setThoughtSpeakerEvent = null;
-				canSetThoughtSpeaker = false;
+				setTAOSpeakerEvent = null;
+				canSetTAOSpeaker = false;
 			}
-			assert.notEqual(canSetThoughtSpeaker, true, "Advocate can set new Speaker on non-existing Thought");
+			assert.notEqual(canSetTAOSpeaker, true, "Advocate can set new Speaker on non-existing TAO");
 
 			try {
-				var result = await thoughtfactory.setThoughtSpeaker(thoughtId1, "someid", { from: account2 });
-				setThoughtSpeakerEvent = result.logs[0];
-				canSetThoughtSpeaker = true;
+				var result = await taofactory.setTAOSpeaker(taoId1, "someid", { from: account2 });
+				setTAOSpeakerEvent = result.logs[0];
+				canSetTAOSpeaker = true;
 			} catch (e) {
-				setThoughtSpeakerEvent = null;
-				canSetThoughtSpeaker = false;
+				setTAOSpeakerEvent = null;
+				canSetTAOSpeaker = false;
 			}
-			assert.notEqual(canSetThoughtSpeaker, true, "Advocate can set non-existing Speaker on a Thought");
+			assert.notEqual(canSetTAOSpeaker, true, "Advocate can set non-existing Speaker on a TAO");
 
 			try {
-				var result = await thoughtfactory.setThoughtSpeaker(thoughtId1, _newSpeakerId, { from: account3 });
-				setThoughtSpeakerEvent = result.logs[0];
-				canSetThoughtSpeaker = true;
+				var result = await taofactory.setTAOSpeaker(taoId1, _newSpeakerId, { from: account3 });
+				setTAOSpeakerEvent = result.logs[0];
+				canSetTAOSpeaker = true;
 			} catch (e) {
-				setThoughtSpeakerEvent = null;
-				canSetThoughtSpeaker = false;
+				setTAOSpeakerEvent = null;
+				canSetTAOSpeaker = false;
 			}
-			assert.notEqual(canSetThoughtSpeaker, true, "Non-Thought's advocate can set a new Speaker");
+			assert.notEqual(canSetTAOSpeaker, true, "Non-TAO's advocate can set a new Speaker");
 
 			try {
-				var result = await thoughtfactory.setThoughtSpeaker(thoughtId1, _newSpeakerId, { from: account2 });
-				setThoughtSpeakerEvent = result.logs[0];
-				canSetThoughtSpeaker = true;
+				var result = await taofactory.setTAOSpeaker(taoId1, _newSpeakerId, { from: account2 });
+				setTAOSpeakerEvent = result.logs[0];
+				canSetTAOSpeaker = true;
 			} catch (e) {
-				setThoughtSpeakerEvent = null;
-				canSetThoughtSpeaker = false;
+				setTAOSpeakerEvent = null;
+				canSetTAOSpeaker = false;
 			}
-			assert.equal(canSetThoughtSpeaker, true, "Thought's advocate can't set a new Speaker");
+			assert.equal(canSetTAOSpeaker, true, "TAO's advocate can't set a new Speaker");
 
-			var _thought = await thoughtfactory.getThought(thoughtId1);
-			assert.equal(_thought[4], _newSpeakerId, "Thought has incorrect speakerId after the update");
+			var _tao = await taofactory.getTAO(taoId1);
+			assert.equal(_tao[4], _newSpeakerId, "TAO has incorrect speakerId after the update");
 		});
 
-		it("approveOrphanThought()", async function() {
-			var orphanThoughtId = thoughtId3;
+		it("approveOrphanTAO()", async function() {
+			var orphanTAOId = taoId3;
 
-			var canApproveOrphanThought, approveOrphanThoughtEvent;
+			var canApproveOrphanTAO, approveOrphanTAOEvent;
 			try {
-				var result = await thoughtfactory.approveOrphanThought("someid", orphanThoughtId, { from: account3 });
-				approveOrphanThoughtEvent = result.logs[0];
-				canApproveOrphanThought = true;
+				var result = await taofactory.approveOrphanTAO("someid", orphanTAOId, { from: account3 });
+				approveOrphanTAOEvent = result.logs[0];
+				canApproveOrphanTAO = true;
 			} catch (e) {
-				approveOrphanThoughtEvent = null;
-				canApproveOrphanThought = false;
+				approveOrphanTAOEvent = null;
+				canApproveOrphanTAO = false;
 			}
-			assert.notEqual(canApproveOrphanThought, true, "Listener can approve orphan Thought of a non-existing parent Thought");
-
-			try {
-				var result = await thoughtfactory.approveOrphanThought(thoughtId1, "someid", { from: account3 });
-				approveOrphanThoughtEvent = result.logs[0];
-				canApproveOrphanThought = true;
-			} catch (e) {
-				approveOrphanThoughtEvent = null;
-				canApproveOrphanThought = false;
-			}
-			assert.notEqual(canApproveOrphanThought, true, "Listener can approve non-existing Thought of a parent Thought");
+			assert.notEqual(canApproveOrphanTAO, true, "Listener can approve orphan TAO of a non-existing parent TAO");
 
 			try {
-				var result = await thoughtfactory.approveOrphanThought(thoughtId1, thoughtId2, { from: account3 });
-				approveOrphanThoughtEvent = result.logs[0];
-				canApproveOrphanThought = true;
+				var result = await taofactory.approveOrphanTAO(taoId1, "someid", { from: account3 });
+				approveOrphanTAOEvent = result.logs[0];
+				canApproveOrphanTAO = true;
 			} catch (e) {
-				approveOrphanThoughtEvent = null;
-				canApproveOrphanThought = false;
+				approveOrphanTAOEvent = null;
+				canApproveOrphanTAO = false;
 			}
-			assert.notEqual(canApproveOrphanThought, true, "Listener can approve non-orphan Thought of a parent Thought");
+			assert.notEqual(canApproveOrphanTAO, true, "Listener can approve non-existing TAO of a parent TAO");
 
 			try {
-				var result = await thoughtfactory.approveOrphanThought(thoughtId1, orphanThoughtId, { from: account2 });
-				approveOrphanThoughtEvent = result.logs[0];
-				canApproveOrphanThought = true;
+				var result = await taofactory.approveOrphanTAO(taoId1, taoId2, { from: account3 });
+				approveOrphanTAOEvent = result.logs[0];
+				canApproveOrphanTAO = true;
 			} catch (e) {
-				approveOrphanThoughtEvent = null;
-				canApproveOrphanThought = false;
+				approveOrphanTAOEvent = null;
+				canApproveOrphanTAO = false;
 			}
-			assert.notEqual(canApproveOrphanThought, true, "Non-Listener can approve noorphan Thought of a parent Thought");
+			assert.notEqual(canApproveOrphanTAO, true, "Listener can approve non-orphan TAO of a parent TAO");
 
 			try {
-				var result = await thoughtfactory.approveOrphanThought(thoughtId1, orphanThoughtId, { from: account3 });
-				approveOrphanThoughtEvent = result.logs[0];
-				canApproveOrphanThought = true;
+				var result = await taofactory.approveOrphanTAO(taoId1, orphanTAOId, { from: account2 });
+				approveOrphanTAOEvent = result.logs[0];
+				canApproveOrphanTAO = true;
 			} catch (e) {
-				approveOrphanThoughtEvent = null;
-				canApproveOrphanThought = false;
+				approveOrphanTAOEvent = null;
+				canApproveOrphanTAO = false;
 			}
-			assert.equal(canApproveOrphanThought, true, "Listener can't approve noorphan Thought of a parent Thought");
+			assert.notEqual(canApproveOrphanTAO, true, "Non-Listener can approve noorphan TAO of a parent TAO");
 
-			var isOrphanThoughtOfThought = await thoughtfactory.isOrphanThoughtOfThought(thoughtId1, orphanThoughtId);
-			assert.equal(isOrphanThoughtOfThought, false, "Thought is still listed as orphan Thought even though Listener has approved it");
+			try {
+				var result = await taofactory.approveOrphanTAO(taoId1, orphanTAOId, { from: account3 });
+				approveOrphanTAOEvent = result.logs[0];
+				canApproveOrphanTAO = true;
+			} catch (e) {
+				approveOrphanTAOEvent = null;
+				canApproveOrphanTAO = false;
+			}
+			assert.equal(canApproveOrphanTAO, true, "Listener can't approve noorphan TAO of a parent TAO");
 
-			var isChildThoughtOfThought = await thoughtfactory.isChildThoughtOfThought(thoughtId1, orphanThoughtId);
-			assert.equal(
-				isChildThoughtOfThought,
-				true,
-				"Orphan Thought is not listed as child Thought even though Listener has approved it"
-			);
+			var isOrphanTAOOfTAO = await taofactory.isOrphanTAOOfTAO(taoId1, orphanTAOId);
+			assert.equal(isOrphanTAOOfTAO, false, "TAO is still listed as orphan TAO even though Listener has approved it");
+
+			var isChildTAOOfTAO = await taofactory.isChildTAOOfTAO(taoId1, orphanTAOId);
+			assert.equal(isChildTAOOfTAO, true, "Orphan TAO is not listed as child TAO even though Listener has approved it");
 		});
 
 		it("stakePosition()", async function() {
 			var canStakePosition, isTaoEvent;
 			try {
-				var result = await thoughtposition.stakePosition("someid", 800000, { from: account1 });
+				var result = await taoposition.stakePosition("someid", 800000, { from: account1 });
 				isTaoEvent = result.logs[0];
 				canStakePosition = true;
 			} catch (e) {
 				isTaoEvent = null;
 				canStakePosition = false;
 			}
-			assert.notEqual(canStakePosition, true, "Name can stake Position on non-existing Thought");
+			assert.notEqual(canStakePosition, true, "Name can stake Position on non-existing TAO");
 
 			try {
-				var result = await thoughtposition.stakePosition(thoughtId1, 800000, { from: account5 });
+				var result = await taoposition.stakePosition(taoId1, 800000, { from: account5 });
 				isTaoEvent = result.logs[0];
 				canStakePosition = true;
 			} catch (e) {
 				isTaoEvent = null;
 				canStakePosition = false;
 			}
-			assert.notEqual(canStakePosition, true, "Non-Name account can stake Position on a Thought");
+			assert.notEqual(canStakePosition, true, "Non-Name account can stake Position on a TAO");
 
 			try {
-				var result = await thoughtposition.stakePosition(thoughtId1, 800000, { from: account1 });
+				var result = await taoposition.stakePosition(taoId1, 800000, { from: account1 });
 				isTaoEvent = result.logs[0];
 				canStakePosition = true;
 			} catch (e) {
 				isTaoEvent = null;
 				canStakePosition = false;
 			}
-			assert.equal(canStakePosition, true, "Name can't stake Position on a Thought");
+			assert.equal(canStakePosition, true, "Name can't stake Position on a TAO");
 			assert.notEqual(isTaoEvent, null, "Contract is not emitting IsTAO event");
 
-			var isTao = await thoughtposition.isTAO(thoughtId1);
-			assert.equal(isTao, true, "Thought is not a TAO even thought it has Position");
+			var isTao = await taoposition.isTAO(taoId1);
+			assert.equal(isTao, true, "TAO is not a TAO even tao it has Position");
 
 			try {
-				var result = await thoughtposition.stakePosition(thoughtId1, 800000, { from: account2 });
+				var result = await taoposition.stakePosition(taoId1, 800000, { from: account2 });
 				isTaoEvent = result.logs[0];
 				canStakePosition = true;
 			} catch (e) {
 				isTaoEvent = null;
 				canStakePosition = false;
 			}
-			assert.equal(canStakePosition, true, "Name can't stake Position on a Thought");
-			assert.equal(isTaoEvent, null, "Contract is emitting IsTAO event even though Thought is already a TAO");
+			assert.equal(canStakePosition, true, "Name can't stake Position on a TAO");
+			assert.equal(isTaoEvent, null, "Contract is emitting IsTAO event even though TAO is already a TAO");
 		});
 
 		it("unstakePosition()", async function() {
 			var canUnstakePosition, isTaoEvent;
 			try {
-				var result = await thoughtposition.unstakePosition("someid", 800000, { from: account1 });
+				var result = await taoposition.unstakePosition("someid", 800000, { from: account1 });
 				isTaoEvent = result.logs[0];
 				canUnstakePosition = true;
 			} catch (e) {
 				isTaoEvent = null;
 				canUnstakePosition = false;
 			}
-			assert.notEqual(canUnstakePosition, true, "Name can unstake Position on non-existing Thought");
+			assert.notEqual(canUnstakePosition, true, "Name can unstake Position on non-existing TAO");
 
 			try {
-				var result = await thoughtposition.unstakePosition(thoughtId1, 800000, { from: account5 });
+				var result = await taoposition.unstakePosition(taoId1, 800000, { from: account5 });
 				isTaoEvent = result.logs[0];
 				canUnstakePosition = true;
 			} catch (e) {
 				isTaoEvent = null;
 				canUnstakePosition = false;
 			}
-			assert.notEqual(canUnstakePosition, true, "Non-Name account can unstake Position on a Thought");
+			assert.notEqual(canUnstakePosition, true, "Non-Name account can unstake Position on a TAO");
 
 			try {
-				var result = await thoughtposition.unstakePosition(thoughtId1, 800000, { from: account1 });
+				var result = await taoposition.unstakePosition(taoId1, 800000, { from: account1 });
 				isTaoEvent = result.logs[0];
 				canUnstakePosition = true;
 			} catch (e) {
 				isTaoEvent = null;
 				canUnstakePosition = false;
 			}
-			assert.equal(canUnstakePosition, true, "Name can't unstake Position on a Thought");
-			assert.equal(isTaoEvent, null, "Contract is emitting IsTAO event even thought there is no changes yet on the status");
+			assert.equal(canUnstakePosition, true, "Name can't unstake Position on a TAO");
+			assert.equal(isTaoEvent, null, "Contract is emitting IsTAO event even tao there is no changes yet on the status");
 
 			try {
-				var result = await thoughtposition.unstakePosition(thoughtId1, 800000, { from: account2 });
+				var result = await taoposition.unstakePosition(taoId1, 800000, { from: account2 });
 				isTaoEvent = result.logs[0];
 				canUnstakePosition = true;
 			} catch (e) {
 				isTaoEvent = null;
 				canUnstakePosition = false;
 			}
-			assert.equal(canUnstakePosition, true, "Name can't unstake Position on a Thought");
+			assert.equal(canUnstakePosition, true, "Name can't unstake Position on a TAO");
 			assert.notEqual(isTaoEvent, null, "Contract is not emitting IsTAO event");
 
-			var isTao = await thoughtposition.isTAO(thoughtId1);
-			assert.equal(isTao, false, "Thought is a TAO even thought it has no Position");
+			var isTao = await taoposition.isTAO(taoId1);
+			assert.equal(isTao, false, "TAO is a TAO even tao it has no Position");
 		});
 	});
 });
