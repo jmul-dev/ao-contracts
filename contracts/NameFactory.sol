@@ -92,6 +92,7 @@ contract NameFactory {
 	 * @param _contentId The contentId related to this Name
 	 */
 	function createName(string _name, string _datHash, string _database, string _keyValue, bytes32 _contentId) public {
+		require (bytes(_name).length > 0);
 		require (isNameTaken(_name) == false);
 		// Only one Name per ETH address
 		require (ethAddressToNameId[msg.sender] == address(0));

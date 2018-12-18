@@ -196,7 +196,7 @@ module.exports = function(deployer, network, accounts) {
 			 * Create Primordial TAO and Associated TAO that proposes Content Usage Setting creation
 			 */
 			try {
-				var result = await taofactory.createTAO("", "", "", "", primordialNameId, {
+				var result = await taofactory.createTAO("Primordial Thought of AO", "", "", "", "", primordialNameId, {
 					from: primordialAccount
 				});
 				var createTAOEvent = result.logs[0];
@@ -207,7 +207,7 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			try {
-				var result = await taofactory.createTAO("", "", "", "", primordialTAOId, {
+				var result = await taofactory.createTAO("Settings of AO", "", "", "", "", primordialTAOId, {
 					from: settingAccount
 				});
 				var createTAOEvent = result.logs[0];

@@ -43,21 +43,45 @@ contract("AOSettingAttribute", function(accounts) {
 		proposalTAONameId = await namefactory.ethAddressToNameId(account3);
 
 		// Create TAOs
-		result = await taofactory.createTAO("somedathash", "somedatabase", "somekeyvalue", "somecontentid", creatorTAONameId, {
-			from: account1
-		});
+		result = await taofactory.createTAO(
+			"creatorTAOId",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			creatorTAONameId,
+			{
+				from: account1
+			}
+		);
 		var createTAOEvent = result.logs[0];
 		creatorTAOId = createTAOEvent.args.taoId;
 
-		result = await taofactory.createTAO("somedathash", "somedatabase", "somekeyvalue", "somecontentid", creatorTAONameId, {
-			from: account2
-		});
+		result = await taofactory.createTAO(
+			"associatedTAOId",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			creatorTAONameId,
+			{
+				from: account2
+			}
+		);
 		createTAOEvent = result.logs[0];
 		associatedTAOId = createTAOEvent.args.taoId;
 
-		result = await taofactory.createTAO("somedathash", "somedatabase", "somekeyvalue", "somecontentid", creatorTAONameId, {
-			from: account3
-		});
+		result = await taofactory.createTAO(
+			"proposalTAOId",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			creatorTAONameId,
+			{
+				from: account3
+			}
+		);
 		createTAOEvent = result.logs[0];
 		proposalTAOId = createTAOEvent.args.taoId;
 	});

@@ -42,13 +42,15 @@ contract TAOFactory is TAOController {
 
 	/**
 	 * @dev Name creates a TAO
+	 * @param _taoName The name of the TAO
 	 * @param _datHash The datHash of this TAO
 	 * @param _database The database for this TAO
 	 * @param _keyValue The key/value pair to be checked on the database
 	 * @param _contentId The contentId related to this TAO
 	 * @param _from The origin of this TAO (has to be a Name or TAO)
 	 */
-	function createTAO(string _datHash, string _database, string _keyValue, bytes32 _contentId, address _from) public senderIsName() {
+	function createTAO(string _taoName, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _from) public senderIsName() {
+		require (bytes(_taoName).length > 0);
 		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
 
 		// Make sure _from is a TAO/Name
@@ -73,7 +75,7 @@ contract TAOFactory is TAOController {
 			_assignedTo = _from;
 		}
 
-		address taoId = new TAO(Name(_nameId).originName(), _nameId, _datHash, _database, _keyValue, _contentId, _assignedFrom, _assignedTo);
+		address taoId = new TAO(Name(_nameId).originName(), _taoName, _nameId, _datHash, _database, _keyValue, _contentId, _assignedFrom, _assignedTo);
 		taos.push(taoId);
 
 		emit CreateTAO(msg.sender, _nameId, taoId, taos.length.sub(1), _assignedFrom, TAO(_assignedFrom).taoTypeId(), _assignedTo);
@@ -96,29 +98,41 @@ contract TAOFactory is TAOController {
 	 * @dev Get TAO information
 	 * @param _taoId The ID of the TAO to be queried
 	 * @return The origin name of the TAO
+	 * @return The name of the TAO
 	 * @return The origin Name ID of the TAO
-	 * @return The advocateId of the TAO
-	 * @return The listenerId of the TAO
-	 * @return The speakerId of the TAO
 	 * @return The datHash of the TAO
 	 * @return The database of the TAO
 	 * @return The keyValue of the TAO
 	 * @return The contentId of the TAO
 	 * @return The taoTypeId of the TAO
 	 */
-	function getTAO(address _taoId) public view returns (string, address, address, address, address, string, string, string, bytes32, uint8) {
+	function getTAO(address _taoId) public view returns (string, string, address, string, string, string, bytes32, uint8) {
 		TAO _tao = TAO(_taoId);
 		return (
 			_tao.originName(),
+			_tao.taoName(),
 			_tao.originNameId(),
-			_tao.advocateId(),
-			_tao.listenerId(),
-			_tao.speakerId(),
 			_tao.datHash(),
 			_tao.database(),
 			_tao.keyValue(),
 			_tao.contentId(),
 			_tao.taoTypeId()
+		);
+	}
+
+	/**
+	 * @dev Given a TAO ID, wants to get the TAO's Position, i.e Advocate/Listener/Speaker
+	 * @param _taoId The ID of the TAO
+	 * @return The advocateId of the TAO
+	 * @return The listenerId of the TAO
+	 * @return The speakerId of the TAO
+	 */
+	function getTAOPosition(address _taoId) public view returns (address, address, address) {
+		TAO _tao = TAO(_taoId);
+		return (
+			_tao.advocateId(),
+			_tao.listenerId(),
+			_tao.speakerId()
 		);
 	}
 

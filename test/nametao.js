@@ -127,7 +127,9 @@ contract("Name & TAO", function(accounts) {
 
 			var canCreateTAO, createTAOEvent, addChildTAOEvent, addOrphanTAOEvent, taoId;
 			try {
-				var result = await taofactory.createTAO(datHash, database, keyValue, contentId, from, { from: account });
+				var result = await taofactory.createTAO("TAO of " + account, datHash, database, keyValue, contentId, from, {
+					from: account
+				});
 				createTAOEvent = result.logs[0];
 				if (fromType == "tao") {
 					if (sameAdvocate) {
@@ -157,15 +159,18 @@ contract("Name & TAO", function(accounts) {
 			var _advocateId = await namefactory.ethAddressToNameId(account);
 			var _advocate = await namefactory.getName(_advocateId);
 			assert.equal(_tao[0], _advocate[0], "TAO has incorrect originName");
-			assert.equal(_tao[1], _advocateId, "TAO has incorrect originNameId");
-			assert.equal(_tao[2], _advocateId, "TAO has incorrect advocateId");
-			assert.equal(_tao[3], _advocateId, "TAO has incorrect listenerId");
-			assert.equal(_tao[4], _advocateId, "TAO has incorrect speakerId");
-			assert.equal(_tao[5], datHash, "TAO has incorrect datHash");
-			assert.equal(_tao[6], database, "TAO has incorrect database");
-			assert.equal(_tao[7], keyValue, "TAO has incorrect keyValue");
-			assert.equal(web3.toAscii(_tao[8]).replace(/\0/g, ""), contentId, "TAO has incorrect contentId");
-			assert.equal(_tao[9].toString(), 0, "TAO has incorrect taoTypeId");
+			assert.equal(_tao[1], "TAO of " + account, "TAO has incorrect taoName");
+			assert.equal(_tao[2], _advocateId, "TAO has incorrect originNameId");
+			assert.equal(_tao[3], datHash, "TAO has incorrect datHash");
+			assert.equal(_tao[4], database, "TAO has incorrect database");
+			assert.equal(_tao[5], keyValue, "TAO has incorrect keyValue");
+			assert.equal(web3.toAscii(_tao[6]).replace(/\0/g, ""), contentId, "TAO has incorrect contentId");
+			assert.equal(_tao[7].toString(), 0, "TAO has incorrect taoTypeId");
+
+			var _taoPosition = await taofactory.getTAOPosition(taoId);
+			assert.equal(_taoPosition[0], _advocateId, "TAO has incorrect advocateId");
+			assert.equal(_taoPosition[1], _advocateId, "TAO has incorrect listenerId");
+			assert.equal(_taoPosition[2], _advocateId, "TAO has incorrect speakerId");
 
 			var taoRelationship = await taofactory.getTAORelationship(taoId);
 			if (fromType == "tao" && !sameAdvocate) {
@@ -220,9 +225,6 @@ contract("Name & TAO", function(accounts) {
 					assert.equal(isOrphanTAOOfTAO, true, "Newly created TAO is not orphan TAO of `from`");
 				}
 			}
-
-			var isTAO = await taoposition.isTAO(taoId);
-			assert.equal(isTAO, false, "TAO has incorrect isTAO value");
 			return taoId;
 		};
 
@@ -768,12 +770,12 @@ contract("Name & TAO", function(accounts) {
 			);
 		});
 
-		return;
+		//		return;
 
 		it("createTAO()", async function() {
 			var canCreateTAO;
 			try {
-				await taofactory.createTAO(datHash, database, keyValue, contentId, nameId1, { from: account5 });
+				await taofactory.createTAO("TAO of " + account5, datHash, database, keyValue, contentId, nameId1, { from: account5 });
 				canCreateTAO = true;
 			} catch (e) {
 				canCreateTAO = false;
@@ -836,8 +838,8 @@ contract("Name & TAO", function(accounts) {
 			}
 			assert.equal(canSetTAOAdvocate, true, "TAO's advocate can't set a new Advocate");
 
-			var _tao = await taofactory.getTAO(taoId1);
-			assert.equal(_tao[2], _newAdvocateId, "TAO has incorrect advocateId after the update");
+			var _taoPosition = await taofactory.getTAOPosition(taoId1);
+			assert.equal(_taoPosition[0], _newAdvocateId, "TAO has incorrect advocateId after the update");
 		});
 
 		it("setTAOListener()", async function() {
@@ -884,8 +886,8 @@ contract("Name & TAO", function(accounts) {
 			}
 			assert.equal(canSetTAOListener, true, "TAO's advocate can't set a new Listener");
 
-			var _tao = await taofactory.getTAO(taoId1);
-			assert.equal(_tao[3], _newListenerId, "TAO has incorrect listenerId after the update");
+			var _taoPosition = await taofactory.getTAOPosition(taoId1);
+			assert.equal(_taoPosition[1], _newListenerId, "TAO has incorrect listenerId after the update");
 		});
 
 		it("setTAOSpeaker()", async function() {
@@ -934,8 +936,8 @@ contract("Name & TAO", function(accounts) {
 			}
 			assert.equal(canSetTAOSpeaker, true, "TAO's advocate can't set a new Speaker");
 
-			var _tao = await taofactory.getTAO(taoId1);
-			assert.equal(_tao[4], _newSpeakerId, "TAO has incorrect speakerId after the update");
+			var _taoPosition = await taofactory.getTAOPosition(taoId1);
+			assert.equal(_taoPosition[2], _newSpeakerId, "TAO has incorrect speakerId after the update");
 		});
 
 		it("approveOrphanTAO()", async function() {
@@ -1000,99 +1002,73 @@ contract("Name & TAO", function(accounts) {
 		});
 
 		it("stakePosition()", async function() {
-			var canStakePosition, isTAOEvent;
+			var canStakePosition;
 			try {
 				var result = await taoposition.stakePosition("someid", 800000, { from: account1 });
-				isTAOEvent = result.logs[0];
 				canStakePosition = true;
 			} catch (e) {
-				isTAOEvent = null;
 				canStakePosition = false;
 			}
 			assert.notEqual(canStakePosition, true, "Name can stake Position on non-existing TAO");
 
 			try {
 				var result = await taoposition.stakePosition(taoId1, 800000, { from: account5 });
-				isTAOEvent = result.logs[0];
 				canStakePosition = true;
 			} catch (e) {
-				isTAOEvent = null;
 				canStakePosition = false;
 			}
 			assert.notEqual(canStakePosition, true, "Non-Name account can stake Position on a TAO");
 
 			try {
 				var result = await taoposition.stakePosition(taoId1, 800000, { from: account1 });
-				isTAOEvent = result.logs[0];
 				canStakePosition = true;
 			} catch (e) {
-				isTAOEvent = null;
 				canStakePosition = false;
 			}
 			assert.equal(canStakePosition, true, "Name can't stake Position on a TAO");
-			assert.notEqual(isTAOEvent, null, "Contract is not emitting IsTAO event");
-
-			var isTAO = await taoposition.isTAO(taoId1);
-			assert.equal(isTAO, true, "TAO is not a TAO even tao it has Position");
 
 			try {
 				var result = await taoposition.stakePosition(taoId1, 800000, { from: account2 });
-				isTAOEvent = result.logs[0];
 				canStakePosition = true;
 			} catch (e) {
-				isTAOEvent = null;
 				canStakePosition = false;
 			}
 			assert.equal(canStakePosition, true, "Name can't stake Position on a TAO");
-			assert.equal(isTAOEvent, null, "Contract is emitting IsTAO event even though TAO is already a TAO");
 		});
 
 		it("unstakePosition()", async function() {
-			var canUnstakePosition, isTAOEvent;
+			var canUnstakePosition;
 			try {
 				var result = await taoposition.unstakePosition("someid", 800000, { from: account1 });
-				isTAOEvent = result.logs[0];
 				canUnstakePosition = true;
 			} catch (e) {
-				isTAOEvent = null;
 				canUnstakePosition = false;
 			}
 			assert.notEqual(canUnstakePosition, true, "Name can unstake Position on non-existing TAO");
 
 			try {
 				var result = await taoposition.unstakePosition(taoId1, 800000, { from: account5 });
-				isTAOEvent = result.logs[0];
 				canUnstakePosition = true;
 			} catch (e) {
-				isTAOEvent = null;
 				canUnstakePosition = false;
 			}
 			assert.notEqual(canUnstakePosition, true, "Non-Name account can unstake Position on a TAO");
 
 			try {
 				var result = await taoposition.unstakePosition(taoId1, 800000, { from: account1 });
-				isTAOEvent = result.logs[0];
 				canUnstakePosition = true;
 			} catch (e) {
-				isTAOEvent = null;
 				canUnstakePosition = false;
 			}
 			assert.equal(canUnstakePosition, true, "Name can't unstake Position on a TAO");
-			assert.equal(isTAOEvent, null, "Contract is emitting IsTAO event even tao there is no changes yet on the status");
 
 			try {
 				var result = await taoposition.unstakePosition(taoId1, 800000, { from: account2 });
-				isTAOEvent = result.logs[0];
 				canUnstakePosition = true;
 			} catch (e) {
-				isTAOEvent = null;
 				canUnstakePosition = false;
 			}
 			assert.equal(canUnstakePosition, true, "Name can't unstake Position on a TAO");
-			assert.notEqual(isTAOEvent, null, "Contract is not emitting IsTAO event");
-
-			var isTAO = await taoposition.isTAO(taoId1);
-			assert.equal(isTAO, false, "TAO is a TAO even tao it has no Position");
 		});
 	});
 });

@@ -54,7 +54,7 @@ contract("AOLibrary", function(accounts) {
 		});
 		nameId2 = await namefactory.ethAddressToNameId(account2);
 
-		result = await taofactory.createTAO("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId1, {
+		result = await taofactory.createTAO("taoId", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId1, {
 			from: account1
 		});
 		var createTAOEvent = result.logs[0];

@@ -924,25 +924,25 @@ contract("AOContent & AOEarning", function(accounts) {
 			nameId3 = await namefactory.ethAddressToNameId(account3);
 
 			// Create TAOs
-			result = await taofactory.createTAO("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId1, {
+			result = await taofactory.createTAO("taoId1", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId1, {
 				from: account1
 			});
 			var createTAOEvent = result.logs[0];
 			taoId1 = createTAOEvent.args.taoId;
 
-			result = await taofactory.createTAO("somedathash", "somedatabase", "somekeyvalue", "somecontentid", taoId1, {
+			result = await taofactory.createTAO("taoId2", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", taoId1, {
 				from: account1
 			});
 			createTAOEvent = result.logs[0];
 			taoId2 = createTAOEvent.args.taoId;
 
-			result = await taofactory.createTAO("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId2, {
+			result = await taofactory.createTAO("taoId3", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId2, {
 				from: account2
 			});
 			createTAOEvent = result.logs[0];
 			taoId3 = createTAOEvent.args.taoId;
 
-			result = await taofactory.createTAO("somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId3, {
+			result = await taofactory.createTAO("taoId4", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId3, {
 				from: account3
 			});
 			createTAOEvent = result.logs[0];
