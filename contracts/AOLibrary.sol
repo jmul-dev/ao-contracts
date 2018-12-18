@@ -460,7 +460,7 @@ library AOLibrary {
 	 * @return true if yes. false otherwise
 	 */
 	function isTAO(address _taoId) public view returns (bool) {
-		return (_taoId != address(0) && TAO(_taoId).originNameId() != address(0) && TAO(_taoId).taoTypeId() == 0);
+		return (_taoId != address(0) && TAO(_taoId).originId() != address(0) && TAO(_taoId).taoTypeId() == 0);
 	}
 
 	/**
@@ -469,7 +469,7 @@ library AOLibrary {
 	 * @return true if yes. false otherwise
 	 */
 	function isName(address _nameId) public view returns (bool) {
-		return (_nameId != address(0) && Name(_nameId).originNameId() != address(0) && Name(_nameId).taoTypeId() == 1);
+		return (_nameId != address(0) && Name(_nameId).originId() != address(0) && Name(_nameId).taoTypeId() == 1);
 	}
 
 	/**
@@ -572,13 +572,13 @@ library AOLibrary {
 	/**
 	 * @dev Check if `_sender` address is the current advocate of a `_nameId`
 	 *		Since there is no way to change the Advocate of a Name, the Advocate's eth address
-	 *		is the same as the Name's Origin Name ID
+	 *		is the same as the Name's Origin ID
 	 * @param _sender The address to check
 	 * @param _nameId The ID of the Name
 	 * @return true if yes. false otherwise
 	 */
 	function isAdvocateOfName(address _sender, address _nameId) public view returns (bool) {
-		return (Name(_nameId).originNameId() == _sender);
+		return (Name(_nameId).originId() == _sender);
 	}
 
 	/**
@@ -588,7 +588,7 @@ library AOLibrary {
 	 * @return true if yes. false otherwise
 	 */
 	function isAdvocateOfTAO(address _sender, address _taoId) public view returns (bool) {
-		return (Name(TAO(_taoId).advocateId()).originNameId() == _sender);
+		return (Name(TAO(_taoId).advocateId()).originId() == _sender);
 	}
 
 	/***** Internal Methods *****/

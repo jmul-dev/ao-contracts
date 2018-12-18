@@ -13,9 +13,9 @@ contract TAO {
 	bool public closed;
 
 	address public factoryAddress;
-	string public originName;		// the name of the Name that created this TAO
+	string public username;			// the name of the Name that created this TAO
 	string public taoName;			// the name of this TAO
-	address public originNameId;	// the ID of the Name that created this TAO
+	address public originId;		// the ID of the Name/TAO that created this TAO
 
 	address public advocateId;	// current advocateId
 	address public listenerId;	// current listenerId
@@ -56,12 +56,12 @@ contract TAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor (string _originName, string _taoName, address _originNameId, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _fromId, address _toId) public {
+	constructor (string _username, string _taoName, address _originId, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _fromId, address _toId) public {
 		factoryAddress = msg.sender;
-		originName = _originName;
+		username = _username;
 		taoName = _taoName;
-		originNameId = _originNameId;
-		advocateId = _originNameId;
+		originId = _originId;
+		advocateId = _originId;
 		datHash = _datHash;
 		database = _database;
 		keyValue = _keyValue;

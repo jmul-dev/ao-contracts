@@ -19,11 +19,11 @@ contract NameFactory {
 
 	address[] internal names;
 
-	mapping (bytes32 => address) internal originNamesLookup;
+	mapping (bytes32 => address) internal usernamesLookup;
 	mapping (address => address) public ethAddressToNameId;
 
 	// Event to be broadcasted to public when a Name is created
-	event CreateName(address indexed ethAddress, address nameId, uint256 index, string name);
+	event CreateName(address indexed ethAddress, address nameId, uint256 index, string username);
 
 	// Event to be broadcasted to public when current Advocate sets New Listener for a Name
 	event SetNameListener(address indexed nameId, address oldListenerId, address newListenerId);
@@ -59,7 +59,7 @@ contract NameFactory {
 	/**
 	 * @dev Check if msg.sender address is the current advocate of a `_nameId`.
 	 *		Since there is no way to change the Advocate of a Name, the Advocate's eth address
-	 *		is the same as the Name's Origin Name ID
+	 *		is the same as the Name's Origin ID
 	 */
 	modifier onlyAdvocateOfName(address _nameId) {
 		require (AOLibrary.isAdvocateOfName(msg.sender, _nameId));
@@ -75,38 +75,38 @@ contract NameFactory {
 	 }
 
 	/**
-	 * @dev Check whether or not `_name` is taken
-	 * @param _name The value to be checked
+	 * @dev Check whether or not username exist
+	 * @param _username The value to be checked
 	 * @return true if taken, false otherwise
 	 */
-	function isNameTaken(string _name) public view returns (bool) {
-		return (originNamesLookup[keccak256(abi.encodePacked(_name))] != address(0));
+	function isUsernameExist(string _username) public view returns (bool) {
+		return (usernamesLookup[keccak256(abi.encodePacked(_username))] != address(0));
 	}
 
 	/**
 	 * @dev Create a Name
-	 * @param _name The name of the Name
+	 * @param _username The username of the Name
 	 * @param _datHash The datHash to this Name's profile
 	 * @param _database The database for this Name
 	 * @param _keyValue The key/value pair to be checked on the database
 	 * @param _contentId The contentId related to this Name
 	 */
-	function createName(string _name, string _datHash, string _database, string _keyValue, bytes32 _contentId) public {
-		require (bytes(_name).length > 0);
-		require (isNameTaken(_name) == false);
+	function createName(string _username, string _datHash, string _database, string _keyValue, bytes32 _contentId) public {
+		require (bytes(_username).length > 0);
+		require (!isUsernameExist(_username));
 		// Only one Name per ETH address
 		require (ethAddressToNameId[msg.sender] == address(0));
 
 		// The address is the Name ID (which is also a TAO ID)
-		address nameId = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId);
+		address nameId = new Name(_username, msg.sender, _datHash, _database, _keyValue, _contentId);
 		ethAddressToNameId[msg.sender] = nameId;
-		originNamesLookup[keccak256(abi.encodePacked(_name))] = nameId;
+		usernamesLookup[keccak256(abi.encodePacked(_username))] = nameId;
 		names.push(nameId);
 
 		// Need to mint Position token for this Name
 		require (_position.mintToken(nameId));
 
-		emit CreateName(msg.sender, nameId, names.length.sub(1), _name);
+		emit CreateName(msg.sender, nameId, names.length.sub(1), _username);
 	}
 
 	/**
@@ -125,8 +125,8 @@ contract NameFactory {
 	function getName(address _nameId) public view returns (string, address, string, string, string, bytes32, uint8, address, uint256) {
 		Name _name = Name(_nameId);
 		return (
-			_name.originName(),
-			_name.originNameId(),
+			_name.username(),
+			_name.originId(),
 			_name.datHash(),
 			_name.database(),
 			_name.keyValue(),
@@ -155,11 +155,11 @@ contract NameFactory {
 
 	/**
 	 * @dev Get the nameId given a username
-	 * @param _name The username  to check
+	 * @param _username The username  to check
 	 * @return nameId of the username
 	 */
-	function getNameIdByOriginName(string _name) public view returns (address) {
-		return originNamesLookup[keccak256(abi.encodePacked(_name))];
+	function getNameIdByUsername(string _username) public view returns (address) {
+		return usernamesLookup[keccak256(abi.encodePacked(_username))];
 	}
 
 	/**
@@ -301,4 +301,27 @@ contract NameFactory {
 		require (_nonce > 0);
 		emit SetNameDefaultPublicKey(_nameId, _publicKey, _nonce);
 	}
+
+	/**
+	 * @dev Check whether or not the signature is valid
+	 * @param _data The signed string data
+	 * @param _nonce The signed uint256 nonce
+	 * @param _validateAddress The address to be validated (optional)
+	 * @param _username The username of the Name
+	 * @param _signatureV The V part of the signature
+	 * @param _signatureR The R part of the signature
+	 * @param _signatureS The S part of the signature
+	 * @return true if valid. false otherwise
+	function validateNameSignature(
+		string _data,
+		uint256 _nonce,
+		address _validateAddress,
+		string _username,
+		uint8 _signatureV,
+		bytes32 _signatureR,
+		bytes32 _signatureS
+	) public view returns (bool) {
+	}
+
+	 */
 }

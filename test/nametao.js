@@ -82,8 +82,8 @@ contract("Name & TAO", function(accounts) {
 			assert.include(names, nameId, "Newly created Name ID is not in the list");
 
 			var _name = await namefactory.getName(nameId);
-			assert.equal(_name[0], name, "Name has incorrect originName");
-			assert.equal(_name[1], account, "Name has incorrect originNameId");
+			assert.equal(_name[0], name, "Name has incorrect username");
+			assert.equal(_name[1], account, "Name has incorrect originId");
 			assert.equal(_name[2], datHash, "Name has incorrect datHash");
 			assert.equal(_name[3], database, "Name has incorrect database");
 			assert.equal(_name[4], keyValue, "Name has incorrect keyValue");
@@ -158,9 +158,9 @@ contract("Name & TAO", function(accounts) {
 			var _tao = await taofactory.getTAO(taoId);
 			var _advocateId = await namefactory.ethAddressToNameId(account);
 			var _advocate = await namefactory.getName(_advocateId);
-			assert.equal(_tao[0], _advocate[0], "TAO has incorrect originName");
+			assert.equal(_tao[0], _advocate[0], "TAO has incorrect username");
 			assert.equal(_tao[1], "TAO of " + account, "TAO has incorrect taoName");
-			assert.equal(_tao[2], _advocateId, "TAO has incorrect originNameId");
+			assert.equal(_tao[2], _advocateId, "TAO has incorrect originId");
 			assert.equal(_tao[3], datHash, "TAO has incorrect datHash");
 			assert.equal(_tao[4], database, "TAO has incorrect database");
 			assert.equal(_tao[5], keyValue, "TAO has incorrect keyValue");
@@ -252,12 +252,12 @@ contract("Name & TAO", function(accounts) {
 			assert.notEqual(canCreateName, true, "ETH address is able to create Name even though it already has a Name");
 		});
 
-		it("isNameTaken() - should be able to check whether or not a username has been taken", async function() {
-			var isNameTaken = await namefactory.isNameTaken("account2");
-			assert.equal(isNameTaken, false, "isNameTaken() returns true even though name is not taken");
+		it("isUsernameExist() - should be able to check whether or not a username exit", async function() {
+			var isUsernameExist = await namefactory.isUsernameExist("account2");
+			assert.equal(isUsernameExist, false, "isUsernameExist() returns true even though name is not taken");
 
-			isNameTaken = await namefactory.isNameTaken("account1");
-			assert.equal(isNameTaken, true, "isNameTaken() returns false even though name is taken");
+			isUsernameExist = await namefactory.isUsernameExist("account1");
+			assert.equal(isUsernameExist, true, "isUsernameExist() returns false even though name is taken");
 		});
 
 		it("setNameListener() - should be able to set a Listener for a Name", async function() {
@@ -385,12 +385,12 @@ contract("Name & TAO", function(accounts) {
 			assert.equal(position[2], nameId3, "getNamePosition() returns incorrect Speaker for a Name");
 		});
 
-		it("getNameIdByOriginName() - should return the correct nameId given a username", async function() {
-			var nameId = await namefactory.getNameIdByOriginName("somename");
-			assert.equal(nameId, emptyAddress, "getNameIdByOriginName() returns incorrect nameId");
+		it("getNameIdByUsername() - should return the correct nameId given a username", async function() {
+			var nameId = await namefactory.getNameIdByUsername("somename");
+			assert.equal(nameId, emptyAddress, "getNameIdByUsername() returns incorrect nameId");
 
-			var nameId = await namefactory.getNameIdByOriginName("account1");
-			assert.equal(nameId, nameId1, "getNameIdByOriginName() returns incorrect nameId");
+			var nameId = await namefactory.getNameIdByUsername("account1");
+			assert.equal(nameId, nameId1, "getNameIdByUsername() returns incorrect nameId");
 		});
 
 		it("getNameTotalPublicKeysCount() - should return the count of publicKeys given a nameId", async function() {

@@ -54,7 +54,7 @@ contract TAOFactory is TAOController {
 		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
 
 		// Make sure _from is a TAO/Name
-		require (_from != address(0) && TAO(_from).originNameId() != address(0));
+		require (_from != address(0) && TAO(_from).originId() != address(0));
 
 		/**
 		 * If _from is a TAO (TAOTypeId == 0)
@@ -75,7 +75,7 @@ contract TAOFactory is TAOController {
 			_assignedTo = _from;
 		}
 
-		address taoId = new TAO(Name(_nameId).originName(), _taoName, _nameId, _datHash, _database, _keyValue, _contentId, _assignedFrom, _assignedTo);
+		address taoId = new TAO(Name(_nameId).username(), _taoName, _nameId, _datHash, _database, _keyValue, _contentId, _assignedFrom, _assignedTo);
 		taos.push(taoId);
 
 		emit CreateTAO(msg.sender, _nameId, taoId, taos.length.sub(1), _assignedFrom, TAO(_assignedFrom).taoTypeId(), _assignedTo);
@@ -97,9 +97,9 @@ contract TAOFactory is TAOController {
 	/**
 	 * @dev Get TAO information
 	 * @param _taoId The ID of the TAO to be queried
-	 * @return The origin name of the TAO
+	 * @return The username of the Name that created this TAO
 	 * @return The name of the TAO
-	 * @return The origin Name ID of the TAO
+	 * @return The origin Name/TAO ID of the TAO
 	 * @return The datHash of the TAO
 	 * @return The database of the TAO
 	 * @return The keyValue of the TAO
@@ -109,9 +109,9 @@ contract TAOFactory is TAOController {
 	function getTAO(address _taoId) public view returns (string, string, address, string, string, string, bytes32, uint8) {
 		TAO _tao = TAO(_taoId);
 		return (
-			_tao.originName(),
+			_tao.username(),
 			_tao.taoName(),
-			_tao.originNameId(),
+			_tao.originId(),
 			_tao.datHash(),
 			_tao.database(),
 			_tao.keyValue(),
@@ -293,7 +293,7 @@ contract TAOFactory is TAOController {
 		TAO _tao = TAO(_taoId);
 
 		// Only TAO's current listener can approve orphan TAO
-		require (Name(_tao.listenerId()).originNameId() == msg.sender);
+		require (Name(_tao.listenerId()).originId() == msg.sender);
 
 		require (_tao.approveOrphanTAO(_orphanTAOId));
 

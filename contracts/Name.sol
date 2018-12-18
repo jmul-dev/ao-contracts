@@ -15,8 +15,8 @@ contract Name is TAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor (string _originName, address _originNameId, string _datHash, string _database, string _keyValue, bytes32 _contentId)
-		TAO (_originName, _originName, _originNameId, _datHash, _database, _keyValue, _contentId, _originNameId, address(0)) public {
+	constructor (string _username, address _originId, string _datHash, string _database, string _keyValue, bytes32 _contentId)
+		TAO (_username, _username, _originId, _datHash, _database, _keyValue, _contentId, _originId, address(0)) public {
 		// Creating Name
 		taoTypeId = 1;
 
@@ -25,8 +25,8 @@ contract Name is TAO {
 		speakerId = advocateId;
 
 		// Store the publicKey
-		publicKeys.push(_originNameId);
-		defaultPublicKey = _originNameId;
+		publicKeys.push(_originId);
+		defaultPublicKey = _originId;
 	}
 
 	/**
