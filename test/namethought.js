@@ -1000,99 +1000,99 @@ contract("Name & TAO", function(accounts) {
 		});
 
 		it("stakePosition()", async function() {
-			var canStakePosition, isTaoEvent;
+			var canStakePosition, isTAOEvent;
 			try {
 				var result = await taoposition.stakePosition("someid", 800000, { from: account1 });
-				isTaoEvent = result.logs[0];
+				isTAOEvent = result.logs[0];
 				canStakePosition = true;
 			} catch (e) {
-				isTaoEvent = null;
+				isTAOEvent = null;
 				canStakePosition = false;
 			}
 			assert.notEqual(canStakePosition, true, "Name can stake Position on non-existing TAO");
 
 			try {
 				var result = await taoposition.stakePosition(taoId1, 800000, { from: account5 });
-				isTaoEvent = result.logs[0];
+				isTAOEvent = result.logs[0];
 				canStakePosition = true;
 			} catch (e) {
-				isTaoEvent = null;
+				isTAOEvent = null;
 				canStakePosition = false;
 			}
 			assert.notEqual(canStakePosition, true, "Non-Name account can stake Position on a TAO");
 
 			try {
 				var result = await taoposition.stakePosition(taoId1, 800000, { from: account1 });
-				isTaoEvent = result.logs[0];
+				isTAOEvent = result.logs[0];
 				canStakePosition = true;
 			} catch (e) {
-				isTaoEvent = null;
+				isTAOEvent = null;
 				canStakePosition = false;
 			}
 			assert.equal(canStakePosition, true, "Name can't stake Position on a TAO");
-			assert.notEqual(isTaoEvent, null, "Contract is not emitting IsTAO event");
+			assert.notEqual(isTAOEvent, null, "Contract is not emitting IsTAO event");
 
-			var isTao = await taoposition.isTAO(taoId1);
-			assert.equal(isTao, true, "TAO is not a TAO even tao it has Position");
+			var isTAO = await taoposition.isTAO(taoId1);
+			assert.equal(isTAO, true, "TAO is not a TAO even tao it has Position");
 
 			try {
 				var result = await taoposition.stakePosition(taoId1, 800000, { from: account2 });
-				isTaoEvent = result.logs[0];
+				isTAOEvent = result.logs[0];
 				canStakePosition = true;
 			} catch (e) {
-				isTaoEvent = null;
+				isTAOEvent = null;
 				canStakePosition = false;
 			}
 			assert.equal(canStakePosition, true, "Name can't stake Position on a TAO");
-			assert.equal(isTaoEvent, null, "Contract is emitting IsTAO event even though TAO is already a TAO");
+			assert.equal(isTAOEvent, null, "Contract is emitting IsTAO event even though TAO is already a TAO");
 		});
 
 		it("unstakePosition()", async function() {
-			var canUnstakePosition, isTaoEvent;
+			var canUnstakePosition, isTAOEvent;
 			try {
 				var result = await taoposition.unstakePosition("someid", 800000, { from: account1 });
-				isTaoEvent = result.logs[0];
+				isTAOEvent = result.logs[0];
 				canUnstakePosition = true;
 			} catch (e) {
-				isTaoEvent = null;
+				isTAOEvent = null;
 				canUnstakePosition = false;
 			}
 			assert.notEqual(canUnstakePosition, true, "Name can unstake Position on non-existing TAO");
 
 			try {
 				var result = await taoposition.unstakePosition(taoId1, 800000, { from: account5 });
-				isTaoEvent = result.logs[0];
+				isTAOEvent = result.logs[0];
 				canUnstakePosition = true;
 			} catch (e) {
-				isTaoEvent = null;
+				isTAOEvent = null;
 				canUnstakePosition = false;
 			}
 			assert.notEqual(canUnstakePosition, true, "Non-Name account can unstake Position on a TAO");
 
 			try {
 				var result = await taoposition.unstakePosition(taoId1, 800000, { from: account1 });
-				isTaoEvent = result.logs[0];
+				isTAOEvent = result.logs[0];
 				canUnstakePosition = true;
 			} catch (e) {
-				isTaoEvent = null;
+				isTAOEvent = null;
 				canUnstakePosition = false;
 			}
 			assert.equal(canUnstakePosition, true, "Name can't unstake Position on a TAO");
-			assert.equal(isTaoEvent, null, "Contract is emitting IsTAO event even tao there is no changes yet on the status");
+			assert.equal(isTAOEvent, null, "Contract is emitting IsTAO event even tao there is no changes yet on the status");
 
 			try {
 				var result = await taoposition.unstakePosition(taoId1, 800000, { from: account2 });
-				isTaoEvent = result.logs[0];
+				isTAOEvent = result.logs[0];
 				canUnstakePosition = true;
 			} catch (e) {
-				isTaoEvent = null;
+				isTAOEvent = null;
 				canUnstakePosition = false;
 			}
 			assert.equal(canUnstakePosition, true, "Name can't unstake Position on a TAO");
-			assert.notEqual(isTaoEvent, null, "Contract is not emitting IsTAO event");
+			assert.notEqual(isTAOEvent, null, "Contract is not emitting IsTAO event");
 
-			var isTao = await taoposition.isTAO(taoId1);
-			assert.equal(isTao, false, "TAO is a TAO even tao it has no Position");
+			var isTAO = await taoposition.isTAO(taoId1);
+			assert.equal(isTAO, false, "TAO is a TAO even tao it has no Position");
 		});
 	});
 });
