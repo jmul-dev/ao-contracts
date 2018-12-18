@@ -306,12 +306,13 @@ contract NameFactory {
 	 * @dev Check whether or not the signature is valid
 	 * @param _data The signed string data
 	 * @param _nonce The signed uint256 nonce
-	 * @param _validateAddress The address to be validated (optional)
+	 * @param _validateAddress The ETH address to be validated (optional)
 	 * @param _username The username of the Name
 	 * @param _signatureV The V part of the signature
 	 * @param _signatureR The R part of the signature
 	 * @param _signatureS The S part of the signature
 	 * @return true if valid. false otherwise
+	 */
 	function validateNameSignature(
 		string _data,
 		uint256 _nonce,
@@ -321,7 +322,21 @@ contract NameFactory {
 		bytes32 _signatureR,
 		bytes32 _signatureS
 	) public view returns (bool) {
+		require (isUsernameExist(_username));
+		address _nameId = usernamesLookup[keccak256(abi.encodePacked(_username))];
+		Name _name = Name(_nameId);
+		bytes32 _hash = keccak256(abi.encodePacked(address(this), _data, _nonce));
+		if (_validateAddress != address(0)) {
+			return (
+				_nonce == _name.nonce().add(1) &&
+				ecrecover(_hash, _signatureV, _signatureR, _signatureS) == _validateAddress &&
+				_name.isPublicKeyExist(_validateAddress)
+			);
+		} else {
+			return (
+				_nonce == _name.nonce().add(1) &&
+				ecrecover(_hash, _signatureV, _signatureR, _signatureS) == _name.defaultPublicKey()
+			);
+		}
 	}
-
-	 */
 }

@@ -768,9 +768,137 @@ contract("Name & TAO", function(accounts) {
 				nameAfter[8].toNumber(),
 				"SetNameDefaultPublicKey event has incorrect nonce"
 			);
+
+			// Set Default Public Key back to account1 for next testing
+			var vrs = sign(account1PrivateKey, nameId1, account1);
+			var result = await namefactory.setNameDefaultPublicKey(nameId1, account1, vrs.v, vrs.r, vrs.s, { from: account1 });
 		});
 
-		//		return;
+		it("validateNameSignature() - should return true if the signature is valid", async function() {
+			var sign = function(privateKey, data, nonce) {
+				var signHash = EthCrypto.hash.keccak256([
+					{
+						type: "address",
+						value: namefactory.address
+					},
+					{
+						type: "string",
+						value: data
+					},
+					{
+						type: "uint256",
+						value: nonce
+					}
+				]);
+
+				var signature = EthCrypto.sign(privateKey, signHash);
+				return EthCrypto.vrs.fromString(signature);
+			};
+
+			var data = "somestring";
+			var name = await namefactory.getName(nameId1);
+			var nonce = name[8];
+			var vrs = sign(account1PrivateKey, data, nonce.plus(1).toNumber());
+			var isValidSignature = await namefactory.validateNameSignature(
+				data,
+				nonce.plus(1).toNumber(),
+				account1,
+				"account1",
+				vrs.v,
+				vrs.r,
+				vrs.s
+			);
+			assert.equal(isValidSignature, true, "validateNameSignature() returns incorrect bool value");
+
+			var isValidSignature = await namefactory.validateNameSignature(
+				data,
+				nonce.plus(1).toNumber(),
+				"",
+				"account1",
+				vrs.v,
+				vrs.r,
+				vrs.s
+			);
+			assert.equal(isValidSignature, true, "validateNameSignature() returns incorrect bool value");
+
+			var isValidSignature = await namefactory.validateNameSignature(
+				data,
+				nonce.plus(1).toNumber(),
+				"",
+				"account1",
+				"",
+				vrs.r,
+				vrs.s
+			);
+			assert.equal(isValidSignature, false, "validateNameSignature() returns true even though it's missing v part of signature");
+
+			var isValidSignature = await namefactory.validateNameSignature(
+				data,
+				nonce.plus(1).toNumber(),
+				"",
+				"account1",
+				vrs.v,
+				"",
+				vrs.s
+			);
+			assert.equal(isValidSignature, false, "validateNameSignature() returns true even though it's missing r part of signature");
+
+			var isValidSignature = await namefactory.validateNameSignature(
+				data,
+				nonce.plus(1).toNumber(),
+				"",
+				"account1",
+				vrs.v,
+				vrs.r,
+				""
+			);
+			assert.equal(isValidSignature, false, "validateNameSignature() returns true even though it's missing s part of signature");
+
+			var isValidSignature = await namefactory.validateNameSignature(
+				data,
+				nonce.plus(1).toNumber(),
+				"",
+				"account2",
+				vrs.v,
+				vrs.r,
+				""
+			);
+			assert.equal(
+				isValidSignature,
+				false,
+				"validateNameSignature() returns true even though signature address is not account's default public key"
+			);
+
+			var vrs = sign(account1PrivateKey, data, nonce.toNumber());
+			var isValidSignature = await namefactory.validateNameSignature(
+				data,
+				nonce.toNumber(),
+				account1,
+				"account1",
+				vrs.v,
+				vrs.r,
+				vrs.s
+			);
+			assert.equal(isValidSignature, false, "validateNameSignature() returns true even though nonce was incorrect");
+
+			var name = await namefactory.getName(nameId1);
+			var nonce = name[8];
+			var vrs = sign(account2PrivateKey, data, nonce.plus(1).toNumber());
+			var isValidSignature = await namefactory.validateNameSignature(
+				data,
+				nonce.plus(1).toNumber(),
+				account1,
+				"account1",
+				vrs.v,
+				vrs.r,
+				vrs.s
+			);
+			assert.equal(
+				isValidSignature,
+				false,
+				"validateNameSignature() returns true even though the signature address is different from validateAddress"
+			);
+		});
 
 		it("createTAO()", async function() {
 			var canCreateTAO;
