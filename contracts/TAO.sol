@@ -97,44 +97,47 @@ contract TAO {
 	/**
 	 * @dev Set advocate (only works for a TAO)
 	 * @param _advocateId The advocate ID to be set
-	 * @return true on success
+	 * @return the nonce for this transaction
 	 */
-	function setAdvocate(address _advocateId) public isActive onlyFactory returns (bool) {
+	function setAdvocate(address _advocateId) public isActive onlyFactory returns (uint256) {
 		require (_advocateId != address(0));
 		require (taoTypeId == 0);
 		advocateId = _advocateId;
-		return true;
+		nonce++;
+		return nonce;
 	}
 
 	/**
 	 * @dev Set listener
 	 * @param _listenerId The listener ID to be set
-	 * @return true on success
+	 * @return the nonce for this transaction
 	 */
-	function setListener(address _listenerId) public isActive onlyFactory returns (bool) {
+	function setListener(address _listenerId) public isActive onlyFactory returns (uint256) {
 		require (_listenerId != address(0));
 		listenerId = _listenerId;
-		return true;
+		nonce++;
+		return nonce;
 	}
 
 	/**
 	 * @dev Set speaker
 	 * @param _speakerId The speaker ID to be set
-	 * @return true on success
+	 * @return the nonce for this transaction
 	 */
-	function setSpeaker(address _speakerId) public isActive onlyFactory returns (bool) {
+	function setSpeaker(address _speakerId) public isActive onlyFactory returns (uint256) {
 		require (_speakerId != address(0));
 		speakerId = _speakerId;
-		return true;
+		nonce++;
+		return nonce;
 	}
 
 	/**
 	 * @dev Add sub TAO
 	 * @param _taoId The TAO ID to be added to as sub TAO
 	 * @param _child True if adding this as a child TAO. False if it's an orphan TAO.
-	 * @return true on success
+	 * @return the nonce for this transaction
 	 */
-	function addSubTAO(address _taoId, bool _child) public isActive onlyFactory returns (bool) {
+	function addSubTAO(address _taoId, bool _child) public isActive onlyFactory returns (uint256) {
 		require (_taoId != address(0));
 		require (subTAOInternalIdLookup[_taoId] == 0);
 
@@ -149,7 +152,8 @@ contract TAO {
 		_subTAO.taoId = _taoId;
 		_subTAO.child = _child;
 		_subTAO.connected = true;
-		return true;
+		nonce++;
+		return nonce;
 	}
 
 	/**
@@ -188,36 +192,39 @@ contract TAO {
 	/**
 	 * @dev Approve orphan TAO and switch it to a child TAO
 	 * @param _orphanTAOId The orphan TAO ID to approve
-	 * @return true on success
+	 * @return the nonce for this transaction
 	 */
-	function approveOrphanTAO(address _orphanTAOId) public isActive onlyFactory returns (bool) {
+	function approveOrphanTAO(address _orphanTAOId) public isActive onlyFactory returns (uint256) {
 		SubTAO storage _subTAO = subTAOs[subTAOInternalIdLookup[_orphanTAOId]];
 		_subTAO.child = true;
 		totalChildTAOs++;
 		totalOrphanTAOs--;
-		return true;
+		nonce++;
+		return nonce;
 	}
 
 	/**
 	 * @dev Lock/unlock TAO. If at "locked" state, no transaction can be executed on this TAO
 			until it's unlocked again.
 	 * @param _locked The bool value to set
-	 * @return true on success
+	 * @return the nonce for this transaction
 	 */
-	function setLocked(bool _locked) public onlyFactory returns (bool) {
+	function setLocked(bool _locked) public onlyFactory returns (uint256) {
 		require (closed == false);
 		locked = _locked;
-		return true;
+		nonce++;
+		return nonce;
 	}
 
 	/**
 	 * @dev Mark TAO as closed
-	 * @return true on success
+	 * @return the nonce for this transaction
 	 */
-	function close() public onlyFactory returns (bool) {
+	function close() public onlyFactory returns (uint256) {
 		require (closed == false);
 		closed = true;
-		return true;
+		nonce++;
+		return nonce;
 	}
 
 	/**

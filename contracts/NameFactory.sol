@@ -26,10 +26,10 @@ contract NameFactory {
 	event CreateName(address indexed ethAddress, address nameId, uint256 index, string username);
 
 	// Event to be broadcasted to public when current Advocate sets New Listener for a Name
-	event SetNameListener(address indexed nameId, address oldListenerId, address newListenerId);
+	event SetNameListener(address indexed nameId, address oldListenerId, address newListenerId, uint256 nonce);
 
 	// Event to be broadcasted to public when current Advocate sets New Speaker for a Name
-	event SetNameSpeaker(address indexed nameId, address oldSpeakerId, address newSpeakerId);
+	event SetNameSpeaker(address indexed nameId, address oldSpeakerId, address newSpeakerId, uint256 nonce);
 
 	// Event to be broadcasted to public when a publicKey is added to a Name
 	event AddNamePublicKey(address indexed nameId, address publicKey, uint256 nonce);
@@ -199,9 +199,10 @@ contract NameFactory {
 		Name _name = Name(_nameId);
 		// Set the new listener
 		address _currentListenerId = _name.listenerId();
-		require (_name.setListener(_newListenerId));
+		uint256 _nonce = _name.setListener(_newListenerId);
+		require (_nonce > 0);
 
-		emit SetNameListener(_nameId, _currentListenerId, _newListenerId);
+		emit SetNameListener(_nameId, _currentListenerId, _newListenerId, _nonce);
 	}
 
 	/**
@@ -213,9 +214,10 @@ contract NameFactory {
 		Name _name = Name(_nameId);
 		// Set the new speaker
 		address _currentSpeakerId = _name.speakerId();
-		require (_name.setSpeaker(_newSpeakerId));
+		uint256 _nonce = _name.setSpeaker(_newSpeakerId);
+		require (_nonce > 0);
 
-		emit SetNameSpeaker(_nameId, _currentSpeakerId, _newSpeakerId);
+		emit SetNameSpeaker(_nameId, _currentSpeakerId, _newSpeakerId, _nonce);
 	}
 
 	/**
@@ -305,7 +307,7 @@ contract NameFactory {
 	/**
 	 * @dev Check whether or not the signature is valid
 	 * @param _data The signed string data
-	 * @param _nonce The signed uint256 nonce
+	 * @param _nonce The signed uint256 nonce (should be Name's current nonce + 1)
 	 * @param _validateAddress The ETH address to be validated (optional)
 	 * @param _username The username of the Name
 	 * @param _signatureV The V part of the signature
@@ -325,17 +327,17 @@ contract NameFactory {
 		require (isUsernameExist(_username));
 		address _nameId = usernamesLookup[keccak256(abi.encodePacked(_username))];
 		Name _name = Name(_nameId);
-		bytes32 _hash = keccak256(abi.encodePacked(address(this), _data, _nonce));
+		address _signatureAddress = AOLibrary.getValidateSignatureAddress(address(this), _data, _nonce, _signatureV, _signatureR, _signatureS);
 		if (_validateAddress != address(0)) {
 			return (
 				_nonce == _name.nonce().add(1) &&
-				ecrecover(_hash, _signatureV, _signatureR, _signatureS) == _validateAddress &&
+				_signatureAddress == _validateAddress &&
 				_name.isPublicKeyExist(_validateAddress)
 			);
 		} else {
 			return (
 				_nonce == _name.nonce().add(1) &&
-				ecrecover(_hash, _signatureV, _signatureR, _signatureS) == _name.defaultPublicKey()
+				_signatureAddress == _name.defaultPublicKey()
 			);
 		}
 	}

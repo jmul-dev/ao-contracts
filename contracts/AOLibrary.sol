@@ -591,6 +591,40 @@ library AOLibrary {
 		return (Name(TAO(_taoId).advocateId()).originId() == _sender);
 	}
 
+	/**
+	 * @dev Return the address that signed the data and nonce when validating signature
+	 * @param _callingContractAddress the address of the calling contract
+	 * @param _data the data that was signed
+	 * @param _nonce The signed uint256 nonce
+	 * @param _v part of the signature
+	 * @param _r part of the signature
+	 * @param _s part of the signature
+	 * @return the address that signed the message
+	 */
+	function getValidateSignatureAddress(address _callingContractAddress, string _data, uint256 _nonce, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
+		bytes32 _hash = keccak256(abi.encodePacked(_callingContractAddress, _data, _nonce));
+		return ecrecover(_hash, _v, _r, _s);
+	}
+
+	/**
+	 * @dev Determine whether or not address is Advocate/Listener/Speaker of the TAO
+	 * @param _nameFactoryAddress The address of NameFactory
+	 * @param _from The ETH address that to check
+	 * @param _taoId The ID of the TAO
+	 * @return 1 if Advocate. 2 if Listener. 3 if Speaker
+	 */
+	function determineAddressPositionInTAO(address _nameFactoryAddress, address _from, address _taoId) public view returns (uint256) {
+		require (addressIsTAOAdvocateListenerSpeaker(_nameFactoryAddress, _from, _taoId));
+		address _nameId = NameFactory(_nameFactoryAddress).ethAddressToNameId(_from);
+		if (_nameId == TAO(_taoId).advocateId()) {
+			return 1;
+		} else if (_nameId == TAO(_taoId).listenerId()) {
+			return 2;
+		} else {
+			return 3;
+		}
+	}
+
 	/***** Internal Methods *****/
 	/**
 	 * @dev Check if a setting exist and not rejected
