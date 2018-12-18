@@ -1,21 +1,25 @@
 pragma solidity ^0.4.24;
 
+import './developed.sol';
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './Position.sol';
 import './Name.sol';
+import './TAOFactory.sol';
 
 /**
  * @title NameFactory
  *
  * The purpose of this contract is to allow node to create Name
  */
-contract NameFactory {
+contract NameFactory is developed {
 	using SafeMath for uint256;
 
 	address public positionAddress;
+	address public taoFactoryAddress;
 
 	Position internal _position;
+	TAOFactory internal _taoFactory;
 
 	address[] internal names;
 
@@ -74,13 +78,28 @@ contract NameFactory {
 		_;
 	 }
 
+	/***** DEVELOPER ONLY METHODS *****/
 	/**
-	 * @dev Check whether or not username exist
+	 * @dev Developer set the TAO Factory Address
+	 * @param _taoFactoryAddress The address of TAOFactory
+	 */
+	function setTAOFactoryAddress(address _taoFactoryAddress) public onlyDeveloper {
+		require (_taoFactoryAddress != address(0));
+		taoFactoryAddress = _taoFactoryAddress;
+		_taoFactory = TAOFactory(taoFactoryAddress);
+	}
+
+	/***** PUBLIC METHODS *****/
+	/**
+	 * @dev Check whether or not username exist. Should be unique to both Names and TAOS
 	 * @param _username The value to be checked
-	 * @return true if taken, false otherwise
+	 * @return true if exist, false otherwise
 	 */
 	function isUsernameExist(string _username) public view returns (bool) {
-		return (usernamesLookup[keccak256(abi.encodePacked(_username))] != address(0));
+		return (
+			usernamesLookup[keccak256(abi.encodePacked(_username))] != address(0) ||
+			_taoFactory.getTAOIdByName(_username) != address(0)
+		);
 	}
 
 	/**
@@ -155,7 +174,7 @@ contract NameFactory {
 
 	/**
 	 * @dev Get the nameId given a username
-	 * @param _username The username  to check
+	 * @param _username The username to check
 	 * @return nameId of the username
 	 */
 	function getNameIdByUsername(string _username) public view returns (address) {

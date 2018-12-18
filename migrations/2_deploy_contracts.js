@@ -145,6 +145,30 @@ module.exports = function(deployer, network, accounts) {
 			// position grant access to namefactory
 			await position.setWhitelist(namefactory.address, true, { from: primordialAccount });
 
+			// Deploy TAOFactory, TAOPosition, AOSetting
+			return deployer.deploy([
+				[TAOFactory, namefactory.address, position.address],
+				[TAOPosition, namefactory.address, position.address],
+				[
+					AOSetting,
+					namefactory.address,
+					aosettingattribute.address,
+					aouintsetting.address,
+					aoboolsetting.address,
+					aoaddresssetting.address,
+					aobytessetting.address,
+					aostringsetting.address
+				]
+			]);
+		})
+		.then(async function() {
+			taofactory = await TAOFactory.deployed();
+			taoposition = await TAOPosition.deployed();
+			aosetting = await AOSetting.deployed();
+
+			// Set TAOFactory address in NameFactory
+			await namefactory.setTAOFactoryAddress(taofactory.address, { from: primordialAccount });
+
 			/**
 			 * Create Primordial Name and Associated Name
 			 */
@@ -167,27 +191,6 @@ module.exports = function(deployer, network, accounts) {
 				console.log("Unable to create Associated Name", e);
 				return;
 			}
-
-			// Deploy TAOFactory, TAOPosition, AOSetting
-			return deployer.deploy([
-				[TAOFactory, namefactory.address, position.address],
-				[TAOPosition, namefactory.address, position.address],
-				[
-					AOSetting,
-					namefactory.address,
-					aosettingattribute.address,
-					aouintsetting.address,
-					aoboolsetting.address,
-					aoaddresssetting.address,
-					aobytessetting.address,
-					aostringsetting.address
-				]
-			]);
-		})
-		.then(async function() {
-			taofactory = await TAOFactory.deployed();
-			taoposition = await TAOPosition.deployed();
-			aosetting = await AOSetting.deployed();
 
 			// position grant access to taoposition
 			await position.setWhitelist(taoposition.address, true, { from: primordialAccount });

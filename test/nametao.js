@@ -118,7 +118,7 @@ contract("Name & TAO", function(accounts) {
 			return nameId;
 		};
 
-		var createTAO = async function(from, fromType, sameAdvocate, account) {
+		var createTAO = async function(taoName, from, fromType, sameAdvocate, account) {
 			var totalTAOsBefore = await taofactory.getTotalTAOsCount();
 			var totalSubTAOsBefore, totalChildTAOsBefore, totalChildTAOsAfter, totalOrphanTAOsBefore, totalOrphanTAOsAfter;
 			if (fromType == "tao") {
@@ -132,7 +132,7 @@ contract("Name & TAO", function(accounts) {
 
 			var canCreateTAO, createTAOEvent, addChildTAOEvent, addOrphanTAOEvent, taoId;
 			try {
-				var result = await taofactory.createTAO("TAO of " + account, datHash, database, keyValue, contentId, from, {
+				var result = await taofactory.createTAO(taoName, datHash, database, keyValue, contentId, from, {
 					from: account
 				});
 				createTAOEvent = result.logs[0];
@@ -164,7 +164,7 @@ contract("Name & TAO", function(accounts) {
 			var _advocateId = await namefactory.ethAddressToNameId(account);
 			var _advocate = await namefactory.getName(_advocateId);
 			assert.equal(_tao[0], _advocate[0], "TAO has incorrect username");
-			assert.equal(_tao[1], "TAO of " + account, "TAO has incorrect taoName");
+			assert.equal(_tao[1], taoName, "TAO has incorrect taoName");
 			assert.equal(_tao[2], _advocateId, "TAO has incorrect originId");
 			assert.equal(_tao[3], datHash, "TAO has incorrect datHash");
 			assert.equal(_tao[4], database, "TAO has incorrect database");
@@ -256,14 +256,6 @@ contract("Name & TAO", function(accounts) {
 				canCreateName = false;
 			}
 			assert.notEqual(canCreateName, true, "ETH address is able to create Name even though it already has a Name");
-		});
-
-		it("isUsernameExist() - should be able to check whether or not a username exit", async function() {
-			var isUsernameExist = await namefactory.isUsernameExist("account2");
-			assert.equal(isUsernameExist, false, "isUsernameExist() returns true even though name is not taken");
-
-			isUsernameExist = await namefactory.isUsernameExist("account1");
-			assert.equal(isUsernameExist, true, "isUsernameExist() returns false even though name is taken");
 		});
 
 		it("setNameListener() - should be able to set a Listener for a Name", async function() {
@@ -917,15 +909,45 @@ contract("Name & TAO", function(accounts) {
 			assert.notEqual(canCreateTAO, true, "ETH address with no Name can create a TAO");
 
 			// Create primordial TAO
-			taoId1 = await createTAO(nameId1, "name", true, account1);
+			taoId1 = await createTAO("TAO ID 1", nameId1, "name", true, account1);
 
 			// Create TAO2 from TAO1 by the same Advocate
 			// taoId2 should be child TAO of taoId1
-			taoId2 = await createTAO(taoId1, "tao", true, account1);
+			taoId2 = await createTAO("TAO ID 2", taoId1, "tao", true, account1);
 
 			// Create TAO3 to TAO1 by different Advocate
 			// taoId3 should be orphan TAO of taoId1
-			taoId3 = await createTAO(taoId1, "tao", false, account2);
+			taoId3 = await createTAO("TAO ID 3", taoId1, "tao", false, account2);
+		});
+
+		it("isUsernameExist() - should be able to check whether or not a username exist. Should check both Names and TAOs", async function() {
+			var isUsernameExist = await namefactory.isUsernameExist("account100");
+			assert.equal(isUsernameExist, false, "isUsernameExist() returns true even though name is not taken");
+
+			isUsernameExist = await namefactory.isUsernameExist("account1");
+			assert.equal(isUsernameExist, true, "isUsernameExist() returns false even though name is taken");
+
+			isUsernameExist = await namefactory.isUsernameExist("TAO ID 1");
+			assert.equal(isUsernameExist, true, "isUsernameExist() returns false even though name is taken");
+		});
+
+		it("isTAONameExist() - should be able to check whether or not a TAO Name exist. Should check both TAOs and Names", async function() {
+			var isTAONameExist = await taofactory.isTAONameExist("account100");
+			assert.equal(isTAONameExist, false, "isTAONameExist() returns true even though name is not taken");
+
+			var isTAONameExist = await taofactory.isTAONameExist("account1");
+			assert.equal(isTAONameExist, true, "isTAONameExist() returns false even though name not taken");
+
+			var isTAONameExist = await taofactory.isTAONameExist("TAO ID 1");
+			assert.equal(isTAONameExist, true, "isTAONameExist() returns false even though name not taken");
+		});
+
+		it("getTAOIdByName() - should return the correct taoId given a TAO Name", async function() {
+			var taoId = await taofactory.getTAOIdByName("somename");
+			assert.equal(taoId, emptyAddress, "getTAOIdByName() returns incorrect taoId");
+
+			var taoId = await taofactory.getTAOIdByName("TAO ID 1");
+			assert.equal(taoId, taoId1, "getTAOIdByName() returns incorrect taoId");
 		});
 
 		it("setTAOAdvocate() - should be able to switch TAO's Advocate", async function() {
@@ -1231,9 +1253,10 @@ contract("Name & TAO", function(accounts) {
 
 			var data = "somestring";
 			var tao = await taofactory.getTAO(taoId1);
+			var taoName = tao[1];
 			var nonce = tao[8];
 			var vrs = sign(account1PrivateKey, data, nonce.plus(1).toNumber());
-			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account1, taoId1, vrs.v, vrs.r, vrs.s);
+			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account1, taoName, vrs.v, vrs.r, vrs.s);
 			assert.equal(
 				result[0],
 				true,
@@ -1243,7 +1266,7 @@ contract("Name & TAO", function(accounts) {
 			assert.equal(result[2].toNumber(), 1, "validateTAOSignature() returns incorrect Name's position");
 
 			var vrs = sign(account3PrivateKey, data, nonce.plus(1).toNumber());
-			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account3, taoId1, vrs.v, vrs.r, vrs.s);
+			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account3, taoName, vrs.v, vrs.r, vrs.s);
 			assert.equal(
 				result[0],
 				true,
@@ -1253,7 +1276,7 @@ contract("Name & TAO", function(accounts) {
 			assert.equal(result[2].toNumber(), 2, "validateTAOSignature() returns incorrect Name's position");
 
 			var vrs = sign(account4PrivateKey, data, nonce.plus(1).toNumber());
-			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account4, taoId1, vrs.v, vrs.r, vrs.s);
+			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account4, taoName, vrs.v, vrs.r, vrs.s);
 			assert.equal(
 				result[0],
 				true,
@@ -1263,31 +1286,31 @@ contract("Name & TAO", function(accounts) {
 			assert.equal(result[2].toNumber(), 3, "validateTAOSignature() returns incorrect Name's position");
 
 			var vrs = sign(account1PrivateKey, data, nonce.plus(1).toNumber());
-			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), "", taoId1, vrs.v, vrs.r, vrs.s);
+			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), "", taoName, vrs.v, vrs.r, vrs.s);
 			assert.equal(result[0], true, "validateTAOSignature() returns false even though signatureAddress is Advocate of TAO");
 			assert.equal(result[1], "account1", "validateTAOSignature() returns incorrect username");
 			assert.equal(result[2].toNumber(), 1, "validateTAOSignature() returns incorrect Name's position");
 
 			var vrs = sign(account3PrivateKey, data, nonce.plus(1).toNumber());
-			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), "", taoId1, vrs.v, vrs.r, vrs.s);
+			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), "", taoName, vrs.v, vrs.r, vrs.s);
 			assert.equal(result[0], true, "validateTAOSignature() returns false even though signatureAddress is Listener of TAO");
 			assert.equal(result[1], "account3", "validateTAOSignature() returns incorrect username");
 			assert.equal(result[2].toNumber(), 2, "validateTAOSignature() returns incorrect Name's position");
 
 			var vrs = sign(account4PrivateKey, data, nonce.plus(1).toNumber());
-			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), "", taoId1, vrs.v, vrs.r, vrs.s);
+			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), "", taoName, vrs.v, vrs.r, vrs.s);
 			assert.equal(result[0], true, "validateTAOSignature() returns false even though signatureAddress is Speaker of TAO");
 			assert.equal(result[1], "account4", "validateTAOSignature() returns incorrect username");
 			assert.equal(result[2].toNumber(), 3, "validateTAOSignature() returns incorrect Name's position");
 
 			var vrs = sign(account1PrivateKey, data, nonce.toNumber());
-			var result = await taofactory.validateTAOSignature(data, nonce.toNumber(), account1, taoId1, vrs.v, vrs.r, vrs.s);
+			var result = await taofactory.validateTAOSignature(data, nonce.toNumber(), account1, taoName, vrs.v, vrs.r, vrs.s);
 			assert.equal(result[0], false, "validateTAOSignature() returns true even though nonce does not match");
 			assert.equal(result[1], "", "validateTAOSignature() returns incorrect username");
 			assert.equal(result[2].toNumber(), 0, "validateTAOSignature() returns incorrect Name's position");
 
 			var vrs = sign(account2PrivateKey, data, nonce.plus(1).toNumber());
-			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account2, taoId1, vrs.v, vrs.r, vrs.s);
+			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account2, taoName, vrs.v, vrs.r, vrs.s);
 			assert.equal(
 				result[0],
 				false,
@@ -1297,19 +1320,19 @@ contract("Name & TAO", function(accounts) {
 			assert.equal(result[2].toNumber(), 0, "validateTAOSignature() returns incorrect Name's position");
 
 			var vrs = sign(account1PrivateKey, data, nonce.plus(1).toNumber());
-			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account1, taoId1, "", vrs.r, vrs.s);
+			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account1, taoName, "", vrs.r, vrs.s);
 			assert.equal(result[0], false, "validateTAOSignature() returns true even though it's missing the v part of signature");
 			assert.equal(result[1], "", "validateTAOSignature() returns incorrect username");
 			assert.equal(result[2].toNumber(), 0, "validateTAOSignature() returns incorrect Name's position");
 
 			var vrs = sign(account1PrivateKey, data, nonce.plus(1).toNumber());
-			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account1, taoId1, vrs.v, "", vrs.s);
+			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account1, taoName, vrs.v, "", vrs.s);
 			assert.equal(result[0], false, "validateTAOSignature() returns true even though it's missing the r part of signature");
 			assert.equal(result[1], "", "validateTAOSignature() returns incorrect username");
 			assert.equal(result[2].toNumber(), 0, "validateTAOSignature() returns incorrect Name's position");
 
 			var vrs = sign(account1PrivateKey, data, nonce.plus(1).toNumber());
-			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account1, taoId1, vrs.v, vrs.r, "");
+			var result = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account1, taoName, vrs.v, vrs.r, "");
 			assert.equal(result[0], false, "validateTAOSignature() returns true even though it's missing the s part of signature");
 			assert.equal(result[1], "", "validateTAOSignature() returns incorrect username");
 			assert.equal(result[2].toNumber(), 0, "validateTAOSignature() returns incorrect Name's position");

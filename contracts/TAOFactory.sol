@@ -11,6 +11,8 @@ import './Name.sol';
 contract TAOFactory is TAOController {
 	address[] internal taos;
 
+	mapping (bytes32 => address) internal taoNamesLookup;
+
 	// Event to be broadcasted to public when Advocate creates a TAO
 	event CreateTAO(address indexed ethAddress, address advocateId, address taoId, uint256 index, address from, uint8 fromTAOTypeId, address to);
 
@@ -45,6 +47,18 @@ contract TAOFactory is TAOController {
 		TAOController(_nameFactoryAddress, _positionAddress) public {}
 
 	/**
+	 * @dev Check whether or not taoName exist. Should be unique to both Names and TAOS
+	 * @param _taoName The value to be checked
+	 * @return true if exist, false otherwise
+	 */
+	function isTAONameExist(string _taoName) public view returns (bool) {
+		return (
+			taoNamesLookup[keccak256(abi.encodePacked(_taoName))] != address(0) ||
+			_nameFactory.getNameIdByUsername(_taoName) != address(0)
+		);
+	}
+
+	/**
 	 * @dev Name creates a TAO
 	 * @param _taoName The name of the TAO
 	 * @param _datHash The datHash of this TAO
@@ -55,6 +69,7 @@ contract TAOFactory is TAOController {
 	 */
 	function createTAO(string _taoName, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _from) public senderIsName() {
 		require (bytes(_taoName).length > 0);
+		require (!isTAONameExist(_taoName));
 		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
 
 		// Make sure _from is a TAO/Name
@@ -80,6 +95,7 @@ contract TAOFactory is TAOController {
 		}
 
 		address taoId = new TAO(Name(_nameId).username(), _taoName, _nameId, _datHash, _database, _keyValue, _contentId, _assignedFrom, _assignedTo);
+		taoNamesLookup[keccak256(abi.encodePacked(_taoName))] = taoId;
 		taos.push(taoId);
 
 		emit CreateTAO(msg.sender, _nameId, taoId, taos.length.sub(1), _assignedFrom, TAO(_assignedFrom).taoTypeId(), _assignedTo);
@@ -142,6 +158,15 @@ contract TAOFactory is TAOController {
 			_tao.listenerId(),
 			_tao.speakerId()
 		);
+	}
+
+	/**
+	 * @dev Get the taoId given a taoName
+	 * @param _taoName The TAO's name to check
+	 * @return taoId of the name
+	 */
+	function getTAOIdByName(string _taoName) public view returns (address) {
+		return taoNamesLookup[keccak256(abi.encodePacked(_taoName))];
 	}
 
 	/**
@@ -342,7 +367,7 @@ contract TAOFactory is TAOController {
 	 * @param _data The signed string data
 	 * @param _nonce The signed uint256 nonce (should be TAO's current nonce + 1)
 	 * @param _validateAddress The ETH address to be validated (optional)
-	 * @param _taoId The ID of the TAO
+	 * @param _taoName The Name of the TAO
 	 * @param _signatureV The V part of the signature
 	 * @param _signatureR The R part of the signature
 	 * @param _signatureS The S part of the signature
@@ -355,15 +380,14 @@ contract TAOFactory is TAOController {
 		string _data,
 		uint256 _nonce,
 		address _validateAddress,
-		address _taoId,
+		string _taoName,
 		uint8 _signatureV,
 		bytes32 _signatureR,
 		bytes32 _signatureS
-	) public isTAO(_taoId) view returns (bool, string, uint256) {
+	) public isTAO(getTAOIdByName(_taoName)) view returns (bool, string, uint256) {
 		address _signatureAddress = AOLibrary.getValidateSignatureAddress(address(this), _data, _nonce, _signatureV, _signatureR, _signatureS);
-		if (_isTAOSignatureAddressValid(_validateAddress, _signatureAddress, _taoId, _nonce)) {
-			address _nameId = _nameFactory.ethAddressToNameId(_signatureAddress);
-			return (true, Name(_nameId).username(), AOLibrary.determineAddressPositionInTAO(nameFactoryAddress, _signatureAddress, _taoId));
+		if (_isTAOSignatureAddressValid(_validateAddress, _signatureAddress, getTAOIdByName(_taoName), _nonce)) {
+			return (true, Name(_nameFactory.ethAddressToNameId(_signatureAddress)).username(), AOLibrary.determineAddressPositionInTAO(nameFactoryAddress, _signatureAddress, getTAOIdByName(_taoName)));
 		} else {
 			return (false, "", 0);
 		}
