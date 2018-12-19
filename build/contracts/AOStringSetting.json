@@ -198,13 +198,13 @@
 	"ast": {
 		"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOStringSetting.sol",
 		"exportedSymbols": {
-			"AOStringSetting": [10866]
+			"AOStringSetting": [11256]
 		},
-		"id": 10867,
+		"id": 11257,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 10805,
+				"id": 11195,
 				"literals": ["solidity", "^", "0.4", ".24"],
 				"nodeType": "PragmaDirective",
 				"src": "0:24:14"
@@ -212,10 +212,10 @@
 			{
 				"absolutePath": "/home/jmulyono/ao-contracts/contracts/developed.sol",
 				"file": "./developed.sol",
-				"id": 10806,
+				"id": 11196,
 				"nodeType": "ImportDirective",
-				"scope": 10867,
-				"sourceUnit": 18366,
+				"scope": 11257,
+				"sourceUnit": 19687,
 				"src": "26:25:14",
 				"symbolAliases": [],
 				"unitAlias": ""
@@ -226,36 +226,36 @@
 						"arguments": null,
 						"baseName": {
 							"contractScope": null,
-							"id": 10807,
+							"id": 11197,
 							"name": "developed",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 18365,
+							"referencedDeclaration": 19686,
 							"src": "174:9:14",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_developed_$18365",
+								"typeIdentifier": "t_contract$_developed_$19686",
 								"typeString": "contract developed"
 							}
 						},
-						"id": 10808,
+						"id": 11198,
 						"nodeType": "InheritanceSpecifier",
 						"src": "174:9:14"
 					}
 				],
-				"contractDependencies": [18365],
+				"contractDependencies": [19686],
 				"contractKind": "contract",
 				"documentation": "@title AOStringSetting\n * This contract stores all AO string setting variables",
 				"fullyImplemented": true,
-				"id": 10866,
-				"linearizedBaseContracts": [10866, 18365],
+				"id": 11256,
+				"linearizedBaseContracts": [11256, 19686],
 				"name": "AOStringSetting",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
 						"constant": false,
-						"id": 10812,
+						"id": 11202,
 						"name": "settingValue",
 						"nodeType": "VariableDeclaration",
-						"scope": 10866,
+						"scope": 11256,
 						"src": "242:47:14",
 						"stateVariable": true,
 						"storageLocation": "default",
@@ -264,9 +264,9 @@
 							"typeString": "mapping(uint256 => string)"
 						},
 						"typeName": {
-							"id": 10811,
+							"id": 11201,
 							"keyType": {
-								"id": 10809,
+								"id": 11199,
 								"name": "uint256",
 								"nodeType": "ElementaryTypeName",
 								"src": "251:7:14",
@@ -282,7 +282,7 @@
 								"typeString": "mapping(uint256 => string)"
 							},
 							"valueType": {
-								"id": 10810,
+								"id": 11200,
 								"name": "string",
 								"nodeType": "ElementaryTypeName",
 								"src": "262:6:14",
@@ -297,10 +297,10 @@
 					},
 					{
 						"constant": false,
-						"id": 10816,
+						"id": 11206,
 						"name": "pendingValue",
 						"nodeType": "VariableDeclaration",
-						"scope": 10866,
+						"scope": 11256,
 						"src": "376:47:14",
 						"stateVariable": true,
 						"storageLocation": "default",
@@ -309,9 +309,9 @@
 							"typeString": "mapping(uint256 => string)"
 						},
 						"typeName": {
-							"id": 10815,
+							"id": 11205,
 							"keyType": {
-								"id": 10813,
+								"id": 11203,
 								"name": "uint256",
 								"nodeType": "ElementaryTypeName",
 								"src": "385:7:14",
@@ -327,7 +327,7 @@
 								"typeString": "mapping(uint256 => string)"
 							},
 							"valueType": {
-								"id": 10814,
+								"id": 11204,
 								"name": "string",
 								"nodeType": "ElementaryTypeName",
 								"src": "396:6:14",
@@ -342,13 +342,13 @@
 					},
 					{
 						"body": {
-							"id": 10819,
+							"id": 11209,
 							"nodeType": "Block",
 							"src": "488:2:14",
 							"statements": []
 						},
 						"documentation": "@dev Constructor function",
-						"id": 10820,
+						"id": 11210,
 						"implemented": true,
 						"isConstructor": true,
 						"isDeclaredConst": false,
@@ -356,19 +356,19 @@
 						"name": "",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 10817,
+							"id": 11207,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "478:2:14"
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 10818,
+							"id": 11208,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "488:0:14"
 						},
-						"scope": 10866,
+						"scope": 11256,
 						"src": "467:23:14",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
@@ -376,14 +376,14 @@
 					},
 					{
 						"body": {
-							"id": 10837,
+							"id": 11227,
 							"nodeType": "Block",
 							"src": "710:41:14",
 							"statements": [
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 10835,
+										"id": 11225,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -392,25 +392,25 @@
 											"argumentTypes": null,
 											"baseExpression": {
 												"argumentTypes": null,
-												"id": 10831,
+												"id": 11221,
 												"name": "pendingValue",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 10816,
+												"referencedDeclaration": 11206,
 												"src": "714:12:14",
 												"typeDescriptions": {
 													"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
 													"typeString": "mapping(uint256 => string storage ref)"
 												}
 											},
-											"id": 10833,
+											"id": 11223,
 											"indexExpression": {
 												"argumentTypes": null,
-												"id": 10832,
+												"id": 11222,
 												"name": "_settingId",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 10822,
+												"referencedDeclaration": 11212,
 												"src": "727:10:14",
 												"typeDescriptions": {
 													"typeIdentifier": "t_uint256",
@@ -432,11 +432,11 @@
 										"operator": "=",
 										"rightHandSide": {
 											"argumentTypes": null,
-											"id": 10834,
+											"id": 11224,
 											"name": "_value",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 10824,
+											"referencedDeclaration": 11214,
 											"src": "741:6:14",
 											"typeDescriptions": {
 												"typeIdentifier": "t_string_memory_ptr",
@@ -449,14 +449,14 @@
 											"typeString": "string storage ref"
 										}
 									},
-									"id": 10836,
+									"id": 11226,
 									"nodeType": "ExpressionStatement",
 									"src": "714:33:14"
 								}
 							]
 						},
 						"documentation": "@dev Set pending value\n@param _settingId The ID of the setting\n@param _value The string value to be set",
-						"id": 10838,
+						"id": 11228,
 						"implemented": true,
 						"isConstructor": false,
 						"isDeclaredConst": false,
@@ -467,18 +467,18 @@
 										"argumentTypes": null,
 										"expression": {
 											"argumentTypes": null,
-											"id": 10827,
+											"id": 11217,
 											"name": "msg",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 18394,
+											"referencedDeclaration": 19715,
 											"src": "698:3:14",
 											"typeDescriptions": {
 												"typeIdentifier": "t_magic_message",
 												"typeString": "msg"
 											}
 										},
-										"id": 10828,
+										"id": 11218,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -493,14 +493,14 @@
 										}
 									}
 								],
-								"id": 10829,
+								"id": 11219,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 10826,
+									"id": 11216,
 									"name": "inWhitelist",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 18318,
+									"referencedDeclaration": 19639,
 									"src": "686:11:14",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$_t_address_$",
@@ -514,15 +514,15 @@
 						"name": "setPendingValue",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 10825,
+							"id": 11215,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 10822,
+									"id": 11212,
 									"name": "_settingId",
 									"nodeType": "VariableDeclaration",
-									"scope": 10838,
+									"scope": 11228,
 									"src": "644:18:14",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -531,7 +531,7 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 10821,
+										"id": 11211,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
 										"src": "644:7:14",
@@ -545,10 +545,10 @@
 								},
 								{
 									"constant": false,
-									"id": 10824,
+									"id": 11214,
 									"name": "_value",
 									"nodeType": "VariableDeclaration",
-									"scope": 10838,
+									"scope": 11228,
 									"src": "664:13:14",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -557,7 +557,7 @@
 										"typeString": "string"
 									},
 									"typeName": {
-										"id": 10823,
+										"id": 11213,
 										"name": "string",
 										"nodeType": "ElementaryTypeName",
 										"src": "664:6:14",
@@ -574,12 +574,12 @@
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 10830,
+							"id": 11220,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "710:0:14"
 						},
-						"scope": 10866,
+						"scope": 11256,
 						"src": "619:132:14",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
@@ -587,19 +587,19 @@
 					},
 					{
 						"body": {
-							"id": 10864,
+							"id": 11254,
 							"nodeType": "Block",
 							"src": "933:135:14",
 							"statements": [
 								{
-									"assignments": [10848],
+									"assignments": [11238],
 									"declarations": [
 										{
 											"constant": false,
-											"id": 10848,
+											"id": 11238,
 											"name": "_tempValue",
 											"nodeType": "VariableDeclaration",
-											"scope": 10865,
+											"scope": 11255,
 											"src": "937:24:14",
 											"stateVariable": false,
 											"storageLocation": "memory",
@@ -608,7 +608,7 @@
 												"typeString": "string"
 											},
 											"typeName": {
-												"id": 10847,
+												"id": 11237,
 												"name": "string",
 												"nodeType": "ElementaryTypeName",
 												"src": "937:6:14",
@@ -621,30 +621,30 @@
 											"visibility": "internal"
 										}
 									],
-									"id": 10852,
+									"id": 11242,
 									"initialValue": {
 										"argumentTypes": null,
 										"baseExpression": {
 											"argumentTypes": null,
-											"id": 10849,
+											"id": 11239,
 											"name": "pendingValue",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 10816,
+											"referencedDeclaration": 11206,
 											"src": "964:12:14",
 											"typeDescriptions": {
 												"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
 												"typeString": "mapping(uint256 => string storage ref)"
 											}
 										},
-										"id": 10851,
+										"id": 11241,
 										"indexExpression": {
 											"argumentTypes": null,
-											"id": 10850,
+											"id": 11240,
 											"name": "_settingId",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 10840,
+											"referencedDeclaration": 11230,
 											"src": "977:10:14",
 											"typeDescriptions": {
 												"typeIdentifier": "t_uint256",
@@ -668,7 +668,7 @@
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 10856,
+										"id": 11246,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -681,25 +681,25 @@
 											"argumentTypes": null,
 											"baseExpression": {
 												"argumentTypes": null,
-												"id": 10853,
+												"id": 11243,
 												"name": "pendingValue",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 10816,
+												"referencedDeclaration": 11206,
 												"src": "999:12:14",
 												"typeDescriptions": {
 													"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
 													"typeString": "mapping(uint256 => string storage ref)"
 												}
 											},
-											"id": 10855,
+											"id": 11245,
 											"indexExpression": {
 												"argumentTypes": null,
-												"id": 10854,
+												"id": 11244,
 												"name": "_settingId",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 10840,
+												"referencedDeclaration": 11230,
 												"src": "1012:10:14",
 												"typeDescriptions": {
 													"typeIdentifier": "t_uint256",
@@ -722,14 +722,14 @@
 											"typeString": "tuple()"
 										}
 									},
-									"id": 10857,
+									"id": 11247,
 									"nodeType": "ExpressionStatement",
 									"src": "992:31:14"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 10862,
+										"id": 11252,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -738,25 +738,25 @@
 											"argumentTypes": null,
 											"baseExpression": {
 												"argumentTypes": null,
-												"id": 10858,
+												"id": 11248,
 												"name": "settingValue",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 10812,
+												"referencedDeclaration": 11202,
 												"src": "1027:12:14",
 												"typeDescriptions": {
 													"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
 													"typeString": "mapping(uint256 => string storage ref)"
 												}
 											},
-											"id": 10860,
+											"id": 11250,
 											"indexExpression": {
 												"argumentTypes": null,
-												"id": 10859,
+												"id": 11249,
 												"name": "_settingId",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 10840,
+												"referencedDeclaration": 11230,
 												"src": "1040:10:14",
 												"typeDescriptions": {
 													"typeIdentifier": "t_uint256",
@@ -778,11 +778,11 @@
 										"operator": "=",
 										"rightHandSide": {
 											"argumentTypes": null,
-											"id": 10861,
+											"id": 11251,
 											"name": "_tempValue",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 10848,
+											"referencedDeclaration": 11238,
 											"src": "1054:10:14",
 											"typeDescriptions": {
 												"typeIdentifier": "t_string_memory_ptr",
@@ -795,14 +795,14 @@
 											"typeString": "string storage ref"
 										}
 									},
-									"id": 10863,
+									"id": 11253,
 									"nodeType": "ExpressionStatement",
 									"src": "1027:37:14"
 								}
 							]
 						},
 						"documentation": "@dev Move value from pending to setting\n@param _settingId The ID of the setting",
-						"id": 10865,
+						"id": 11255,
 						"implemented": true,
 						"isConstructor": false,
 						"isDeclaredConst": false,
@@ -813,18 +813,18 @@
 										"argumentTypes": null,
 										"expression": {
 											"argumentTypes": null,
-											"id": 10843,
+											"id": 11233,
 											"name": "msg",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 18394,
+											"referencedDeclaration": 19715,
 											"src": "921:3:14",
 											"typeDescriptions": {
 												"typeIdentifier": "t_magic_message",
 												"typeString": "msg"
 											}
 										},
-										"id": 10844,
+										"id": 11234,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -839,14 +839,14 @@
 										}
 									}
 								],
-								"id": 10845,
+								"id": 11235,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 10842,
+									"id": 11232,
 									"name": "inWhitelist",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 18318,
+									"referencedDeclaration": 19639,
 									"src": "909:11:14",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$_t_address_$",
@@ -860,15 +860,15 @@
 						"name": "movePendingToSetting",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 10841,
+							"id": 11231,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 10840,
+									"id": 11230,
 									"name": "_settingId",
 									"nodeType": "VariableDeclaration",
-									"scope": 10865,
+									"scope": 11255,
 									"src": "882:18:14",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -877,7 +877,7 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 10839,
+										"id": 11229,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
 										"src": "882:7:14",
@@ -894,19 +894,19 @@
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 10846,
+							"id": 11236,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "933:0:14"
 						},
-						"scope": 10866,
+						"scope": 11256,
 						"src": "852:216:14",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					}
 				],
-				"scope": 10867,
+				"scope": 11257,
 				"src": "146:924:14"
 			}
 		],
@@ -915,13 +915,13 @@
 	"legacyAST": {
 		"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOStringSetting.sol",
 		"exportedSymbols": {
-			"AOStringSetting": [10866]
+			"AOStringSetting": [11256]
 		},
-		"id": 10867,
+		"id": 11257,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 10805,
+				"id": 11195,
 				"literals": ["solidity", "^", "0.4", ".24"],
 				"nodeType": "PragmaDirective",
 				"src": "0:24:14"
@@ -929,10 +929,10 @@
 			{
 				"absolutePath": "/home/jmulyono/ao-contracts/contracts/developed.sol",
 				"file": "./developed.sol",
-				"id": 10806,
+				"id": 11196,
 				"nodeType": "ImportDirective",
-				"scope": 10867,
-				"sourceUnit": 18366,
+				"scope": 11257,
+				"sourceUnit": 19687,
 				"src": "26:25:14",
 				"symbolAliases": [],
 				"unitAlias": ""
@@ -943,36 +943,36 @@
 						"arguments": null,
 						"baseName": {
 							"contractScope": null,
-							"id": 10807,
+							"id": 11197,
 							"name": "developed",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 18365,
+							"referencedDeclaration": 19686,
 							"src": "174:9:14",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_developed_$18365",
+								"typeIdentifier": "t_contract$_developed_$19686",
 								"typeString": "contract developed"
 							}
 						},
-						"id": 10808,
+						"id": 11198,
 						"nodeType": "InheritanceSpecifier",
 						"src": "174:9:14"
 					}
 				],
-				"contractDependencies": [18365],
+				"contractDependencies": [19686],
 				"contractKind": "contract",
 				"documentation": "@title AOStringSetting\n * This contract stores all AO string setting variables",
 				"fullyImplemented": true,
-				"id": 10866,
-				"linearizedBaseContracts": [10866, 18365],
+				"id": 11256,
+				"linearizedBaseContracts": [11256, 19686],
 				"name": "AOStringSetting",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
 						"constant": false,
-						"id": 10812,
+						"id": 11202,
 						"name": "settingValue",
 						"nodeType": "VariableDeclaration",
-						"scope": 10866,
+						"scope": 11256,
 						"src": "242:47:14",
 						"stateVariable": true,
 						"storageLocation": "default",
@@ -981,9 +981,9 @@
 							"typeString": "mapping(uint256 => string)"
 						},
 						"typeName": {
-							"id": 10811,
+							"id": 11201,
 							"keyType": {
-								"id": 10809,
+								"id": 11199,
 								"name": "uint256",
 								"nodeType": "ElementaryTypeName",
 								"src": "251:7:14",
@@ -999,7 +999,7 @@
 								"typeString": "mapping(uint256 => string)"
 							},
 							"valueType": {
-								"id": 10810,
+								"id": 11200,
 								"name": "string",
 								"nodeType": "ElementaryTypeName",
 								"src": "262:6:14",
@@ -1014,10 +1014,10 @@
 					},
 					{
 						"constant": false,
-						"id": 10816,
+						"id": 11206,
 						"name": "pendingValue",
 						"nodeType": "VariableDeclaration",
-						"scope": 10866,
+						"scope": 11256,
 						"src": "376:47:14",
 						"stateVariable": true,
 						"storageLocation": "default",
@@ -1026,9 +1026,9 @@
 							"typeString": "mapping(uint256 => string)"
 						},
 						"typeName": {
-							"id": 10815,
+							"id": 11205,
 							"keyType": {
-								"id": 10813,
+								"id": 11203,
 								"name": "uint256",
 								"nodeType": "ElementaryTypeName",
 								"src": "385:7:14",
@@ -1044,7 +1044,7 @@
 								"typeString": "mapping(uint256 => string)"
 							},
 							"valueType": {
-								"id": 10814,
+								"id": 11204,
 								"name": "string",
 								"nodeType": "ElementaryTypeName",
 								"src": "396:6:14",
@@ -1059,13 +1059,13 @@
 					},
 					{
 						"body": {
-							"id": 10819,
+							"id": 11209,
 							"nodeType": "Block",
 							"src": "488:2:14",
 							"statements": []
 						},
 						"documentation": "@dev Constructor function",
-						"id": 10820,
+						"id": 11210,
 						"implemented": true,
 						"isConstructor": true,
 						"isDeclaredConst": false,
@@ -1073,19 +1073,19 @@
 						"name": "",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 10817,
+							"id": 11207,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "478:2:14"
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 10818,
+							"id": 11208,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "488:0:14"
 						},
-						"scope": 10866,
+						"scope": 11256,
 						"src": "467:23:14",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
@@ -1093,14 +1093,14 @@
 					},
 					{
 						"body": {
-							"id": 10837,
+							"id": 11227,
 							"nodeType": "Block",
 							"src": "710:41:14",
 							"statements": [
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 10835,
+										"id": 11225,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -1109,25 +1109,25 @@
 											"argumentTypes": null,
 											"baseExpression": {
 												"argumentTypes": null,
-												"id": 10831,
+												"id": 11221,
 												"name": "pendingValue",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 10816,
+												"referencedDeclaration": 11206,
 												"src": "714:12:14",
 												"typeDescriptions": {
 													"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
 													"typeString": "mapping(uint256 => string storage ref)"
 												}
 											},
-											"id": 10833,
+											"id": 11223,
 											"indexExpression": {
 												"argumentTypes": null,
-												"id": 10832,
+												"id": 11222,
 												"name": "_settingId",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 10822,
+												"referencedDeclaration": 11212,
 												"src": "727:10:14",
 												"typeDescriptions": {
 													"typeIdentifier": "t_uint256",
@@ -1149,11 +1149,11 @@
 										"operator": "=",
 										"rightHandSide": {
 											"argumentTypes": null,
-											"id": 10834,
+											"id": 11224,
 											"name": "_value",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 10824,
+											"referencedDeclaration": 11214,
 											"src": "741:6:14",
 											"typeDescriptions": {
 												"typeIdentifier": "t_string_memory_ptr",
@@ -1166,14 +1166,14 @@
 											"typeString": "string storage ref"
 										}
 									},
-									"id": 10836,
+									"id": 11226,
 									"nodeType": "ExpressionStatement",
 									"src": "714:33:14"
 								}
 							]
 						},
 						"documentation": "@dev Set pending value\n@param _settingId The ID of the setting\n@param _value The string value to be set",
-						"id": 10838,
+						"id": 11228,
 						"implemented": true,
 						"isConstructor": false,
 						"isDeclaredConst": false,
@@ -1184,18 +1184,18 @@
 										"argumentTypes": null,
 										"expression": {
 											"argumentTypes": null,
-											"id": 10827,
+											"id": 11217,
 											"name": "msg",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 18394,
+											"referencedDeclaration": 19715,
 											"src": "698:3:14",
 											"typeDescriptions": {
 												"typeIdentifier": "t_magic_message",
 												"typeString": "msg"
 											}
 										},
-										"id": 10828,
+										"id": 11218,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -1210,14 +1210,14 @@
 										}
 									}
 								],
-								"id": 10829,
+								"id": 11219,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 10826,
+									"id": 11216,
 									"name": "inWhitelist",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 18318,
+									"referencedDeclaration": 19639,
 									"src": "686:11:14",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$_t_address_$",
@@ -1231,15 +1231,15 @@
 						"name": "setPendingValue",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 10825,
+							"id": 11215,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 10822,
+									"id": 11212,
 									"name": "_settingId",
 									"nodeType": "VariableDeclaration",
-									"scope": 10838,
+									"scope": 11228,
 									"src": "644:18:14",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1248,7 +1248,7 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 10821,
+										"id": 11211,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
 										"src": "644:7:14",
@@ -1262,10 +1262,10 @@
 								},
 								{
 									"constant": false,
-									"id": 10824,
+									"id": 11214,
 									"name": "_value",
 									"nodeType": "VariableDeclaration",
-									"scope": 10838,
+									"scope": 11228,
 									"src": "664:13:14",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1274,7 +1274,7 @@
 										"typeString": "string"
 									},
 									"typeName": {
-										"id": 10823,
+										"id": 11213,
 										"name": "string",
 										"nodeType": "ElementaryTypeName",
 										"src": "664:6:14",
@@ -1291,12 +1291,12 @@
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 10830,
+							"id": 11220,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "710:0:14"
 						},
-						"scope": 10866,
+						"scope": 11256,
 						"src": "619:132:14",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
@@ -1304,19 +1304,19 @@
 					},
 					{
 						"body": {
-							"id": 10864,
+							"id": 11254,
 							"nodeType": "Block",
 							"src": "933:135:14",
 							"statements": [
 								{
-									"assignments": [10848],
+									"assignments": [11238],
 									"declarations": [
 										{
 											"constant": false,
-											"id": 10848,
+											"id": 11238,
 											"name": "_tempValue",
 											"nodeType": "VariableDeclaration",
-											"scope": 10865,
+											"scope": 11255,
 											"src": "937:24:14",
 											"stateVariable": false,
 											"storageLocation": "memory",
@@ -1325,7 +1325,7 @@
 												"typeString": "string"
 											},
 											"typeName": {
-												"id": 10847,
+												"id": 11237,
 												"name": "string",
 												"nodeType": "ElementaryTypeName",
 												"src": "937:6:14",
@@ -1338,30 +1338,30 @@
 											"visibility": "internal"
 										}
 									],
-									"id": 10852,
+									"id": 11242,
 									"initialValue": {
 										"argumentTypes": null,
 										"baseExpression": {
 											"argumentTypes": null,
-											"id": 10849,
+											"id": 11239,
 											"name": "pendingValue",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 10816,
+											"referencedDeclaration": 11206,
 											"src": "964:12:14",
 											"typeDescriptions": {
 												"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
 												"typeString": "mapping(uint256 => string storage ref)"
 											}
 										},
-										"id": 10851,
+										"id": 11241,
 										"indexExpression": {
 											"argumentTypes": null,
-											"id": 10850,
+											"id": 11240,
 											"name": "_settingId",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 10840,
+											"referencedDeclaration": 11230,
 											"src": "977:10:14",
 											"typeDescriptions": {
 												"typeIdentifier": "t_uint256",
@@ -1385,7 +1385,7 @@
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 10856,
+										"id": 11246,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -1398,25 +1398,25 @@
 											"argumentTypes": null,
 											"baseExpression": {
 												"argumentTypes": null,
-												"id": 10853,
+												"id": 11243,
 												"name": "pendingValue",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 10816,
+												"referencedDeclaration": 11206,
 												"src": "999:12:14",
 												"typeDescriptions": {
 													"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
 													"typeString": "mapping(uint256 => string storage ref)"
 												}
 											},
-											"id": 10855,
+											"id": 11245,
 											"indexExpression": {
 												"argumentTypes": null,
-												"id": 10854,
+												"id": 11244,
 												"name": "_settingId",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 10840,
+												"referencedDeclaration": 11230,
 												"src": "1012:10:14",
 												"typeDescriptions": {
 													"typeIdentifier": "t_uint256",
@@ -1439,14 +1439,14 @@
 											"typeString": "tuple()"
 										}
 									},
-									"id": 10857,
+									"id": 11247,
 									"nodeType": "ExpressionStatement",
 									"src": "992:31:14"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 10862,
+										"id": 11252,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -1455,25 +1455,25 @@
 											"argumentTypes": null,
 											"baseExpression": {
 												"argumentTypes": null,
-												"id": 10858,
+												"id": 11248,
 												"name": "settingValue",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 10812,
+												"referencedDeclaration": 11202,
 												"src": "1027:12:14",
 												"typeDescriptions": {
 													"typeIdentifier": "t_mapping$_t_uint256_$_t_string_storage_$",
 													"typeString": "mapping(uint256 => string storage ref)"
 												}
 											},
-											"id": 10860,
+											"id": 11250,
 											"indexExpression": {
 												"argumentTypes": null,
-												"id": 10859,
+												"id": 11249,
 												"name": "_settingId",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 10840,
+												"referencedDeclaration": 11230,
 												"src": "1040:10:14",
 												"typeDescriptions": {
 													"typeIdentifier": "t_uint256",
@@ -1495,11 +1495,11 @@
 										"operator": "=",
 										"rightHandSide": {
 											"argumentTypes": null,
-											"id": 10861,
+											"id": 11251,
 											"name": "_tempValue",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 10848,
+											"referencedDeclaration": 11238,
 											"src": "1054:10:14",
 											"typeDescriptions": {
 												"typeIdentifier": "t_string_memory_ptr",
@@ -1512,14 +1512,14 @@
 											"typeString": "string storage ref"
 										}
 									},
-									"id": 10863,
+									"id": 11253,
 									"nodeType": "ExpressionStatement",
 									"src": "1027:37:14"
 								}
 							]
 						},
 						"documentation": "@dev Move value from pending to setting\n@param _settingId The ID of the setting",
-						"id": 10865,
+						"id": 11255,
 						"implemented": true,
 						"isConstructor": false,
 						"isDeclaredConst": false,
@@ -1530,18 +1530,18 @@
 										"argumentTypes": null,
 										"expression": {
 											"argumentTypes": null,
-											"id": 10843,
+											"id": 11233,
 											"name": "msg",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 18394,
+											"referencedDeclaration": 19715,
 											"src": "921:3:14",
 											"typeDescriptions": {
 												"typeIdentifier": "t_magic_message",
 												"typeString": "msg"
 											}
 										},
-										"id": 10844,
+										"id": 11234,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -1556,14 +1556,14 @@
 										}
 									}
 								],
-								"id": 10845,
+								"id": 11235,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 10842,
+									"id": 11232,
 									"name": "inWhitelist",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 18318,
+									"referencedDeclaration": 19639,
 									"src": "909:11:14",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$_t_address_$",
@@ -1577,15 +1577,15 @@
 						"name": "movePendingToSetting",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 10841,
+							"id": 11231,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 10840,
+									"id": 11230,
 									"name": "_settingId",
 									"nodeType": "VariableDeclaration",
-									"scope": 10865,
+									"scope": 11255,
 									"src": "882:18:14",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1594,7 +1594,7 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 10839,
+										"id": 11229,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
 										"src": "882:7:14",
@@ -1611,19 +1611,19 @@
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 10846,
+							"id": 11236,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "933:0:14"
 						},
-						"scope": 10866,
+						"scope": 11256,
 						"src": "852:216:14",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					}
 				],
-				"scope": 10867,
+				"scope": 11257,
 				"src": "146:924:14"
 			}
 		],
@@ -1637,10 +1637,10 @@
 		"4": {
 			"events": {},
 			"links": {},
-			"address": "0x49abd70e7c82ea3eead8e9f3dc17faeec14b0dd8",
-			"transactionHash": "0x8dcf82e5efc736499032057ab6fea9f1810003225ae3e0e3d7cc3b935d893706"
+			"address": "0xd03cc55ad2238b3211bf7f0d1a6235ec67bdd7b3",
+			"transactionHash": "0xfa92089865336055c894dc8ded2cf2d2695fe1d70a61638c51248b90b8611eff"
 		}
 	},
 	"schemaVersion": "2.0.1",
-	"updatedAt": "2018-12-11T08:43:54.418Z"
+	"updatedAt": "2018-12-19T05:20:18.437Z"
 }
