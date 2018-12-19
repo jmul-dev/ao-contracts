@@ -506,7 +506,7 @@ module.exports = function(deployer, network, accounts) {
 			 * aoUrl = ao.network
 			 */
 			try {
-				var result = await aosetting.addStringSetting("aoUrl", "ao.network", primordialTAOId, settingTAOId, "", {
+				var result = await aosetting.addStringSetting("aoUrl", "https://ao.network", primordialTAOId, settingTAOId, "", {
 					from: primordialAccount
 				});
 				var settingId = result.logs[0].args.settingId;

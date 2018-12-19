@@ -2277,6 +2277,68 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.equal(TAOContent_contentHostPrice3.toString(), fileSize, "Content host has incorrect price");
 		});
 
+		it("contentHostPaidByAO() - should be able to return the amount paid by AO for a content hosted by a host", async function() {
+			var getContentHostPaidByAO;
+			try {
+				await aocontent.contentHostPaidByAO("someid");
+				getContentHostPaidByAO = true;
+			} catch (e) {
+				getContentHostPaidByAO = false;
+			}
+			assert.notEqual(getContentHostPaidByAO, true, "Contract can get amount paid by AO for non-existing contentHostID");
+
+			var _AOContent_contentHostPaidByAO1 = await aocontent.contentHostPaidByAO(AOContent_contentHostId1);
+			assert.equal(_AOContent_contentHostPaidByAO1.toString(), 0, "Content host has incorrect paid amount by AO");
+
+			var _AOContent_contentHostPaidByAO2 = await aocontent.contentHostPaidByAO(AOContent_contentHostId2);
+			assert.equal(_AOContent_contentHostPaidByAO2.toString(), 0, "Content host has incorrect paid amount by AO");
+
+			var _AOContent_contentHostPaidByAO3 = await aocontent.contentHostPaidByAO(AOContent_contentHostId3);
+			assert.equal(_AOContent_contentHostPaidByAO3.toString(), 0, "Content host has incorrect paid amount by AO");
+
+			var _CreativeCommons_contentHostPaidByAO1 = await aocontent.contentHostPaidByAO(CreativeCommons_contentHostId1);
+			assert.equal(
+				_CreativeCommons_contentHostPaidByAO1.toString(),
+				CreativeCommons_contentHostPrice1.toString(),
+				"Content host as incorrect paid amount by AO"
+			);
+
+			var _CreativeCommons_contentHostPaidByAO2 = await aocontent.contentHostPaidByAO(CreativeCommons_contentHostId2);
+			assert.equal(
+				_CreativeCommons_contentHostPaidByAO2.toString(),
+				CreativeCommons_contentHostPrice2.toString(),
+				"Content host as incorrect paid amount by AO"
+			);
+
+			var _CreativeCommons_contentHostPaidByAO3 = await aocontent.contentHostPaidByAO(CreativeCommons_contentHostId3);
+			assert.equal(
+				_CreativeCommons_contentHostPaidByAO3.toString(),
+				CreativeCommons_contentHostPrice3.toString(),
+				"Content host as incorrect paid amount by AO"
+			);
+
+			var _TAOContent_contentHostPaidByAO1 = await aocontent.contentHostPaidByAO(TAOContent_contentHostId1);
+			assert.equal(
+				_TAOContent_contentHostPaidByAO1.toString(),
+				TAOContent_contentHostPrice1.toString(),
+				"Content host as incorrect paid amount by AO"
+			);
+
+			var _TAOContent_contentHostPaidByAO2 = await aocontent.contentHostPaidByAO(TAOContent_contentHostId2);
+			assert.equal(
+				_TAOContent_contentHostPaidByAO2.toString(),
+				TAOContent_contentHostPrice2.toString(),
+				"Content host as incorrect paid amount by AO"
+			);
+
+			var _TAOContent_contentHostPaidByAO3 = await aocontent.contentHostPaidByAO(TAOContent_contentHostId3);
+			assert.equal(
+				_TAOContent_contentHostPaidByAO3.toString(),
+				TAOContent_contentHostPrice3.toString(),
+				"Content host as incorrect paid amount by AO"
+			);
+		});
+
 		it("buyContent() - should NOT be able to buy content if sent tokens < price", async function() {
 			var buyContent = async function(account, contentHostId, publicKey, publicAddress) {
 				var canBuyContent;
@@ -2534,7 +2596,6 @@ contract("AOContent & AOEarning", function(accounts) {
 				AOContent_contentHostPrice3,
 				true
 			);
-
 			CreativeCommons_purchaseId1 = await buyContent(
 				account2,
 				account1,
@@ -2568,7 +2629,6 @@ contract("AOContent & AOEarning", function(accounts) {
 				CreativeCommons_contentHostPrice3,
 				false
 			);
-
 			TAOContent_purchaseId1 = await buyContent(
 				account2,
 				account1,

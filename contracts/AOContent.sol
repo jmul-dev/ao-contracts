@@ -514,14 +514,14 @@ contract AOContent is developed {
 		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
 
 		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
-		Content memory _content = contents[contentIndex[_stakedContent.contentId]];
+		uint256 _fileSize = contents[contentIndex[_stakedContent.contentId]].fileSize;
 
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 		// Make sure the staked content is currently active (staked) with some amounts
 		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedMultiplier > 0)));
 		// Make sure the staked content has enough balance to unstake
-		require (AOLibrary.canUnstakePartial(treasuryAddress, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _stakedContent.networkAmount, _stakedContent.primordialAmount, _content.fileSize));
+		require (AOLibrary.canUnstakePartial(treasuryAddress, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _stakedContent.networkAmount, _stakedContent.primordialAmount, _fileSize));
 
 		if (_denomination[0] != 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			uint256 _unstakeNetworkAmount = _treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
@@ -580,12 +580,12 @@ contract AOContent is developed {
 		require (stakedContentIndex[_stakeId] > 0);
 
 		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
-		Content memory _content = contents[contentIndex[_stakedContent.contentId]];
+		uint256 _fileSize = contents[contentIndex[_stakedContent.contentId]].fileSize;
 
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
-		require (AOLibrary.canStakeExisting(treasuryAddress, _isAOContentUsageType(_stakedContent.contentId), _content.fileSize, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount));
+		require (AOLibrary.canStakeExisting(treasuryAddress, _isAOContentUsageType(_stakedContent.contentId), _fileSize, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount));
 
 		// Make sure we can stake primordial token
 		// If we are currently staking an active staked content, then the stake owner's weighted multiplier has to match `stakedContent.primordialWeightedMultiplier`
@@ -620,11 +620,26 @@ contract AOContent is developed {
 		// Make sure content host exist
 		require (contentHostIndex[_contentHostId] > 0);
 
-		ContentHost memory _contentHost = contentHosts[contentHostIndex[_contentHostId]];
-		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_contentHost.stakeId]];
+		bytes32 _stakeId = contentHosts[contentHostIndex[_contentHostId]].stakeId;
+		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
 		// Make sure content is currently staked
 		require (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedMultiplier > 0)));
 		return _stakedContent.networkAmount.add(_stakedContent.primordialAmount);
+	}
+
+	/**
+	 * @dev Determine the how much the content is paid by AO given a contentHostId
+	 * @param _contentHostId The content host ID to be checked
+	 * @return the amount paid by AO
+	 */
+	function contentHostPaidByAO(bytes32 _contentHostId) public isActive view returns (uint256) {
+		bytes32 _stakeId = contentHosts[contentHostIndex[_contentHostId]].stakeId;
+		bytes32 _contentId = stakedContents[stakedContentIndex[_stakeId]].contentId;
+		if (_isAOContentUsageType(_contentId)) {
+			return 0;
+		} else {
+			return contentHostPrice(_contentHostId);
+		}
 	}
 
 	/**
