@@ -6,6 +6,7 @@ import './AOLibrary.sol';
 import './Position.sol';
 import './Name.sol';
 import './TAOFactory.sol';
+import './NameTAOLookup.sol';
 
 /**
  * @title NameFactory
@@ -17,17 +18,18 @@ contract NameFactory is developed {
 
 	address public positionAddress;
 	address public taoFactoryAddress;
+	address public nameTAOLookupAddress;
 
 	Position internal _position;
 	TAOFactory internal _taoFactory;
+	NameTAOLookup internal _nameTAOLookup;
 
 	address[] internal names;
 
-	mapping (bytes32 => address) internal usernamesLookup;
 	mapping (address => address) public ethAddressToNameId;
 
 	// Event to be broadcasted to public when a Name is created
-	event CreateName(address indexed ethAddress, address nameId, uint256 index, string username);
+	event CreateName(address indexed ethAddress, address nameId, uint256 index, string name);
 
 	// Event to be broadcasted to public when current Advocate sets New Listener for a Name
 	event SetNameListener(address indexed nameId, address oldListenerId, address newListenerId, uint256 nonce);
@@ -89,43 +91,41 @@ contract NameFactory is developed {
 		_taoFactory = TAOFactory(taoFactoryAddress);
 	}
 
-	/***** PUBLIC METHODS *****/
 	/**
-	 * @dev Check whether or not username exist. Should be unique to both Names and TAOS
-	 * @param _username The value to be checked
-	 * @return true if exist, false otherwise
+	 * @dev Developer set the NameTAOLookup Address
+	 * @param _nameTAOLookupAddress The address of NameTAOLookup
 	 */
-	function isUsernameExist(string _username) public view returns (bool) {
-		return (
-			usernamesLookup[keccak256(abi.encodePacked(_username))] != address(0) ||
-			_taoFactory.getTAOIdByName(_username) != address(0)
-		);
+	function setNameTAOLookupAddress(address _nameTAOLookupAddress) public onlyDeveloper {
+		require (_nameTAOLookupAddress != address(0));
+		nameTAOLookupAddress = _nameTAOLookupAddress;
+		_nameTAOLookup = NameTAOLookup(nameTAOLookupAddress);
 	}
 
+	/***** PUBLIC METHODS *****/
 	/**
 	 * @dev Create a Name
-	 * @param _username The username of the Name
+	 * @param _name The name of the Name
 	 * @param _datHash The datHash to this Name's profile
 	 * @param _database The database for this Name
 	 * @param _keyValue The key/value pair to be checked on the database
 	 * @param _contentId The contentId related to this Name
 	 */
-	function createName(string _username, string _datHash, string _database, string _keyValue, bytes32 _contentId) public {
-		require (bytes(_username).length > 0);
-		require (!isUsernameExist(_username));
+	function createName(string _name, string _datHash, string _database, string _keyValue, bytes32 _contentId) public {
+		require (bytes(_name).length > 0);
+		require (!_nameTAOLookup.isExist(_name));
 		// Only one Name per ETH address
 		require (ethAddressToNameId[msg.sender] == address(0));
 
 		// The address is the Name ID (which is also a TAO ID)
-		address nameId = new Name(_username, msg.sender, _datHash, _database, _keyValue, _contentId);
+		address nameId = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId);
 		ethAddressToNameId[msg.sender] = nameId;
-		usernamesLookup[keccak256(abi.encodePacked(_username))] = nameId;
+		require (_nameTAOLookup.add(_name, nameId, 'human', 1));
 		names.push(nameId);
 
 		// Need to mint Position token for this Name
 		require (_position.mintToken(nameId));
 
-		emit CreateName(msg.sender, nameId, names.length.sub(1), _username);
+		emit CreateName(msg.sender, nameId, names.length.sub(1), _name);
 	}
 
 	/**
@@ -137,20 +137,20 @@ contract NameFactory is developed {
 	 * @return The database of the Name
 	 * @return The keyValue of the Name
 	 * @return The contentId of the Name
-	 * @return The taoTypeId of the Name
+	 * @return The typeId of the Name
 	 * @return The defaultPublicKey of the Name
 	 * @return The current nonce of the Name
 	 */
 	function getName(address _nameId) public view returns (string, address, string, string, string, bytes32, uint8, address, uint256) {
 		Name _name = Name(_nameId);
 		return (
-			_name.username(),
+			_name.name(),
 			_name.originId(),
 			_name.datHash(),
 			_name.database(),
 			_name.keyValue(),
 			_name.contentId(),
-			_name.taoTypeId(),
+			_name.typeId(),
 			_name.defaultPublicKey(),
 			_name.nonce()
 		);
@@ -160,25 +160,22 @@ contract NameFactory is developed {
 	 * @dev Given a Name ID, wants to get the Name's Position, i.e Advocate/Listener/Speaker
 	 * @param _nameId The ID of the Name
 	 * @return The advocateId of the Name
+	 * @return The advocate's name of the Name
 	 * @return The listenerId of the Name
+	 * @return The listener's name of the Name
 	 * @return The speakerId of the Name
+	 * @return The speaker's name of the Name
 	 */
-	function getNamePosition(address _nameId) public view returns (address, address, address) {
+	function getNamePosition(address _nameId) public view returns (address, string, address, string, address, string) {
 		Name _name = Name(_nameId);
 		return (
 			_name.advocateId(),
+			Name(_name.advocateId()).name(),
 			_name.listenerId(),
-			_name.speakerId()
+			Name(_name.listenerId()).name(),
+			_name.speakerId(),
+			Name(_name.speakerId()).name()
 		);
-	}
-
-	/**
-	 * @dev Get the nameId given a username
-	 * @param _username The username to check
-	 * @return nameId of the username
-	 */
-	function getNameIdByUsername(string _username) public view returns (address) {
-		return usernamesLookup[keccak256(abi.encodePacked(_username))];
 	}
 
 	/**
@@ -328,7 +325,7 @@ contract NameFactory is developed {
 	 * @param _data The signed string data
 	 * @param _nonce The signed uint256 nonce (should be Name's current nonce + 1)
 	 * @param _validateAddress The ETH address to be validated (optional)
-	 * @param _username The username of the Name
+	 * @param _name The name of the Name
 	 * @param _signatureV The V part of the signature
 	 * @param _signatureR The R part of the signature
 	 * @param _signatureS The S part of the signature
@@ -338,25 +335,25 @@ contract NameFactory is developed {
 		string _data,
 		uint256 _nonce,
 		address _validateAddress,
-		string _username,
+		string _name,
 		uint8 _signatureV,
 		bytes32 _signatureR,
 		bytes32 _signatureS
 	) public view returns (bool) {
-		require (isUsernameExist(_username));
-		address _nameId = usernamesLookup[keccak256(abi.encodePacked(_username))];
-		Name _name = Name(_nameId);
+		require (_nameTAOLookup.isExist(_name));
+		address _nameId = _nameTAOLookup.getAddressByName(_name);
+		Name name = Name(_nameId);
 		address _signatureAddress = AOLibrary.getValidateSignatureAddress(address(this), _data, _nonce, _signatureV, _signatureR, _signatureS);
 		if (_validateAddress != address(0)) {
 			return (
-				_nonce == _name.nonce().add(1) &&
+				_nonce == name.nonce().add(1) &&
 				_signatureAddress == _validateAddress &&
-				_name.isPublicKeyExist(_validateAddress)
+				name.isPublicKeyExist(_validateAddress)
 			);
 		} else {
 			return (
-				_nonce == _name.nonce().add(1) &&
-				_signatureAddress == _name.defaultPublicKey()
+				_nonce == name.nonce().add(1) &&
+				_signatureAddress == name.defaultPublicKey()
 			);
 		}
 	}

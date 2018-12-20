@@ -1,20 +1,23 @@
 pragma solidity ^0.4.24;
 
+import './developed.sol';
 import './TAOController.sol';
 import './Name.sol';
+import './NameTAOLookup.sol';
 
 /**
  * @title TAOFactory
  *
  * The purpose of this contract is to allow node to create TAO
  */
-contract TAOFactory is TAOController {
+contract TAOFactory is TAOController, developed {
 	address[] internal taos;
+	address public nameTAOLookupAddress;
 
-	mapping (bytes32 => address) internal taoNamesLookup;
+	NameTAOLookup internal _nameTAOLookup;
 
 	// Event to be broadcasted to public when Advocate creates a TAO
-	event CreateTAO(address indexed ethAddress, address advocateId, address taoId, uint256 index, address from, uint8 fromTAOTypeId, address to);
+	event CreateTAO(address indexed ethAddress, address advocateId, address taoId, uint256 index, address from, uint8 fromTypeId, address to);
 
 	// Event to be broadcasted to public when current Advocate sets New Advocate for a TAO
 	event SetTAOAdvocate(address indexed taoId, address oldAdvocateId, address newAdvocateId, uint256 nonce);
@@ -46,37 +49,37 @@ contract TAOFactory is TAOController {
 	constructor(address _nameFactoryAddress, address _positionAddress)
 		TAOController(_nameFactoryAddress, _positionAddress) public {}
 
+	/***** DEVELOPER ONLY METHODS *****/
 	/**
-	 * @dev Check whether or not taoName exist. Should be unique to both Names and TAOS
-	 * @param _taoName The value to be checked
-	 * @return true if exist, false otherwise
+	 * @dev Developer set the NameTAOLookup Address
+	 * @param _nameTAOLookupAddress The address of NameTAOLookup
 	 */
-	function isTAONameExist(string _taoName) public view returns (bool) {
-		return (
-			taoNamesLookup[keccak256(abi.encodePacked(_taoName))] != address(0) ||
-			_nameFactory.getNameIdByUsername(_taoName) != address(0)
-		);
+	function setNameTAOLookupAddress(address _nameTAOLookupAddress) public onlyDeveloper {
+		require (_nameTAOLookupAddress != address(0));
+		nameTAOLookupAddress = _nameTAOLookupAddress;
+		_nameTAOLookup = NameTAOLookup(nameTAOLookupAddress);
 	}
 
+	/***** PUBLIC METHODS *****/
 	/**
 	 * @dev Name creates a TAO
-	 * @param _taoName The name of the TAO
+	 * @param _name The name of the TAO
 	 * @param _datHash The datHash of this TAO
 	 * @param _database The database for this TAO
 	 * @param _keyValue The key/value pair to be checked on the database
 	 * @param _contentId The contentId related to this TAO
 	 * @param _from The origin of this TAO (has to be a Name or TAO)
 	 */
-	function createTAO(string _taoName, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _from) public senderIsName() {
-		require (bytes(_taoName).length > 0);
-		require (!isTAONameExist(_taoName));
+	function createTAO(string _name, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _from) public senderIsName() {
+		require (bytes(_name).length > 0);
+		require (!_nameTAOLookup.isExist(_name));
 		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
 
 		// Make sure _from is a TAO/Name
 		require (_from != address(0) && TAO(_from).originId() != address(0));
 
 		/**
-		 * If _from is a TAO (TAOTypeId == 0)
+		 * If _from is a TAO (typeId == 0)
 		 * Decide what are the _from and _to IDs
 		 * 1. If the _from's advocateId is the same as msg.sender's nameId, then
 		 *    the same advocateId is creating this new TAO from _from TAO.
@@ -89,18 +92,18 @@ contract TAOFactory is TAOController {
 		 */
 		address _assignedFrom = _from;
 		address _assignedTo = address(0);
-		if (TAO(_assignedFrom).taoTypeId() == 0 && TAO(_assignedFrom).advocateId() != _nameId) {
+		if (TAO(_assignedFrom).typeId() == 0 && TAO(_assignedFrom).advocateId() != _nameId) {
 			_assignedFrom = _nameId;
 			_assignedTo = _from;
 		}
 
-		address taoId = new TAO(Name(_nameId).username(), _taoName, _nameId, _datHash, _database, _keyValue, _contentId, _assignedFrom, _assignedTo);
-		taoNamesLookup[keccak256(abi.encodePacked(_taoName))] = taoId;
+		address taoId = new TAO(_name, _nameId, _datHash, _database, _keyValue, _contentId, _assignedFrom, _assignedTo);
+		require (_nameTAOLookup.add(_name, taoId, TAO(_assignedFrom).name(), 0));
 		taos.push(taoId);
 
-		emit CreateTAO(msg.sender, _nameId, taoId, taos.length.sub(1), _assignedFrom, TAO(_assignedFrom).taoTypeId(), _assignedTo);
+		emit CreateTAO(msg.sender, _nameId, taoId, taos.length.sub(1), _assignedFrom, TAO(_assignedFrom).typeId(), _assignedTo);
 
-		if (TAO(_from).taoTypeId() == 0) {
+		if (TAO(_from).typeId() == 0) {
 			// If this TAO is created from another TAO from the same advocate,
 			// Want to add this TAO to its parent TAO as a ChildTAO
 			if (TAO(_from).advocateId() == _nameId) {
@@ -119,27 +122,27 @@ contract TAOFactory is TAOController {
 	/**
 	 * @dev Get TAO information
 	 * @param _taoId The ID of the TAO to be queried
-	 * @return The username of the Name that created this TAO
 	 * @return The name of the TAO
-	 * @return The origin Name/TAO ID of the TAO
+	 * @return The origin Name ID that created the TAO
+	 * @return The name of Name that created the TAO
 	 * @return The datHash of the TAO
 	 * @return The database of the TAO
 	 * @return The keyValue of the TAO
 	 * @return The contentId of the TAO
-	 * @return The taoTypeId of the TAO
+	 * @return The typeId of the TAO
 	 * @return The current nonce of the Name
 	 */
-	function getTAO(address _taoId) public view returns (string, string, address, string, string, string, bytes32, uint8, uint256) {
+	function getTAO(address _taoId) public view returns (string, address, string, string, string, string, bytes32, uint8, uint256) {
 		TAO _tao = TAO(_taoId);
 		return (
-			_tao.username(),
-			_tao.taoName(),
+			_tao.name(),
 			_tao.originId(),
+			Name(_tao.originId()).name(),
 			_tao.datHash(),
 			_tao.database(),
 			_tao.keyValue(),
 			_tao.contentId(),
-			_tao.taoTypeId(),
+			_tao.typeId(),
 			_tao.nonce()
 		);
 	}
@@ -148,25 +151,22 @@ contract TAOFactory is TAOController {
 	 * @dev Given a TAO ID, wants to get the TAO's Position, i.e Advocate/Listener/Speaker
 	 * @param _taoId The ID of the TAO
 	 * @return The advocateId of the TAO
+	 * @return The advocate's name of the TAO
 	 * @return The listenerId of the TAO
+	 * @return The listener's name of the TAO
 	 * @return The speakerId of the TAO
+	 * @return The speaker's name of the TAO
 	 */
-	function getTAOPosition(address _taoId) public view returns (address, address, address) {
+	function getTAOPosition(address _taoId) public view returns (address, string, address, string, address, string) {
 		TAO _tao = TAO(_taoId);
 		return (
 			_tao.advocateId(),
+			TAO(_tao.advocateId()).name(),
 			_tao.listenerId(),
-			_tao.speakerId()
+			TAO(_tao.listenerId()).name(),
+			_tao.speakerId(),
+			TAO(_tao.speakerId()).name()
 		);
-	}
-
-	/**
-	 * @dev Get the taoId given a taoName
-	 * @param _taoName The TAO's name to check
-	 * @return taoId of the name
-	 */
-	function getTAOIdByName(string _taoName) public view returns (address) {
-		return taoNamesLookup[keccak256(abi.encodePacked(_taoName))];
 	}
 
 	/**
@@ -367,12 +367,12 @@ contract TAOFactory is TAOController {
 	 * @param _data The signed string data
 	 * @param _nonce The signed uint256 nonce (should be TAO's current nonce + 1)
 	 * @param _validateAddress The ETH address to be validated (optional)
-	 * @param _taoName The Name of the TAO
+	 * @param _name The Name of the TAO
 	 * @param _signatureV The V part of the signature
 	 * @param _signatureR The R part of the signature
 	 * @param _signatureS The S part of the signature
 	 * @return true if valid. false otherwise
-	 * @return The username of the Name that created the signature
+	 * @return The name of the Name that created the signature
 	 * @return The Position of the Name that created the signature.
 	 *			0 == unknown. 1 == Advocate. 2 == Listener. 3 == Speaker
 	 */
@@ -380,14 +380,14 @@ contract TAOFactory is TAOController {
 		string _data,
 		uint256 _nonce,
 		address _validateAddress,
-		string _taoName,
+		string _name,
 		uint8 _signatureV,
 		bytes32 _signatureR,
 		bytes32 _signatureS
-	) public isTAO(getTAOIdByName(_taoName)) view returns (bool, string, uint256) {
+	) public isTAO(_getTAOIdByName(_name)) view returns (bool, string, uint256) {
 		address _signatureAddress = AOLibrary.getValidateSignatureAddress(address(this), _data, _nonce, _signatureV, _signatureR, _signatureS);
-		if (_isTAOSignatureAddressValid(_validateAddress, _signatureAddress, getTAOIdByName(_taoName), _nonce)) {
-			return (true, Name(_nameFactory.ethAddressToNameId(_signatureAddress)).username(), AOLibrary.determineAddressPositionInTAO(nameFactoryAddress, _signatureAddress, getTAOIdByName(_taoName)));
+		if (_isTAOSignatureAddressValid(_validateAddress, _signatureAddress, _getTAOIdByName(_name), _nonce)) {
+			return (true, Name(_nameFactory.ethAddressToNameId(_signatureAddress)).name(), AOLibrary.determineAddressPositionInTAO(nameFactoryAddress, _signatureAddress, _getTAOIdByName(_name)));
 		} else {
 			return (false, "", 0);
 		}
@@ -420,5 +420,14 @@ contract TAOFactory is TAOController {
 				AOLibrary.addressIsTAOAdvocateListenerSpeaker(nameFactoryAddress, _signatureAddress, _taoId)
 			);
 		}
+	}
+
+	/**
+	 * @dev Internal function to get the TAO Id by name
+	 * @param _name The name of the TAO
+	 * @return the TAO ID
+	 */
+	function _getTAOIdByName(string _name) internal view returns (address) {
+		return _nameTAOLookup.getAddressByName(_name);
 	}
 }

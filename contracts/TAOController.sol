@@ -45,6 +45,14 @@ contract TAOController {
 	}
 
 	/**
+	 * @dev Check if `_id` is a Name or a TAO
+	 */
+	modifier isNameOrTAO(address _id) {
+		require (AOLibrary.isName(_id) || AOLibrary.isTAO(_id));
+		_;
+	}
+
+	/**
 	 * @dev Check if msg.sender is the current advocate of a `_taoId`
 	 */
 	modifier onlyAdvocateOfTAO(address _taoId) {

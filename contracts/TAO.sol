@@ -13,9 +13,8 @@ contract TAO {
 	bool public closed;
 
 	address public factoryAddress;
-	string public username;			// the name of the Name that created this TAO
-	string public taoName;			// the name of this TAO
-	address public originId;		// the ID of the Name/TAO that created this TAO
+	string public name;				// the name for this TAO
+	address public originId;		// the ID of the Name that created this TAO. If Name, it's the eth address
 
 	address public advocateId;	// current advocateId
 	address public listenerId;	// current listenerId
@@ -28,10 +27,10 @@ contract TAO {
 	bytes32 public contentId;
 
 	/**
-	 * 0 = create a TAO
-	 * 1 = create a Name
+	 * 0 = TAO
+	 * 1 = Name
 	 */
-	uint8 public taoTypeId;
+	uint8 public typeId;
 
 	address public fromId;		// The origin TAO ID
 	address public throughId;
@@ -56,10 +55,9 @@ contract TAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor (string _username, string _taoName, address _originId, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _fromId, address _toId) public {
+	constructor (string _name, address _originId, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _fromId, address _toId) public {
 		factoryAddress = msg.sender;
-		username = _username;
-		taoName = _taoName;
+		name = _name;
 		originId = _originId;
 		advocateId = _originId;
 		datHash = _datHash;
@@ -73,7 +71,7 @@ contract TAO {
 		speakerId = advocateId;
 
 		// Creating TAO
-		taoTypeId = 0;
+		typeId = 0;
 
 		nonce = 1;
 	}
@@ -101,7 +99,7 @@ contract TAO {
 	 */
 	function setAdvocate(address _advocateId) public isActive onlyFactory returns (uint256) {
 		require (_advocateId != address(0));
-		require (taoTypeId == 0);
+		require (typeId == 0);
 		advocateId = _advocateId;
 		nonce++;
 		return nonce;

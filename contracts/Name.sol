@@ -15,10 +15,10 @@ contract Name is TAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor (string _username, address _originId, string _datHash, string _database, string _keyValue, bytes32 _contentId)
-		TAO (_username, _username, _originId, _datHash, _database, _keyValue, _contentId, _originId, address(0)) public {
+	constructor (string _name, address _originId, string _datHash, string _database, string _keyValue, bytes32 _contentId)
+		TAO (_name, _originId, _datHash, _database, _keyValue, _contentId, _originId, address(0)) public {
 		// Creating Name
-		taoTypeId = 1;
+		typeId = 1;
 
 		advocateId = address(this);
 		listenerId = advocateId;

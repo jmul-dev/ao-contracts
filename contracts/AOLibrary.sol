@@ -460,7 +460,7 @@ library AOLibrary {
 	 * @return true if yes. false otherwise
 	 */
 	function isTAO(address _taoId) public view returns (bool) {
-		return (_taoId != address(0) && TAO(_taoId).originId() != address(0) && TAO(_taoId).taoTypeId() == 0);
+		return (_taoId != address(0) && TAO(_taoId).originId() != address(0) && TAO(_taoId).typeId() == 0);
 	}
 
 	/**
@@ -469,7 +469,7 @@ library AOLibrary {
 	 * @return true if yes. false otherwise
 	 */
 	function isName(address _nameId) public view returns (bool) {
-		return (_nameId != address(0) && Name(_nameId).originId() != address(0) && Name(_nameId).taoTypeId() == 1);
+		return (_nameId != address(0) && Name(_nameId).originId() != address(0) && Name(_nameId).typeId() == 1);
 	}
 
 	/**

@@ -12,6 +12,7 @@ var AntiPathos = artifacts.require("./AntiPathos.sol");
 var Position = artifacts.require("./Position.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
+var NameTAOLookup = artifacts.require("./NameTAOLookup.sol");
 var TAOPosition = artifacts.require("./TAOPosition.sol");
 
 // Settings
@@ -77,6 +78,7 @@ module.exports = function(deployer, network, accounts) {
 		position,
 		namefactory,
 		taofactory,
+		nametaolookup,
 		taoposition,
 		aosettingattribute,
 		aouintsetting,
@@ -168,6 +170,17 @@ module.exports = function(deployer, network, accounts) {
 
 			// Set TAOFactory address in NameFactory
 			await namefactory.setTAOFactoryAddress(taofactory.address, { from: primordialAccount });
+
+			return deployer.deploy(NameTAOLookup, namefactory.address, taofactory.address);
+		})
+		.then(async function() {
+			nametaolookup = await NameTAOLookup.deployed();
+
+			// Set NameTAOLookup address in NameFactory
+			await namefactory.setNameTAOLookupAddress(nametaolookup.address, { from: primordialAccount });
+
+			// Set NameTAOLookup address in TAOFactory
+			await taofactory.setNameTAOLookupAddress(nametaolookup.address, { from: primordialAccount });
 
 			/**
 			 * Create Primordial Name and Associated Name
