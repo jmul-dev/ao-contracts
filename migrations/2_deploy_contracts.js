@@ -4,9 +4,6 @@ var AOLibrary = artifacts.require("./AOLibrary.sol");
 var Logos = artifacts.require("./Logos.sol");
 var Ethos = artifacts.require("./Ethos.sol");
 var Pathos = artifacts.require("./Pathos.sol");
-var AntiLogos = artifacts.require("./AntiLogos.sol");
-var AntiEthos = artifacts.require("./AntiEthos.sol");
-var AntiPathos = artifacts.require("./AntiPathos.sol");
 
 // Name/TAO Contracts
 var Position = artifacts.require("./Position.sol");
@@ -72,9 +69,6 @@ module.exports = function(deployer, network, accounts) {
 		logos,
 		ethos,
 		pathos,
-		antilogos,
-		antiethos,
-		antipathos,
 		position,
 		namefactory,
 		taofactory,
@@ -109,10 +103,7 @@ module.exports = function(deployer, network, accounts) {
 	deployer.deploy([
 		[Logos, 0, "Logos", "LOGOS", "logos"],
 		[Ethos, 0, "Ethos", "ETHOS", "ethos"],
-		[Pathos, 0, "Pathos", "PATHOS", "antipathos"],
-		[AntiLogos, 0, "Anti Logos", "ALOGOS", "antilogos"],
-		[AntiEthos, 0, "Anti Ethos", "AETHOS", "antiethos"],
-		[AntiPathos, 0, "Anti Pathos", "APATHOS", "antipathos"],
+		[Pathos, 0, "Pathos", "PATHOS", "pathos"],
 		[Position, 0, "AO Position", "AOPOS"],
 		AOSettingAttribute,
 		AOUintSetting,
@@ -128,9 +119,6 @@ module.exports = function(deployer, network, accounts) {
 			logos = await Logos.deployed();
 			ethos = await Ethos.deployed();
 			pathos = await Pathos.deployed();
-			antilogos = await AntiLogos.deployed();
-			antiethos = await AntiEthos.deployed();
-			antipathos = await AntiPathos.deployed();
 			position = await Position.deployed();
 			aosettingattribute = await AOSettingAttribute.deployed();
 			aouintsetting = await AOUintSetting.deployed();
@@ -614,7 +602,7 @@ module.exports = function(deployer, network, accounts) {
 					aotreasury.address,
 					namefactory.address,
 					pathos.address,
-					antilogos.address
+					ethos.address
 				]
 			]);
 		})
@@ -678,8 +666,8 @@ module.exports = function(deployer, network, accounts) {
 			// pathos grant access to aoearning
 			await pathos.setWhitelist(aoearning.address, true, { from: primordialAccount });
 
-			// antilogos grant access to aoearning
-			await antilogos.setWhitelist(aoearning.address, true, { from: primordialAccount });
+			// ethos grant access to aoearning
+			await ethos.setWhitelist(aoearning.address, true, { from: primordialAccount });
 
 			return deployer.deploy(
 				AOContent,

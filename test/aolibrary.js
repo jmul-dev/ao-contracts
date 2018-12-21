@@ -4,28 +4,12 @@ var TAOFactory = artifacts.require("./TAOFactory.sol");
 var Logos = artifacts.require("./Logos.sol");
 var Ethos = artifacts.require("./Ethos.sol");
 var Pathos = artifacts.require("./Pathos.sol");
-var AntiLogos = artifacts.require("./AntiLogos.sol");
-var AntiEthos = artifacts.require("./AntiEthos.sol");
-var AntiPathos = artifacts.require("./AntiPathos.sol");
 
 var BigNumber = require("bignumber.js");
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1 }); // no rounding
 
 contract("AOLibrary", function(accounts) {
-	var library,
-		percentageDivisor,
-		multiplierDivisor,
-		namefactory,
-		taofactory,
-		logos,
-		ethos,
-		pathos,
-		antilogos,
-		antiethos,
-		antipathos,
-		nameId1,
-		nameId2,
-		taoId;
+	var library, percentageDivisor, multiplierDivisor, namefactory, taofactory, logos, ethos, pathos, nameId1, nameId2, taoId;
 	var developer = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
@@ -39,9 +23,6 @@ contract("AOLibrary", function(accounts) {
 		logos = await Logos.deployed();
 		ethos = await Ethos.deployed();
 		pathos = await Pathos.deployed();
-		antilogos = await AntiLogos.deployed();
-		antiethos = await AntiEthos.deployed();
-		antipathos = await AntiPathos.deployed();
 
 		// Create Name
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
@@ -63,17 +44,11 @@ contract("AOLibrary", function(accounts) {
 		await logos.setWhitelist(whitelistedAddress, true, { from: developer });
 		await ethos.setWhitelist(whitelistedAddress, true, { from: developer });
 		await pathos.setWhitelist(whitelistedAddress, true, { from: developer });
-		await antilogos.setWhitelist(whitelistedAddress, true, { from: developer });
-		await antiethos.setWhitelist(whitelistedAddress, true, { from: developer });
-		await antipathos.setWhitelist(whitelistedAddress, true, { from: developer });
 
 		// mint some TAOCurrencies to nameId
 		await logos.mintToken(nameId1, 10, { from: whitelistedAddress });
 		await ethos.mintToken(nameId1, 20, { from: whitelistedAddress });
 		await pathos.mintToken(nameId1, 30, { from: whitelistedAddress });
-		await antilogos.mintToken(nameId1, 40, { from: whitelistedAddress });
-		await antiethos.mintToken(nameId1, 50, { from: whitelistedAddress });
-		await antipathos.mintToken(nameId1, 60, { from: whitelistedAddress });
 	});
 
 	it("should have the correct percentage divisor value", async function() {
@@ -275,30 +250,5 @@ contract("AOLibrary", function(accounts) {
 		assert.equal(balances[0].toNumber(), 10, "getTAOCurrencyBalances() returns incorrect Logos balance");
 		assert.equal(balances[1].toNumber(), 20, "getTAOCurrencyBalances() returns incorrect Ethos balance");
 		assert.equal(balances[2].toNumber(), 30, "getTAOCurrencyBalances() returns incorrect Pathos balance");
-	});
-
-	it("getAntiTAOCurrencyBalances() - should return AntiLogos/AntiEthos/AntiPathos balances of a Name ID", async function() {
-		var balances = await library.getAntiTAOCurrencyBalances(nameId1, antilogos.address, antiethos.address, antipathos.address);
-		assert.equal(balances[0].toNumber(), 40, "getAntiTAOCurrencyBalances() returns incorrect AntiLogos balance");
-		assert.equal(balances[1].toNumber(), 50, "getAntiTAOCurrencyBalances() returns incorrect AntiEthos balance");
-		assert.equal(balances[2].toNumber(), 60, "getAntiTAOCurrencyBalances() returns incorrect AntiPathos balance");
-	});
-
-	it("getAllTAOCurrencyBalances() - should return Logos/Ethos/Pathos/AntiLogos/AntiEthos/AntiPathos balances of a Name ID", async function() {
-		var balances = await library.getAllTAOCurrencyBalances(
-			nameId1,
-			logos.address,
-			ethos.address,
-			pathos.address,
-			antilogos.address,
-			antiethos.address,
-			antipathos.address
-		);
-		assert.equal(balances[0].toNumber(), 10, "getAllTAOCurrencyBalances() returns incorrect Logos balance");
-		assert.equal(balances[1].toNumber(), 20, "getAllTAOCurrencyBalances() returns incorrect Ethos balance");
-		assert.equal(balances[2].toNumber(), 30, "getAllTAOCurrencyBalances() returns incorrect Pathos balance");
-		assert.equal(balances[3].toNumber(), 40, "getAllTAOCurrencyBalances() returns incorrect AntiLogos balance");
-		assert.equal(balances[4].toNumber(), 50, "getAllTAOCurrencyBalances() returns incorrect AntiEthos balance");
-		assert.equal(balances[5].toNumber(), 60, "getAllTAOCurrencyBalances() returns incorrect AntiPathos balance");
 	});
 });

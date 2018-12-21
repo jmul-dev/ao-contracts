@@ -5,7 +5,7 @@ import './developed.sol';
 import './AOToken.sol';
 import './AOTreasury.sol';
 import './Pathos.sol';
-import './AntiLogos.sol';
+import './Ethos.sol';
 import './AOSetting.sol';
 import './AOLibrary.sol';
 import './NameFactory.sol';
@@ -27,13 +27,13 @@ contract AOEarning is developed {
 	address public treasuryAddress;
 	address public nameFactoryAddress;
 	address public pathosAddress;
-	address public antiLogosAddress;
+	address public ethosAddress;
 
 	AOToken internal _baseAO;
 	AOTreasury internal _treasury;
-	Pathos internal _pathos;
 	NameFactory internal _nameFactory;
-	AntiLogos internal _antiLogos;
+	Pathos internal _pathos;
+	Ethos internal _ethos;
 	AOSetting internal _aoSetting;
 
 	// Total earning from staking content from all nodes
@@ -112,8 +112,8 @@ contract AOEarning is developed {
 	// Event to be broadcasted to public when content creator's Name earns Pathos when a node buys a content
 	event PathosEarned(address indexed nameId, bytes32 indexed purchaseId, uint256 amount);
 
-	// Event to be broadcasted to public when host's Name earns AntiLogos when a node buys a content
-	event AntiLogosEarned(address indexed nameId, bytes32 indexed purchaseId, uint256 amount);
+	// Event to be broadcasted to public when host's Name earns Ethos when a node buys a content
+	event EthosEarned(address indexed nameId, bytes32 indexed purchaseId, uint256 amount);
 
 	// Event to be broadcasted to public when emergency mode is triggered
 	event EscapeHatch();
@@ -126,22 +126,22 @@ contract AOEarning is developed {
 	 * @param _treasuryAddress The address of AOTreasury
 	 * @param _nameFactoryAddress The address of NameFactory
 	 * @param _pathosAddress The address of Pathos
-	 * @param _antiLogosAddress The address of AntiLogos
+	 * @param _ethosAddress The address of Ethos
 	 */
-	constructor(address _settingTAOId, address _aoSettingAddress, address _baseDenominationAddress, address _treasuryAddress, address _nameFactoryAddress, address _pathosAddress, address _antiLogosAddress) public {
+	constructor(address _settingTAOId, address _aoSettingAddress, address _baseDenominationAddress, address _treasuryAddress, address _nameFactoryAddress, address _pathosAddress, address _ethosAddress) public {
 		settingTAOId = _settingTAOId;
 		aoSettingAddress = _aoSettingAddress;
 		baseDenominationAddress = _baseDenominationAddress;
 		treasuryAddress = _treasuryAddress;
 		pathosAddress = _pathosAddress;
-		antiLogosAddress = _antiLogosAddress;
+		ethosAddress = _ethosAddress;
 
 		_aoSetting = AOSetting(_aoSettingAddress);
 		_baseAO = AOToken(_baseDenominationAddress);
 		_treasury = AOTreasury(_treasuryAddress);
 		_nameFactory = NameFactory(_nameFactoryAddress);
 		_pathos = Pathos(_pathosAddress);
-		_antiLogos = AntiLogos(_antiLogosAddress);
+		_ethos = Ethos(_ethosAddress);
 	}
 
 	/**
@@ -220,9 +220,9 @@ contract AOEarning is developed {
 		require (_pathos.mintToken(_nameFactory.ethAddressToNameId(_stakeOwner), _networkAmountStaked.add(_primordialAmountStaked)));
 		emit PathosEarned(_nameFactory.ethAddressToNameId(_stakeOwner), _purchaseId, _networkAmountStaked.add(_primordialAmountStaked));
 
-		// Reward the host with some AntiLogos
-		require (_antiLogos.mintToken(_nameFactory.ethAddressToNameId(_host), _fileSize));
-		emit AntiLogosEarned(_nameFactory.ethAddressToNameId(_host), _purchaseId, _fileSize);
+		// Reward the host with some Ethos
+		require (_ethos.mintToken(_nameFactory.ethAddressToNameId(_host), _fileSize));
+		emit EthosEarned(_nameFactory.ethAddressToNameId(_host), _purchaseId, _fileSize);
 		return true;
 	}
 

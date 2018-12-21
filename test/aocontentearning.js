@@ -4,7 +4,7 @@ var AOTreasury = artifacts.require("./AOTreasury.sol");
 var AOEarning = artifacts.require("./AOEarning.sol");
 var AOLibrary = artifacts.require("./AOLibrary.sol");
 var Pathos = artifacts.require("./Pathos.sol");
-var AntiLogos = artifacts.require("./AntiLogos.sol");
+var Ethos = artifacts.require("./Ethos.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
@@ -18,7 +18,7 @@ contract("AOContent & AOEarning", function(accounts) {
 		aoearning,
 		library,
 		pathos,
-		antilogos,
+		ethos,
 		settingTAOId,
 		aosetting,
 		namefactory,
@@ -98,7 +98,7 @@ contract("AOContent & AOEarning", function(accounts) {
 		library = await AOLibrary.deployed();
 
 		pathos = await Pathos.deployed();
-		antilogos = await AntiLogos.deployed();
+		ethos = await Ethos.deployed();
 
 		settingTAOId = await aoearning.settingTAOId();
 
@@ -2392,7 +2392,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				var hostNameId = await namefactory.ethAddressToNameId(host);
 
 				var stakeOwnerPathosBalanceBefore = await pathos.balanceOf(stakeOwnerNameId);
-				var hostAntiLogosBalanceBefore = await antilogos.balanceOf(hostNameId);
+				var hostEthosBalanceBefore = await ethos.balanceOf(hostNameId);
 
 				var price = await aocontent.contentHostPrice(contentHostId);
 				var stakedContent = await aocontent.stakedContentById(stakeId);
@@ -2547,7 +2547,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				// Verify TAO Currencies balance
 				var stakeOwnerPathosBalanceAfter = await pathos.balanceOf(stakeOwnerNameId);
-				var hostAntiLogosBalanceAfter = await antilogos.balanceOf(hostNameId);
+				var hostEthosBalanceAfter = await ethos.balanceOf(hostNameId);
 
 				assert.equal(
 					stakeOwnerPathosBalanceAfter.toString(),
@@ -2555,9 +2555,9 @@ contract("AOContent & AOEarning", function(accounts) {
 					"Stake owner has incorrect Pathos balance"
 				);
 				assert.equal(
-					hostAntiLogosBalanceAfter.toString(),
-					hostAntiLogosBalanceBefore.plus(fileSize).toString(),
-					"Host has incorrect AntiLogos balance"
+					hostEthosBalanceAfter.toString(),
+					hostEthosBalanceBefore.plus(fileSize).toString(),
+					"Host has incorrect Ethos balance"
 				);
 
 				return purchaseId;

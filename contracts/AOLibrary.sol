@@ -501,71 +501,11 @@ library AOLibrary {
 		address _logosAddress,
 		address _ethosAddress,
 		address _pathosAddress
-	) public view returns (uint256[]) {
-		uint256[] memory balances = new uint256[](3);
-		balances[0] = TAOCurrency(_logosAddress).balanceOf(_nameId);
-		balances[1] = TAOCurrency(_ethosAddress).balanceOf(_nameId);
-		balances[2] = TAOCurrency(_pathosAddress).balanceOf(_nameId);
-		return balances;
-	}
-
-	/**
-	 * @dev Get Anti TAO Currency Balances given a nameId
-	 * @param _nameId The ID of the Name
-	 * @param _antiLogosAddress The address of AntiLogos
-	 * @param _antiEthosAddress The address of AntiEthos
-	 * @param _antiPathosAddress The address of AntiPathos
-	 * @return AntiLogos balance of the Name ID
-	 * @return AntiEthos balance of the Name ID
-	 * @return AntiPathos balance of the Name ID
-	 */
-	function getAntiTAOCurrencyBalances(
-		address _nameId,
-		address _antiLogosAddress,
-		address _antiEthosAddress,
-		address _antiPathosAddress
-	) public view returns (uint256[]) {
-		uint256[] memory balances = new uint256[](3);
-		balances[0] = TAOCurrency(_antiLogosAddress).balanceOf(_nameId);
-		balances[1] = TAOCurrency(_antiEthosAddress).balanceOf(_nameId);
-		balances[2] = TAOCurrency(_antiPathosAddress).balanceOf(_nameId);
-		return balances;
-	}
-
-	/**
-	 * @dev Get all TAO/AntiTAO Currency Balances given a nameId
-	 * @param _nameId The ID of the Name
-	 * @param _logosAddress The address of Logos
-	 * @param _ethosAddress The address of Ethos
-	 * @param _pathosAddress The address of Pathos
-	 * @param _antiLogosAddress The address of AntiLogos
-	 * @param _antiEthosAddress The address of AntiEthos
-	 * @param _antiPathosAddress The address of AntiPathos
-	 * @return Logos balance of the Name ID
-	 * @return Ethos balance of the Name ID
-	 * @return Pathos balance of the Name ID
-	 * @return AntiLogos balance of the Name ID
-	 * @return AntiEthos balance of the Name ID
-	 * @return AntiPathos balance of the Name ID
-	 */
-	function getAllTAOCurrencyBalances(
-		address _nameId,
-		address _logosAddress,
-		address _ethosAddress,
-		address _pathosAddress,
-		address _antiLogosAddress,
-		address _antiEthosAddress,
-		address _antiPathosAddress
-	) public view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
-		uint256[] memory taoCurrencyBalances = getTAOCurrencyBalances(_nameId, _logosAddress, _ethosAddress, _pathosAddress);
-		uint256[] memory antiTAOCurrencyBalances = getAntiTAOCurrencyBalances(_nameId, _antiLogosAddress, _antiEthosAddress, _antiPathosAddress);
+	) public view returns (uint256, uint256, uint256) {
 		return (
-			taoCurrencyBalances[0],
-			taoCurrencyBalances[1],
-			taoCurrencyBalances[2],
-			antiTAOCurrencyBalances[0],
-			antiTAOCurrencyBalances[1],
-			antiTAOCurrencyBalances[2]
+			TAOCurrency(_logosAddress).balanceOf(_nameId),
+			TAOCurrency(_ethosAddress).balanceOf(_nameId),
+			TAOCurrency(_pathosAddress).balanceOf(_nameId)
 		);
 	}
 

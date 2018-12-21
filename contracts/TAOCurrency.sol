@@ -14,7 +14,6 @@ contract TAOCurrency is developed {
 	string public symbol;
 	uint8 public decimals = 0;
 	bytes32 public internalName;
-	int8 public sign = 1;
 
 	uint256 public totalSupply;
 
