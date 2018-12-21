@@ -9,6 +9,8 @@ var AOSetting = artifacts.require("./AOSetting.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
 var EthCrypto = require("eth-crypto");
+var BigNumber = require("bignumber.js");
+BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
 contract("AOContent & AOEarning", function(accounts) {
 	var aocontent,
@@ -25,6 +27,7 @@ contract("AOContent & AOEarning", function(accounts) {
 		taofactory,
 		inflationRate,
 		theAOCut,
+		theAOEthosEarnedRate,
 		percentageDivisor,
 		multiplierDivisor,
 		contentUsageType_aoContent,
@@ -103,13 +106,16 @@ contract("AOContent & AOEarning", function(accounts) {
 		settingTAOId = await aoearning.settingTAOId();
 
 		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "inflationRate");
-		inflationRate = settingValues[0];
+		inflationRate = new BigNumber(settingValues[0]);
 
 		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "theAOCut");
-		theAOCut = settingValues[0];
+		theAOCut = new BigNumber(settingValues[0]);
 
-		percentageDivisor = await library.PERCENTAGE_DIVISOR();
-		multiplierDivisor = await library.MULTIPLIER_DIVISOR();
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "theAOEthosEarnedRate");
+		theAOEthosEarnedRate = new BigNumber(settingValues[0]);
+
+		percentageDivisor = new BigNumber(await library.PERCENTAGE_DIVISOR());
+		multiplierDivisor = new BigNumber(await library.MULTIPLIER_DIVISOR());
 
 		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "contentUsageType_aoContent");
 		contentUsageType_aoContent = settingValues[3];
@@ -2200,11 +2206,11 @@ contract("AOContent & AOEarning", function(accounts) {
 			await stakeExistingContent(account1, AOContent_stakeId3, 0, 900000, "mega", 110000);
 
 			var networkAmount = await aotreasury.toBase(2, 10, "kilo");
-			AOContent_contentHostPrice1 = networkAmount.add(1000000);
+			AOContent_contentHostPrice1 = networkAmount.plus(1000000);
 			networkAmount = await aotreasury.toBase(1, 0, "mega");
-			AOContent_contentHostPrice2 = networkAmount.add(10);
+			AOContent_contentHostPrice2 = networkAmount.plus(10);
 			networkAmount = await aotreasury.toBase(0, 900000, "mega");
-			AOContent_contentHostPrice3 = networkAmount.add(110000);
+			AOContent_contentHostPrice3 = networkAmount.plus(110000);
 
 			// Should be able to stake again on active staked content
 			await stakeExistingContent(account1, AOContent_stakeId1, 0, 500, "kilo", 0);
@@ -2212,11 +2218,11 @@ contract("AOContent & AOEarning", function(accounts) {
 			await stakeExistingContent(account1, AOContent_stakeId3, 100, 0, "ao", 100);
 
 			networkAmount = await aotreasury.toBase(0, 500, "kilo");
-			AOContent_contentHostPrice1 = AOContent_contentHostPrice1.add(networkAmount);
+			AOContent_contentHostPrice1 = AOContent_contentHostPrice1.plus(networkAmount);
 			networkAmount = await aotreasury.toBase(0, 10, "mega");
-			AOContent_contentHostPrice2 = AOContent_contentHostPrice2.add(networkAmount).add(1000);
+			AOContent_contentHostPrice2 = AOContent_contentHostPrice2.plus(networkAmount).plus(1000);
 			networkAmount = await aotreasury.toBase(100, 0, "ao");
-			AOContent_contentHostPrice3 = AOContent_contentHostPrice3.add(networkAmount).add(100);
+			AOContent_contentHostPrice3 = AOContent_contentHostPrice3.plus(networkAmount).plus(100);
 
 			await stakeExistingContent(account1, CreativeCommons_stakeId1, 0, 900000, "mega", 100000);
 			await stakeExistingContent(account1, CreativeCommons_stakeId2, 0, 500000, "mega", 500000);
@@ -2384,27 +2390,21 @@ contract("AOContent & AOEarning", function(accounts) {
 				contentHostPrice,
 				isAOContentUsageType
 			) {
-				var accountBalanceBefore = await aotoken.balanceOf(account);
-				var stakeOwnerBalanceBefore = await aotoken.balanceOf(stakeOwner);
-				var hostBalanceBefore = await aotoken.balanceOf(host);
-				var theAOBalanceBefore = await aotoken.balanceOf(theAO);
+				var accountBalanceBefore = new BigNumber(await aotoken.balanceOf(account));
+				var stakeOwnerBalanceBefore = new BigNumber(await aotoken.balanceOf(stakeOwner));
+				var hostBalanceBefore = new BigNumber(await aotoken.balanceOf(host));
+				var theAOBalanceBefore = new BigNumber(await aotoken.balanceOf(theAO));
 
-				var stakeOwnerNameId = await namefactory.ethAddressToNameId(stakeOwner);
-				var hostNameId = await namefactory.ethAddressToNameId(host);
-
-				var stakeOwnerPathosBalanceBefore = await pathos.balanceOf(stakeOwnerNameId);
-				var hostEthosBalanceBefore = await ethos.balanceOf(hostNameId);
-
-				var price = await aocontent.contentHostPrice(contentHostId);
+				var price = new BigNumber(await aocontent.contentHostPrice(contentHostId));
 				var stakedContent = await aocontent.stakedContentById(stakeId);
-				var stakedNetworkAmount = stakedContent[2];
-				var stakedPrimordialAmount = stakedContent[3];
-				var stakedPrimordialWeightedMultiplier = stakedContent[4];
-				var profitPercentage = stakedContent[5];
+				var stakedNetworkAmount = new BigNumber(stakedContent[2]);
+				var stakedPrimordialAmount = new BigNumber(stakedContent[3]);
+				var stakedPrimordialWeightedMultiplier = new BigNumber(stakedContent[4]);
+				var profitPercentage = new BigNumber(stakedContent[5]);
 
-				var stakeOwnerEscrowedBalanceBefore = await aotoken.escrowedBalance(stakeOwner);
-				var hostEscrowedBalanceBefore = await aotoken.escrowedBalance(host);
-				var theAOEscrowedBalanceBefore = await aotoken.escrowedBalance(theAO);
+				var stakeOwnerEscrowedBalanceBefore = new BigNumber(await aotoken.escrowedBalance(stakeOwner));
+				var hostEscrowedBalanceBefore = new BigNumber(await aotoken.escrowedBalance(host));
+				var theAOEscrowedBalanceBefore = new BigNumber(await aotoken.escrowedBalance(theAO));
 
 				var canBuyContent, buyContentEvent, purchaseReceipt, stakeEarning, hostEarning, theAOEarning;
 				try {
@@ -2432,25 +2432,32 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.equal(canBuyContent, true, "Account can't buy content even though sent tokens >= price");
 				assert.notEqual(purchaseId, null, "Unable to determine the purchaseID from the log after buying content");
 
+				var contentHostPaidByAO = new BigNumber(await aocontent.contentHostPaidByAO(contentHostId));
+
 				assert.equal(purchaseReceipt[0], contentHostId, "Purchase receipt has incorrect content host ID");
 				assert.equal(purchaseReceipt[1], account, "Purchase receipt has incorrect buyer address");
+				assert.equal(purchaseReceipt[2].toString(), contentHostPrice.toString(), "Purchase receipt has incorrect price");
 				assert.equal(
-					purchaseReceipt[2].toString(),
-					isAOContentUsageType ? contentHostPrice.toString() : 0,
-					"Purchase receipt has incorrect paid network amount"
+					purchaseReceipt[3].toString(),
+					contentHostPaidByAO.toString(),
+					"Purchase receipt has incorrect amount paid by AO"
 				);
-				assert.equal(purchaseReceipt[3], publicKey, "Purchase receipt has incorrect public key");
-
 				assert.equal(
-					purchaseReceipt[4].toLowerCase(),
+					purchaseReceipt[4].toString(),
+					contentHostPrice.minus(contentHostPaidByAO).toString(),
+					"Purchase receipt has incorrect amount paid by Buyer"
+				);
+				assert.equal(purchaseReceipt[5], publicKey, "Purchase receipt has incorrect public key");
+				assert.equal(
+					purchaseReceipt[6].toLowerCase(),
 					publicAddress.toLowerCase(),
 					"Purchase receipt has incorrect public address"
 				);
 
-				var accountBalanceAfter = await aotoken.balanceOf(account);
-				var stakeOwnerBalanceAfter = await aotoken.balanceOf(stakeOwner);
-				var hostBalanceAfter = await aotoken.balanceOf(host);
-				var theAOBalanceAfter = await aotoken.balanceOf(theAO);
+				var accountBalanceAfter = new BigNumber(await aotoken.balanceOf(account));
+				var stakeOwnerBalanceAfter = new BigNumber(await aotoken.balanceOf(stakeOwner));
+				var hostBalanceAfter = new BigNumber(await aotoken.balanceOf(host));
+				var theAOBalanceAfter = new BigNumber(await aotoken.balanceOf(theAO));
 
 				assert.equal(
 					accountBalanceAfter.toString(),
@@ -2471,48 +2478,74 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				// Calculate stake owner/host payment earning
 				var stakeOwnerPaymentEarning = isAOContentUsageType
-					? parseInt(
-							price
-								.mul(profitPercentage)
-								.div(percentageDivisor)
-								.toString()
-					  )
-					: 0;
+					? price.times(profitPercentage).div(percentageDivisor)
+					: new BigNumber(0);
 				var hostPaymentEarning = price.minus(stakeOwnerPaymentEarning);
+				var pathosAmount = price
+					.times(percentageDivisor.minus(profitPercentage))
+					.times(inflationRate)
+					.div(percentageDivisor)
+					.div(percentageDivisor);
+				var ethosAmount = price
+					.times(profitPercentage)
+					.times(inflationRate)
+					.div(percentageDivisor)
+					.div(percentageDivisor);
+				var theAOPaymentEarning = pathosAmount.plus(ethosAmount.times(theAOEthosEarnedRate).div(percentageDivisor));
 
 				// Verify payment earning
 				assert.equal(stakeEarning[0], purchaseId, "Stake earning has incorrect purchase ID");
-				assert.equal(stakeEarning[1].toString(), stakeOwnerPaymentEarning, "Stake earning has incorrect paymentEarning amount");
+				assert.equal(
+					stakeEarning[1].toString(),
+					stakeOwnerPaymentEarning.toString(),
+					"Stake earning has incorrect paymentEarning amount"
+				);
+				assert.equal(stakeEarning[3].toString(), pathosAmount.toString(), "Stake earning has incorrect pathos amount");
+				assert.equal(stakeEarning[4].toNumber(), 0, "Stake earning has incorrect ethos amount");
 
 				assert.equal(hostEarning[0], purchaseId, "Host earning has incorrect purchase ID");
-				assert.equal(hostEarning[1].toString(), hostPaymentEarning, "Host earning has incorrect paymentEarning amount");
+				assert.equal(hostEarning[1].toString(), hostPaymentEarning.toString(), "Host earning has incorrect paymentEarning amount");
+				assert.equal(hostEarning[3].toNumber(), 0, "Host earning has incorrect pathos amount");
+				assert.equal(hostEarning[4].toString(), ethosAmount.toString(), "Host earning has incorrect ethos amount");
 
 				assert.equal(theAOEarning[0], purchaseId, "The AO earning has incorrect purchase ID");
-				assert.equal(theAOEarning[1].toString(), 0, "The AO earning has incorrect paymentEarning amount");
+				assert.equal(
+					theAOEarning[1].toString(),
+					theAOPaymentEarning.toString(),
+					"The AO earning has incorrect paymentEarning amount"
+				);
+				assert.equal(theAOEarning[3].toNumber(), 0, "The AO earning has incorrect pathos amount");
+				assert.equal(theAOEarning[4].toNumber(), 0, "The AO earning has incorrect ethos amount");
 
 				// Calculate inflation bonus
-				var networkBonus = parseInt(stakedNetworkAmount.times(inflationRate).div(percentageDivisor));
+				var networkBonus = stakedNetworkAmount.times(inflationRate).div(percentageDivisor);
 
-				var primordialBonus = parseInt(
-					stakedPrimordialAmount
-						.times(stakedPrimordialWeightedMultiplier)
-						.div(multiplierDivisor)
-						.times(inflationRate)
-						.div(percentageDivisor)
-				);
-				var inflationBonus = networkBonus + primordialBonus;
+				var primordialBonus = stakedPrimordialAmount
+					.times(stakedPrimordialWeightedMultiplier)
+					.div(multiplierDivisor)
+					.times(inflationRate)
+					.div(percentageDivisor);
+				var inflationBonus = networkBonus.plus(primordialBonus);
 
 				// Calculate stake owner/host/The AO inflation bonus
 				var stakeOwnerInflationBonus = isAOContentUsageType
-					? parseInt(profitPercentage.times(inflationBonus).div(percentageDivisor))
-					: 0;
-				var hostInflationBonus = inflationBonus - stakeOwnerInflationBonus;
-				var theAOInflationBonus = parseInt(theAOCut.times(inflationBonus).div(percentageDivisor));
+					? profitPercentage.times(inflationBonus).div(percentageDivisor)
+					: new BigNumber(0);
+				var hostInflationBonus = inflationBonus.minus(stakeOwnerInflationBonus);
+				var theAOInflationBonus = theAOCut.times(inflationBonus).div(percentageDivisor);
 
 				// Verify inflation bonus
-				assert.equal(stakeEarning[2].toString(), stakeOwnerInflationBonus, "Stake earning has incorrect inflationBonus amount");
-				assert.equal(hostEarning[2].toString(), hostInflationBonus, "Host earning has incorrect inflationBonus amount");
-				assert.equal(theAOEarning[2].toString(), theAOInflationBonus, "The AO earning has incorrect inflationBonus amount");
+				assert.equal(
+					stakeEarning[2].toString(),
+					stakeOwnerInflationBonus.toString(),
+					"Stake earning has incorrect inflationBonus amount"
+				);
+				assert.equal(hostEarning[2].toString(), hostInflationBonus.toString(), "Host earning has incorrect inflationBonus amount");
+				assert.equal(
+					theAOEarning[2].toString(),
+					theAOInflationBonus.toString(),
+					"The AO earning has incorrect inflationBonus amount"
+				);
 
 				// Verify escrowed balance
 				var stakeOwnerEscrowedBalanceAfter = await aotoken.escrowedBalance(stakeOwner);
@@ -2523,14 +2556,17 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.equal(
 					stakeOwnerEscrowedBalanceAfter.toString(),
 					stakeOwnerEscrowedBalanceBefore
-						.add(price)
-						.add(inflationBonus)
+						.plus(price)
+						.plus(inflationBonus)
 						.toString(),
 					"Stake owner/host has incorrect escrowed balance"
 				);
 				assert.equal(
 					theAOEscrowedBalanceAfter.toString(),
-					theAOEscrowedBalanceBefore.add(theAOInflationBonus).toString(),
+					theAOEscrowedBalanceBefore
+						.plus(theAOPaymentEarning)
+						.plus(theAOInflationBonus)
+						.toString(),
 					"The AO has incorrect escrowed balance"
 				);
 
@@ -2541,21 +2577,6 @@ contract("AOContent & AOEarning", function(accounts) {
 					canBuyContent = false;
 				}
 				assert.notEqual(canBuyContent, true, "Account can buy the same content more than once");
-
-				// Verify TAO Currencies balance
-				var stakeOwnerPathosBalanceAfter = await pathos.balanceOf(stakeOwnerNameId);
-				var hostEthosBalanceAfter = await ethos.balanceOf(hostNameId);
-
-				assert.equal(
-					stakeOwnerPathosBalanceAfter.toString(),
-					stakeOwnerPathosBalanceBefore.plus(price).toString(),
-					"Stake owner has incorrect Pathos balance"
-				);
-				assert.equal(
-					hostEthosBalanceAfter.toString(),
-					hostEthosBalanceBefore.plus(fileSize).toString(),
-					"Host has incorrect Ethos balance"
-				);
 
 				return purchaseId;
 			};
@@ -2839,6 +2860,12 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				var vrs = EthCrypto.vrs.fromString(signature);
 
+				var stakeOwnerNameId = await namefactory.ethAddressToNameId(stakeOwner);
+				var hostNameId = await namefactory.ethAddressToNameId(host);
+
+				var stakeOwnerPathosBalanceBefore = await pathos.balanceOf(stakeOwnerNameId);
+				var hostEthosBalanceBefore = await ethos.balanceOf(hostNameId);
+
 				var stakeOwnerBalanceBefore = await aotoken.balanceOf(stakeOwner);
 				var hostBalanceBefore = await aotoken.balanceOf(host);
 				var theAOBalanceBefore = await aotoken.balanceOf(theAO);
@@ -2865,6 +2892,8 @@ contract("AOContent & AOEarning", function(accounts) {
 				var totalStakedContentTheAOEarningBefore = await aoearning.totalStakedContentTheAOEarning(stakeId);
 				var totalHostContentEarningByIdBefore = await aoearning.totalHostContentEarningById(contentHostId);
 
+				var purchaseReceipt = await aocontent.purchaseReceiptById(purchaseId);
+
 				var canBecomeHost, hostContentEvent, contentHost;
 				try {
 					var result = await aocontent.becomeHost(purchaseId, vrs.v, vrs.r, vrs.s, encChallenge, contentDatKey, metadataDatKey, {
@@ -2887,6 +2916,9 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.equal(contentHost[1], account, "Content host has incorrect host");
 				assert.equal(contentHost[2], contentDatKey, "Content host has incorrect content dat key");
 				assert.equal(contentHost[3], metadataDatKey, "Content host has incorrect metadata dat key");
+
+				var stakeOwnerPathosBalanceAfter = await pathos.balanceOf(stakeOwnerNameId);
+				var hostEthosBalanceAfter = await ethos.balanceOf(hostNameId);
 
 				var stakeOwnerBalanceAfter = await aotoken.balanceOf(stakeOwner);
 				var hostBalanceAfter = await aotoken.balanceOf(host);
@@ -2914,6 +2946,17 @@ contract("AOContent & AOEarning", function(accounts) {
 				var totalStakedContentTheAOEarningAfter = await aoearning.totalStakedContentTheAOEarning(stakeId);
 				var totalHostContentEarningByIdAfter = await aoearning.totalHostContentEarningById(contentHostId);
 
+				assert.equal(
+					stakeOwnerPathosBalanceAfter.toString(),
+					stakeOwnerPathosBalanceBefore.plus(stakeEarningBefore[3]).toString(),
+					"Stake owner has incorrect pathos balance"
+				);
+				assert.equal(
+					hostEthosBalanceAfter.toString(),
+					hostEthosBalanceBefore.plus(hostEarningBefore[4]).toString(),
+					"Host has incorrect ethos balance"
+				);
+
 				// Verify the earning
 				assert.equal(stakeEarningAfter[0], purchaseId, "Stake earning has incorrect purchaseId");
 				assert.equal(
@@ -2926,10 +2969,14 @@ contract("AOContent & AOEarning", function(accounts) {
 					0,
 					"Stake earning has incorrect inflationBonus after request node become host"
 				);
+				assert.equal(stakeEarningAfter[3].toString(), 0, "Stake earning has incorrect pathosAmount after request node become host");
+				assert.equal(stakeEarningAfter[4].toString(), 0, "Stake earning has incorrect ethosAmount after request node become host");
 
 				assert.equal(hostEarningAfter[0], purchaseId, "Host earning has incorrect purchaseId");
 				assert.equal(hostEarningAfter[1].toString(), 0, "Host earning has incorrect paymentEarning after request node become host");
 				assert.equal(hostEarningAfter[2].toString(), 0, "Host earning has incorrect inflationBonus after request node become host");
+				assert.equal(hostEarningAfter[3].toString(), 0, "Host earning has incorrect pathosAmount after request node become host");
+				assert.equal(hostEarningAfter[4].toString(), 0, "Host earning has incorrect ethosAmount after request node become host");
 
 				assert.equal(theAOEarningAfter[0], purchaseId, "The AO earning has incorrect purchaseId");
 				assert.equal(
@@ -2942,6 +2989,12 @@ contract("AOContent & AOEarning", function(accounts) {
 					0,
 					"The AO earning has incorrect inflationBonus after request node become host"
 				);
+				assert.equal(
+					theAOEarningAfter[3].toString(),
+					0,
+					"The AO earning has incorrect pathosAmount after request node become host"
+				);
+				assert.equal(theAOEarningAfter[4].toString(), 0, "The AO earning has incorrect ethosAmount after request node become host");
 
 				// Verify the balance
 				// Since stake owner and host are the same
@@ -2957,7 +3010,10 @@ contract("AOContent & AOEarning", function(accounts) {
 				);
 				assert.equal(
 					theAOBalanceAfter.toString(),
-					theAOBalanceBefore.plus(theAOEarningBefore[2]).toString(),
+					theAOBalanceBefore
+						.plus(theAOEarningBefore[1])
+						.plus(theAOEarningBefore[2])
+						.toString(),
 					"The AO has incorrect balance after request node become host"
 				);
 
@@ -2975,7 +3031,10 @@ contract("AOContent & AOEarning", function(accounts) {
 				);
 				assert.equal(
 					theAOEscrowedBalanceAfter.toString(),
-					theAOEscrowedBalanceBefore.minus(theAOEarningBefore[2]).toString(),
+					theAOEscrowedBalanceBefore
+						.minus(theAOEarningBefore[1])
+						.minus(theAOEarningBefore[2])
+						.toString(),
 					"The AO has incorrect escrowed balance after request node become host"
 				);
 
@@ -2998,7 +3057,10 @@ contract("AOContent & AOEarning", function(accounts) {
 				);
 				assert.equal(
 					totalTheAOEarningAfter.toString(),
-					totalTheAOEarningBefore.plus(theAOEarningBefore[2]).toString(),
+					totalTheAOEarningBefore
+						.plus(theAOEarningBefore[1])
+						.plus(theAOEarningBefore[2])
+						.toString(),
 					"Contract has incorrect totalTheAOEarning"
 				);
 				assert.equal(
@@ -3020,7 +3082,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				var stakedContent = await aocontent.stakedContentById(stakeId);
 				var content = await aocontent.contentById(contentId);
-				if (stakedContent[2].plus(stakedContent[3]).gt(content[1])) {
+				if (purchaseReceipt[4].gt(content[1])) {
 					assert.equal(
 						networkPriceEarningAfter.toString(),
 						networkPriceEarningBefore.toString(),
@@ -3084,7 +3146,10 @@ contract("AOContent & AOEarning", function(accounts) {
 				);
 				assert.equal(
 					totalStakedContentTheAOEarningAfter.toString(),
-					totalStakedContentTheAOEarningBefore.plus(theAOEarningBefore[2]).toString(),
+					totalStakedContentTheAOEarningBefore
+						.plus(theAOEarningBefore[1])
+						.plus(theAOEarningBefore[2])
+						.toString(),
 					"Staked content has incorrect totalStakedContentTheAOEarning value"
 				);
 				assert.equal(
@@ -3238,9 +3303,16 @@ contract("AOContent & AOEarning", function(accounts) {
 				host,
 				isAOContentUsageType
 			) {
-				var stakeOwnerBalanceBefore = await aotoken.balanceOf(stakeOwner);
-				var hostBalanceBefore = await aotoken.balanceOf(host);
-				var accountBalanceBefore = await aotoken.balanceOf(account);
+				var stakeOwnerNameId = await namefactory.ethAddressToNameId(stakeOwner);
+				var hostNameId = await namefactory.ethAddressToNameId(host);
+
+				var stakeOwnerPathosBalanceBefore = new BigNumber(await pathos.balanceOf(stakeOwnerNameId));
+				var hostEthosBalanceBefore = new BigNumber(await ethos.balanceOf(hostNameId));
+
+				var stakeOwnerBalanceBefore = new BigNumber(await aotoken.balanceOf(stakeOwner));
+				var hostBalanceBefore = new BigNumber(await aotoken.balanceOf(host));
+				var theAOBalanceBefore = new BigNumber(await aotoken.balanceOf(theAO));
+				var accountBalanceBefore = new BigNumber(await aotoken.balanceOf(account));
 
 				var canBuyContent, buyContentEvent;
 				try {
@@ -3259,12 +3331,16 @@ contract("AOContent & AOEarning", function(accounts) {
 				}
 				assert.equal(canBuyContent, true, "Account can't buy content even though sent tokens >= price");
 
-				var price = await aocontent.contentHostPrice(contentHostId);
+				var stakeEarning = await aoearning.stakeEarnings(stakeOwner, purchaseId);
+				var hostEarning = await aoearning.hostEarnings(host, purchaseId);
+				var theAOEarning = await aoearning.theAOEarnings(purchaseId);
+
+				var price = new BigNumber(await aocontent.contentHostPrice(contentHostId));
 				var stakedContent = await aocontent.stakedContentById(stakeId);
-				var stakedNetworkAmount = stakedContent[2];
-				var stakedPrimordialAmount = stakedContent[3];
-				var stakedPrimordialWeightedMultiplier = stakedContent[4];
-				var profitPercentage = stakedContent[5];
+				var stakedNetworkAmount = new BigNumber(stakedContent[2]);
+				var stakedPrimordialAmount = new BigNumber(stakedContent[3]);
+				var stakedPrimordialWeightedMultiplier = new BigNumber(stakedContent[4]);
+				var profitPercentage = new BigNumber(stakedContent[5]);
 
 				var signHash = EthCrypto.hash.keccak256([
 					{
@@ -3297,6 +3373,20 @@ contract("AOContent & AOEarning", function(accounts) {
 				}
 				assert.equal(canBecomeHost, true, "Account fails becoming host of the content");
 
+				var stakeOwnerPathosBalanceAfter = new BigNumber(await pathos.balanceOf(stakeOwnerNameId));
+				var hostEthosBalanceAfter = new BigNumber(await ethos.balanceOf(hostNameId));
+
+				assert.equal(
+					stakeOwnerPathosBalanceAfter.toString(),
+					stakeOwnerPathosBalanceBefore.plus(stakeEarning[3]).toString(),
+					"Stake owner has incorrect pathos balance"
+				);
+				assert.equal(
+					hostEthosBalanceAfter.toString(),
+					hostEthosBalanceBefore.plus(hostEarning[4]).toString(),
+					"Host has incorrect ethos balance"
+				);
+
 				// Verify the content host object
 				assert.equal(contentHost[0], stakeId, "Content host has incorrect stake ID");
 				assert.equal(contentHost[1], account, "Content host has incorrect host");
@@ -3305,36 +3395,30 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				// Calculate stake owner/host payment earning
 				var stakeOwnerPaymentEarning = isAOContentUsageType
-					? parseInt(
-							price
-								.mul(profitPercentage)
-								.div(percentageDivisor)
-								.toString()
-					  )
-					: 0;
+					? price.times(profitPercentage).div(percentageDivisor)
+					: new BigNumber(0);
 				var hostPaymentEarning = price.minus(stakeOwnerPaymentEarning);
 
 				// Calculate inflation bonus
-				var networkBonus = parseInt(stakedNetworkAmount.times(inflationRate).div(percentageDivisor));
+				var networkBonus = stakedNetworkAmount.times(inflationRate).div(percentageDivisor);
 
-				var primordialBonus = parseInt(
-					stakedPrimordialAmount
-						.times(stakedPrimordialWeightedMultiplier)
-						.div(multiplierDivisor)
-						.times(inflationRate)
-						.div(percentageDivisor)
-				);
-				var inflationBonus = networkBonus + primordialBonus;
+				var primordialBonus = stakedPrimordialAmount
+					.times(stakedPrimordialWeightedMultiplier)
+					.div(multiplierDivisor)
+					.times(inflationRate)
+					.div(percentageDivisor);
+				var inflationBonus = networkBonus.plus(primordialBonus);
 
 				// Calculate stake owner/host/The AO inflation bonus
 				var stakeOwnerInflationBonus = isAOContentUsageType
-					? parseInt(profitPercentage.times(inflationBonus).div(percentageDivisor))
-					: 0;
-				var hostInflationBonus = inflationBonus - stakeOwnerInflationBonus;
+					? profitPercentage.times(inflationBonus).div(percentageDivisor)
+					: new BigNumber(0);
+				var hostInflationBonus = inflationBonus.minus(stakeOwnerInflationBonus);
 
-				var stakeOwnerBalanceAfter = await aotoken.balanceOf(stakeOwner);
-				var hostBalanceAfter = await aotoken.balanceOf(host);
-				var accountBalanceAfter = await aotoken.balanceOf(account);
+				var stakeOwnerBalanceAfter = new BigNumber(await aotoken.balanceOf(stakeOwner));
+				var hostBalanceAfter = new BigNumber(await aotoken.balanceOf(host));
+				var theAOBalanceAfter = new BigNumber(await aotoken.balanceOf(theAO));
+				var accountBalanceAfter = new BigNumber(await aotoken.balanceOf(account));
 
 				if (isAOContentUsageType) {
 					assert.equal(
@@ -3374,6 +3458,14 @@ contract("AOContent & AOEarning", function(accounts) {
 					);
 					assert.equal(accountBalanceAfter.toString(), accountBalanceBefore.toString(), "Account has incorrect balance");
 				}
+				assert.equal(
+					theAOBalanceAfter.toString(),
+					theAOBalanceBefore
+						.plus(theAOEarning[1])
+						.plus(theAOEarning[2])
+						.toString(),
+					"The AO has incorrect balance after request node become host"
+				);
 			};
 
 			await buyAndBecomeHost(

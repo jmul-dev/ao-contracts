@@ -83,7 +83,9 @@ contract AOContent is TheAO {
 		bytes32 purchaseId;
 		bytes32 contentHostId;
 		address buyer;
-		uint256 networkAmount; // total network token paid in base denomination
+		uint256 price;
+		uint256 amountPaidByBuyer;	// total network token paid in base denomination
+		uint256 amountPaidByAO; // total amount paid by AO
 		string publicKey; // The public key provided by request node
 		address publicAddress; // The public address provided by request node
 		uint256 createdOnTimestamp;
@@ -139,7 +141,7 @@ contract AOContent is TheAO {
 	event StakeExistingContent(address indexed stakeOwner, bytes32 indexed stakeId, bytes32 indexed contentId, uint256 currentNetworkAmount, uint256 currentPrimordialAmount, uint256 currentPrimordialWeightedMultiplier);
 
 	// Event to be broadcasted to public when a request node buys a content
-	event BuyContent(address indexed buyer, bytes32 indexed purchaseId, bytes32 indexed contentHostId, uint256 paidNetworkAmount, string publicKey, address publicAddress, uint256 createdOnTimestamp);
+	event BuyContent(address indexed buyer, bytes32 indexed purchaseId, bytes32 indexed contentHostId, uint256 price, uint256 amountPaidByAO, uint256 amountPaidByBuyer, string publicKey, address publicAddress, uint256 createdOnTimestamp);
 
 	// Event to be broadcasted to public when Advocate/Listener/Speaker wants to update the TAO Content's State
 	event UpdateTAOContentState(bytes32 indexed contentId, address indexed taoId, address signer, bytes32 taoContentState);
@@ -690,7 +692,9 @@ contract AOContent is TheAO {
 		_purchaseReceipt.contentHostId = _contentHostId;
 		_purchaseReceipt.buyer = msg.sender;
 		// Update the receipt with the correct network amount
-		_purchaseReceipt.networkAmount = _isAOContentUsageType(_stakedContent.contentId) ? _stakedContent.networkAmount.add(_stakedContent.primordialAmount) : 0;
+		_purchaseReceipt.price = _stakedContent.networkAmount.add(_stakedContent.primordialAmount);
+		_purchaseReceipt.amountPaidByAO = contentHostPaidByAO(_contentHostId);
+		_purchaseReceipt.amountPaidByBuyer = _purchaseReceipt.price.sub(_purchaseReceipt.amountPaidByAO);
 		_purchaseReceipt.publicKey = _publicKey;
 		_purchaseReceipt.publicAddress = _publicAddress;
 		_purchaseReceipt.createdOnTimestamp = now;
@@ -706,13 +710,12 @@ contract AOContent is TheAO {
 			_stakedContent.primordialAmount,
 			_stakedContent.primordialWeightedMultiplier,
 			_stakedContent.profitPercentage,
-			contents[contentIndex[_stakedContent.contentId]].fileSize,
 			_stakedContent.stakeOwner,
 			_contentHost.host,
 			_isAOContentUsageType(_stakedContent.contentId)
 		));
 
-		emit BuyContent(_purchaseReceipt.buyer, _purchaseReceipt.purchaseId, _purchaseReceipt.contentHostId, _purchaseReceipt.networkAmount, _purchaseReceipt.publicKey, _purchaseReceipt.publicAddress, _purchaseReceipt.createdOnTimestamp);
+		emit BuyContent(_purchaseReceipt.buyer, _purchaseReceipt.purchaseId, _purchaseReceipt.contentHostId, _purchaseReceipt.price, _purchaseReceipt.amountPaidByAO, _purchaseReceipt.amountPaidByBuyer, _purchaseReceipt.publicKey, _purchaseReceipt.publicAddress, _purchaseReceipt.createdOnTimestamp);
 	}
 
 	/**
@@ -720,19 +723,23 @@ contract AOContent is TheAO {
 	 * @param _purchaseId The ID of the purchased content
 	 * @return The ID of the content host
 	 * @return address of the buyer
-	 * @return paid network amount
+	 * @return price of the content
+	 * @return amount paid by AO
+	 * @return amount paid by Buyer
 	 * @return request node's public key
 	 * @return request node's public address
 	 * @return created on timestamp
 	 */
-	function purchaseReceiptById(bytes32 _purchaseId) public view returns (bytes32, address, uint256, string, address, uint256) {
+	function purchaseReceiptById(bytes32 _purchaseId) public view returns (bytes32, address, uint256, uint256, uint256, string, address, uint256) {
 		// Make sure the purchase receipt exist
 		require (purchaseReceiptIndex[_purchaseId] > 0);
 		PurchaseReceipt memory _purchaseReceipt = purchaseReceipts[purchaseReceiptIndex[_purchaseId]];
 		return (
 			_purchaseReceipt.contentHostId,
 			_purchaseReceipt.buyer,
-			_purchaseReceipt.networkAmount,
+			_purchaseReceipt.price,
+			_purchaseReceipt.amountPaidByAO,
+			_purchaseReceipt.amountPaidByBuyer,
 			_purchaseReceipt.publicKey,
 			_purchaseReceipt.publicAddress,
 			_purchaseReceipt.createdOnTimestamp
@@ -771,7 +778,14 @@ contract AOContent is TheAO {
 		_hostContent(msg.sender, _stakeId, _encChallenge, _contentDatKey, _metadataDatKey);
 
 		// Release earning from escrow
-		require (_earning.releaseEarning(_stakeId, _purchaseReceipt.contentHostId, _purchaseId, _purchaseReceipt.networkAmount, _content.fileSize, stakedContents[stakedContentIndex[_stakeId]].stakeOwner, contentHosts[contentHostIndex[_purchaseReceipt.contentHostId]].host));
+		require (_earning.releaseEarning(
+			_stakeId,
+			_purchaseReceipt.contentHostId,
+			_purchaseId,
+			(_purchaseReceipt.amountPaidByBuyer > _content.fileSize),
+			stakedContents[stakedContentIndex[_stakeId]].stakeOwner,
+			contentHosts[contentHostIndex[_purchaseReceipt.contentHostId]].host)
+		);
 	}
 
 	/**
