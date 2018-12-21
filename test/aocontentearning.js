@@ -35,7 +35,7 @@ contract("AOContent & AOEarning", function(accounts) {
 		taoContentState_acceptedToTAO;
 
 	var someAddress = "0x0694bdcab07b298e88a834a3c91602cb8f457bde";
-	var developer = accounts[0];
+	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var account3 = accounts[3];
@@ -130,8 +130,8 @@ contract("AOContent & AOEarning", function(accounts) {
 		taoContentState_acceptedToTAO = settingValues[3];
 	});
 
-	contract("AOContent - Developer Only Function Tests", function() {
-		it("only developer can pause/unpause contract", async function() {
+	contract("AOContent - The AO Only Function Tests", function() {
+		it("only The AO can pause/unpause contract", async function() {
 			var canPause;
 			try {
 				await aocontent.setPaused(true, { from: account1 });
@@ -139,19 +139,19 @@ contract("AOContent & AOEarning", function(accounts) {
 			} catch (e) {
 				canPause = false;
 			}
-			assert.notEqual(canPause, true, "Non-developer can pause contract");
+			assert.notEqual(canPause, true, "Non-The AO can pause contract");
 			try {
-				await aocontent.setPaused(true, { from: developer });
+				await aocontent.setPaused(true, { from: theAO });
 				canPause = true;
 			} catch (e) {
 				canPause = false;
 			}
-			assert.equal(canPause, true, "Developer can't pause contract");
+			assert.equal(canPause, true, "The AO can't pause contract");
 			var paused = await aocontent.paused();
-			assert.equal(paused, true, "Contract has incorrect paused value after developer set paused");
+			assert.equal(paused, true, "Contract has incorrect paused value after The AO set paused");
 		});
 
-		it("only developer can set base denomination address", async function() {
+		it("only The AO can set base denomination address", async function() {
 			var canSetBaseDenominationAddress;
 			try {
 				await aocontent.setBaseDenominationAddress(aotoken.address, { from: account1 });
@@ -159,26 +159,26 @@ contract("AOContent & AOEarning", function(accounts) {
 			} catch (e) {
 				canSetBaseDenominationAddress = false;
 			}
-			assert.notEqual(canSetBaseDenominationAddress, true, "Non-developer can set base denomination address");
+			assert.notEqual(canSetBaseDenominationAddress, true, "Non-The AO can set base denomination address");
 			try {
-				await aocontent.setBaseDenominationAddress(someAddress, { from: developer });
+				await aocontent.setBaseDenominationAddress(someAddress, { from: theAO });
 				canSetBaseDenominationAddress = true;
 			} catch (e) {
 				canSetBaseDenominationAddress = false;
 			}
-			assert.notEqual(canSetBaseDenominationAddress, true, "Developer can set invalid base denomination address");
+			assert.notEqual(canSetBaseDenominationAddress, true, "The AO can set invalid base denomination address");
 			try {
-				await aocontent.setBaseDenominationAddress(aotoken.address, { from: developer });
+				await aocontent.setBaseDenominationAddress(aotoken.address, { from: theAO });
 				canSetBaseDenominationAddress = true;
 			} catch (e) {
 				canSetBaseDenominationAddress = false;
 			}
-			assert.equal(canSetBaseDenominationAddress, true, "Developer can't set base denomination address");
+			assert.equal(canSetBaseDenominationAddress, true, "The AO can't set base denomination address");
 			var baseDenominationAddress = await aocontent.baseDenominationAddress();
 			assert.equal(baseDenominationAddress, aotoken.address, "Contract has incorrect base denomination address");
 		});
 
-		it("only developer can call escape hatch", async function() {
+		it("only The AO can call escape hatch", async function() {
 			var canEscapeHatch;
 			try {
 				await aocontent.escapeHatch({ from: account1 });
@@ -186,21 +186,21 @@ contract("AOContent & AOEarning", function(accounts) {
 			} catch (e) {
 				canEscapeHatch = false;
 			}
-			assert.notEqual(canEscapeHatch, true, "Non-developer can call escape hatch");
+			assert.notEqual(canEscapeHatch, true, "Non-The AO can call escape hatch");
 			try {
-				await aocontent.escapeHatch({ from: developer });
+				await aocontent.escapeHatch({ from: theAO });
 				canEscapeHatch = true;
 			} catch (e) {
 				canEscapeHatch = false;
 			}
-			assert.equal(canEscapeHatch, true, "Developer can't call escape hatch");
+			assert.equal(canEscapeHatch, true, "The AO can't call escape hatch");
 			var killed = await aocontent.killed();
-			assert.equal(killed, true, "Contract has incorrect killed value after developer call escape hatch");
+			assert.equal(killed, true, "Contract has incorrect killed value after The AO call escape hatch");
 		});
 	});
 
-	contract("AOEarning - Developer Only Function Tests", function() {
-		it("only developer can pause/unpause contract", async function() {
+	contract("AOEarning - The AO Only Function Tests", function() {
+		it("only The AO can pause/unpause contract", async function() {
 			var canPause;
 			try {
 				await aoearning.setPaused(true, { from: account1 });
@@ -208,19 +208,19 @@ contract("AOContent & AOEarning", function(accounts) {
 			} catch (e) {
 				canPause = false;
 			}
-			assert.notEqual(canPause, true, "Non-developer can pause contract");
+			assert.notEqual(canPause, true, "Non-The AO can pause contract");
 			try {
-				await aoearning.setPaused(true, { from: developer });
+				await aoearning.setPaused(true, { from: theAO });
 				canPause = true;
 			} catch (e) {
 				canPause = false;
 			}
-			assert.equal(canPause, true, "Developer can't pause contract");
+			assert.equal(canPause, true, "The AO can't pause contract");
 			var paused = await aoearning.paused();
-			assert.equal(paused, true, "Contract has incorrect paused value after developer set paused");
+			assert.equal(paused, true, "Contract has incorrect paused value after The AO set paused");
 		});
 
-		it("only developer can set base denomination address", async function() {
+		it("only The AO can set base denomination address", async function() {
 			var canSetBaseDenominationAddress;
 			try {
 				await aoearning.setBaseDenominationAddress(aotoken.address, { from: account1 });
@@ -228,26 +228,26 @@ contract("AOContent & AOEarning", function(accounts) {
 			} catch (e) {
 				canSetBaseDenominationAddress = false;
 			}
-			assert.notEqual(canSetBaseDenominationAddress, true, "Non-developer can set base denomination address");
+			assert.notEqual(canSetBaseDenominationAddress, true, "Non-The AO can set base denomination address");
 			try {
-				await aoearning.setBaseDenominationAddress(someAddress, { from: developer });
+				await aoearning.setBaseDenominationAddress(someAddress, { from: theAO });
 				canSetBaseDenominationAddress = true;
 			} catch (e) {
 				canSetBaseDenominationAddress = false;
 			}
-			assert.notEqual(canSetBaseDenominationAddress, true, "Developer can set invalid base denomination address");
+			assert.notEqual(canSetBaseDenominationAddress, true, "The AO can set invalid base denomination address");
 			try {
-				await aoearning.setBaseDenominationAddress(aotoken.address, { from: developer });
+				await aoearning.setBaseDenominationAddress(aotoken.address, { from: theAO });
 				canSetBaseDenominationAddress = true;
 			} catch (e) {
 				canSetBaseDenominationAddress = false;
 			}
-			assert.equal(canSetBaseDenominationAddress, true, "Developer can't set base denomination address");
+			assert.equal(canSetBaseDenominationAddress, true, "The AO can't set base denomination address");
 			var baseDenominationAddress = await aoearning.baseDenominationAddress();
 			assert.equal(baseDenominationAddress, aotoken.address, "Contract has incorrect base denomination address");
 		});
 
-		it("only developer can call escape hatch", async function() {
+		it("only The AO can call escape hatch", async function() {
 			var canEscapeHatch;
 			try {
 				await aoearning.escapeHatch({ from: account1 });
@@ -255,16 +255,16 @@ contract("AOContent & AOEarning", function(accounts) {
 			} catch (e) {
 				canEscapeHatch = false;
 			}
-			assert.notEqual(canEscapeHatch, true, "Non-developer can call escape hatch");
+			assert.notEqual(canEscapeHatch, true, "Non-The AO can call escape hatch");
 			try {
-				await aoearning.escapeHatch({ from: developer });
+				await aoearning.escapeHatch({ from: theAO });
 				canEscapeHatch = true;
 			} catch (e) {
 				canEscapeHatch = false;
 			}
-			assert.equal(canEscapeHatch, true, "Developer can't call escape hatch");
+			assert.equal(canEscapeHatch, true, "The AO can't call escape hatch");
 			var killed = await aoearning.killed();
-			assert.equal(killed, true, "Contract has incorrect killed value after developer call escape hatch");
+			assert.equal(killed, true, "Contract has incorrect killed value after The AO call escape hatch");
 		});
 	});
 
@@ -899,13 +899,13 @@ contract("AOContent & AOEarning", function(accounts) {
 
 		before(async function() {
 			// Let's give account1 some tokens
-			await aotoken.mintToken(account1, 10 ** 9, { from: developer }); // 1,000,000,000 AO Token
+			await aotoken.mintToken(account1, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
 			// Buy 2 lots so that we can test avg weighted multiplier
 			await aotoken.buyPrimordialToken({ from: account1, value: 500000000000 });
 			await aotoken.buyPrimordialToken({ from: account1, value: 500000000000 });
 
 			// Let's give account2 some tokens
-			await aotoken.mintToken(account2, 10 ** 9, { from: developer }); // 1,000,000,000 AO Token
+			await aotoken.mintToken(account2, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
 
 			// Create Names
 			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
@@ -2387,7 +2387,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				var accountBalanceBefore = await aotoken.balanceOf(account);
 				var stakeOwnerBalanceBefore = await aotoken.balanceOf(stakeOwner);
 				var hostBalanceBefore = await aotoken.balanceOf(host);
-				var theAOBalanceBefore = await aotoken.balanceOf(developer);
+				var theAOBalanceBefore = await aotoken.balanceOf(theAO);
 
 				var stakeOwnerNameId = await namefactory.ethAddressToNameId(stakeOwner);
 				var hostNameId = await namefactory.ethAddressToNameId(host);
@@ -2404,7 +2404,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				var stakeOwnerEscrowedBalanceBefore = await aotoken.escrowedBalance(stakeOwner);
 				var hostEscrowedBalanceBefore = await aotoken.escrowedBalance(host);
-				var theAOEscrowedBalanceBefore = await aotoken.escrowedBalance(developer);
+				var theAOEscrowedBalanceBefore = await aotoken.escrowedBalance(theAO);
 
 				var canBuyContent, buyContentEvent, purchaseReceipt, stakeEarning, hostEarning, theAOEarning;
 				try {
@@ -2450,7 +2450,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				var accountBalanceAfter = await aotoken.balanceOf(account);
 				var stakeOwnerBalanceAfter = await aotoken.balanceOf(stakeOwner);
 				var hostBalanceAfter = await aotoken.balanceOf(host);
-				var theAOBalanceAfter = await aotoken.balanceOf(developer);
+				var theAOBalanceAfter = await aotoken.balanceOf(theAO);
 
 				assert.equal(
 					accountBalanceAfter.toString(),
@@ -2517,7 +2517,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				// Verify escrowed balance
 				var stakeOwnerEscrowedBalanceAfter = await aotoken.escrowedBalance(stakeOwner);
 				var hostEscrowedBalanceAfter = await aotoken.escrowedBalance(host);
-				var theAOEscrowedBalanceAfter = await aotoken.escrowedBalance(developer);
+				var theAOEscrowedBalanceAfter = await aotoken.escrowedBalance(theAO);
 
 				// since the stake owner and the host are the same
 				assert.equal(
@@ -2841,11 +2841,11 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				var stakeOwnerBalanceBefore = await aotoken.balanceOf(stakeOwner);
 				var hostBalanceBefore = await aotoken.balanceOf(host);
-				var theAOBalanceBefore = await aotoken.balanceOf(developer);
+				var theAOBalanceBefore = await aotoken.balanceOf(theAO);
 
 				var stakeOwnerEscrowedBalanceBefore = await aotoken.escrowedBalance(stakeOwner);
 				var hostEscrowedBalanceBefore = await aotoken.escrowedBalance(host);
-				var theAOEscrowedBalanceBefore = await aotoken.escrowedBalance(developer);
+				var theAOEscrowedBalanceBefore = await aotoken.escrowedBalance(theAO);
 
 				var stakeEarningBefore = await aoearning.stakeEarnings(stakeOwner, purchaseId);
 				var hostEarningBefore = await aoearning.hostEarnings(host, purchaseId);
@@ -2890,11 +2890,11 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				var stakeOwnerBalanceAfter = await aotoken.balanceOf(stakeOwner);
 				var hostBalanceAfter = await aotoken.balanceOf(host);
-				var theAOBalanceAfter = await aotoken.balanceOf(developer);
+				var theAOBalanceAfter = await aotoken.balanceOf(theAO);
 
 				var stakeOwnerEscrowedBalanceAfter = await aotoken.escrowedBalance(stakeOwner);
 				var hostEscrowedBalanceAfter = await aotoken.escrowedBalance(host);
-				var theAOEscrowedBalanceAfter = await aotoken.escrowedBalance(developer);
+				var theAOEscrowedBalanceAfter = await aotoken.escrowedBalance(theAO);
 
 				var stakeEarningAfter = await aoearning.stakeEarnings(stakeOwner, purchaseId);
 				var hostEarningAfter = await aoearning.hostEarnings(host, purchaseId);
@@ -3222,7 +3222,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 		it("new node should be able to buy content from new distribution node, and then become a host itself", async function() {
 			// Let's give account3 some tokens
-			await aotoken.mintToken(account3, 10 ** 9, { from: developer }); // 1,000,000,000 AO Token
+			await aotoken.mintToken(account3, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
 
 			var buyAndBecomeHost = async function(
 				account,

@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
-import './developed.sol';
+import './TheAO.sol';
 
 /**
  * @title AOBytesSetting
  *
  * This contract stores all AO bytes32 setting variables
  */
-contract AOBytesSetting is developed {
+contract AOBytesSetting is TheAO {
 	// Mapping from settingId to it's actual bytes32 value
 	mapping (uint256 => bytes32) public settingValue;
 

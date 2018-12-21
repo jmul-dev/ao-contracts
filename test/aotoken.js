@@ -6,7 +6,7 @@ BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40
 
 contract("AOToken", function(accounts) {
 	var tokenMeta, library, aosetting, settingTAOId;
-	var developer = accounts[0];
+	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var account3 = accounts[3];
@@ -67,7 +67,7 @@ contract("AOToken", function(accounts) {
 			});
 		});
 		it("should have 0 initial supply", function() {
-			return tokenMeta.balanceOf.call(developer).then(function(balance) {
+			return tokenMeta.balanceOf.call(theAO).then(function(balance) {
 				assert.equal(balance.toNumber(), 0, "Contract has incorrect initial supply");
 			});
 		});
@@ -113,7 +113,7 @@ contract("AOToken", function(accounts) {
 			assert.equal(endingNetworkTokenBonusMultiplier.toNumber(), 250000, "Contract has incorrect endingNetworkTokenBonusMultiplier");
 		});
 	});
-	contract("Developer Only Function Tests", function() {
+	contract("The AO Only Function Tests", function() {
 		it("setAODevTeamAddresses() - should update AO Dev team addresses", async function() {
 			var canSet;
 			try {
@@ -122,15 +122,15 @@ contract("AOToken", function(accounts) {
 			} catch (e) {
 				canSet = false;
 			}
-			assert.notEqual(canSet, true, "Non-developer account can set AO Dev team addresses");
+			assert.notEqual(canSet, true, "Non-The AO account can set AO Dev team addresses");
 
 			try {
-				await tokenMeta.setAODevTeamAddresses(account2, account3, { from: developer });
+				await tokenMeta.setAODevTeamAddresses(account2, account3, { from: theAO });
 				canSet = true;
 			} catch (e) {
 				canSet = false;
 			}
-			assert.equal(canSet, true, "Developer account can't set AO Dev team addresses");
+			assert.equal(canSet, true, "The AO account can't set AO Dev team addresses");
 
 			var _aoDevTeam1 = await tokenMeta.aoDevTeam1();
 			assert.equal(_aoDevTeam1, account2, "Contract has incorrect aoDevTeam1");
@@ -140,7 +140,7 @@ contract("AOToken", function(accounts) {
 		});
 	});
 	contract("Network Tokens Function Tests", function() {
-		it("only developer can mint token", async function() {
+		it("only The AO can mint token", async function() {
 			var canMint;
 			var balance;
 			try {
@@ -153,13 +153,13 @@ contract("AOToken", function(accounts) {
 			assert.notEqual(canMint, true, "Others can mint token");
 			assert.notEqual(balance.toNumber(), 100, "Account1 is not supposed to have tokens");
 			try {
-				await tokenMeta.mintToken(account1, 100, { from: developer });
+				await tokenMeta.mintToken(account1, 100, { from: theAO });
 				canMint = true;
 			} catch (e) {
 				canMint = false;
 			}
 			balance = await tokenMeta.balanceOf(account1);
-			assert.equal(canMint, true, "Developer can't mint token");
+			assert.equal(canMint, true, "The AO can't mint token");
 			assert.equal(balance.toNumber(), 100, "Account1 has incorrect balance after minting");
 		});
 		it("transfer() - should send correct `_value` to `_to` from your account", async function() {
@@ -190,7 +190,7 @@ contract("AOToken", function(accounts) {
 		it("transferFrom() - should send `_value` tokens to `_to` in behalf of `_from`", async function() {
 			var canTransferFrom;
 			try {
-				await tokenMeta.transferFrom(account1, account2, 5, { from: developer });
+				await tokenMeta.transferFrom(account1, account2, 5, { from: theAO });
 				canTransferFrom = true;
 			} catch (e) {
 				canTransferFrom = false;
@@ -213,7 +213,7 @@ contract("AOToken", function(accounts) {
 		it("burnFrom() - should remove `_value` tokens from the system irreversibly on behalf of `_from`", async function() {
 			var canBurnFrom;
 			try {
-				await tokenMeta.burnFrom(account1, 5, { from: developer });
+				await tokenMeta.burnFrom(account1, 5, { from: theAO });
 				canBurnFrom = true;
 			} catch (e) {
 				canBurnFrom = false;
@@ -238,7 +238,7 @@ contract("AOToken", function(accounts) {
 			assert.equal(account1Balance.toNumber(), 70, "Account1 has incorrect balance after burnFrom");
 			assert.equal(account2Allowance.toNumber(), 0, "Account2 has incorrect allowance after burnFrom");
 		});
-		it("only developer can freeze account", async function() {
+		it("only The AO can freeze account", async function() {
 			var canFreezeAccount;
 			try {
 				await tokenMeta.freezeAccount(account1, true, { from: account1 });
@@ -248,14 +248,14 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canFreezeAccount, true, "Others can freeze account");
 			try {
-				await tokenMeta.freezeAccount(account1, true, { from: developer });
+				await tokenMeta.freezeAccount(account1, true, { from: theAO });
 				canFreezeAccount = true;
 			} catch (e) {
 				canFreezeAccount = false;
 			}
-			assert.equal(canFreezeAccount, true, "Developer can't mint token");
+			assert.equal(canFreezeAccount, true, "The AO can't mint token");
 			var account1Frozen = await tokenMeta.frozenAccount(account1);
-			assert.equal(account1Frozen, true, "Account1 is not frozen after developer froze his account");
+			assert.equal(account1Frozen, true, "Account1 is not frozen after The AO froze his account");
 		});
 		it("frozen account should NOT be able to transfer", async function() {
 			var canTransfer;
@@ -267,9 +267,9 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canTransfer, true, "Frozen account can transfer");
 			// Unfreeze account1
-			await tokenMeta.freezeAccount(account1, false, { from: developer });
+			await tokenMeta.freezeAccount(account1, false, { from: theAO });
 		});
-		it("only developer can set prices", async function() {
+		it("only The AO can set prices", async function() {
 			var canSetPrices;
 			try {
 				await tokenMeta.setPrices(2, 2, { from: account1 });
@@ -279,12 +279,12 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canSetPrices, true, "Others can set network token prices");
 			try {
-				await tokenMeta.setPrices(2, 2, { from: developer });
+				await tokenMeta.setPrices(2, 2, { from: theAO });
 				canSetPrices = true;
 			} catch (e) {
 				canSetPrices = false;
 			}
-			assert.equal(canSetPrices, true, "Developer can't set network token prices");
+			assert.equal(canSetPrices, true, "The AO can't set network token prices");
 			var sellPrice = await tokenMeta.sellPrice();
 			var buyPrice = await tokenMeta.buyPrice();
 			assert.equal(sellPrice.toNumber(), 2, "Incorrect sell price");
@@ -299,7 +299,7 @@ contract("AOToken", function(accounts) {
 				canBuyToken = false;
 			}
 			assert.notEqual(canBuyToken, true, "Contract does not have enough network token balance to complete user's token purchase");
-			await tokenMeta.mintToken(tokenMeta.address, 1000, { from: developer });
+			await tokenMeta.mintToken(tokenMeta.address, 1000, { from: theAO });
 			var contractBalance = await tokenMeta.balanceOf(tokenMeta.address);
 			assert.equal(contractBalance.toNumber(), 1000, "Contract has incorrect balance after mint");
 			try {
@@ -350,8 +350,8 @@ contract("AOToken", function(accounts) {
 			var aoDevTeam2PrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(aoDevTeam2);
 			var aoDevTeam2NetworkBalanceBefore = await tokenMeta.balanceOf(aoDevTeam2);
 
-			var theAOPrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(developer);
-			var theAONetworkBalanceBefore = await tokenMeta.balanceOf(developer);
+			var theAOPrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(theAO);
+			var theAONetworkBalanceBefore = await tokenMeta.balanceOf(theAO);
 
 			var primordialBuyPrice = await tokenMeta.primordialBuyPrice();
 			var tokenAmount = new BigNumber(amount).div(primordialBuyPrice);
@@ -461,8 +461,8 @@ contract("AOToken", function(accounts) {
 			var aoDevTeam2PrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(aoDevTeam2);
 			var aoDevTeam2NetworkBalanceAfter = await tokenMeta.balanceOf(aoDevTeam2);
 
-			var theAOPrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(developer);
-			var theAONetworkBalanceAfter = await tokenMeta.balanceOf(developer);
+			var theAOPrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(theAO);
+			var theAONetworkBalanceAfter = await tokenMeta.balanceOf(theAO);
 
 			assert.equal(totalLotsAfter.toString(), totalLotsBefore.plus(3).toString(), "Contract has incorrect totalLots");
 			assert.equal(
@@ -563,7 +563,7 @@ contract("AOToken", function(accounts) {
 			return accountLotId;
 		};
 
-		it("only developer can set Primordial prices", async function() {
+		it("only The AO can set Primordial prices", async function() {
 			var canSetPrimordialPrices;
 			try {
 				await tokenMeta.setPrimordialPrices(100, 100, { from: account1 });
@@ -573,19 +573,19 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canSetPrimordialPrices, true, "Others can set Primordial token prices");
 			try {
-				await tokenMeta.setPrimordialPrices(100, 100, { from: developer });
+				await tokenMeta.setPrimordialPrices(100, 100, { from: theAO });
 				canSetPrimordialPrices = true;
 			} catch (e) {
 				canSetPrimordialPrices = false;
 			}
-			assert.equal(canSetPrimordialPrices, true, "Developer can't set Primordial token prices");
+			assert.equal(canSetPrimordialPrices, true, "The AO can't set Primordial token prices");
 			var primordialSellPrice = await tokenMeta.primordialSellPrice();
 			var primordialBuyPrice = await tokenMeta.primordialBuyPrice();
 			assert.equal(primordialSellPrice.toNumber(), 100, "Incorrect Primordial sell price");
 			assert.equal(primordialBuyPrice.toNumber(), 100, "Incorrect Primordial buy price");
 
 			// reset primordial prices
-			await tokenMeta.setPrimordialPrices(0, 10000, { from: developer });
+			await tokenMeta.setPrimordialPrices(0, 10000, { from: theAO });
 		});
 		it("calculateMultiplierAndBonus() - should calculate the primordial token multiplier, bonus network token percentage and the bonus network token amount on a given lot when account purchases primordial token during network exchange", async function() {
 			var primordialTotalBought = await tokenMeta.primordialTotalBought();
@@ -928,7 +928,7 @@ contract("AOToken", function(accounts) {
 
 			var canTransfer, events;
 			try {
-				var result = await tokenMeta.transferPrimordialTokenFrom(account1, account3, 10, { from: developer });
+				var result = await tokenMeta.transferPrimordialTokenFrom(account1, account3, 10, { from: theAO });
 				events = result.logs;
 				canTransfer = true;
 			} catch (e) {
@@ -1232,7 +1232,7 @@ contract("AOToken", function(accounts) {
 		});
 		it("frozen account should NOT be able to transfer Primordial", async function() {
 			var canTransferPrimordial;
-			await tokenMeta.freezeAccount(account1, true, { from: developer });
+			await tokenMeta.freezeAccount(account1, true, { from: theAO });
 			try {
 				await tokenMeta.transferPrimordialToken(account2, 10, { from: account1 });
 				canTransferPrimordial = true;
@@ -1241,7 +1241,7 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canTransferPrimordial, true, "Frozen account can transfer Primordial");
 			// Unfreeze account1
-			await tokenMeta.freezeAccount(account1, false, { from: developer });
+			await tokenMeta.freezeAccount(account1, false, { from: theAO });
 		});
 		it("should return all lots owned by an address", async function() {
 			var _lots = await tokenMeta.lotIdsByAddress(account1);
@@ -1278,7 +1278,7 @@ contract("AOToken", function(accounts) {
 	});
 	contract("Token Combination Function Tests", function() {
 		before(async function() {
-			await tokenMeta.mintToken(account1, 1000, { from: developer });
+			await tokenMeta.mintToken(account1, 1000, { from: theAO });
 			await tokenMeta.buyPrimordialToken({ from: account1, value: web3.toWei(2, "ether") });
 			await tokenMeta.buyPrimordialToken({ from: account1, value: web3.toWei(5, "ether") });
 			await tokenMeta.buyPrimordialToken({ from: account1, value: web3.toWei(3, "ether") });
@@ -1453,7 +1453,7 @@ contract("AOToken", function(accounts) {
 		it("transferTokensFrom() - should send `_value` network tokens tokens and `_primordialValue` Primordial Tokens to `_to` in behalf of `_from`", async function() {
 			var canTransferTokensFrom;
 			try {
-				await tokenMeta.transferTokensFrom(account1, account3, 5, 5, { from: developer });
+				await tokenMeta.transferTokensFrom(account1, account3, 5, 5, { from: theAO });
 				canTransferTokensFrom = true;
 			} catch (e) {
 				canTransferTokensFrom = false;
@@ -1656,13 +1656,13 @@ contract("AOToken", function(accounts) {
 	contract("Whitelisted Address Function Tests", function() {
 		var stakedPrimordialWeightedMultiplier;
 		before(async function() {
-			await tokenMeta.mintToken(account1, 100, { from: developer });
+			await tokenMeta.mintToken(account1, 100, { from: theAO });
 			await tokenMeta.buyPrimordialToken({ from: account1, value: 1000000 });
-			await tokenMeta.mintToken(account2, 100, { from: developer });
-			await tokenMeta.mintToken(account3, 200, { from: developer });
+			await tokenMeta.mintToken(account2, 100, { from: theAO });
+			await tokenMeta.mintToken(account3, 200, { from: theAO });
 		});
 
-		it("only developer can whitelist account that can transact on behalf of others", async function() {
+		it("only The AO can whitelist account that can transact on behalf of others", async function() {
 			var canSetWhitelist;
 			try {
 				await tokenMeta.setWhitelist(whitelistedAccount, true, { from: account1 });
@@ -1672,17 +1672,17 @@ contract("AOToken", function(accounts) {
 			}
 			assert.notEqual(canSetWhitelist, true, "Others can set whitelist");
 			try {
-				await tokenMeta.setWhitelist(whitelistedAccount, true, { from: developer });
+				await tokenMeta.setWhitelist(whitelistedAccount, true, { from: theAO });
 				canSetWhitelist = true;
 			} catch (e) {
 				canSetWhitelist = false;
 			}
-			assert.equal(canSetWhitelist, true, "Developer can't whitelist account to transact on behalf of others");
+			assert.equal(canSetWhitelist, true, "The AO can't whitelist account to transact on behalf of others");
 			var whitelistedAccountCanTransact = await tokenMeta.whitelist(whitelistedAccount);
 			assert.equal(
 				whitelistedAccountCanTransact,
 				true,
-				"Staking account doesn't have permission to transact after developer gave permission"
+				"Staking account doesn't have permission to transact after The AO gave permission"
 			);
 		});
 		it("should be able to stake tokens on behalf of others", async function() {

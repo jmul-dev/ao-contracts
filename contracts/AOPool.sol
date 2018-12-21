@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './developed.sol';
+import './TheAO.sol';
 import './TokenERC20.sol';
 import './AOToken.sol';
 
@@ -10,7 +10,7 @@ import './AOToken.sol';
  *
  * This contract acts as the exchange between AO and ETH/ERC-20 compatible tokens
  */
-contract AOPool is developed {
+contract AOPool is TheAO {
 	using SafeMath for uint256;
 
 	address public baseDenominationAddress;
@@ -197,7 +197,7 @@ contract AOPool is developed {
 	// Event to be broadcasted to public when a seller withdraw token from Lot
 	event WithdrawToken(address indexed seller, bytes32 indexed lotId, uint256 indexed poolId, uint256 withdrawnAmount, uint256 currentlotValueInCounterAsset, uint256 currentLotTokenWithdrawn);
 
-	/***** Developer Only Methods *****/
+	/***** The AO Only Methods *****/
 	/**
 	 * @dev DAO creates a Pool
 	 * @param _price The flat price of AO
@@ -227,7 +227,7 @@ contract AOPool is developed {
 		uint256 _quantityCapAmount,
 		bool _erc20CounterAsset,
 		address _erc20TokenAddress,
-		uint256 _erc20TokenMultiplier) public onlyDeveloper {
+		uint256 _erc20TokenMultiplier) public onlyTheAO {
 		require (_price > 0);
 		// Make sure sell cap amount is provided if sell cap is enabled
 		if (_sellCapStatus == true) {
@@ -284,7 +284,7 @@ contract AOPool is developed {
 	 * @param _adminAddress The new admin address to set
 	 */
 	function changeAdminAddress(uint256 _poolId, address _adminAddress) public {
-		require (pools[_poolId].price > 0 && (pools[_poolId].adminAddress == msg.sender || developer == msg.sender));
+		require (pools[_poolId].price > 0 && (pools[_poolId].adminAddress == msg.sender || theAO == msg.sender));
 		require (_adminAddress != address(0));
 		pools[_poolId].adminAddress = _adminAddress;
 		emit ChangeAdminAddress(_poolId, _adminAddress);

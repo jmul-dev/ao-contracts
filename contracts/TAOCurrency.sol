@@ -1,12 +1,12 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './developed.sol';
+import './TheAO.sol';
 
 /**
  * @title TAOCurrency
  */
-contract TAOCurrency is developed {
+contract TAOCurrency is TheAO {
 	using SafeMath for uint256;
 
 	// Public variables of the token

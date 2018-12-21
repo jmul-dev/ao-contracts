@@ -2,7 +2,7 @@ var AOBytesSetting = artifacts.require("./AOBytesSetting.sol");
 
 contract("AOBytesSetting", function(accounts) {
 	var aobytessetting;
-	var developer = accounts[0];
+	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var whitelistedAccount = accounts[2];
 	var settingId = 1000000000;
@@ -12,7 +12,7 @@ contract("AOBytesSetting", function(accounts) {
 
 	before(async function() {
 		aobytessetting = await AOBytesSetting.deployed();
-		await aobytessetting.setWhitelist(whitelistedAccount, true, { from: developer });
+		await aobytessetting.setWhitelist(whitelistedAccount, true, { from: theAO });
 	});
 
 	it("only whitelisted address can set pending value", async function() {

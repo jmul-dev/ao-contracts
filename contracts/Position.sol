@@ -1,12 +1,12 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './developed.sol';
+import './TheAO.sol';
 
 /**
  * @title Position
  */
-contract Position is developed {
+contract Position is TheAO {
 	using SafeMath for uint256;
 
 	// Public variables of the token

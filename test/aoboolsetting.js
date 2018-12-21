@@ -2,7 +2,7 @@ var AOBoolSetting = artifacts.require("./AOBoolSetting.sol");
 
 contract("AOBoolSetting", function(accounts) {
 	var aoboolsetting;
-	var developer = accounts[0];
+	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var whitelistedAccount = accounts[2];
 	var settingId = 1000000000;
@@ -10,7 +10,7 @@ contract("AOBoolSetting", function(accounts) {
 
 	before(async function() {
 		aoboolsetting = await AOBoolSetting.deployed();
-		await aoboolsetting.setWhitelist(whitelistedAccount, true, { from: developer });
+		await aoboolsetting.setWhitelist(whitelistedAccount, true, { from: theAO });
 	});
 
 	it("only whitelisted address can set pending value", async function() {

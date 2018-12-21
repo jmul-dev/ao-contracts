@@ -2,7 +2,7 @@ var Position = artifacts.require("./Position.sol");
 
 contract("Position", function(accounts) {
 	var position;
-	var developer = accounts[0];
+	var theAO = accounts[0];
 	var nameId = accounts[1];
 	var taoId = accounts[2];
 	var account3 = accounts[3];
@@ -36,7 +36,7 @@ contract("Position", function(accounts) {
 	});
 	contract("Public Function Tests", function() {
 		before(async function() {
-			await position.setWhitelist(whitelistedAccount, true, { from: developer });
+			await position.setWhitelist(whitelistedAccount, true, { from: theAO });
 		});
 
 		it("mintToken() - only whitelisted address can mintToken", async function() {

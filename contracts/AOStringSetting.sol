@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
-import './developed.sol';
+import './TheAO.sol';
 
 /**
  * @title AOStringSetting
  *
  * This contract stores all AO string setting variables
  */
-contract AOStringSetting is developed {
+contract AOStringSetting is TheAO {
 	// Mapping from settingId to it's actual string value
 	mapping (uint256 => string) public settingValue;
 

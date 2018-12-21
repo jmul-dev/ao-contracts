@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import './developed.sol';
+import './TheAO.sol';
 import './TAOController.sol';
 import './Name.sol';
 import './NameTAOLookup.sol';
@@ -10,7 +10,7 @@ import './NameTAOLookup.sol';
  *
  * The purpose of this contract is to allow node to create TAO
  */
-contract TAOFactory is TAOController, developed {
+contract TAOFactory is TAOController, TheAO {
 	address[] internal taos;
 	address public nameTAOLookupAddress;
 
@@ -49,12 +49,12 @@ contract TAOFactory is TAOController, developed {
 	constructor(address _nameFactoryAddress, address _positionAddress)
 		TAOController(_nameFactoryAddress, _positionAddress) public {}
 
-	/***** DEVELOPER ONLY METHODS *****/
+	/***** The AO ONLY METHODS *****/
 	/**
-	 * @dev Developer set the NameTAOLookup Address
+	 * @dev The AO set the NameTAOLookup Address
 	 * @param _nameTAOLookupAddress The address of NameTAOLookup
 	 */
-	function setNameTAOLookupAddress(address _nameTAOLookupAddress) public onlyDeveloper {
+	function setNameTAOLookupAddress(address _nameTAOLookupAddress) public onlyTheAO {
 		require (_nameTAOLookupAddress != address(0));
 		nameTAOLookupAddress = _nameTAOLookupAddress;
 		_nameTAOLookup = NameTAOLookup(nameTAOLookupAddress);

@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "./developed.sol";
+import "./TheAO.sol";
 import './TAO.sol';
 
 /**
@@ -8,7 +8,7 @@ import './TAO.sol';
  *
  * This contract stores all AO setting data/state
  */
-contract AOSettingAttribute is developed {
+contract AOSettingAttribute is TheAO {
 	struct SettingData {
 		uint256 settingId;				// Identifier of this setting
 		address creatorNameId;			// The nameId that created the setting

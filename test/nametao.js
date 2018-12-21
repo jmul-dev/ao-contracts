@@ -20,7 +20,7 @@ contract("Name & TAO", function(accounts) {
 		taoId2,
 		taoId3,
 		taoId4;
-	var developer = accounts[0];
+	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var account3 = accounts[3];

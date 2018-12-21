@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './developed.sol';
+import './TheAO.sol';
 import './AOToken.sol';
 
 /**
@@ -9,7 +9,7 @@ import './AOToken.sol';
  *
  * The purpose of this contract is to list all of the valid denominations of AO Token and do the conversion between denominations
  */
-contract AOTreasury is developed {
+contract AOTreasury is TheAO {
 	using SafeMath for uint256;
 
 	bool public paused;
@@ -44,7 +44,7 @@ contract AOTreasury is developed {
 	/**
 	 * @dev Checks if contract is currently active
 	 */
-	modifier isActive {
+	modifier isContractActive {
 		require (paused == false && killed == false);
 		_;
 	}
@@ -57,32 +57,32 @@ contract AOTreasury is developed {
 		_;
 	}
 
-	/***** DEVELOPER ONLY METHODS *****/
+	/***** The AO ONLY METHODS *****/
 	/**
-	 * @dev Developer pauses/unpauses contract
+	 * @dev The AO pauses/unpauses contract
 	 * @param _paused Either to pause contract or not
 	 */
-	function setPaused(bool _paused) public onlyDeveloper {
+	function setPaused(bool _paused) public onlyTheAO {
 		paused = _paused;
 	}
 
 	/**
-	 * @dev Developer triggers emergency mode.
+	 * @dev The AO triggers emergency mode.
 	 *
 	 */
-	function escapeHatch() public onlyDeveloper {
+	function escapeHatch() public onlyTheAO {
 		require (killed == false);
 		killed = true;
 		emit EscapeHatch();
 	}
 
 	/**
-	 * @dev Developer adds denomination and the contract address associated with it
+	 * @dev The AO adds denomination and the contract address associated with it
 	 * @param denominationName The name of the denomination, i.e ao, kilo, mega, etc.
 	 * @param denominationAddress The address of the denomination token
 	 * @return true on success
 	 */
-	function addDenomination(bytes8 denominationName, address denominationAddress) public onlyDeveloper returns (bool) {
+	function addDenomination(bytes8 denominationName, address denominationAddress) public onlyTheAO returns (bool) {
 		require (denominationName.length != 0);
 		require (denominationAddress != address(0));
 		require (denominationIndex[denominationName] == 0);
@@ -100,12 +100,12 @@ contract AOTreasury is developed {
 	}
 
 	/**
-	 * @dev Developer updates denomination address or activates/deactivates the denomination
+	 * @dev The AO updates denomination address or activates/deactivates the denomination
 	 * @param denominationName The name of the denomination, i.e ao, kilo, mega, etc.
 	 * @param denominationAddress The address of the denomination token
 	 * @return true on success
 	 */
-	function updateDenomination(bytes8 denominationName, address denominationAddress) public onlyDeveloper returns (bool) {
+	function updateDenomination(bytes8 denominationName, address denominationAddress) public onlyTheAO returns (bool) {
 		require (denominationName.length != 0);
 		require (denominationIndex[denominationName] > 0);
 		require (denominationAddress != address(0));
@@ -243,7 +243,7 @@ contract AOTreasury is developed {
 	 * @param fromDenominationName The origin denomination
 	 * @param toDenominationName The target denomination
 	 */
-	function exchange(uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName) public isActive isValidDenomination(fromDenominationName) isValidDenomination(toDenominationName) {
+	function exchange(uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName) public isContractActive isValidDenomination(fromDenominationName) isValidDenomination(toDenominationName) {
 		require (amount > 0);
 		Denomination memory _fromDenomination = denominations[denominationIndex[fromDenominationName]];
 		Denomination memory _toDenomination = denominations[denominationIndex[toDenominationName]];

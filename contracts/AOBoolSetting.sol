@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
-import './developed.sol';
+import './TheAO.sol';
 
 /**
  * @title AOBoolSetting
  *
  * This contract stores all AO bool setting variables
  */
-contract AOBoolSetting is developed {
+contract AOBoolSetting is TheAO {
 	// Mapping from settingId to it's actual bool value
 	mapping (uint256 => bool) public settingValue;
 

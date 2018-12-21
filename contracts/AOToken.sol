@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './developed.sol';
+import './TheAO.sol';
 import './TokenERC20.sol';
 import './tokenRecipient.sol';
 import './AOLibrary.sol';
@@ -10,11 +10,14 @@ import './AOSetting.sol';
 /**
  * @title AOToken
  */
-contract AOToken is developed, TokenERC20 {
+contract AOToken is TheAO, TokenERC20 {
 	using SafeMath for uint256;
 
 	address public settingTAOId;
 	address public aoSettingAddress;
+	// AO Dev Team addresses to receive Primordial/Network Tokens
+	address public aoDevTeam1 = 0x5C63644D01Ba385eBAc5bcf2DDc1e6dBC1182b52;
+	address public aoDevTeam2 = 0x156C79bf4347D1891da834Ea30662A14177CbF28;
 
 	AOSetting internal _aoSetting;
 
@@ -157,14 +160,24 @@ contract AOToken is developed, TokenERC20 {
 		_;
 	}
 
-	/***** DEVELOPER ONLY METHODS *****/
-	/***** NETWORK TOKEN DEVELOPER ONLY METHODS *****/
+	/***** The AO ONLY METHODS *****/
+	/**
+	 * @dev Set AO Dev team addresses to receive Primordial/Network tokens during network exchange
+	 * @param _aoDevTeam1 The first AO dev team address
+	 * @param _aoDevTeam2 The second AO dev team address
+	 */
+	function setAODevTeamAddresses(address _aoDevTeam1, address _aoDevTeam2) public onlyTheAO {
+		aoDevTeam1 = _aoDevTeam1;
+		aoDevTeam2 = _aoDevTeam2;
+	}
+
+	/***** NETWORK TOKEN The AO ONLY METHODS *****/
 	/**
 	 * @dev Prevent/Allow target from sending & receiving tokens
 	 * @param target Address to be frozen
 	 * @param freeze Either to freeze it or not
 	 */
-	function freezeAccount(address target, bool freeze) public onlyDeveloper {
+	function freezeAccount(address target, bool freeze) public onlyTheAO {
 		frozenAccount[target] = freeze;
 		emit FrozenFunds(target, freeze);
 	}
@@ -174,7 +187,7 @@ contract AOToken is developed, TokenERC20 {
 	 * @param newSellPrice Price users can sell to the contract
 	 * @param newBuyPrice Price users can buy from the contract
 	 */
-	function setPrices(uint256 newSellPrice, uint256 newBuyPrice) public onlyDeveloper {
+	function setPrices(uint256 newSellPrice, uint256 newBuyPrice) public onlyTheAO {
 		sellPrice = newSellPrice;
 		buyPrice = newBuyPrice;
 	}
@@ -289,13 +302,13 @@ contract AOToken is developed, TokenERC20 {
 		return true;
 	}
 
-	/***** PRIMORDIAL TOKEN DEVELOPER ONLY METHODS *****/
+	/***** PRIMORDIAL TOKEN The AO ONLY METHODS *****/
 	/**
 	 * @dev Allow users to buy Primordial tokens for `newBuyPrice` eth and sell Primordial tokens for `newSellPrice` eth
 	 * @param newPrimordialSellPrice Price users can sell to the contract
 	 * @param newPrimordialBuyPrice Price users can buy from the contract
 	 */
-	function setPrimordialPrices(uint256 newPrimordialSellPrice, uint256 newPrimordialBuyPrice) public onlyDeveloper isNetworkExchange {
+	function setPrimordialPrices(uint256 newPrimordialSellPrice, uint256 newPrimordialBuyPrice) public onlyTheAO isNetworkExchange {
 		primordialSellPrice = newPrimordialSellPrice;
 		primordialBuyPrice = newPrimordialBuyPrice;
 	}
@@ -872,7 +885,7 @@ contract AOToken is developed, TokenERC20 {
 		if (aoDevTeam2 != address(0)) {
 			_createPrimordialLot(aoDevTeam2, tokenAmount.div(2), inverseMultiplier, theAONetworkTokenBonusAmount.div(2));
 		}
-		_mintToken(developer, theAONetworkTokenBonusAmount);
+		_mintToken(theAO, theAONetworkTokenBonusAmount);
 	}
 
 	/**

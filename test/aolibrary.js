@@ -10,7 +10,7 @@ BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1 }); // no rounding
 
 contract("AOLibrary", function(accounts) {
 	var library, percentageDivisor, multiplierDivisor, namefactory, taofactory, logos, ethos, pathos, nameId1, nameId2, taoId;
-	var developer = accounts[0];
+	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var whitelistedAddress = accounts[3];
@@ -41,9 +41,9 @@ contract("AOLibrary", function(accounts) {
 		var createTAOEvent = result.logs[0];
 		taoId = createTAOEvent.args.taoId;
 
-		await logos.setWhitelist(whitelistedAddress, true, { from: developer });
-		await ethos.setWhitelist(whitelistedAddress, true, { from: developer });
-		await pathos.setWhitelist(whitelistedAddress, true, { from: developer });
+		await logos.setWhitelist(whitelistedAddress, true, { from: theAO });
+		await ethos.setWhitelist(whitelistedAddress, true, { from: theAO });
+		await pathos.setWhitelist(whitelistedAddress, true, { from: theAO });
 
 		// mint some TAOCurrencies to nameId
 		await logos.mintToken(nameId1, 10, { from: whitelistedAddress });

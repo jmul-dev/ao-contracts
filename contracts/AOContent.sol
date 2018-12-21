@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './developed.sol';
+import './TheAO.sol';
 import './AOToken.sol';
 import './AOTreasury.sol';
 import './AOEarning.sol';
@@ -14,11 +14,9 @@ import './AOSetting.sol';
  * The purpose of this contract is to allow content creator to stake network ERC20 AO tokens and/or primordial AO Tokens
  * on his/her content
  */
-contract AOContent is developed {
+contract AOContent is TheAO {
 	using SafeMath for uint256;
 
-	bool public paused;
-	bool public killed;
 	uint256 public totalContents;
 	uint256 public totalContentHosts;
 	uint256 public totalStakedContents;
@@ -33,6 +31,9 @@ contract AOContent is developed {
 	AOTreasury internal _treasury;
 	AOEarning internal _earning;
 	AOSetting internal _aoSetting;
+
+	bool public paused;
+	bool public killed;
 
 	struct Content {
 		bytes32 contentId;
@@ -170,38 +171,38 @@ contract AOContent is developed {
 	/**
 	 * @dev Checks if contract is currently active
 	 */
-	modifier isActive {
+	modifier isContractActive {
 		require (paused == false && killed == false);
 		_;
 	}
 
-	/***** DEVELOPER ONLY METHODS *****/
+	/***** The AO ONLY METHODS *****/
 	/**
-	 * @dev Developer pauses/unpauses contract
+	 * @dev The AO pauses/unpauses contract
 	 * @param _paused Either to pause contract or not
 	 */
-	function setPaused(bool _paused) public onlyDeveloper {
+	function setPaused(bool _paused) public onlyTheAO {
 		paused = _paused;
 	}
 
 	/**
-	 * @dev Developer updates base denomination address
-	 * @param _newBaseDenominationAddress The new address
-	 */
-	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyDeveloper {
-		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).networkExchangeContract() == true);
-		baseDenominationAddress = _newBaseDenominationAddress;
-		_baseAO = AOToken(baseDenominationAddress);
-	}
-
-	/**
-	 * @dev Developer triggers emergency mode.
+	 * @dev The AO triggers emergency mode.
 	 *
 	 */
-	function escapeHatch() public onlyDeveloper {
+	function escapeHatch() public onlyTheAO {
 		require (killed == false);
 		killed = true;
 		emit EscapeHatch();
+	}
+
+	/**
+	 * @dev The AO updates base denomination address
+	 * @param _newBaseDenominationAddress The new address
+	 */
+	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyTheAO {
+		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).networkExchangeContract() == true);
+		baseDenominationAddress = _newBaseDenominationAddress;
+		_baseAO = AOToken(baseDenominationAddress);
 	}
 
 	/***** PUBLIC METHODS *****/
@@ -229,7 +230,7 @@ contract AOContent is developed {
 		string _metadataDatKey,
 		uint256 _fileSize,
 		uint256 _profitPercentage)
-		public isActive {
+		public isContractActive {
 		require (AOLibrary.canStake(treasuryAddress, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _baseChallenge, _encChallenge, _contentDatKey, _metadataDatKey, _fileSize, _profitPercentage));
 		(bytes32 _contentUsageType_aoContent,,,,,) = _getSettingVariables();
 
@@ -283,7 +284,7 @@ contract AOContent is developed {
 		string _contentDatKey,
 		string _metadataDatKey,
 		uint256 _fileSize)
-		public isActive {
+		public isContractActive {
 		require (AOLibrary.canStake(treasuryAddress, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _baseChallenge, _encChallenge, _contentDatKey, _metadataDatKey, _fileSize, 0));
 		require (_treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) == _fileSize);
 
@@ -341,7 +342,7 @@ contract AOContent is developed {
 		string _metadataDatKey,
 		uint256 _fileSize,
 		address _taoId)
-		public isActive {
+		public isContractActive {
 		require (AOLibrary.canStake(treasuryAddress, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _baseChallenge, _encChallenge, _contentDatKey, _metadataDatKey, _fileSize, 0));
 		require (
 			_treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) == _fileSize &&
@@ -384,7 +385,7 @@ contract AOContent is developed {
 	 * @param _stakeId The ID of the staked content
 	 * @param _profitPercentage The new value to be set
 	 */
-	function setProfitPercentage(bytes32 _stakeId, uint256 _profitPercentage) public isActive {
+	function setProfitPercentage(bytes32 _stakeId, uint256 _profitPercentage) public isContractActive {
 		require (_profitPercentage <= AOLibrary.PERCENTAGE_DIVISOR());
 
 		// Make sure the staked content exist
@@ -408,7 +409,7 @@ contract AOContent is developed {
 	 * @param _contentId The ID of the content
 	 * @param _extraData some extra information to send to the contract for a content
 	 */
-	function setContentExtraData(bytes32 _contentId, string _extraData) public isActive {
+	function setContentExtraData(bytes32 _contentId, string _extraData) public isContractActive {
 		// Make sure the content exist
 		require (contentIndex[_contentId] > 0);
 
@@ -508,7 +509,7 @@ contract AOContent is developed {
 	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
 	 * @param _primordialAmount The amount of primordial Token to unstake
 	 */
-	function unstakePartialContent(bytes32 _stakeId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount) public isActive {
+	function unstakePartialContent(bytes32 _stakeId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount) public isContractActive {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakeId] > 0);
 		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
@@ -539,7 +540,7 @@ contract AOContent is developed {
 	 * @dev Unstake existing staked content and refund the total staked amount to the stake owner
 	 * @param _stakeId The ID of the staked content
 	 */
-	function unstakeContent(bytes32 _stakeId) public isActive {
+	function unstakeContent(bytes32 _stakeId) public isContractActive {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakeId] > 0);
 
@@ -575,7 +576,7 @@ contract AOContent is developed {
 	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
 	 * @param _primordialAmount The amount of primordial Token to stake. (The primordial weighted multiplier has to match the current staked weighted multiplier)
 	 */
-	function stakeExistingContent(bytes32 _stakeId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount) public isActive {
+	function stakeExistingContent(bytes32 _stakeId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, uint256 _primordialAmount) public isContractActive {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakeId] > 0);
 
@@ -616,7 +617,7 @@ contract AOContent is developed {
 	 * @param _contentHostId The content host ID to be checked
 	 * @return the price of the content
 	 */
-	function contentHostPrice(bytes32 _contentHostId) public isActive view returns (uint256) {
+	function contentHostPrice(bytes32 _contentHostId) public isContractActive view returns (uint256) {
 		// Make sure content host exist
 		require (contentHostIndex[_contentHostId] > 0);
 
@@ -632,7 +633,7 @@ contract AOContent is developed {
 	 * @param _contentHostId The content host ID to be checked
 	 * @return the amount paid by AO
 	 */
-	function contentHostPaidByAO(bytes32 _contentHostId) public isActive view returns (uint256) {
+	function contentHostPaidByAO(bytes32 _contentHostId) public isContractActive view returns (uint256) {
 		bytes32 _stakeId = contentHosts[contentHostIndex[_contentHostId]].stakeId;
 		bytes32 _contentId = stakedContents[stakedContentIndex[_stakeId]].contentId;
 		if (_isAOContentUsageType(_contentId)) {
@@ -651,7 +652,7 @@ contract AOContent is developed {
 	 * @param _publicKey The public key of the request node
 	 * @param _publicAddress The public address of the request node
 	 */
-	function buyContent(bytes32 _contentHostId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, string _publicKey, address _publicAddress) public isActive {
+	function buyContent(bytes32 _contentHostId, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination, string _publicKey, address _publicAddress) public isContractActive {
 		// Make sure the content host exist
 		require (contentHostIndex[_contentHostId] > 0);
 
@@ -751,7 +752,7 @@ contract AOContent is developed {
 		string _encChallenge,
 		string _contentDatKey,
 		string _metadataDatKey
-	) public isActive {
+	) public isContractActive {
 		// Make sure the purchase receipt exist
 		require (purchaseReceiptIndex[_purchaseId] > 0);
 
@@ -789,7 +790,7 @@ contract AOContent is developed {
 		uint8 _updateTAOContentStateV,
 		bytes32 _updateTAOContentStateR,
 		bytes32 _updateTAOContentStateS
-	) public isActive {
+	) public isContractActive {
 		// Make sure the content exist
 		require (contentIndex[_contentId] > 0);
 		require (AOLibrary.isTAO(_taoId));

@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
-import './developed.sol';
+import './TheAO.sol';
 
 /**
  * @title AOUintSetting
  *
  * This contract stores all AO uint256 setting variables
  */
-contract AOUintSetting is developed {
+contract AOUintSetting is TheAO {
 	// Mapping from settingId to it's actual uint256 value
 	mapping (uint256 => uint256) public settingValue;
 

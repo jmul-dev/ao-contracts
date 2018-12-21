@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './developed.sol';
+import './TheAO.sol';
 import './AOToken.sol';
 import './AOTreasury.sol';
 import './Pathos.sol';
@@ -15,11 +15,8 @@ import './NameFactory.sol';
  *
  * This contract stores the earning from staking/hosting content on AO
  */
-contract AOEarning is developed {
+contract AOEarning is TheAO {
 	using SafeMath for uint256;
-
-	bool public paused;
-	bool public killed;
 
 	address public settingTAOId;
 	address public aoSettingAddress;
@@ -28,6 +25,9 @@ contract AOEarning is developed {
 	address public nameFactoryAddress;
 	address public pathosAddress;
 	address public ethosAddress;
+
+	bool public paused;
+	bool public killed;
 
 	AOToken internal _baseAO;
 	AOTreasury internal _treasury;
@@ -147,42 +147,41 @@ contract AOEarning is developed {
 	/**
 	 * @dev Checks if contract is currently active
 	 */
-	modifier isActive {
+	modifier isContractActive {
 		require (paused == false && killed == false);
 		_;
 	}
 
-	/***** DEVELOPER ONLY METHODS *****/
+	/***** The AO ONLY METHODS *****/
 	/**
-	 * @dev Developer pauses/unpauses contract
+	 * @dev The AO pauses/unpauses contract
 	 * @param _paused Either to pause contract or not
 	 */
-	function setPaused(bool _paused) public onlyDeveloper {
+	function setPaused(bool _paused) public onlyTheAO {
 		paused = _paused;
 	}
 
 	/**
-	 * @dev Developer updates base denomination address
-	 * @param _newBaseDenominationAddress The new address
-	 */
-	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyDeveloper {
-		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).networkExchangeContract() == true);
-		baseDenominationAddress = _newBaseDenominationAddress;
-		_baseAO = AOToken(baseDenominationAddress);
-	}
-
-	/**
-	 * @dev Developer triggers emergency mode.
+	 * @dev The AO triggers emergency mode.
 	 *
 	 */
-	function escapeHatch() public onlyDeveloper {
+	function escapeHatch() public onlyTheAO {
 		require (killed == false);
 		killed = true;
 		emit EscapeHatch();
 	}
 
-	/***** PUBLIC METHODS *****/
+	/**
+	 * @dev The AO updates base denomination address
+	 * @param _newBaseDenominationAddress The new address
+	 */
+	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyTheAO {
+		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).networkExchangeContract() == true);
+		baseDenominationAddress = _newBaseDenominationAddress;
+		_baseAO = AOToken(baseDenominationAddress);
+	}
 
+	/***** PUBLIC METHODS *****/
 	/**
 	 * @dev Calculate the content creator/host/The AO earning when request node buys the content.
 	 *		Also at this stage, all of the earnings are stored in escrow
@@ -208,7 +207,7 @@ contract AOEarning is developed {
 		address _stakeOwner,
 		address _host,
 		bool _isAOContentUsageType
-	) public isActive inWhitelist(msg.sender) returns (bool) {
+	) public isContractActive inWhitelist(msg.sender) returns (bool) {
 
 		// Split the payment earning between content creator and host and store them in escrow
 		_escrowPaymentEarning(_buyer, _purchaseId, _networkAmountStaked.add(_primordialAmountStaked), _profitPercentage, _stakeOwner, _host, _isAOContentUsageType);
@@ -237,7 +236,7 @@ contract AOEarning is developed {
 	 * @param _host The address of the node that host the file
 	 * @return true on success
 	 */
-	function releaseEarning(bytes32 _stakeId, bytes32 _contentHostId, bytes32 _purchaseId, uint256 _buyerPaidAmount, uint256 _fileSize, address _stakeOwner, address _host) public isActive inWhitelist(msg.sender) returns (bool) {
+	function releaseEarning(bytes32 _stakeId, bytes32 _contentHostId, bytes32 _purchaseId, uint256 _buyerPaidAmount, uint256 _fileSize, address _stakeOwner, address _host) public isContractActive inWhitelist(msg.sender) returns (bool) {
 		// Release the earning in escrow for stake owner
 		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidAmount, _fileSize, _stakeOwner, 0);
 
@@ -245,7 +244,7 @@ contract AOEarning is developed {
 		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidAmount, _fileSize, _host, 1);
 
 		// Release the earning in escrow for The AO
-		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidAmount, _fileSize, developer, 2);
+		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidAmount, _fileSize, theAO, 2);
 		return true;
 	}
 
@@ -336,12 +335,12 @@ contract AOEarning is developed {
 			Earning storage _theAOEarning = theAOEarnings[_purchaseId];
 			_theAOEarning.purchaseId = _purchaseId;
 			_theAOEarning.inflationBonus = (_inflationBonusAmount.mul(theAOCut)).div(AOLibrary.PERCENTAGE_DIVISOR());
-			require (_baseAO.mintTokenEscrow(developer, _theAOEarning.inflationBonus));
-			emit InflationBonusEscrowed(developer, _purchaseId, _inflationBonusAmount, theAOCut, _theAOEarning.inflationBonus, 2);
+			require (_baseAO.mintTokenEscrow(theAO, _theAOEarning.inflationBonus));
+			emit InflationBonusEscrowed(theAO, _purchaseId, _inflationBonusAmount, theAOCut, _theAOEarning.inflationBonus, 2);
 		} else {
 			emit InflationBonusEscrowed(_stakeOwner, _purchaseId, 0, _profitPercentage, 0, 0);
 			emit InflationBonusEscrowed(_host, _purchaseId, 0, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), 0, 1);
-			emit InflationBonusEscrowed(developer, _purchaseId, 0, theAOCut, 0, 2);
+			emit InflationBonusEscrowed(theAO, _purchaseId, 0, theAOCut, 0, 2);
 		}
 	}
 

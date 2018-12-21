@@ -4,7 +4,7 @@ var TAOFactory = artifacts.require("./TAOFactory.sol");
 
 contract("AOSettingAttribute", function(accounts) {
 	var aosettingattribute, namefactory, taofactory;
-	var developer = accounts[0];
+	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var account3 = accounts[3];
@@ -26,7 +26,7 @@ contract("AOSettingAttribute", function(accounts) {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
 
-		await aosettingattribute.setWhitelist(whitelistedAccount, true, { from: developer });
+		await aosettingattribute.setWhitelist(whitelistedAccount, true, { from: theAO });
 
 		// Create Names
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {

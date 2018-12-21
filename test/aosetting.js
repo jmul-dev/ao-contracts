@@ -18,7 +18,7 @@ contract("AOSetting", function(accounts) {
 		aostringsetting,
 		namefactory,
 		taofactory;
-	var developer = accounts[0];
+	var theAO = accounts[0];
 	var whitelistedAccount = accounts[9];
 	var account1 = accounts[1];
 	var account2 = accounts[2];

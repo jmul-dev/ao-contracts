@@ -2,7 +2,7 @@ var AOXona = artifacts.require("./AOXona.sol");
 
 contract("AOXona", function(accounts) {
 	var tokenMeta;
-	var developer = accounts[0];
+	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var account3 = accounts[3];
@@ -43,7 +43,7 @@ contract("AOXona", function(accounts) {
 	});
 
 	contract("Network Tokens Function Tests", function() {
-		it("only developer can mint token", async function() {
+		it("only The AO can mint token", async function() {
 			var canMint;
 			var balance;
 			try {
@@ -56,13 +56,13 @@ contract("AOXona", function(accounts) {
 			assert.notEqual(canMint, true, "Others can mint token");
 			assert.notEqual(balance.toNumber(), 100, "Account1 is not supposed to have tokens");
 			try {
-				await tokenMeta.mintToken(account1, 100, { from: developer });
+				await tokenMeta.mintToken(account1, 100, { from: theAO });
 				canMint = true;
 			} catch (e) {
 				canMint = false;
 			}
 			balance = await tokenMeta.balanceOf(account1);
-			assert.equal(canMint, true, "Developer can't mint token");
+			assert.equal(canMint, true, "The AO can't mint token");
 			assert.equal(balance.toNumber(), 100, "Account1 has incorrect balance after minting");
 		});
 		it("transfer() - should send correct `_value` to `_to` from your account", async function() {
@@ -93,7 +93,7 @@ contract("AOXona", function(accounts) {
 		it("transferFrom() - should send `_value` tokens to `_to` in behalf of `_from`", async function() {
 			var canTransferFrom;
 			try {
-				await tokenMeta.transferFrom(account1, account2, 5, { from: developer });
+				await tokenMeta.transferFrom(account1, account2, 5, { from: theAO });
 				canTransferFrom = true;
 			} catch (e) {
 				canTransferFrom = false;
@@ -116,7 +116,7 @@ contract("AOXona", function(accounts) {
 		it("burnFrom() - should remove `_value` tokens from the system irreversibly on behalf of `_from`", async function() {
 			var canBurnFrom;
 			try {
-				await tokenMeta.burnFrom(account1, 5, { from: developer });
+				await tokenMeta.burnFrom(account1, 5, { from: theAO });
 				canBurnFrom = true;
 			} catch (e) {
 				canBurnFrom = false;
@@ -141,7 +141,7 @@ contract("AOXona", function(accounts) {
 			assert.equal(account1Balance.toNumber(), 70, "Account1 has incorrect balance after burnFrom");
 			assert.equal(account2Allowance.toNumber(), 0, "Account2 has incorrect allowance after burnFrom");
 		});
-		it("only developer can freeze account", async function() {
+		it("only The AO can freeze account", async function() {
 			var canFreezeAccount;
 			try {
 				await tokenMeta.freezeAccount(account1, true, { from: account1 });
@@ -151,14 +151,14 @@ contract("AOXona", function(accounts) {
 			}
 			assert.notEqual(canFreezeAccount, true, "Others can freeze account");
 			try {
-				await tokenMeta.freezeAccount(account1, true, { from: developer });
+				await tokenMeta.freezeAccount(account1, true, { from: theAO });
 				canFreezeAccount = true;
 			} catch (e) {
 				canFreezeAccount = false;
 			}
-			assert.equal(canFreezeAccount, true, "Developer can't mint token");
+			assert.equal(canFreezeAccount, true, "The AO can't mint token");
 			var account1Frozen = await tokenMeta.frozenAccount(account1);
-			assert.equal(account1Frozen, true, "Account1 is not frozen after developer froze his account");
+			assert.equal(account1Frozen, true, "Account1 is not frozen after The AO froze his account");
 		});
 		it("frozen account should NOT be able to transfer", async function() {
 			var canTransfer;
@@ -170,9 +170,9 @@ contract("AOXona", function(accounts) {
 			}
 			assert.notEqual(canTransfer, true, "Frozen account can transfer");
 			// Unfreeze account1
-			await tokenMeta.freezeAccount(account1, false, { from: developer });
+			await tokenMeta.freezeAccount(account1, false, { from: theAO });
 		});
-		it("only developer can set prices", async function() {
+		it("only The AO can set prices", async function() {
 			var canSetPrices;
 			try {
 				await tokenMeta.setPrices(2, 2, { from: account1 });
@@ -182,12 +182,12 @@ contract("AOXona", function(accounts) {
 			}
 			assert.notEqual(canSetPrices, true, "Others can set network token prices");
 			try {
-				await tokenMeta.setPrices(2, 2, { from: developer });
+				await tokenMeta.setPrices(2, 2, { from: theAO });
 				canSetPrices = true;
 			} catch (e) {
 				canSetPrices = false;
 			}
-			assert.equal(canSetPrices, true, "Developer can't set network token prices");
+			assert.equal(canSetPrices, true, "The AO can't set network token prices");
 			var sellPrice = await tokenMeta.sellPrice();
 			var buyPrice = await tokenMeta.buyPrice();
 			assert.equal(sellPrice.toNumber(), 2, "Incorrect sell price");
@@ -202,7 +202,7 @@ contract("AOXona", function(accounts) {
 				canBuyToken = false;
 			}
 			assert.notEqual(canBuyToken, true, "Contract does not have enough network token balance to complete user's token purchase");
-			await tokenMeta.mintToken(tokenMeta.address, 1000, { from: developer });
+			await tokenMeta.mintToken(tokenMeta.address, 1000, { from: theAO });
 			var contractBalance = await tokenMeta.balanceOf(tokenMeta.address);
 			assert.equal(contractBalance.toNumber(), 1000, "Contract has incorrect balance after mint");
 			try {
@@ -239,25 +239,25 @@ contract("AOXona", function(accounts) {
 	});
 
 	contract("Primordial Token Function Tests", function() {
-		it("developer should NOT be able to set Primordial prices", async function() {
+		it("The AO should NOT be able to set Primordial prices", async function() {
 			var canSetPrimordialPrices;
 			try {
-				await tokenMeta.setPrimordialPrices(100, 100, { from: developer });
+				await tokenMeta.setPrimordialPrices(100, 100, { from: theAO });
 				canSetPrimordialPrices = true;
 			} catch (e) {
 				canSetPrimordialPrices = false;
 			}
-			assert.equal(canSetPrimordialPrices, false, "Developer can set Primordial token prices");
+			assert.equal(canSetPrimordialPrices, false, "The AO can set Primordial token prices");
 		});
-		it("developer should NOT be able to reserve Primordial tokens for The AO", async function() {
+		it("The AO should NOT be able to reserve Primordial tokens for The AO", async function() {
 			var canReserveForTheAO;
 			try {
-				await tokenMeta.reserveForTheAO({ from: developer });
+				await tokenMeta.reserveForTheAO({ from: theAO });
 				canReserveForTheAO = true;
 			} catch (e) {
 				canReserveForTheAO = false;
 			}
-			assert.equal(canReserveForTheAO, false, "Developer can reserve Primordial tokens for The AO");
+			assert.equal(canReserveForTheAO, false, "The AO can reserve Primordial tokens for The AO");
 		});
 		it("buyPrimordialToken() - should NOT be able tobuy Primordial tokens from contract by sending ETH", async function() {
 			var buySuccess;
@@ -323,7 +323,7 @@ contract("AOXona", function(accounts) {
 
 	contract("Token Combination Function Tests", function() {
 		before(async function() {
-			await tokenMeta.mintToken(account1, 1000, { from: developer });
+			await tokenMeta.mintToken(account1, 1000, { from: theAO });
 		});
 
 		it("transferTokens() - should NOT be able to send `_value` network tokens and `_primordialValue` Primordial tokens to `_to` from your account", async function() {
@@ -364,10 +364,10 @@ contract("AOXona", function(accounts) {
 	contract("Whitelisted Address Function Tests", function() {
 		var stakedPrimordialWeightedIndex;
 		before(async function() {
-			await tokenMeta.mintToken(account1, 100, { from: developer });
+			await tokenMeta.mintToken(account1, 100, { from: theAO });
 		});
 
-		it("only developer can whitelist account that can transact on behalf of others", async function() {
+		it("only The AO can whitelist account that can transact on behalf of others", async function() {
 			var canSetWhitelist;
 			try {
 				await tokenMeta.setWhitelist(whitelistedAccount, true, { from: account1 });
@@ -377,17 +377,17 @@ contract("AOXona", function(accounts) {
 			}
 			assert.notEqual(canSetWhitelist, true, "Others can set whitelist");
 			try {
-				await tokenMeta.setWhitelist(whitelistedAccount, true, { from: developer });
+				await tokenMeta.setWhitelist(whitelistedAccount, true, { from: theAO });
 				canSetWhitelist = true;
 			} catch (e) {
 				canSetWhitelist = false;
 			}
-			assert.equal(canSetWhitelist, true, "Developer can't whitelist account to transact on behalf of others");
+			assert.equal(canSetWhitelist, true, "The AO can't whitelist account to transact on behalf of others");
 			var whitelistedAccountCanTransact = await tokenMeta.whitelist(whitelistedAccount);
 			assert.equal(
 				whitelistedAccountCanTransact,
 				true,
-				"Staking account doesn't have permission to transact after developer gave permission"
+				"Staking account doesn't have permission to transact after The AO gave permission"
 			);
 		});
 		it("should be able to stake tokens on behalf of others", async function() {

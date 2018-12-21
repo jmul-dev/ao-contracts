@@ -13,7 +13,7 @@ var AOTreasury = artifacts.require("./AOTreasury.sol");
 
 contract("AOTreasury", function(accounts) {
 	var aotreasury, aotoken, aokilo, aomega, aogiga, aotera, aopeta, aoexa, aozetta, aoyotta, aoxona;
-	var developer = accounts[0];
+	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var someAddress = "0x0694bdcab07b298e88a834a3c91602cb8f457bde";
 	var ao, kilo, mega, giga, tera, peta, exa, zetta, yotta, xona;
@@ -121,8 +121,8 @@ contract("AOTreasury", function(accounts) {
 		assert.equal(baseToXona[0].toNumber(), 9, "fromBase xona return wrong integer");
 		assert.equal(baseToXona[1].toNumber(), "123456789123456789", "fromBase xona return wrong fraction");
 	});
-	contract("Developer only function tests", function() {
-		it("only developer can pause/unpause contract", async function() {
+	contract("The AO only function tests", function() {
+		it("only The AO can pause/unpause contract", async function() {
 			var canPause;
 			try {
 				await aotreasury.setPaused(true, { from: account1 });
@@ -130,19 +130,19 @@ contract("AOTreasury", function(accounts) {
 			} catch (e) {
 				canPause = false;
 			}
-			assert.notEqual(canPause, true, "Non-developer can pause contract");
+			assert.notEqual(canPause, true, "Non-The AO can pause contract");
 			try {
-				await aotreasury.setPaused(true, { from: developer });
+				await aotreasury.setPaused(true, { from: theAO });
 				canPause = true;
 			} catch (e) {
 				canPause = false;
 			}
-			assert.equal(canPause, true, "Developer can't pause contract");
+			assert.equal(canPause, true, "The AO can't pause contract");
 			var paused = await aotreasury.paused();
-			assert.equal(paused, true, "Contract has incorrect paused value after developer set paused");
+			assert.equal(paused, true, "Contract has incorrect paused value after The AO set paused");
 		});
 
-		it("only developer can call escape hatch", async function() {
+		it("only The AO can call escape hatch", async function() {
 			var canEscapeHatch;
 			try {
 				await aotreasury.escapeHatch({ from: account1 });
@@ -150,19 +150,19 @@ contract("AOTreasury", function(accounts) {
 			} catch (e) {
 				canEscapeHatch = false;
 			}
-			assert.notEqual(canEscapeHatch, true, "Non-developer can call escape hatch");
+			assert.notEqual(canEscapeHatch, true, "Non-The AO can call escape hatch");
 			try {
-				await aotreasury.escapeHatch({ from: developer });
+				await aotreasury.escapeHatch({ from: theAO });
 				canEscapeHatch = true;
 			} catch (e) {
 				canEscapeHatch = false;
 			}
-			assert.equal(canEscapeHatch, true, "Developer can't call escape hatch");
+			assert.equal(canEscapeHatch, true, "The AO can't call escape hatch");
 			var killed = await aotreasury.killed();
-			assert.equal(killed, true, "Contract has incorrect killed value after developer call escape hatch");
+			assert.equal(killed, true, "Contract has incorrect killed value after The AO call escape hatch");
 		});
 
-		it("only developer can add denomination", async function() {
+		it("only The AO can add denomination", async function() {
 			var canAdd;
 			try {
 				await aotreasury.addDenomination("deno", someAddress, { from: account1 });
@@ -172,21 +172,21 @@ contract("AOTreasury", function(accounts) {
 			}
 			assert.notEqual(canAdd, true, "Others can add denomination");
 			try {
-				await aotreasury.addDenomination("kilo", someAddress, { from: developer });
+				await aotreasury.addDenomination("kilo", someAddress, { from: theAO });
 				canAdd = true;
 			} catch (e) {
 				canAdd = false;
 			}
-			assert.notEqual(canAdd, true, "Developer can re-add existing denomination");
+			assert.notEqual(canAdd, true, "The AO can re-add existing denomination");
 			try {
-				await aotreasury.addDenomination("deno", someAddress, { from: developer });
+				await aotreasury.addDenomination("deno", someAddress, { from: theAO });
 				canAdd = true;
 			} catch (e) {
 				canAdd = false;
 			}
-			assert.notEqual(canAdd, true, "Developer can add invalid denomination");
+			assert.notEqual(canAdd, true, "The AO can add invalid denomination");
 		});
-		it("only developer can update denomination", async function() {
+		it("only The AO can update denomination", async function() {
 			var canUpdate;
 			try {
 				await aotreasury.updateDenomination("kilo", aokilo.address, { from: account1 });
@@ -196,26 +196,26 @@ contract("AOTreasury", function(accounts) {
 			}
 			assert.notEqual(canUpdate, true, "Others can update denomination");
 			try {
-				await aotreasury.updateDenomination("deca", someAddress, { from: developer });
+				await aotreasury.updateDenomination("deca", someAddress, { from: theAO });
 				canUpdate = true;
 			} catch (e) {
 				canUpdate = false;
 			}
-			assert.notEqual(canUpdate, true, "Developer can update non-existing denomination");
+			assert.notEqual(canUpdate, true, "The AO can update non-existing denomination");
 			try {
-				await aotreasury.updateDenomination("kilo", someAddress, { from: developer });
+				await aotreasury.updateDenomination("kilo", someAddress, { from: theAO });
 				canUpdate = true;
 			} catch (e) {
 				canUpdate = false;
 			}
-			assert.notEqual(canUpdate, true, "Developer can set invalid denomination address");
+			assert.notEqual(canUpdate, true, "The AO can set invalid denomination address");
 			try {
-				await aotreasury.updateDenomination("kilo", aokilo.address, { from: developer });
+				await aotreasury.updateDenomination("kilo", aokilo.address, { from: theAO });
 				canUpdate = true;
 			} catch (e) {
 				canUpdate = false;
 			}
-			assert.equal(canUpdate, true, "Developer can't update denomination");
+			assert.equal(canUpdate, true, "The AO can't update denomination");
 			var kilo = await aotreasury.getDenominationByName("kilo");
 			assert.equal(kilo[1], aokilo.address, "Denomination has incorrect denomination address after update");
 		});
@@ -251,16 +251,16 @@ contract("AOTreasury", function(accounts) {
 			var aoyottadecimals = await aoyotta.decimals();
 			var aoxonadecimals = await aoxona.decimals();
 
-			await aotoken.mintToken(account1, 100, { from: developer });
-			await aokilo.mintToken(account1, 100 * 10 ** aokilodecimals.toNumber(), { from: developer });
-			await aomega.mintToken(account1, 100 * 10 ** aomegadecimals.toNumber(), { from: developer });
-			await aogiga.mintToken(account1, 100 * 10 ** aogigadecimals.toNumber(), { from: developer });
-			await aotera.mintToken(account1, 100 * 10 ** aoteradecimals.toNumber(), { from: developer });
-			await aopeta.mintToken(account1, 100 * 10 ** aopetadecimals.toNumber(), { from: developer });
-			await aoexa.mintToken(account1, 100 * 10 ** aoexadecimals.toNumber(), { from: developer });
-			await aozetta.mintToken(account1, 100 * 10 ** aozettadecimals.toNumber(), { from: developer });
-			await aoyotta.mintToken(account1, 100 * 10 ** aoyottadecimals.toNumber(), { from: developer });
-			await aoxona.mintToken(account1, 100 * 10 ** aoxonadecimals.toNumber(), { from: developer });
+			await aotoken.mintToken(account1, 100, { from: theAO });
+			await aokilo.mintToken(account1, 100 * 10 ** aokilodecimals.toNumber(), { from: theAO });
+			await aomega.mintToken(account1, 100 * 10 ** aomegadecimals.toNumber(), { from: theAO });
+			await aogiga.mintToken(account1, 100 * 10 ** aogigadecimals.toNumber(), { from: theAO });
+			await aotera.mintToken(account1, 100 * 10 ** aoteradecimals.toNumber(), { from: theAO });
+			await aopeta.mintToken(account1, 100 * 10 ** aopetadecimals.toNumber(), { from: theAO });
+			await aoexa.mintToken(account1, 100 * 10 ** aoexadecimals.toNumber(), { from: theAO });
+			await aozetta.mintToken(account1, 100 * 10 ** aozettadecimals.toNumber(), { from: theAO });
+			await aoyotta.mintToken(account1, 100 * 10 ** aoyottadecimals.toNumber(), { from: theAO });
+			await aoxona.mintToken(account1, 100 * 10 ** aoxonadecimals.toNumber(), { from: theAO });
 		});
 		it("should exchange token from `fromDenominationName` to `toDenominationName` correctly", async function() {
 			var canExchange;

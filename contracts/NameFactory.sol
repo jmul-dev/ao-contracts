@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import './developed.sol';
+import './TheAO.sol';
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './Position.sol';
@@ -13,7 +13,7 @@ import './NameTAOLookup.sol';
  *
  * The purpose of this contract is to allow node to create Name
  */
-contract NameFactory is developed {
+contract NameFactory is TheAO {
 	using SafeMath for uint256;
 
 	address public positionAddress;
@@ -80,22 +80,22 @@ contract NameFactory is developed {
 		_;
 	 }
 
-	/***** DEVELOPER ONLY METHODS *****/
+	/***** The AO ONLY METHODS *****/
 	/**
-	 * @dev Developer set the TAO Factory Address
+	 * @dev The AO set the TAO Factory Address
 	 * @param _taoFactoryAddress The address of TAOFactory
 	 */
-	function setTAOFactoryAddress(address _taoFactoryAddress) public onlyDeveloper {
+	function setTAOFactoryAddress(address _taoFactoryAddress) public onlyTheAO {
 		require (_taoFactoryAddress != address(0));
 		taoFactoryAddress = _taoFactoryAddress;
 		_taoFactory = TAOFactory(taoFactoryAddress);
 	}
 
 	/**
-	 * @dev Developer set the NameTAOLookup Address
+	 * @dev The AO set the NameTAOLookup Address
 	 * @param _nameTAOLookupAddress The address of NameTAOLookup
 	 */
-	function setNameTAOLookupAddress(address _nameTAOLookupAddress) public onlyDeveloper {
+	function setNameTAOLookupAddress(address _nameTAOLookupAddress) public onlyTheAO {
 		require (_nameTAOLookupAddress != address(0));
 		nameTAOLookupAddress = _nameTAOLookupAddress;
 		_nameTAOLookup = NameTAOLookup(nameTAOLookupAddress);
