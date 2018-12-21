@@ -249,15 +249,15 @@ contract("AOXona", function(accounts) {
 			}
 			assert.equal(canSetPrimordialPrices, false, "Developer can set Primordial token prices");
 		});
-		it("developer should NOT be able to reserve Primordial tokens for the Foundation", async function() {
-			var canReserveForFoundation;
+		it("developer should NOT be able to reserve Primordial tokens for The AO", async function() {
+			var canReserveForTheAO;
 			try {
-				await tokenMeta.reserveForFoundation({ from: developer });
-				canReserveForFoundation = true;
+				await tokenMeta.reserveForTheAO({ from: developer });
+				canReserveForTheAO = true;
 			} catch (e) {
-				canReserveForFoundation = false;
+				canReserveForTheAO = false;
 			}
-			assert.equal(canReserveForFoundation, false, "Developer can reserve Primordial tokens for the Foundation");
+			assert.equal(canReserveForTheAO, false, "Developer can reserve Primordial tokens for The AO");
 		});
 		it("buyPrimordialToken() - should NOT be able tobuy Primordial tokens from contract by sending ETH", async function() {
 			var buySuccess;

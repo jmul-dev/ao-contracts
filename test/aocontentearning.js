@@ -24,7 +24,7 @@ contract("AOContent & AOEarning", function(accounts) {
 		namefactory,
 		taofactory,
 		inflationRate,
-		foundationCut,
+		theAOCut,
 		percentageDivisor,
 		multiplierDivisor,
 		contentUsageType_aoContent,
@@ -105,8 +105,8 @@ contract("AOContent & AOEarning", function(accounts) {
 		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "inflationRate");
 		inflationRate = settingValues[0];
 
-		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "foundationCut");
-		foundationCut = settingValues[0];
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "theAOCut");
+		theAOCut = settingValues[0];
 
 		percentageDivisor = await library.PERCENTAGE_DIVISOR();
 		multiplierDivisor = await library.MULTIPLIER_DIVISOR();
@@ -2371,7 +2371,8 @@ contract("AOContent & AOEarning", function(accounts) {
 			await buyContent(account3, AOContent_contentHostId3, account3LocalIdentity.publicKey, account3LocalIdentity.address);
 		});
 
-		it("buyContent() - should be able to buy content and store all of the earnings of stake owner (content creator)/host/foundation in escrow", async function() {
+		it("buyContent() - should be able to buy content and store all of the earnings of stake owner (content creator)/host/The AO in escrow", async function() {
+			this.timeout(1000000);
 			var buyContent = async function(
 				account,
 				stakeOwner,
@@ -2386,7 +2387,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				var accountBalanceBefore = await aotoken.balanceOf(account);
 				var stakeOwnerBalanceBefore = await aotoken.balanceOf(stakeOwner);
 				var hostBalanceBefore = await aotoken.balanceOf(host);
-				var foundationBalanceBefore = await aotoken.balanceOf(developer);
+				var theAOBalanceBefore = await aotoken.balanceOf(developer);
 
 				var stakeOwnerNameId = await namefactory.ethAddressToNameId(stakeOwner);
 				var hostNameId = await namefactory.ethAddressToNameId(host);
@@ -2403,9 +2404,9 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				var stakeOwnerEscrowedBalanceBefore = await aotoken.escrowedBalance(stakeOwner);
 				var hostEscrowedBalanceBefore = await aotoken.escrowedBalance(host);
-				var foundationEscrowedBalanceBefore = await aotoken.escrowedBalance(developer);
+				var theAOEscrowedBalanceBefore = await aotoken.escrowedBalance(developer);
 
-				var canBuyContent, buyContentEvent, purchaseReceipt, stakeEarning, hostEarning, foundationEarning;
+				var canBuyContent, buyContentEvent, purchaseReceipt, stakeEarning, hostEarning, theAOEarning;
 				try {
 					if (isAOContentUsageType) {
 						var result = await aocontent.buyContent(contentHostId, 3, 0, "mega", publicKey, publicAddress, { from: account });
@@ -2418,7 +2419,7 @@ contract("AOContent & AOEarning", function(accounts) {
 					purchaseReceipt = await aocontent.purchaseReceiptById(purchaseId);
 					stakeEarning = await aoearning.stakeEarnings(stakeOwner, purchaseId);
 					hostEarning = await aoearning.hostEarnings(host, purchaseId);
-					foundationEarning = await aoearning.foundationEarnings(purchaseId);
+					theAOEarning = await aoearning.theAOEarnings(purchaseId);
 				} catch (e) {
 					canBuyContent = false;
 					buyContentEvent = null;
@@ -2426,7 +2427,7 @@ contract("AOContent & AOEarning", function(accounts) {
 					purchaseReceipt = null;
 					stakeEarning = null;
 					hostEarning = null;
-					foundationEarning = null;
+					theAOEarning = null;
 				}
 				assert.equal(canBuyContent, true, "Account can't buy content even though sent tokens >= price");
 				assert.notEqual(purchaseId, null, "Unable to determine the purchaseID from the log after buying content");
@@ -2449,7 +2450,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				var accountBalanceAfter = await aotoken.balanceOf(account);
 				var stakeOwnerBalanceAfter = await aotoken.balanceOf(stakeOwner);
 				var hostBalanceAfter = await aotoken.balanceOf(host);
-				var foundationBalanceAfter = await aotoken.balanceOf(developer);
+				var theAOBalanceAfter = await aotoken.balanceOf(developer);
 
 				assert.equal(
 					accountBalanceAfter.toString(),
@@ -2463,9 +2464,9 @@ contract("AOContent & AOEarning", function(accounts) {
 				);
 				assert.equal(hostBalanceAfter.toString(), hostBalanceBefore.toString(), "Host has incorrect balance after buying content");
 				assert.equal(
-					foundationBalanceAfter.toString(),
-					foundationBalanceBefore.toString(),
-					"Foundation has incorrect balance after buying content"
+					theAOBalanceAfter.toString(),
+					theAOBalanceBefore.toString(),
+					"The AO has incorrect balance after buying content"
 				);
 
 				// Calculate stake owner/host payment earning
@@ -2486,8 +2487,8 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.equal(hostEarning[0], purchaseId, "Host earning has incorrect purchase ID");
 				assert.equal(hostEarning[1].toString(), hostPaymentEarning, "Host earning has incorrect paymentEarning amount");
 
-				assert.equal(foundationEarning[0], purchaseId, "Foundation earning has incorrect purchase ID");
-				assert.equal(foundationEarning[1].toString(), 0, "Foundation earning has incorrect paymentEarning amount");
+				assert.equal(theAOEarning[0], purchaseId, "The AO earning has incorrect purchase ID");
+				assert.equal(theAOEarning[1].toString(), 0, "The AO earning has incorrect paymentEarning amount");
 
 				// Calculate inflation bonus
 				var networkBonus = parseInt(stakedNetworkAmount.times(inflationRate).div(percentageDivisor));
@@ -2501,26 +2502,22 @@ contract("AOContent & AOEarning", function(accounts) {
 				);
 				var inflationBonus = networkBonus + primordialBonus;
 
-				// Calculate stake owner/host/foundation inflation bonus
+				// Calculate stake owner/host/The AO inflation bonus
 				var stakeOwnerInflationBonus = isAOContentUsageType
 					? parseInt(profitPercentage.times(inflationBonus).div(percentageDivisor))
 					: 0;
 				var hostInflationBonus = inflationBonus - stakeOwnerInflationBonus;
-				var foundationInflationBonus = parseInt(foundationCut.times(inflationBonus).div(percentageDivisor));
+				var theAOInflationBonus = parseInt(theAOCut.times(inflationBonus).div(percentageDivisor));
 
 				// Verify inflation bonus
 				assert.equal(stakeEarning[2].toString(), stakeOwnerInflationBonus, "Stake earning has incorrect inflationBonus amount");
 				assert.equal(hostEarning[2].toString(), hostInflationBonus, "Host earning has incorrect inflationBonus amount");
-				assert.equal(
-					foundationEarning[2].toString(),
-					foundationInflationBonus,
-					"Foundation earning has incorrect inflationBonus amount"
-				);
+				assert.equal(theAOEarning[2].toString(), theAOInflationBonus, "The AO earning has incorrect inflationBonus amount");
 
 				// Verify escrowed balance
 				var stakeOwnerEscrowedBalanceAfter = await aotoken.escrowedBalance(stakeOwner);
 				var hostEscrowedBalanceAfter = await aotoken.escrowedBalance(host);
-				var foundationEscrowedBalanceAfter = await aotoken.escrowedBalance(developer);
+				var theAOEscrowedBalanceAfter = await aotoken.escrowedBalance(developer);
 
 				// since the stake owner and the host are the same
 				assert.equal(
@@ -2532,9 +2529,9 @@ contract("AOContent & AOEarning", function(accounts) {
 					"Stake owner/host has incorrect escrowed balance"
 				);
 				assert.equal(
-					foundationEscrowedBalanceAfter.toString(),
-					foundationEscrowedBalanceBefore.add(foundationInflationBonus).toString(),
-					"Foundation has incorrect escrowed balance"
+					theAOEscrowedBalanceAfter.toString(),
+					theAOEscrowedBalanceBefore.add(theAOInflationBonus).toString(),
+					"The AO has incorrect escrowed balance"
 				);
 
 				try {
@@ -2813,7 +2810,7 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.notEqual(canBecomeHost, true, "Account can become host of content of a purchase receipt owned by others");
 		});
 
-		it("becomeHost() (stake owner and host are the same address) - should be able to become host and release all the escrowed earnings for stake owner (content creator)/host/foundation", async function() {
+		it("becomeHost() (stake owner and host are the same address) - should be able to become host and release all the escrowed earnings for stake owner (content creator)/host/The AO", async function() {
 			var becomeHost = async function(
 				account,
 				privateKey,
@@ -2844,19 +2841,19 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				var stakeOwnerBalanceBefore = await aotoken.balanceOf(stakeOwner);
 				var hostBalanceBefore = await aotoken.balanceOf(host);
-				var foundationBalanceBefore = await aotoken.balanceOf(developer);
+				var theAOBalanceBefore = await aotoken.balanceOf(developer);
 
 				var stakeOwnerEscrowedBalanceBefore = await aotoken.escrowedBalance(stakeOwner);
 				var hostEscrowedBalanceBefore = await aotoken.escrowedBalance(host);
-				var foundationEscrowedBalanceBefore = await aotoken.escrowedBalance(developer);
+				var theAOEscrowedBalanceBefore = await aotoken.escrowedBalance(developer);
 
 				var stakeEarningBefore = await aoearning.stakeEarnings(stakeOwner, purchaseId);
 				var hostEarningBefore = await aoearning.hostEarnings(host, purchaseId);
-				var foundationEarningBefore = await aoearning.foundationEarnings(purchaseId);
+				var theAOEarningBefore = await aoearning.theAOEarnings(purchaseId);
 
 				var totalStakeContentEarningBefore = await aoearning.totalStakeContentEarning();
 				var totalHostContentEarningBefore = await aoearning.totalHostContentEarning();
-				var totalFoundationEarningBefore = await aoearning.totalFoundationEarning();
+				var totalTheAOEarningBefore = await aoearning.totalTheAOEarning();
 				var stakeContentEarningBefore = await aoearning.stakeContentEarning(stakeOwner);
 				var hostContentEarningBefore = await aoearning.hostContentEarning(host);
 				var networkPriceEarningBefore = await aoearning.networkPriceEarning(stakeOwner);
@@ -2865,7 +2862,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				var totalStakedContentStakeEarningBefore = await aoearning.totalStakedContentStakeEarning(stakeId);
 				var totalStakedContentHostEarningBefore = await aoearning.totalStakedContentHostEarning(stakeId);
-				var totalStakedContentFoundationEarningBefore = await aoearning.totalStakedContentFoundationEarning(stakeId);
+				var totalStakedContentTheAOEarningBefore = await aoearning.totalStakedContentTheAOEarning(stakeId);
 				var totalHostContentEarningByIdBefore = await aoearning.totalHostContentEarningById(contentHostId);
 
 				var canBecomeHost, hostContentEvent, contentHost;
@@ -2893,19 +2890,19 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				var stakeOwnerBalanceAfter = await aotoken.balanceOf(stakeOwner);
 				var hostBalanceAfter = await aotoken.balanceOf(host);
-				var foundationBalanceAfter = await aotoken.balanceOf(developer);
+				var theAOBalanceAfter = await aotoken.balanceOf(developer);
 
 				var stakeOwnerEscrowedBalanceAfter = await aotoken.escrowedBalance(stakeOwner);
 				var hostEscrowedBalanceAfter = await aotoken.escrowedBalance(host);
-				var foundationEscrowedBalanceAfter = await aotoken.escrowedBalance(developer);
+				var theAOEscrowedBalanceAfter = await aotoken.escrowedBalance(developer);
 
 				var stakeEarningAfter = await aoearning.stakeEarnings(stakeOwner, purchaseId);
 				var hostEarningAfter = await aoearning.hostEarnings(host, purchaseId);
-				var foundationEarningAfter = await aoearning.foundationEarnings(purchaseId);
+				var theAOEarningAfter = await aoearning.theAOEarnings(purchaseId);
 
 				var totalStakeContentEarningAfter = await aoearning.totalStakeContentEarning();
 				var totalHostContentEarningAfter = await aoearning.totalHostContentEarning();
-				var totalFoundationEarningAfter = await aoearning.totalFoundationEarning();
+				var totalTheAOEarningAfter = await aoearning.totalTheAOEarning();
 				var stakeContentEarningAfter = await aoearning.stakeContentEarning(stakeOwner);
 				var hostContentEarningAfter = await aoearning.hostContentEarning(host);
 				var networkPriceEarningAfter = await aoearning.networkPriceEarning(stakeOwner);
@@ -2914,7 +2911,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 				var totalStakedContentStakeEarningAfter = await aoearning.totalStakedContentStakeEarning(stakeId);
 				var totalStakedContentHostEarningAfter = await aoearning.totalStakedContentHostEarning(stakeId);
-				var totalStakedContentFoundationEarningAfter = await aoearning.totalStakedContentFoundationEarning(stakeId);
+				var totalStakedContentTheAOEarningAfter = await aoearning.totalStakedContentTheAOEarning(stakeId);
 				var totalHostContentEarningByIdAfter = await aoearning.totalHostContentEarningById(contentHostId);
 
 				// Verify the earning
@@ -2934,16 +2931,16 @@ contract("AOContent & AOEarning", function(accounts) {
 				assert.equal(hostEarningAfter[1].toString(), 0, "Host earning has incorrect paymentEarning after request node become host");
 				assert.equal(hostEarningAfter[2].toString(), 0, "Host earning has incorrect inflationBonus after request node become host");
 
-				assert.equal(foundationEarningAfter[0], purchaseId, "Foundation earning has incorrect purchaseId");
+				assert.equal(theAOEarningAfter[0], purchaseId, "The AO earning has incorrect purchaseId");
 				assert.equal(
-					foundationEarningAfter[1].toString(),
+					theAOEarningAfter[1].toString(),
 					0,
-					"Foundation earning has incorrect paymentEarning after request node become host"
+					"The AO earning has incorrect paymentEarning after request node become host"
 				);
 				assert.equal(
-					foundationEarningAfter[2].toString(),
+					theAOEarningAfter[2].toString(),
 					0,
-					"Foundation earning has incorrect inflationBonus after request node become host"
+					"The AO earning has incorrect inflationBonus after request node become host"
 				);
 
 				// Verify the balance
@@ -2959,9 +2956,9 @@ contract("AOContent & AOEarning", function(accounts) {
 					"Stake owner/host has incorrect balance after request node become host"
 				);
 				assert.equal(
-					foundationBalanceAfter.toString(),
-					foundationBalanceBefore.plus(foundationEarningBefore[2]).toString(),
-					"Foundation has incorrect balance after request node become host"
+					theAOBalanceAfter.toString(),
+					theAOBalanceBefore.plus(theAOEarningBefore[2]).toString(),
+					"The AO has incorrect balance after request node become host"
 				);
 
 				// Verify the escrowed balance
@@ -2977,9 +2974,9 @@ contract("AOContent & AOEarning", function(accounts) {
 					"Stake owner/host has incorrect escrowed balance after request node become host"
 				);
 				assert.equal(
-					foundationEscrowedBalanceAfter.toString(),
-					foundationEscrowedBalanceBefore.minus(foundationEarningBefore[2]).toString(),
-					"Foundation has incorrect escrowed balance after request node become host"
+					theAOEscrowedBalanceAfter.toString(),
+					theAOEscrowedBalanceBefore.minus(theAOEarningBefore[2]).toString(),
+					"The AO has incorrect escrowed balance after request node become host"
 				);
 
 				// Verify global variables earnings
@@ -3000,9 +2997,9 @@ contract("AOContent & AOEarning", function(accounts) {
 					"Contract has incorrect totalHostContentEarning"
 				);
 				assert.equal(
-					totalFoundationEarningAfter.toString(),
-					totalFoundationEarningBefore.plus(foundationEarningBefore[2]).toString(),
-					"Contract has incorrect totalFoundationEarning"
+					totalTheAOEarningAfter.toString(),
+					totalTheAOEarningBefore.plus(theAOEarningBefore[2]).toString(),
+					"Contract has incorrect totalTheAOEarning"
 				);
 				assert.equal(
 					stakeContentEarningAfter.toString(),
@@ -3086,9 +3083,9 @@ contract("AOContent & AOEarning", function(accounts) {
 					"Staked content has incorrect totalStakedContentHostEarning value"
 				);
 				assert.equal(
-					totalStakedContentFoundationEarningAfter.toString(),
-					totalStakedContentFoundationEarningBefore.plus(foundationEarningBefore[2]).toString(),
-					"Staked content has incorrect totalStakedContentFoundationEarning value"
+					totalStakedContentTheAOEarningAfter.toString(),
+					totalStakedContentTheAOEarningBefore.plus(theAOEarningBefore[2]).toString(),
+					"Staked content has incorrect totalStakedContentTheAOEarning value"
 				);
 				assert.equal(
 					totalHostContentEarningByIdAfter.toString(),
@@ -3329,7 +3326,7 @@ contract("AOContent & AOEarning", function(accounts) {
 				);
 				var inflationBonus = networkBonus + primordialBonus;
 
-				// Calculate stake owner/host/foundation inflation bonus
+				// Calculate stake owner/host/The AO inflation bonus
 				var stakeOwnerInflationBonus = isAOContentUsageType
 					? parseInt(profitPercentage.times(inflationBonus).div(percentageDivisor))
 					: 0;
@@ -3542,7 +3539,7 @@ contract("AOContent & AOEarning", function(accounts) {
 
 			var totalStakedContentStakeEarning = await aoearning.totalStakedContentStakeEarning(AOContent_stakeId1);
 			var totalStakedContentHostEarning = await aoearning.totalStakedContentHostEarning(AOContent_stakeId1);
-			var totalStakedContentFoundationEarning = await aoearning.totalStakedContentFoundationEarning(AOContent_stakeId1);
+			var totalStakedContentTheAOEarning = await aoearning.totalStakedContentTheAOEarning(AOContent_stakeId1);
 
 			assert.equal(
 				metrics[3].toString(),
@@ -3556,8 +3553,8 @@ contract("AOContent & AOEarning", function(accounts) {
 			);
 			assert.equal(
 				metrics[5].toString(),
-				totalStakedContentFoundationEarning.toString(),
-				"getContentMetrics() returns incorrect total earning for Foundation"
+				totalStakedContentTheAOEarning.toString(),
+				"getContentMetrics() returns incorrect total earning for The AO"
 			);
 		});
 
@@ -3608,13 +3605,13 @@ contract("AOContent & AOEarning", function(accounts) {
 			assert.equal(
 				metrics[2].toString(),
 				0,
-				"getEarningMetrics() returns incorrect total earning for Foundation for a non-existing stake ID"
+				"getEarningMetrics() returns incorrect total earning for The AO for a non-existing stake ID"
 			);
 
 			var metrics = await library.getEarningMetrics(aoearning.address, AOContent_stakeId1);
 			var totalStakedContentStakeEarning = await aoearning.totalStakedContentStakeEarning(AOContent_stakeId1);
 			var totalStakedContentHostEarning = await aoearning.totalStakedContentHostEarning(AOContent_stakeId1);
-			var totalStakedContentFoundationEarning = await aoearning.totalStakedContentFoundationEarning(AOContent_stakeId1);
+			var totalStakedContentTheAOEarning = await aoearning.totalStakedContentTheAOEarning(AOContent_stakeId1);
 
 			assert.equal(
 				metrics[0].toString(),
@@ -3628,8 +3625,8 @@ contract("AOContent & AOEarning", function(accounts) {
 			);
 			assert.equal(
 				metrics[2].toString(),
-				totalStakedContentFoundationEarning.toString(),
-				"getEarningMetrics() returns incorrect total earning for Foundation"
+				totalStakedContentTheAOEarning.toString(),
+				"getEarningMetrics() returns incorrect total earning for The AO"
 			);
 		});
 	});

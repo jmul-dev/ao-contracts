@@ -42,8 +42,8 @@ contract AOEarning is developed {
 	// Total earning from hosting content from all nodes
 	uint256 public totalHostContentEarning;
 
-	// Total foundation earning
-	uint256 public totalFoundationEarning;
+	// Total The AO earning
+	uint256 public totalTheAOEarning;
 
 	// Mapping from address to his/her earning from content that he/she staked
 	mapping (address => uint256) public stakeContentEarning;
@@ -74,8 +74,8 @@ contract AOEarning is developed {
 	// Mapping from address to earning from hosting content of a purchase ID
 	mapping (address => mapping(bytes32 => Earning)) public hostEarnings;
 
-	// Mapping from purchase ID to earning for Foundation
-	mapping (bytes32 => Earning) public foundationEarnings;
+	// Mapping from purchase ID to earning for The AO
+	mapping (bytes32 => Earning) public theAOEarnings;
 
 	// Mapping from stake ID to it's total earning from staking
 	mapping (bytes32 => uint256) public totalStakedContentStakeEarning;
@@ -83,17 +83,17 @@ contract AOEarning is developed {
 	// Mapping from stake ID to it's total earning from hosting
 	mapping (bytes32 => uint256) public totalStakedContentHostEarning;
 
-	// Mapping from stake ID to it's total earning earned by Foundation
-	mapping (bytes32 => uint256) public totalStakedContentFoundationEarning;
+	// Mapping from stake ID to it's total earning earned by The AO
+	mapping (bytes32 => uint256) public totalStakedContentTheAOEarning;
 
 	// Mapping from content host ID to it's total earning
 	mapping (bytes32 => uint256) public totalHostContentEarningById;
 
-	// Event to be broadcasted to public when content creator/host/foundation earns inflation bonus in escrow when request node buys the content
+	// Event to be broadcasted to public when content creator/host/The AO earns inflation bonus in escrow when request node buys the content
 	// recipientType:
 	// 0 => Content Creator (Stake Owner)
 	// 1 => Node Host
-	// 2 => Foundation
+	// 2 => The AO
 	event InflationBonusEscrowed(address indexed recipient, bytes32 indexed purchaseId, uint256 totalInflationBonusAmount, uint256 recipientProfitPercentage, uint256 recipientInflationBonus, uint8 recipientType);
 
 	// Event to be broadcasted to public when content creator/host earns the payment split in escrow when request node buys the content
@@ -102,11 +102,11 @@ contract AOEarning is developed {
 	// 1 => Node Host
 	event PaymentEarningEscrowed(address indexed recipient, bytes32 indexed purchaseId, uint256 totalPaymentAmount, uint256 recipientProfitPercentage, uint256 recipientPaymentEarning, uint8 recipientType);
 
-	// Event to be broadcasted to public when content creator/host/foundation earning is released from escrow
+	// Event to be broadcasted to public when content creator/host/The AO earning is released from escrow
 	// recipientType:
 	// 0 => Content Creator (Stake Owner)
 	// 1 => Node Host
-	// 2 => Foundation
+	// 2 => The AO
 	event EarningUnescrowed(address indexed recipient, bytes32 indexed purchaseId, uint256 paymentEarning, uint256 inflationBonus, uint8 recipientType);
 
 	// Event to be broadcasted to public when content creator's Name earns Pathos when a node buys a content
@@ -184,7 +184,7 @@ contract AOEarning is developed {
 	/***** PUBLIC METHODS *****/
 
 	/**
-	 * @dev Calculate the content creator/host/foundation earning when request node buys the content.
+	 * @dev Calculate the content creator/host/The AO earning when request node buys the content.
 	 *		Also at this stage, all of the earnings are stored in escrow
 	 * @param _buyer The request node address that buys the content
 	 * @param _purchaseId The ID of the purchase receipt object
@@ -213,7 +213,7 @@ contract AOEarning is developed {
 		// Split the payment earning between content creator and host and store them in escrow
 		_escrowPaymentEarning(_buyer, _purchaseId, _networkAmountStaked.add(_primordialAmountStaked), _profitPercentage, _stakeOwner, _host, _isAOContentUsageType);
 
-		// Calculate the inflation bonus earning for content creator/node/foundation in escrow
+		// Calculate the inflation bonus earning for content creator/node/The AO in escrow
 		_escrowInflationBonus(_purchaseId, _calculateInflationBonus(_networkAmountStaked, _primordialAmountStaked, _primordialWeightedMultiplierStaked), _profitPercentage, _stakeOwner, _host, _isAOContentUsageType);
 
 		// Reward the content creator/stake owner with some Pathos
@@ -244,7 +244,7 @@ contract AOEarning is developed {
 		// Release the earning in escrow for host
 		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidAmount, _fileSize, _host, 1);
 
-		// Release the earning in escrow for foundation
+		// Release the earning in escrow for The AO
 		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidAmount, _fileSize, developer, 2);
 		return true;
 	}
@@ -300,7 +300,7 @@ contract AOEarning is developed {
 	}
 
 	/**
-	 * @dev Mint the inflation bonus for content creator/host/foundation and store them in escrow
+	 * @dev Mint the inflation bonus for content creator/host/The AO and store them in escrow
 	 * @param _purchaseId The ID of the purchase receipt object
 	 * @param _inflationBonusAmount The amount of inflation bonus earning
 	 * @param _profitPercentage The content creator's profit percentage
@@ -316,7 +316,7 @@ contract AOEarning is developed {
 		address _host,
 		bool _isAOContentUsageType
 	) internal {
-		(, uint256 foundationCut) = _getSettingVariables();
+		(, uint256 theAOCut) = _getSettingVariables();
 
 		if (_inflationBonusAmount > 0) {
 			// Store how much the content creator earns in escrow
@@ -332,16 +332,16 @@ contract AOEarning is developed {
 			require (_baseAO.mintTokenEscrow(_host, _hostEarning.inflationBonus));
 			emit InflationBonusEscrowed(_host, _purchaseId, _inflationBonusAmount, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), _hostEarning.inflationBonus, 1);
 
-			// Store how much the foundation earns in escrow
-			Earning storage _foundationEarning = foundationEarnings[_purchaseId];
-			_foundationEarning.purchaseId = _purchaseId;
-			_foundationEarning.inflationBonus = (_inflationBonusAmount.mul(foundationCut)).div(AOLibrary.PERCENTAGE_DIVISOR());
-			require (_baseAO.mintTokenEscrow(developer, _foundationEarning.inflationBonus));
-			emit InflationBonusEscrowed(developer, _purchaseId, _inflationBonusAmount, foundationCut, _foundationEarning.inflationBonus, 2);
+			// Store how much the The AO earns in escrow
+			Earning storage _theAOEarning = theAOEarnings[_purchaseId];
+			_theAOEarning.purchaseId = _purchaseId;
+			_theAOEarning.inflationBonus = (_inflationBonusAmount.mul(theAOCut)).div(AOLibrary.PERCENTAGE_DIVISOR());
+			require (_baseAO.mintTokenEscrow(developer, _theAOEarning.inflationBonus));
+			emit InflationBonusEscrowed(developer, _purchaseId, _inflationBonusAmount, theAOCut, _theAOEarning.inflationBonus, 2);
 		} else {
 			emit InflationBonusEscrowed(_stakeOwner, _purchaseId, 0, _profitPercentage, 0, 0);
 			emit InflationBonusEscrowed(_host, _purchaseId, 0, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), 0, 1);
-			emit InflationBonusEscrowed(developer, _purchaseId, 0, foundationCut, 0, 2);
+			emit InflationBonusEscrowed(developer, _purchaseId, 0, theAOCut, 0, 2);
 		}
 	}
 
@@ -353,7 +353,7 @@ contract AOEarning is developed {
 	 * @param _buyerPaidAmount The request node paid amount when buying the content
 	 * @param _fileSize The size of the content
 	 * @param _account The address of account that made the earning (content creator/host)
-	 * @param _recipientType The type of the earning recipient (0 => content creator. 1 => host. 2 => foundation)
+	 * @param _recipientType The type of the earning recipient (0 => content creator. 1 => host. 2 => theAO)
 	 */
 	function _releaseEarning(bytes32 _stakeId, bytes32 _contentHostId, bytes32 _purchaseId, uint256 _buyerPaidAmount, uint256 _fileSize, address _account, uint8 _recipientType) internal {
 		// Make sure the recipient type is valid
@@ -400,7 +400,7 @@ contract AOEarning is developed {
 			}
 			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_inflationBonus);
 		} else {
-			_earning = foundationEarnings[_purchaseId];
+			_earning = theAOEarnings[_purchaseId];
 			_paymentEarning = _earning.paymentEarning;
 			_inflationBonus = _earning.inflationBonus;
 			_earning.paymentEarning = 0;
@@ -408,9 +408,9 @@ contract AOEarning is developed {
 			_totalEarning = _paymentEarning.add(_inflationBonus);
 
 			// Update the global var settings
-			totalFoundationEarning = totalFoundationEarning.add(_totalEarning);
+			totalTheAOEarning = totalTheAOEarning.add(_totalEarning);
 			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_inflationBonus);
-			totalStakedContentFoundationEarning[_stakeId] = totalStakedContentFoundationEarning[_stakeId].add(_totalEarning);
+			totalStakedContentTheAOEarning[_stakeId] = totalStakedContentTheAOEarning[_stakeId].add(_totalEarning);
 		}
 		require (_baseAO.unescrowFrom(_account, _totalEarning));
 		emit EarningUnescrowed(_account, _purchaseId, _paymentEarning, _inflationBonus, _recipientType);
@@ -419,11 +419,11 @@ contract AOEarning is developed {
 	/**
 	 * @dev Get setting variables
 	 * @return inflationRate The rate to use when calculating inflation bonus
-	 * @return foundationCut The rate to use when calculation the foundation earning
+	 * @return theAOCut The rate to use when calculating the AO earning
 	 */
 	function _getSettingVariables() internal view returns (uint256, uint256) {
 		(uint256 inflationRate,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'inflationRate');
-		(uint256 foundationCut,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'foundationCut');
-		return (inflationRate, foundationCut);
+		(uint256 theAOCut,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'theAOCut');
+		return (inflationRate, theAOCut);
 	}
 }

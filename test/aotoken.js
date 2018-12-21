@@ -350,8 +350,8 @@ contract("AOToken", function(accounts) {
 			var aoDevTeam2PrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(aoDevTeam2);
 			var aoDevTeam2NetworkBalanceBefore = await tokenMeta.balanceOf(aoDevTeam2);
 
-			var foundationPrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(developer);
-			var foundationNetworkBalanceBefore = await tokenMeta.balanceOf(developer);
+			var theAOPrimordialBalanceBefore = await tokenMeta.primordialBalanceOf(developer);
+			var theAONetworkBalanceBefore = await tokenMeta.balanceOf(developer);
 
 			var primordialBuyPrice = await tokenMeta.primordialBuyPrice();
 			var tokenAmount = new BigNumber(amount).div(primordialBuyPrice);
@@ -363,7 +363,7 @@ contract("AOToken", function(accounts) {
 			var bonus = await tokenMeta.calculateMultiplierAndBonus(tokenAmount.toNumber());
 
 			var inverseMultiplier = startingPrimordialMultiplier.minus(bonus[0]);
-			var foundationNetworkTokenBonusAmount = startingNetworkTokenBonusMultiplier
+			var theAONetworkTokenBonusAmount = startingNetworkTokenBonusMultiplier
 				.minus(bonus[1])
 				.plus(endingNetworkTokenBonusMultiplier)
 				.times(tokenAmount)
@@ -382,7 +382,7 @@ contract("AOToken", function(accounts) {
 			assert.notEqual(events, null, "Contract didn't emit events during buy primordial token transaction");
 
 			var halfTokenAmount = new BigNumber(tokenAmount).div(2);
-			var halfFoundationNetworkTokenBonusAmount = new BigNumber(foundationNetworkTokenBonusAmount).div(2);
+			var halfTheAONetworkTokenBonusAmount = new BigNumber(theAONetworkTokenBonusAmount).div(2);
 
 			var accountLotId, aoDevTeam1LotId, aoDevTeam2LotId;
 			for (var i = 0; i < events.length; i++) {
@@ -420,7 +420,7 @@ contract("AOToken", function(accounts) {
 							);
 							assert.equal(
 								_event.args.networkTokenBonusAmount.toString(),
-								halfFoundationNetworkTokenBonusAmount.toString(),
+								halfTheAONetworkTokenBonusAmount.toString(),
 								"aoDevTeam1 Lot Creation has incorrect networkTokenBonusAmount"
 							);
 						} else if (_event.args.lotOwner == aoDevTeam2) {
@@ -437,7 +437,7 @@ contract("AOToken", function(accounts) {
 							);
 							assert.equal(
 								_event.args.networkTokenBonusAmount.toString(),
-								halfFoundationNetworkTokenBonusAmount.toString(),
+								halfTheAONetworkTokenBonusAmount.toString(),
 								"aoDevTeam2 Lot Creation has incorrect networkTokenBonusAmount"
 							);
 						}
@@ -461,8 +461,8 @@ contract("AOToken", function(accounts) {
 			var aoDevTeam2PrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(aoDevTeam2);
 			var aoDevTeam2NetworkBalanceAfter = await tokenMeta.balanceOf(aoDevTeam2);
 
-			var foundationPrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(developer);
-			var foundationNetworkBalanceAfter = await tokenMeta.balanceOf(developer);
+			var theAOPrimordialBalanceAfter = await tokenMeta.primordialBalanceOf(developer);
+			var theAONetworkBalanceAfter = await tokenMeta.balanceOf(developer);
 
 			assert.equal(totalLotsAfter.toString(), totalLotsBefore.plus(3).toString(), "Contract has incorrect totalLots");
 			assert.equal(
@@ -499,7 +499,7 @@ contract("AOToken", function(accounts) {
 			);
 			assert.equal(
 				aoDevTeam1NetworkBalanceAfter.toString(),
-				aoDevTeam1NetworkBalanceBefore.plus(halfFoundationNetworkTokenBonusAmount).toString(),
+				aoDevTeam1NetworkBalanceBefore.plus(halfTheAONetworkTokenBonusAmount).toString(),
 				"aoDevTeam1 has incorrect network balance"
 			);
 
@@ -510,19 +510,19 @@ contract("AOToken", function(accounts) {
 			);
 			assert.equal(
 				aoDevTeam2NetworkBalanceAfter.toString(),
-				aoDevTeam2NetworkBalanceBefore.plus(halfFoundationNetworkTokenBonusAmount).toString(),
+				aoDevTeam2NetworkBalanceBefore.plus(halfTheAONetworkTokenBonusAmount).toString(),
 				"aoDevTeam2 has incorrect network balance"
 			);
 
 			assert.equal(
-				foundationPrimordialBalanceAfter.toString(),
-				foundationPrimordialBalanceBefore.toString(),
-				"Foundation has incorrect primordial balance"
+				theAOPrimordialBalanceAfter.toString(),
+				theAOPrimordialBalanceBefore.toString(),
+				"The AO has incorrect primordial balance"
 			);
 			assert.equal(
-				foundationNetworkBalanceAfter.toString(),
-				foundationNetworkBalanceBefore.plus(foundationNetworkTokenBonusAmount).toString(),
-				"Foundation has incorrect network balance"
+				theAONetworkBalanceAfter.toString(),
+				theAONetworkBalanceBefore.plus(theAONetworkTokenBonusAmount).toString(),
+				"The AO has incorrect network balance"
 			);
 
 			// Make sure the Lot is stored correctly

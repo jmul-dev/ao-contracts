@@ -697,7 +697,7 @@ contract AOContent is developed {
 		purchaseReceiptIndex[_purchaseId] = totalPurchaseReceipts;
 		buyerPurchaseReceipts[msg.sender][_contentHostId] = _purchaseId;
 
-		// Calculate content creator/host/foundation earning from this purchase and store them in escrow
+		// Calculate content creator/host/The AO earning from this purchase and store them in escrow
 		require (_earning.calculateEarning(
 			msg.sender,
 			_purchaseId,
@@ -741,7 +741,7 @@ contract AOContent is developed {
 	/**
 	 * @dev Request node wants to become a distribution node after buying the content
 	 *		Also, if this transaction succeeds, contract will release all of the earnings that are
-	 *		currently in escrow for content creator/host/foundation
+	 *		currently in escrow for content creator/host/The AO
 	 */
 	function becomeHost(
 		bytes32 _purchaseId,

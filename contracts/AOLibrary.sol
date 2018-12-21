@@ -221,18 +221,18 @@ library AOLibrary {
 	 * @return the primordial weighted multiplier of the staked content
 	 * @return the total earning from staking this content
 	 * @return the total earning from hosting this content
-	 * @return the total foundation earning of this content
+	 * @return the total The AO earning of this content
 	 */
 	function getContentMetrics(address _contentAddress, address _earningAddress, bytes32 _stakeId) public view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
 		(uint256 networkAmount, uint256 primordialAmount, uint256 primordialWeightedMultiplier) = getStakingMetrics(_contentAddress, _stakeId);
-		(uint256 totalStakeEarning, uint256 totalHostEarning, uint256 totalFoundationEarning) = getEarningMetrics(_earningAddress, _stakeId);
+		(uint256 totalStakeEarning, uint256 totalHostEarning, uint256 totalTheAOEarning) = getEarningMetrics(_earningAddress, _stakeId);
 		return (
 			networkAmount,
 			primordialAmount,
 			primordialWeightedMultiplier,
 			totalStakeEarning,
 			totalHostEarning,
-			totalFoundationEarning
+			totalTheAOEarning
 		);
 	}
 
@@ -259,13 +259,13 @@ library AOLibrary {
 	 * @param _stakeId The ID of the staked content
 	 * @return the total earning from staking this content
 	 * @return the total earning from hosting this content
-	 * @return the total foundation earning of this content
+	 * @return the total The AO earning of this content
 	 */
 	function getEarningMetrics(address _earningAddress, bytes32 _stakeId) public view returns (uint256, uint256, uint256) {
 		return (
 			AOEarning(_earningAddress).totalStakedContentStakeEarning(_stakeId),
 			AOEarning(_earningAddress).totalStakedContentHostEarning(_stakeId),
-			AOEarning(_earningAddress).totalStakedContentFoundationEarning(_stakeId)
+			AOEarning(_earningAddress).totalStakedContentTheAOEarning(_stakeId)
 		);
 	}
 

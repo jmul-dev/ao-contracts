@@ -327,10 +327,10 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			/**
-			 * Foundation Cut 0.5%
+			 * The AO Cut 0.5%
 			 */
 			try {
-				var result = await aosetting.addUintSetting("foundationCut", 5000, primordialTAOId, settingTAOId, "", {
+				var result = await aosetting.addUintSetting("theAOCut", 5000, primordialTAOId, settingTAOId, "", {
 					from: primordialAccount
 				});
 				var settingId = result.logs[0].args.settingId;
@@ -338,7 +338,22 @@ module.exports = function(deployer, network, accounts) {
 				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
 				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
 			} catch (e) {
-				console.log("Unable to add foundationCut setting", e);
+				console.log("Unable to add theAOCut setting", e);
+			}
+
+			/**
+			 * The AO Ethos Earned Rate = 100%
+			 */
+			try {
+				var result = await aosetting.addUintSetting("theAOEthosEarnedRate", 10 ** 6, primordialTAOId, settingTAOId, "", {
+					from: primordialAccount
+				});
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add theAOEthosEarnedRate setting", e);
 			}
 
 			/**

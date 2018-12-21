@@ -863,16 +863,16 @@ contract AOToken is developed, TokenERC20 {
 		primordialTotalBought = primordialTotalBought.add(tokenAmount);
 		_createPrimordialLot(to, tokenAmount, multiplier, networkTokenBonusAmount);
 
-		// Calculate Foundation and AO Dev Team's portion of Primordial and Network Token Bonus
+		// Calculate The AO and AO Dev Team's portion of Primordial and Network Token Bonus
 		uint256 inverseMultiplier = startingPrimordialMultiplier.sub(multiplier); // Inverse of the buyer's multiplier
-		uint256 foundationNetworkTokenBonusAmount = (startingNetworkTokenBonusMultiplier.sub(networkTokenBonusPercentage).add(endingNetworkTokenBonusMultiplier)).mul(tokenAmount).div(AOLibrary.PERCENTAGE_DIVISOR());
+		uint256 theAONetworkTokenBonusAmount = (startingNetworkTokenBonusMultiplier.sub(networkTokenBonusPercentage).add(endingNetworkTokenBonusMultiplier)).mul(tokenAmount).div(AOLibrary.PERCENTAGE_DIVISOR());
 		if (aoDevTeam1 != address(0)) {
-			_createPrimordialLot(aoDevTeam1, tokenAmount.div(2), inverseMultiplier, foundationNetworkTokenBonusAmount.div(2));
+			_createPrimordialLot(aoDevTeam1, tokenAmount.div(2), inverseMultiplier, theAONetworkTokenBonusAmount.div(2));
 		}
 		if (aoDevTeam2 != address(0)) {
-			_createPrimordialLot(aoDevTeam2, tokenAmount.div(2), inverseMultiplier, foundationNetworkTokenBonusAmount.div(2));
+			_createPrimordialLot(aoDevTeam2, tokenAmount.div(2), inverseMultiplier, theAONetworkTokenBonusAmount.div(2));
 		}
-		_mintToken(developer, foundationNetworkTokenBonusAmount);
+		_mintToken(developer, theAONetworkTokenBonusAmount);
 	}
 
 	/**
