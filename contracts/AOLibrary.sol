@@ -15,6 +15,7 @@ import './TAO.sol';
 import './NameFactory.sol';
 import './AOSetting.sol';
 import './TAOCurrency.sol';
+import './Logos.sol';
 
 /**
  * @title AOLibrary
@@ -492,7 +493,7 @@ library AOLibrary {
 	 * @param _logosAddress The address of Logos
 	 * @param _ethosAddress The address of Ethos
 	 * @param _pathosAddress The address of Pathos
-	 * @return Logos balance of the Name ID
+	 * @return sum Logos balance of the Name ID
 	 * @return Ethos balance of the Name ID
 	 * @return Pathos balance of the Name ID
 	 */
@@ -503,7 +504,7 @@ library AOLibrary {
 		address _pathosAddress
 	) public view returns (uint256, uint256, uint256) {
 		return (
-			TAOCurrency(_logosAddress).balanceOf(_nameId),
+			Logos(_logosAddress).sumBalanceOf(_nameId),
 			TAOCurrency(_ethosAddress).balanceOf(_nameId),
 			TAOCurrency(_pathosAddress).balanceOf(_nameId)
 		);
