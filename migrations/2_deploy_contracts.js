@@ -327,10 +327,10 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			/**
-			 * The AO Cut 0.5%
+			 * The AO Cut 0%
 			 */
 			try {
-				var result = await aosetting.addUintSetting("theAOCut", 5000, primordialTAOId, settingTAOId, "", {
+				var result = await aosetting.addUintSetting("theAOCut", 0, primordialTAOId, settingTAOId, "", {
 					from: primordialAccount
 				});
 				var settingId = result.logs[0].args.settingId;
