@@ -83,6 +83,9 @@ module.exports = function(deployer, network, accounts) {
 		aosetting;
 
 	deployer.deploy(AOLibrary);
+	deployer.link(AOLibrary, Pathos);
+	deployer.link(AOLibrary, Ethos);
+	deployer.link(AOLibrary, Logos);
 	deployer.link(AOLibrary, NameFactory);
 	deployer.link(AOLibrary, TAOFactory);
 	deployer.link(AOLibrary, TAOPosition);

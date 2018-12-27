@@ -1,20 +1,36 @@
 pragma solidity ^0.4.24;
 
 import "./TAOCurrency.sol";
+import "./TAO.sol";
 
 contract Logos is TAOCurrency {
-	// Mapping of a TAO/Name ID to the amount of Logos positioned by others to itself
+	// Mapping of a Name ID to the amount of Logos positioned by others to itself
 	// address is the address of nameId, not the eth public address
 	mapping (address => uint256) public positionFromOthers;
 
-	// Mapping of Name ID to other TAO/Name ID and the amount of Logos positioned by itself
+	// Mapping of Name ID to other Name ID and the amount of Logos positioned by itself
 	mapping (address => mapping(address => uint256)) public positionToOthers;
 
 	// Mapping of a Name ID to the total amount of Logos positioned by itself to others
 	mapping (address => uint256) public totalPositionToOthers;
 
+	// Mapping of Name ID to it's advocated TAO ID and the amount of Logos earned
+	mapping (address => mapping(address => uint256)) public advocatedTAOLogos;
+
+	// Mapping of a Name ID to the total amount of Logos earned from advocated TAO
+	mapping (address => uint256) public totalAdvocatedTAOLogos;
+
+	// Event broadcasted to public when `from` address position `value` Logos to `to`
 	event PositionFrom(address indexed from, address indexed to, uint256 value);
+
+	// Event broadcasted to public when `from` address unposition `value` Logos from `to`
 	event UnpositionFrom(address indexed from, address indexed to, uint256 value);
+
+	// Event broadcasted to public when `nameId` receives `amount` of Logos from advocating `taoId`
+	event AddAdvocatedTAOLogos(address indexed nameId, address indexed taoId, uint256 amount);
+
+	// Event broadcasted to public when Logos from advocating `taoId` is transferred from `fromNameId` to `toNameId`
+	event TransferAdvocatedTAOLogos(address indexed fromNameId, address indexed toNameId, address indexed taoId, uint256 amount);
 
 	/**
 	 * @dev Constructor function
@@ -23,23 +39,39 @@ contract Logos is TAOCurrency {
 		TAOCurrency(initialSupply, tokenName, tokenSymbol, tokenInternalName) public {}
 
 	/**
-	 * @dev Get the total sum of Logos for an address
-	 * @param _target The address to check
-	 * @return The total sum of Logos (own + positioned)
+	 * @dev Check if `_taoId` is a TAO
 	 */
-	function sumBalanceOf(address _target) public view returns (uint256) {
-		return balanceOf[_target].add(positionFromOthers[_target]);
+	modifier isTAO(address _taoId) {
+		require (AOLibrary.isTAO(_taoId));
+		_;
 	}
 
 	/**
-	 * @dev Position `_value` tokens to `_to` in behalf of `_from`
+	 * @dev Check if `_nameId` is a Name
+	 */
+	modifier isName(address _nameId) {
+		require (AOLibrary.isName(_nameId));
+		_;
+	}
+
+	/**
+	 * @dev Get the total sum of Logos for an address
+	 * @param _target The address to check
+	 * @return The total sum of Logos (own + positioned + advocated TAOs)
+	 */
+	function sumBalanceOf(address _target) public isNameOrTAO(_target) view returns (uint256) {
+		return balanceOf[_target].add(positionFromOthers[_target]).add(totalAdvocatedTAOLogos[_target]);
+	}
+
+	/**
+	 * @dev `_from` Name position `_value` Logos onto `_to` Name
 	 *
 	 * @param _from The address of the sender
 	 * @param _to The address of the recipient
 	 * @param _value the amount to position
+	 * @return true on success
 	 */
-	function positionFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
-		require (_to != address(0));
+	function positionFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) isName(_from) isName(_to) returns (bool) {
 		require (_from != _to);	// Can't position Logos to itself
 		require (balanceOf[_from].sub(totalPositionToOthers[_from]) >= _value); // should have enough balance to position
 		require (positionFromOthers[_to].add(_value) >= positionFromOthers[_to]); // check for overflows
@@ -60,14 +92,14 @@ contract Logos is TAOCurrency {
 	}
 
 	/**
-	 * @dev Unposition `_value` tokens from `_to` in behalf of `_from`
+	 * @dev `_from` Name unposition `_value` Logos from `_to` Name
 	 *
 	 * @param _from The address of the sender
 	 * @param _to The address of the recipient
 	 * @param _value the amount to unposition
+	 * @return true on success
 	 */
-	function unpositionFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
-		require (_to != address(0));
+	function unpositionFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) isName(_from) isName(_to) returns (bool) {
 		require (_from != _to);	// Can't unposition Logos to itself
 		require (positionToOthers[_from][_to] >= _value);
 
@@ -83,6 +115,45 @@ contract Logos is TAOCurrency {
 		assert(totalPositionToOthers[_from].add(_value) == previousPositionToOthers);
 		assert(positionFromOthers[_to].add(_value) == previousPositionFromOthers);
 		assert(balanceOf[_from].sub(totalPositionToOthers[_from]) >= previousAvailPositionBalance);
+		return true;
+	}
+
+	/**
+	 * @dev Add `_amount` logos earned from advocating a TAO `_taoId` to its Advocate
+	 * @param _taoId The ID of the advocated TAO
+	 * @param _amount the amount to reward
+	 * @return true on success
+	 */
+	function addAdvocatedTAOLogos(address _taoId, uint256 _amount) public inWhitelist(msg.sender) isTAO(_taoId) returns (bool) {
+		require (_amount > 0);
+		address _nameId = TAO(_taoId).advocateId();
+
+		advocatedTAOLogos[_nameId][_taoId] = advocatedTAOLogos[_nameId][_taoId].add(_amount);
+		totalAdvocatedTAOLogos[_nameId] = totalAdvocatedTAOLogos[_nameId].add(_amount);
+
+		emit AddAdvocatedTAOLogos(_nameId, _taoId, _amount);
+		return true;
+	}
+
+	/**
+	 * @dev Transfer logos earned from advocating a TAO `_taoId` from `_fromNameId` to `_toNameId`
+	 * @param _fromNameId The ID of the Name that sends the Logos
+	 * @param _toNameId The ID of the Name that receives the Logos
+	 * @param _taoId The ID of the advocated TAO
+	 * @return true on success
+	 */
+	function transferAdvocatedTAOLogos(address _fromNameId, address _toNameId, address _taoId) public inWhitelist(msg.sender) isName(_fromNameId) isName(_toNameId) isTAO(_taoId) returns (bool) {
+		require (AOLibrary.nameIsAdvocateOfTAO(_toNameId, _taoId));
+		require (advocatedTAOLogos[_fromNameId][_taoId] > 0);
+		require (totalAdvocatedTAOLogos[_fromNameId] >= advocatedTAOLogos[_fromNameId][_taoId]);
+
+		uint256 _amount = advocatedTAOLogos[_fromNameId][_taoId];
+		advocatedTAOLogos[_fromNameId][_taoId] = advocatedTAOLogos[_fromNameId][_taoId].sub(_amount);
+		totalAdvocatedTAOLogos[_fromNameId] = totalAdvocatedTAOLogos[_fromNameId].sub(_amount);
+		advocatedTAOLogos[_toNameId][_taoId] = advocatedTAOLogos[_toNameId][_taoId].add(_amount);
+		totalAdvocatedTAOLogos[_toNameId] = totalAdvocatedTAOLogos[_toNameId].add(_amount);
+
+		emit TransferAdvocatedTAOLogos(_fromNameId, _toNameId, _taoId, _amount);
 		return true;
 	}
 }

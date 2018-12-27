@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
 import './TheAO.sol';
+import './AOLibrary.sol';
 
 /**
  * @title TAOCurrency
@@ -12,8 +13,11 @@ contract TAOCurrency is TheAO {
 	// Public variables of the token
 	string public name;
 	string public symbol;
-	uint8 public decimals = 0;
+	uint8 public decimals;
 	bytes32 public internalName;
+
+	// To differentiate denomination of TAO Currency
+	uint256 public powerOfTen;
 
 	uint256 public totalSupply;
 
@@ -36,6 +40,17 @@ contract TAOCurrency is TheAO {
 		name = tokenName;						// Set the name for display purposes
 		symbol = tokenSymbol;					// Set the symbol for display purposes
 		internalName = tokenInternalName;		// Set the internalName to be used internally
+
+		powerOfTen = 0;
+		decimals = 0;
+	}
+
+	/**
+	 * @dev Check if `_id` is a Name or a TAO
+	 */
+	modifier isNameOrTAO(address _id) {
+		require (AOLibrary.isName(_id) || AOLibrary.isTAO(_id));
+		_;
 	}
 
 	/***** PUBLIC METHODS *****/
@@ -48,7 +63,7 @@ contract TAOCurrency is TheAO {
 	 * @param _to The address of the recipient
 	 * @param _value the amount to send
 	 */
-	function transferFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
+	function transferFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) isNameOrTAO(_from) isNameOrTAO(_to) returns (bool) {
 		_transfer(_from, _to, _value);
 		return true;
 	}
@@ -59,7 +74,7 @@ contract TAOCurrency is TheAO {
 	 * @param mintedAmount The amount of tokens it will receive
 	 * @return true on success
 	 */
-	function mintToken(address target, uint256 mintedAmount) public inWhitelist(msg.sender) returns (bool) {
+	function mintToken(address target, uint256 mintedAmount) public inWhitelist(msg.sender) isNameOrTAO(target) returns (bool) {
 		_mintToken(target, mintedAmount);
 		return true;
 	}
