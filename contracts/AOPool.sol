@@ -299,7 +299,7 @@ contract AOPool is TheAO {
 	 */
 	function sell(uint256 _poolId, uint256 _quantity, uint256 _price) public {
 		Pool memory _pool = pools[_poolId];
-		require (_pool.status == true && _pool.price == _price && _quantity > 0 && _baseAO.balanceOf(msg.sender) > 0 && _quantity <= _baseAO.balanceOf(msg.sender));
+		require (_pool.status == true && _pool.price == _price && _quantity > 0 && _baseAO.balanceOf(msg.sender) >= _quantity);
 
 		// If there is a sell cap
 		if (_pool.sellCapStatus == true) {
