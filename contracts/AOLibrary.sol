@@ -533,6 +533,16 @@ library AOLibrary {
 	}
 
 	/**
+	 * @dev Check if `_nameId` is the current advocate of a `_taoId`
+	 * @param _nameId The address to check
+	 * @param _taoId The ID of the TAO
+	 * @return true if yes. false otherwise
+	 */
+	function nameIsAdvocateOfTAO(address _nameId, address _taoId) public view returns (bool) {
+		return (TAO(_taoId).advocateId() == _nameId);
+	}
+
+	/**
 	 * @dev Return the address that signed the data and nonce when validating signature
 	 * @param _callingContractAddress the address of the calling contract
 	 * @param _data the data that was signed
