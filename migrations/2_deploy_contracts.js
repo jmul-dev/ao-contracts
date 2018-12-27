@@ -558,6 +558,21 @@ module.exports = function(deployer, network, accounts) {
 				console.log("Unable to add taoDbKey setting", e);
 			}
 
+			/**
+			 * createChildTAOMinLogos 1Giga = 10 ^^ 9
+			 */
+			try {
+				var result = await aosetting.addUintSetting("createChildTAOMinLogos", 10 ** 9, primordialTAOId, settingTAOId, "", {
+					from: primordialAccount
+				});
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add createChildTAOMinLogos setting", e);
+			}
+
 			// Deploy AOToken and all of the denominations
 			return deployer.deploy([
 				[AOToken, 0, "AO Token", "AOTKN", settingTAOId, aosetting.address],
