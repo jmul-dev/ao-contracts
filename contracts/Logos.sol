@@ -1,9 +1,11 @@
 pragma solidity ^0.4.24;
 
 import "./TAOCurrency.sol";
-import "./TAO.sol";
+import "./NameTAOPosition.sol";
 
 contract Logos is TAOCurrency {
+	NameTAOPosition internal _nameTAOPosition;
+
 	// Mapping of a Name ID to the amount of Logos positioned by others to itself
 	// address is the address of nameId, not the eth public address
 	mapping (address => uint256) public positionFromOthers;
@@ -35,8 +37,10 @@ contract Logos is TAOCurrency {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, bytes32 tokenInternalName)
-		TAOCurrency(initialSupply, tokenName, tokenSymbol, tokenInternalName) public {}
+	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _nameTAOPositionAddress)
+		TAOCurrency(initialSupply, tokenName, tokenSymbol) public {
+		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+	}
 
 	/**
 	 * @dev Check if `_taoId` is a TAO
@@ -55,6 +59,15 @@ contract Logos is TAOCurrency {
 	}
 
 	/**
+	 * @dev Check if msg.sender is the current advocate of _id
+	 */
+	modifier onlyAdvocate(address _id) {
+		require (_nameTAOPosition.senderIsAdvocate(msg.sender, _id));
+		_;
+	}
+
+	/***** PUBLIC METHODS *****/
+	/**
 	 * @dev Get the total sum of Logos for an address
 	 * @param _target The address to check
 	 * @return The total sum of Logos (own + positioned + advocated TAOs)
@@ -71,7 +84,7 @@ contract Logos is TAOCurrency {
 	 * @param _value the amount to position
 	 * @return true on success
 	 */
-	function positionFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) isName(_from) isName(_to) returns (bool) {
+	function positionFrom(address _from, address _to, uint256 _value) public isName(_from) isName(_to) onlyAdvocate(_from) returns (bool) {
 		require (_from != _to);	// Can't position Logos to itself
 		require (balanceOf[_from].sub(totalPositionToOthers[_from]) >= _value); // should have enough balance to position
 		require (positionFromOthers[_to].add(_value) >= positionFromOthers[_to]); // check for overflows
@@ -99,7 +112,7 @@ contract Logos is TAOCurrency {
 	 * @param _value the amount to unposition
 	 * @return true on success
 	 */
-	function unpositionFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) isName(_from) isName(_to) returns (bool) {
+	function unpositionFrom(address _from, address _to, uint256 _value) public isName(_from) isName(_to) onlyAdvocate(_from) returns (bool) {
 		require (_from != _to);	// Can't unposition Logos to itself
 		require (positionToOthers[_from][_to] >= _value);
 
@@ -126,7 +139,7 @@ contract Logos is TAOCurrency {
 	 */
 	function addAdvocatedTAOLogos(address _taoId, uint256 _amount) public inWhitelist(msg.sender) isTAO(_taoId) returns (bool) {
 		require (_amount > 0);
-		address _nameId = TAO(_taoId).advocateId();
+		address _nameId = _nameTAOPosition.getAdvocate(_taoId);
 
 		advocatedTAOLogos[_nameId][_taoId] = advocatedTAOLogos[_nameId][_taoId].add(_amount);
 		totalAdvocatedTAOLogos[_nameId] = totalAdvocatedTAOLogos[_nameId].add(_amount);
@@ -143,7 +156,7 @@ contract Logos is TAOCurrency {
 	 * @return true on success
 	 */
 	function transferAdvocatedTAOLogos(address _fromNameId, address _toNameId, address _taoId) public inWhitelist(msg.sender) isName(_fromNameId) isName(_toNameId) isTAO(_taoId) returns (bool) {
-		require (AOLibrary.nameIsAdvocateOfTAO(_toNameId, _taoId));
+		require (_nameTAOPosition.nameIsAdvocate(_toNameId, _taoId));
 		require (advocatedTAOLogos[_fromNameId][_taoId] > 0);
 		require (totalAdvocatedTAOLogos[_fromNameId] >= advocatedTAOLogos[_fromNameId][_taoId]);
 

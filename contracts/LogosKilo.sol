@@ -6,8 +6,8 @@ contract LogosKilo is Logos {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, bytes32 tokenInternalName)
-		Logos(initialSupply, tokenName, tokenSymbol, tokenInternalName) public {
+	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _nameTAOPositionAddress)
+		Logos(initialSupply, tokenName, tokenSymbol, _nameTAOPositionAddress) public {
 		powerOfTen = 3;
 		decimals = 3;
 	}

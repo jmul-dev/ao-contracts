@@ -7,6 +7,7 @@ import './AOTreasury.sol';
 import './AOEarning.sol';
 import './AOLibrary.sol';
 import './AOSetting.sol';
+import './NameTAOPosition.sol';
 
 /**
  * @title AOContent
@@ -25,12 +26,12 @@ contract AOContent is TheAO {
 	address public settingTAOId;
 	address public baseDenominationAddress;
 	address public treasuryAddress;
-	address public nameFactoryAddress;
 
 	AOToken internal _baseAO;
 	AOTreasury internal _treasury;
 	AOEarning internal _earning;
 	AOSetting internal _aoSetting;
+	NameTAOPosition internal _nameTAOPosition;
 
 	bool public paused;
 	bool public killed;
@@ -156,18 +157,18 @@ contract AOContent is TheAO {
 	 * @param _baseDenominationAddress The address of AO base token
 	 * @param _treasuryAddress The address of AOTreasury
 	 * @param _earningAddress The address of AOEarning
-	 * @param _nameFactoryAddress The address of NameFactory
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
-	constructor(address _settingTAOId, address _aoSettingAddress, address _baseDenominationAddress, address _treasuryAddress, address _earningAddress, address _nameFactoryAddress) public {
+	constructor(address _settingTAOId, address _aoSettingAddress, address _baseDenominationAddress, address _treasuryAddress, address _earningAddress, address _nameTAOPositionAddress) public {
 		settingTAOId = _settingTAOId;
 		baseDenominationAddress = _baseDenominationAddress;
 		treasuryAddress = _treasuryAddress;
-		nameFactoryAddress = _nameFactoryAddress;
 
 		_baseAO = AOToken(_baseDenominationAddress);
 		_treasury = AOTreasury(_treasuryAddress);
 		_earning = AOEarning(_earningAddress);
 		_aoSetting = AOSetting(_aoSettingAddress);
+		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
 	}
 
 	/**
@@ -348,7 +349,7 @@ contract AOContent is TheAO {
 		require (AOLibrary.canStake(treasuryAddress, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _baseChallenge, _encChallenge, _contentDatKey, _metadataDatKey, _fileSize, 0));
 		require (
 			_treasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) == _fileSize &&
-			AOLibrary.addressIsTAOAdvocateListenerSpeaker(nameFactoryAddress, msg.sender, _taoId)
+			_nameTAOPosition.senderIsPosition(msg.sender, _taoId)
 		);
 
 		(,,bytes32 _contentUsageType_taoContent,,,) = _getSettingVariables();
@@ -815,8 +816,7 @@ contract AOContent is TheAO {
 
 		Content storage _content = contents[contentIndex[_contentId]];
 		// Make sure that the signature address is one of content's TAO ID's Advocate/Listener/Speaker
-		require (_signatureAddress == msg.sender && AOLibrary.addressIsTAOAdvocateListenerSpeaker(nameFactoryAddress, _signatureAddress, _content.taoId));
-
+		require (_signatureAddress == msg.sender && _nameTAOPosition.senderIsPosition(_signatureAddress, _content.taoId));
 		require (_content.contentUsageType == _contentUsageType_taoContent);
 
 		_content.taoContentState = _taoContentState;

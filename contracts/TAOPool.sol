@@ -91,9 +91,10 @@ contract TAOPool is TAOController {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _positionAddress, address _TAOFactoryAddress, address _pathosAddress, address _ethosAddress, address _logosAddress)
-		TAOController(_nameFactoryAddress, _positionAddress) public {
+	constructor(address _nameFactoryAddress, address _nameTAOPositionAddress, address _TAOFactoryAddress, address _pathosAddress, address _ethosAddress, address _logosAddress)
+		TAOController(_nameFactoryAddress, _nameTAOPositionAddress) public {
 		TAOFactoryAddress = _TAOFactoryAddress;
+
 		_pathos = TAOCurrency(_pathosAddress);
 		_ethos = TAOCurrency(_ethosAddress);
 		_logos = Logos(_logosAddress);
@@ -104,6 +105,14 @@ contract TAOPool is TAOController {
 	 */
 	modifier onlyTAOFactory {
 		require (msg.sender == TAOFactoryAddress);
+		_;
+	}
+
+	/**
+	 * @dev Check if msg.sender is the current advocate of Name/TAO ID
+	 */
+	modifier onlyAdvocate(address _id) {
+		require (_nameTAOPosition.senderIsAdvocate(msg.sender, _id));
 		_;
 	}
 
@@ -139,7 +148,7 @@ contract TAOPool is TAOController {
 	 * @param _taoId The TAO ID of the Pool
 	 * @param _status The status to set. true = start. false = stop
 	 */
-	function updatePoolStatus(address _taoId, bool _status) public isTAO(_taoId) onlyAdvocateOfTAO(_taoId) {
+	function updatePoolStatus(address _taoId, bool _status) public isTAO(_taoId) onlyAdvocate(_taoId) {
 		require (pools[_taoId].taoId != address(0));
 		pools[_taoId].status = _status;
 		emit UpdatePoolStatus(_taoId, _status);

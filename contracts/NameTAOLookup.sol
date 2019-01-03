@@ -1,10 +1,12 @@
 pragma solidity ^0.4.24;
 
+import './TheAO.sol';
+
 /**
  * @title NameTAOLookup
  *
  */
-contract NameTAOLookup {
+contract NameTAOLookup is TheAO {
 	address public nameFactoryAddress;
 	address public taoFactoryAddress;
 
@@ -25,9 +27,8 @@ contract NameTAOLookup {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _taoFactoryAddress) public {
+	constructor(address _nameFactoryAddress) public {
 		nameFactoryAddress = _nameFactoryAddress;
-		taoFactoryAddress = _taoFactoryAddress;
 	}
 
 	/**
@@ -38,6 +39,17 @@ contract NameTAOLookup {
 		_;
 	}
 
+	/***** The AO ONLY METHODS *****/
+	/**
+	 * @dev The AO set the taoFactoryAddress Address
+	 * @param _taoFactoryAddress The address of TAOFactory
+	 */
+	function setTAOFactoryAddress(address _taoFactoryAddress) public onlyTheAO {
+		require (_taoFactoryAddress != address(0));
+		taoFactoryAddress = _taoFactoryAddress;
+	}
+
+	/***** PUBLIC METHODS *****/
 	/**
 	 * @dev Check whether or not a name exist in the list
 	 * @param _name The name to be checked

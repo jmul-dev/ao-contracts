@@ -1,31 +1,22 @@
 pragma solidity ^0.4.24;
 
 import './AOLibrary.sol';
-import './TAO.sol';
 import './NameFactory.sol';
-import './Position.sol';
-import './SafeMath.sol';
+import './NameTAOPosition.sol';
 
 /**
  * @title TAOController
  */
 contract TAOController {
-	using SafeMath for uint256;
-
-	address public nameFactoryAddress;
-	address public positionAddress;
 	NameFactory internal _nameFactory;
-	Position internal _position;
+	NameTAOPosition internal _nameTAOPosition;
 
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _positionAddress) public {
-		nameFactoryAddress = _nameFactoryAddress;
-		positionAddress = _positionAddress;
-
-		_nameFactory = NameFactory(nameFactoryAddress);
-		_position = Position(positionAddress);
+	constructor(address _nameFactoryAddress, address _nameTAOPositionAddress) public {
+		_nameFactory = NameFactory(_nameFactoryAddress);
+		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
 	}
 
 	/**
@@ -53,18 +44,18 @@ contract TAOController {
 	}
 
 	/**
-	 * @dev Check if msg.sender is the current advocate of a `_taoId`
-	 */
-	modifier onlyAdvocateOfTAO(address _taoId) {
-		require (AOLibrary.isAdvocateOfTAO(msg.sender, _taoId));
-		_;
-	}
-
-	/**
 	 * @dev Check is msg.sender address is a Name
 	 */
 	 modifier senderIsName() {
 		require (_nameFactory.ethAddressToNameId(msg.sender) != address(0));
 		_;
 	 }
+
+	/**
+	 * @dev Check if msg.sender is the current advocate of TAO ID
+	 */
+	modifier onlyAdvocate(address _id) {
+		require (_nameTAOPosition.senderIsAdvocate(msg.sender, _id));
+		_;
+	}
 }

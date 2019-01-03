@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "./TheAO.sol";
-import './TAO.sol';
+import './NameTAOPosition.sol';
 
 /**
  * @title AOSettingAttribute
@@ -9,6 +9,8 @@ import './TAO.sol';
  * This contract stores all AO setting data/state
  */
 contract AOSettingAttribute is TheAO {
+	NameTAOPosition internal _nameTAOPosition;
+
 	struct SettingData {
 		uint256 settingId;				// Identifier of this setting
 		address creatorNameId;			// The nameId that created the setting
@@ -127,7 +129,9 @@ contract AOSettingAttribute is TheAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor() public {}
+	constructor(address _nameTAOPositionAddress) public {
+		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+	}
 
 	/**
 	 * @dev Add setting data/state
@@ -218,7 +222,13 @@ contract AOSettingAttribute is TheAO {
 	function approveAdd(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingData storage _settingData = settingDatas[_settingId];
-		require (_settingData.settingId == _settingId && _settingData.pendingCreate == true && _settingData.locked == true && _settingData.rejected == false && _associatedTAOAdvocate != address(0) && _associatedTAOAdvocate == TAO(_settingData.associatedTAOId).advocateId());
+		require (_settingData.settingId == _settingId &&
+			_settingData.pendingCreate == true &&
+			_settingData.locked == true &&
+			_settingData.rejected == false &&
+			_associatedTAOAdvocate != address(0) &&
+			_associatedTAOAdvocate == _nameTAOPosition.getAdvocate(_settingData.associatedTAOId)
+		);
 
 		if (_approved) {
 			// Unlock the setting so that advocate of creatorTAOId can finalize the creation
@@ -241,7 +251,13 @@ contract AOSettingAttribute is TheAO {
 	function finalizeAdd(uint256 _settingId, address _creatorTAOAdvocate) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingData storage _settingData = settingDatas[_settingId];
-		require (_settingData.settingId == _settingId && _settingData.pendingCreate == true && _settingData.locked == false && _settingData.rejected == false && _creatorTAOAdvocate != address(0) && _creatorTAOAdvocate == TAO(_settingData.creatorTAOId).advocateId());
+		require (_settingData.settingId == _settingId &&
+			_settingData.pendingCreate == true &&
+			_settingData.locked == false &&
+			_settingData.rejected == false &&
+			_creatorTAOAdvocate != address(0) &&
+			_creatorTAOAdvocate == _nameTAOPosition.getAdvocate(_settingData.creatorTAOId)
+		);
 
 		// Update the setting data
 		_settingData.pendingCreate = false;
@@ -263,7 +279,15 @@ contract AOSettingAttribute is TheAO {
 	function update(uint256 _settingId, uint8 _settingType, address _associatedTAOAdvocate, address _proposalTAOId, string _updateSignature, string _extraData) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting is created
 		SettingData memory _settingData = settingDatas[_settingId];
-		require (_settingData.settingId == _settingId && _settingData.settingType == _settingType && _settingData.pendingCreate == false && _settingData.locked == true && _settingData.rejected == false && _associatedTAOAdvocate != address(0) && _associatedTAOAdvocate == TAO(_settingData.associatedTAOId).advocateId() && bytes(_updateSignature).length > 0);
+		require (_settingData.settingId == _settingId &&
+			_settingData.settingType == _settingType &&
+			_settingData.pendingCreate == false &&
+			_settingData.locked == true &&
+			_settingData.rejected == false &&
+			_associatedTAOAdvocate != address(0) &&
+			_associatedTAOAdvocate == _nameTAOPosition.getAdvocate(_settingData.associatedTAOId) &&
+			bytes(_updateSignature).length > 0
+		);
 
 		// Make sure setting is not in the middle of updating
 		SettingState storage _settingState = settingStates[_settingId];
@@ -316,7 +340,11 @@ contract AOSettingAttribute is TheAO {
 
 		// Make sure setting update exists and needs approval
 		SettingState storage _settingState = settingStates[_settingId];
-		require (_settingState.settingId == _settingId && _settingState.pendingUpdate == true && _proposalTAOAdvocate != address(0) && _proposalTAOAdvocate == TAO(_settingState.proposalTAOId).advocateId());
+		require (_settingState.settingId == _settingId &&
+			_settingState.pendingUpdate == true &&
+			_proposalTAOAdvocate != address(0) &&
+			_proposalTAOAdvocate == _nameTAOPosition.getAdvocate(_settingState.proposalTAOId)
+		);
 
 		if (_approved) {
 			// Unlock the setting so that advocate of associatedTAOId can finalize the update
@@ -338,7 +366,13 @@ contract AOSettingAttribute is TheAO {
 	function finalizeUpdate(uint256 _settingId, address _associatedTAOAdvocate) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting is created
 		SettingData storage _settingData = settingDatas[_settingId];
-		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == false && _settingData.rejected == false && _associatedTAOAdvocate != address(0) && _associatedTAOAdvocate == TAO(_settingData.associatedTAOId).advocateId());
+		require (_settingData.settingId == _settingId &&
+			_settingData.pendingCreate == false &&
+			_settingData.locked == false &&
+			_settingData.rejected == false &&
+			_associatedTAOAdvocate != address(0) &&
+			_associatedTAOAdvocate == _nameTAOPosition.getAdvocate(_settingData.associatedTAOId)
+		);
 
 		// Make sure setting update exists and needs approval
 		SettingState storage _settingState = settingStates[_settingId];
@@ -446,7 +480,14 @@ contract AOSettingAttribute is TheAO {
 	function approveDeprecation(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingDeprecation storage _settingDeprecation = settingDeprecations[_settingId];
-		require (_settingDeprecation.settingId == _settingId && _settingDeprecation.migrated == false && _settingDeprecation.pendingDeprecated == true && _settingDeprecation.locked == true && _settingDeprecation.rejected == false && _associatedTAOAdvocate != address(0) && _associatedTAOAdvocate == TAO(_settingDeprecation.associatedTAOId).advocateId());
+		require (_settingDeprecation.settingId == _settingId &&
+			_settingDeprecation.migrated == false &&
+			_settingDeprecation.pendingDeprecated == true &&
+			_settingDeprecation.locked == true &&
+			_settingDeprecation.rejected == false &&
+			_associatedTAOAdvocate != address(0) &&
+			_associatedTAOAdvocate == _nameTAOPosition.getAdvocate(_settingDeprecation.associatedTAOId)
+		);
 
 		if (_approved) {
 			// Unlock the setting so that advocate of creatorTAOId can finalize the creation
@@ -468,7 +509,14 @@ contract AOSettingAttribute is TheAO {
 	function finalizeDeprecation(uint256 _settingId, address _creatorTAOAdvocate) public inWhitelist(msg.sender) returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingDeprecation storage _settingDeprecation = settingDeprecations[_settingId];
-		require (_settingDeprecation.settingId == _settingId && _settingDeprecation.migrated == false && _settingDeprecation.pendingDeprecated == true && _settingDeprecation.locked == false && _settingDeprecation.rejected == false && _creatorTAOAdvocate != address(0) && _creatorTAOAdvocate == TAO(_settingDeprecation.creatorTAOId).advocateId());
+		require (_settingDeprecation.settingId == _settingId &&
+			_settingDeprecation.migrated == false &&
+			_settingDeprecation.pendingDeprecated == true &&
+			_settingDeprecation.locked == false &&
+			_settingDeprecation.rejected == false &&
+			_creatorTAOAdvocate != address(0) &&
+			_creatorTAOAdvocate == _nameTAOPosition.getAdvocate(_settingDeprecation.creatorTAOId)
+		);
 
 		// Update the setting data
 		_settingDeprecation.pendingDeprecated = false;
@@ -482,6 +530,30 @@ contract AOSettingAttribute is TheAO {
 		_settingDeprecation.pendingNewSettingContractAddress = address(0);
 		_settingDeprecation.newSettingContractAddress = _newSettingContractAddress;
 		return true;
+	}
+
+	/**
+	 * @dev Check if a setting exist and not rejected
+	 * @param _settingId The ID of the setting
+	 * @return true if exist. false otherwise
+	 */
+	function settingExist(uint256 _settingId) public view returns (bool) {
+		SettingData memory _settingData = settingDatas[_settingId];
+		return (_settingData.settingId == _settingId && _settingData.rejected == false);
+	}
+
+	/**
+	 * @dev Get the latest ID of a deprecated setting, if exist
+	 * @param _settingId The ID of the setting
+	 * @return The latest setting ID
+	 */
+	function getLatestSettingId(uint256 _settingId) public view returns (uint256) {
+		(,,,,,,, bool _migrated,, uint256 _newSettingId,,) = getSettingDeprecation(_settingId);
+		while (_migrated && _newSettingId > 0) {
+			_settingId = _newSettingId;
+			(,,,,,,, _migrated,, _newSettingId,,) = getSettingDeprecation(_settingId);
+		}
+		return _settingId;
 	}
 
 	/***** Internal Method *****/

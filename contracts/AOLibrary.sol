@@ -427,35 +427,6 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Get setting values by setting ID.
-	 *		Will throw error if the setting is not exist or rejected.
-	 * @param _aoSettingAttributeAddress The address of AOSettingAttribute
-	 * @param _aoUintSettingAddress The address of AOUintSetting
-	 * @param _aoBoolSettingAddress The address of AOBoolSetting
-	 * @param _aoAddressSettingAddress The address of AOAddressSetting
-	 * @param _aoBytesSettingAddress The address of AOBytesSetting
-	 * @param _aoStringSettingAddress The address of AOStringSetting
-	 * @param _settingId The ID of the setting
-	 * @return the uint256 value of this setting ID
-	 * @return the bool value of this setting ID
-	 * @return the address value of this setting ID
-	 * @return the bytes32 value of this setting ID
-	 * @return the string value of this setting ID
-	 */
-	function getSettingValuesById(address _aoSettingAttributeAddress, address _aoUintSettingAddress, address _aoBoolSettingAddress, address _aoAddressSettingAddress, address _aoBytesSettingAddress, address _aoStringSettingAddress, uint256 _settingId) public view returns (uint256, bool, address, bytes32, string) {
-		require (_settingExist(_aoSettingAttributeAddress, _settingId));
-
-		_settingId = _getLatestSettingId(_aoSettingAttributeAddress, _settingId);
-		return (
-			AOUintSetting(_aoUintSettingAddress).settingValue(_settingId),
-			AOBoolSetting(_aoBoolSettingAddress).settingValue(_settingId),
-			AOAddressSetting(_aoAddressSettingAddress).settingValue(_settingId),
-			AOBytesSetting(_aoBytesSettingAddress).settingValue(_settingId),
-			AOStringSetting(_aoStringSettingAddress).settingValue(_settingId)
-		);
-	}
-
-	/**
 	 * @dev Check whether or not the given TAO ID is a TAO
 	 * @param _taoId The ID of the TAO
 	 * @return true if yes. false otherwise
@@ -471,20 +442,6 @@ library AOLibrary {
 	 */
 	function isName(address _nameId) public view returns (bool) {
 		return (_nameId != address(0) && Name(_nameId).originId() != address(0) && Name(_nameId).typeId() == 1);
-	}
-
-	/**
-	 * @dev Check whether or not _from address is Advocate/Listener/Speaker of the TAO
-	 * @param _nameFactoryAddress The address of NameFactory
-	 * @param _from The address that wants to update the TAO Content State
-	 * @param _taoId The ID of the TAO
-	 * @return true if yes. false otherwise
-	 */
-	function addressIsTAOAdvocateListenerSpeaker(address _nameFactoryAddress, address _from, address _taoId) public view returns (bool) {
-		address _nameId = NameFactory(_nameFactoryAddress).ethAddressToNameId(_from);
-		require (_nameId != address(0));
-		require (isTAO(_taoId));
-		return (_nameId == TAO(_taoId).advocateId() || _nameId == TAO(_taoId).listenerId() || _nameId == TAO(_taoId).speakerId());
 	}
 
 	/**
@@ -511,38 +468,6 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Check if `_sender` address is the current advocate of a `_nameId`
-	 *		Since there is no way to change the Advocate of a Name, the Advocate's eth address
-	 *		is the same as the Name's Origin ID
-	 * @param _sender The address to check
-	 * @param _nameId The ID of the Name
-	 * @return true if yes. false otherwise
-	 */
-	function isAdvocateOfName(address _sender, address _nameId) public view returns (bool) {
-		return (Name(_nameId).originId() == _sender);
-	}
-
-	/**
-	 * @dev Check if `_sender` address is the current advocate of a `_taoId`
-	 * @param _sender The address to check
-	 * @param _taoId The ID of the TAO
-	 * @return true if yes. false otherwise
-	 */
-	function isAdvocateOfTAO(address _sender, address _taoId) public view returns (bool) {
-		return (Name(TAO(_taoId).advocateId()).originId() == _sender);
-	}
-
-	/**
-	 * @dev Check if `_nameId` is the current advocate of a `_taoId`
-	 * @param _nameId The address to check
-	 * @param _taoId The ID of the TAO
-	 * @return true if yes. false otherwise
-	 */
-	function nameIsAdvocateOfTAO(address _nameId, address _taoId) public view returns (bool) {
-		return (TAO(_taoId).advocateId() == _nameId);
-	}
-
-	/**
 	 * @dev Return the address that signed the data and nonce when validating signature
 	 * @param _callingContractAddress the address of the calling contract
 	 * @param _data the data that was signed
@@ -557,52 +482,7 @@ library AOLibrary {
 		return ecrecover(_hash, _v, _r, _s);
 	}
 
-	/**
-	 * @dev Determine whether or not address is Advocate/Listener/Speaker of the TAO
-	 * @param _nameFactoryAddress The address of NameFactory
-	 * @param _from The ETH address that to check
-	 * @param _taoId The ID of the TAO
-	 * @return 1 if Advocate. 2 if Listener. 3 if Speaker
-	 */
-	function determineAddressPositionInTAO(address _nameFactoryAddress, address _from, address _taoId) public view returns (uint256) {
-		require (addressIsTAOAdvocateListenerSpeaker(_nameFactoryAddress, _from, _taoId));
-		address _nameId = NameFactory(_nameFactoryAddress).ethAddressToNameId(_from);
-		if (_nameId == TAO(_taoId).advocateId()) {
-			return 1;
-		} else if (_nameId == TAO(_taoId).listenerId()) {
-			return 2;
-		} else {
-			return 3;
-		}
-	}
-
 	/***** Internal Methods *****/
-	/**
-	 * @dev Check if a setting exist and not rejected
-	 * @param _aoSettingAttributeAddress The address of AOSettingAttribute
-	 * @param _settingId The ID of the setting
-	 * @return true if exist. false otherwise
-	 */
-	function _settingExist(address _aoSettingAttributeAddress, uint256 _settingId) public view returns (bool) {
-		(uint256 settingId,,,,,,,, bool _rejected,) = AOSettingAttribute(_aoSettingAttributeAddress).getSettingData(_settingId);
-		return (settingId == _settingId && _rejected == false);
-	}
-
-	/**
-	 * @dev Get the latest ID of a deprecated setting, if exist
-	 * @param _aoSettingAttributeAddress The address of AOSettingAttribute
-	 * @param _settingId The ID of the setting
-	 * @return The latest setting ID
-	 */
-	function _getLatestSettingId(address _aoSettingAttributeAddress, uint256 _settingId) public view returns (uint256) {
-		(,,,,,,, bool _migrated,, uint256 _newSettingId,,) = AOSettingAttribute(_aoSettingAttributeAddress).getSettingDeprecation(_settingId);
-		while (_migrated && _newSettingId > 0) {
-			_settingId = _newSettingId;
-			(,,,,,,, _migrated,, _newSettingId,,) = AOSettingAttribute(_aoSettingAttributeAddress).getSettingDeprecation(_settingId);
-		}
-		return _settingId;
-	}
-
 	/**
 	 * @dev Check whether the network token and/or primordial token is adequate to pay for the filesize
 	 * @param _treasuryAddress AO treasury contract address

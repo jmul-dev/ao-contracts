@@ -14,7 +14,6 @@ contract TAOCurrency is TheAO {
 	string public name;
 	string public symbol;
 	uint8 public decimals;
-	bytes32 public internalName;
 
 	// To differentiate denomination of TAO Currency
 	uint256 public powerOfTen;
@@ -29,17 +28,20 @@ contract TAOCurrency is TheAO {
 	// address is the address of TAO/Name Id, not eth public address
 	event Transfer(address indexed from, address indexed to, uint256 value);
 
+	// This notifies clients about the amount burnt
+	// address is the address of TAO/Name Id, not eth public address
+	event Burn(address indexed from, uint256 value);
+
 	/**
 	 * Constructor function
 	 *
 	 * Initializes contract with initial supply tokens to the creator of the contract
 	 */
-	constructor (uint256 initialSupply, string tokenName, string tokenSymbol, bytes32 tokenInternalName) public {
+	constructor (uint256 initialSupply, string tokenName, string tokenSymbol) public {
 		totalSupply = initialSupply;			// Update total supply
 		balanceOf[msg.sender] = totalSupply;	// Give the creator all initial tokens
 		name = tokenName;						// Set the name for display purposes
 		symbol = tokenSymbol;					// Set the symbol for display purposes
-		internalName = tokenInternalName;		// Set the internalName to be used internally
 
 		powerOfTen = 0;
 		decimals = 0;
@@ -76,6 +78,21 @@ contract TAOCurrency is TheAO {
 	 */
 	function mintToken(address target, uint256 mintedAmount) public inWhitelist(msg.sender) isNameOrTAO(target) returns (bool) {
 		_mintToken(target, mintedAmount);
+		return true;
+	}
+
+	/**
+	 *
+	 * @dev Whitelisted address remove `_value` tokens from the system irreversibly on behalf of `_from`.
+	 *
+	 * @param _from the address of the sender
+	 * @param _value the amount of money to burn
+	 */
+	function whitelistBurnFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool success) {
+		require(balanceOf[_from] >= _value);                // Check if the targeted balance is enough
+		balanceOf[_from] = balanceOf[_from].sub(_value);    // Subtract from the targeted balance
+		totalSupply = totalSupply.sub(_value);              // Update totalSupply
+		emit Burn(_from, _value);
 		return true;
 	}
 

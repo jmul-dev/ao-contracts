@@ -1,9 +1,13 @@
 pragma solidity ^0.4.24;
 
+import './SafeMath.sol';
 import './TheAO.sol';
 import './TAOController.sol';
 import './Name.sol';
-import './NameTAOLookup.sol';
+import './NameTAOLookup.sol';		// Store the name lookup for a Name/TAO
+import './TAOFamily.sol';			// Store TAO's child information
+import './AOSetting.sol';
+import './Logos.sol';
 
 /**
  * @title TAOFactory
@@ -11,56 +15,77 @@ import './NameTAOLookup.sol';
  * The purpose of this contract is to allow node to create TAO
  */
 contract TAOFactory is TAOController, TheAO {
+	using SafeMath for uint256;
 	address[] internal taos;
-	address public nameTAOLookupAddress;
+
+	address public nameTAOPositionAddress;
+	address public taoFamilyAddress;
+	address public settingTAOId;
 
 	NameTAOLookup internal _nameTAOLookup;
+	TAOFamily internal _taoFamily;
+	AOSetting internal _aoSetting;
+	Logos internal _logos;
+
+	// Mapping from TAO ID to its nonce
+	mapping (address => uint256) public nonces;
 
 	// Event to be broadcasted to public when Advocate creates a TAO
-	event CreateTAO(address indexed ethAddress, address advocateId, address taoId, uint256 index, address from, uint8 fromTypeId, address to);
-
-	// Event to be broadcasted to public when current Advocate sets New Advocate for a TAO
-	event SetTAOAdvocate(address indexed taoId, address oldAdvocateId, address newAdvocateId, uint256 nonce);
-
-	// Event to be broadcasted to public when current Advocate sets New Listener for a TAO
-	event SetTAOListener(address indexed taoId, address oldListenerId, address newListenerId, uint256 nonce);
-
-	// Event to be broadcasted to public when current Advocate sets New Speaker for a TAO
-	event SetTAOSpeaker(address indexed taoId, address oldSpeakerId, address newSpeakerId, uint256 nonce);
-
-	// Event to be broadcasted to public when a parent TAO adds a child TAO
-	event AddChildTAO(address indexed parentTAOId, address childTAOId, uint256 nonce);
-
-	// Event to be broadcasted to public when a parent TAO adds an orphan TAO
-	event AddOrphanTAO(address indexed parentTAOId, address orphanTAOId, uint256 nonce);
-
-	// Event to be broadcasted to public when a parent TAO's Listener approves an orphan TAO
-	event ApproveOrphanTAO(address indexed listenerId, address parentTAOId, address orphanTAOId, uint256 nonce);
-
-	// Event to be broadcasted to public when a TAO is locked/unlocked
-	event SetTAOLocked(address indexed taoId, bool locked, uint256 nonce);
-
-	// Event to be broadcasted to public when a TAO is closed
-	event CloseTAO(address indexed taoId, uint256 nonce);
+	event CreateTAO(address indexed ethAddress, address advocateId, address taoId, uint256 index, address parent, uint8 parentTypeId);
 
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _positionAddress)
-		TAOController(_nameFactoryAddress, _positionAddress) public {}
+	constructor(address _nameFactoryAddress, address _nameTAOLookupAddress, address _nameTAOPositionAddress, address _aoSettingAddress, address _logosAddress)
+		TAOController(_nameFactoryAddress, _nameTAOPositionAddress) public {
+		nameTAOPositionAddress = _nameTAOPositionAddress;
+
+		_nameTAOLookup = NameTAOLookup(_nameTAOLookupAddress);
+		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+		_aoSetting = AOSetting(_aoSettingAddress);
+		_logos = Logos(_logosAddress);
+	}
+
+	/**
+	 * @dev Checks if calling address can update TAO's nonce
+	 */
+	modifier canUpdateNonce {
+		require (msg.sender == nameTAOPositionAddress || msg.sender == taoFamilyAddress);
+		_;
+	}
 
 	/***** The AO ONLY METHODS *****/
 	/**
-	 * @dev The AO set the NameTAOLookup Address
-	 * @param _nameTAOLookupAddress The address of NameTAOLookup
+	 * @dev The AO set the TAOFamily Address
+	 * @param _taoFamilyAddress The address of TAOFamily
 	 */
-	function setNameTAOLookupAddress(address _nameTAOLookupAddress) public onlyTheAO {
-		require (_nameTAOLookupAddress != address(0));
-		nameTAOLookupAddress = _nameTAOLookupAddress;
-		_nameTAOLookup = NameTAOLookup(nameTAOLookupAddress);
+	function setTAOFamilyAddress(address _taoFamilyAddress) public onlyTheAO {
+		require (_taoFamilyAddress != address(0));
+		taoFamilyAddress = _taoFamilyAddress;
+		_taoFamily = TAOFamily(taoFamilyAddress);
+	}
+
+	/**
+	 * @dev The AO set settingTAOId (The TAO ID that holds the setting values)
+	 * @param _settingTAOId The address of settingTAOId
+	 */
+	function setSettingTAOId(address _settingTAOId) public onlyTheAO isTAO(_settingTAOId) {
+		settingTAOId = _settingTAOId;
 	}
 
 	/***** PUBLIC METHODS *****/
+	/**
+	 * @dev Increment the nonce of a TAO
+	 * @param _taoId The ID of the TAO
+	 * @return current nonce
+	 */
+	function incrementNonce(address _taoId) public canUpdateNonce returns (uint256) {
+		// Check if _taoId exist
+		require (nonces[_taoId] > 0);
+		nonces[_taoId]++;
+		return nonces[_taoId];
+	}
+
 	/**
 	 * @dev Name creates a TAO
 	 * @param _name The name of the TAO
@@ -68,54 +93,53 @@ contract TAOFactory is TAOController, TheAO {
 	 * @param _database The database for this TAO
 	 * @param _keyValue The key/value pair to be checked on the database
 	 * @param _contentId The contentId related to this TAO
-	 * @param _from The origin of this TAO (has to be a Name or TAO)
+	 * @param _parentId The parent of this TAO (has to be a Name or TAO)
+	 * @param _childMinLogos The min required Logos to create a child from this TAO
 	 */
-	function createTAO(string _name, string _datHash, string _database, string _keyValue, bytes32 _contentId, address _from) public senderIsName() {
+	function createTAO(
+		string _name,
+		string _datHash,
+		string _database,
+		string _keyValue,
+		bytes32 _contentId,
+		address _parentId,
+		uint256 _childMinLogos
+	) public senderIsName() isNameOrTAO(_parentId) {
 		require (bytes(_name).length > 0);
 		require (!_nameTAOLookup.isExist(_name));
+
 		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
 
-		// Make sure _from is a TAO/Name
-		require (_from != address(0) && TAO(_from).originId() != address(0));
-
-		/**
-		 * If _from is a TAO (typeId == 0)
-		 * Decide what are the _from and _to IDs
-		 * 1. If the _from's advocateId is the same as msg.sender's nameId, then
-		 *    the same advocateId is creating this new TAO from _from TAO.
-		 *    In this case, _from doesn't change, and _to is address(0).
-		 *
-		 * 2. If the _from's advocateId is different from msg.sender's nameId, then
-		 *    another advocate is creating this new TAO and want to be part of
-		 *    _from TAO.
-		 *	  In this case, _from is the nameId, and _to is _from
-		 */
-		address _assignedFrom = _from;
-		address _assignedTo = address(0);
-		if (TAO(_assignedFrom).typeId() == 0 && TAO(_assignedFrom).advocateId() != _nameId) {
-			_assignedFrom = _nameId;
-			_assignedTo = _from;
+		uint256 _parentCreateChildTAOMinLogos;
+		uint256 _createChildTAOMinLogos = _getSettingVariables();
+		if (AOLibrary.isTAO(_parentId)) {
+			(, _parentCreateChildTAOMinLogos,) = _taoFamily.getFamilyById(_parentId);
+		}
+		if (_parentCreateChildTAOMinLogos > 0) {
+			require (_logos.sumBalanceOf(_nameId) >= _parentCreateChildTAOMinLogos);
+		} else if (_createChildTAOMinLogos > 0) {
+			require (_logos.sumBalanceOf(_nameId) >= _createChildTAOMinLogos);
 		}
 
-		address taoId = new TAO(_name, _nameId, _datHash, _database, _keyValue, _contentId, _assignedFrom, _assignedTo);
-		require (_nameTAOLookup.add(_name, taoId, TAO(_assignedFrom).name(), 0));
+		// Create the TAO
+		address taoId = new TAO(_name, _nameId, _datHash, _database, _keyValue, _contentId);
+
+		// Increment the nonce
+		nonces[taoId]++;
+
+		// Store the name lookup information
+		require (_nameTAOLookup.add(_name, taoId, TAO(_parentId).name(), 0));
+
+		// Store the Advocate/Listener/Speaker information
+		require (_nameTAOPosition.add(taoId, _nameId, _nameId, _nameId));
+
+		require (_taoFamily.add(taoId, _parentId, _childMinLogos));
 		taos.push(taoId);
 
-		emit CreateTAO(msg.sender, _nameId, taoId, taos.length.sub(1), _assignedFrom, TAO(_assignedFrom).typeId(), _assignedTo);
+		emit CreateTAO(msg.sender, _nameId, taoId, taos.length.sub(1), _parentId, TAO(_parentId).typeId());
 
-		if (TAO(_from).typeId() == 0) {
-			// If this TAO is created from another TAO from the same advocate,
-			// Want to add this TAO to its parent TAO as a ChildTAO
-			if (TAO(_from).advocateId() == _nameId) {
-				uint256 _nonce = TAO(_from).addSubTAO(taoId, true);
-				require (_nonce > 0);
-				emit AddChildTAO(_from, taoId, _nonce);
-			} else {
-				// Otherwise, add this TAO to its parent TAO as an OrphanTAO
-				_nonce = TAO(_from).addSubTAO(taoId, false);
-				require (_nonce > 0);
-				emit AddOrphanTAO(_from, taoId, _nonce);
-			}
+		if (AOLibrary.isTAO(_parentId)) {
+			require (_taoFamily.addChild(_parentId, taoId));
 		}
 	}
 
@@ -130,9 +154,8 @@ contract TAOFactory is TAOController, TheAO {
 	 * @return The keyValue of the TAO
 	 * @return The contentId of the TAO
 	 * @return The typeId of the TAO
-	 * @return The current nonce of the Name
 	 */
-	function getTAO(address _taoId) public view returns (string, address, string, string, string, string, bytes32, uint8, uint256) {
+	function getTAO(address _taoId) public view returns (string, address, string, string, string, string, bytes32, uint8) {
 		TAO _tao = TAO(_taoId);
 		return (
 			_tao.name(),
@@ -142,30 +165,7 @@ contract TAOFactory is TAOController, TheAO {
 			_tao.database(),
 			_tao.keyValue(),
 			_tao.contentId(),
-			_tao.typeId(),
-			_tao.nonce()
-		);
-	}
-
-	/**
-	 * @dev Given a TAO ID, wants to get the TAO's Position, i.e Advocate/Listener/Speaker
-	 * @param _taoId The ID of the TAO
-	 * @return The advocateId of the TAO
-	 * @return The advocate's name of the TAO
-	 * @return The listenerId of the TAO
-	 * @return The listener's name of the TAO
-	 * @return The speakerId of the TAO
-	 * @return The speaker's name of the TAO
-	 */
-	function getTAOPosition(address _taoId) public view returns (address, string, address, string, address, string) {
-		TAO _tao = TAO(_taoId);
-		return (
-			_tao.advocateId(),
-			TAO(_tao.advocateId()).name(),
-			_tao.listenerId(),
-			TAO(_tao.listenerId()).name(),
-			_tao.speakerId(),
-			TAO(_tao.speakerId()).name()
+			_tao.typeId()
 		);
 	}
 
@@ -194,175 +194,6 @@ contract TAOFactory is TAOController, TheAO {
 	}
 
 	/**
-	 * @dev Set TAO's advocate
-	 * @param _taoId The ID of the TAO
-	 * @param _newAdvocateId The new advocate ID to be set
-	 */
-	function setTAOAdvocate(address _taoId, address _newAdvocateId) public isTAO(_taoId) isName(_newAdvocateId) senderIsName() onlyAdvocateOfTAO(_taoId) {
-		TAO _tao = TAO(_taoId);
-
-		address _currentAdvocateId = _tao.advocateId();
-
-		// Set the new advocate
-		uint256 _nonce = _tao.setAdvocate(_newAdvocateId);
-		require (_nonce > 0);
-
-		emit SetTAOAdvocate(_taoId, _currentAdvocateId, _newAdvocateId, _nonce);
-	}
-
-	/**
-	 * @dev Set TAO's listener
-	 * @param _taoId The ID of the TAO
-	 * @param _newListenerId The new listener ID to be set
-	 */
-	function setTAOListener(address _taoId, address _newListenerId) public isTAO(_taoId) isName(_newListenerId) senderIsName() onlyAdvocateOfTAO(_taoId) {
-		TAO _tao = TAO(_taoId);
-
-		// Set the new listener
-		address _currentListenerId = _tao.listenerId();
-		uint256 _nonce = _tao.setListener(_newListenerId);
-		require (_nonce > 0);
-
-		emit SetTAOListener(_taoId, _currentListenerId, _newListenerId, _nonce);
-	}
-
-	/**
-	 * @dev Set TAO's speaker
-	 * @param _taoId The ID of the TAO
-	 * @param _newSpeakerId The new speaker ID to be set
-	 */
-	function setTAOSpeaker(address _taoId, address _newSpeakerId) public isTAO(_taoId) isName(_newSpeakerId) senderIsName() onlyAdvocateOfTAO(_taoId) {
-		TAO _tao = TAO(_taoId);
-
-		// Set the new speaker
-		address _currentSpeakerId = _tao.speakerId();
-		uint256 _nonce = _tao.setSpeaker(_newSpeakerId);
-		require (_nonce > 0);
-
-		emit SetTAOSpeaker(_taoId, _currentSpeakerId, _newSpeakerId, _nonce);
-	}
-
-	/**
-	 * @dev Get TAO's relationship
-	 * @param _taoId The ID of the TAO
-	 * @return fromId (Origin of the TAO)
-	 * @return throughId
-	 * @return toId (Destination of the TAO)
-	 */
-	function getTAORelationship(address _taoId) public view returns (address, address, address) {
-		TAO _tao = TAO(_taoId);
-		return (
-			_tao.fromId(),
-			_tao.throughId(),
-			_tao.toId()
-		);
-	}
-
-	/**
-	 * @dev Get TAO's sub TAO Ids
-	 * @param _taoId The ID of the TAO
-	 * @param _from The starting index
-	 * @param _to The ending index
-	 * @return list of sub TAO IDs
-	 */
-	function getSubTAOIds(address _taoId, uint256 _from, uint256 _to) public isTAO(_taoId) view returns (address[]) {
-		require (_from >= 1 && _to >= _from);
-		return TAO(_taoId).getSubTAOIds(_from, _to);
-	}
-
-	/**
-	 * @dev Get TAO's sub TAOs total count
-	 * @param _taoId The ID of the TAO
-	 * @return total sub TAOs count
-	 */
-	function getTotalSubTAOsCount(address _taoId) public isTAO(_taoId) view returns (uint256) {
-		return TAO(_taoId).totalSubTAOs();
-	}
-
-	/**
-	 * @dev Get TAO's child TAOs total count
-	 * @param _taoId The ID of the TAO
-	 * @return total child TAOs count
-	 */
-	function getTotalChildTAOsCount(address _taoId) public isTAO(_taoId) view returns (uint256) {
-		return TAO(_taoId).totalChildTAOs();
-	}
-
-	/**
-	 * @dev Get TAO's orphan TAOs total count
-	 * @param _taoId The ID of the TAO
-	 * @return total orphan TAOs count
-	 */
-	function getTotalOrphanTAOsCount(address _taoId) public isTAO(_taoId) view returns (uint256) {
-		return TAO(_taoId).totalOrphanTAOs();
-	}
-
-	/**
-	 * @dev Check if `_childTAOId` is child TAO of `_taoId`
-	 * @param _taoId The ID of the parent TAO
-	 * @param _childTAOId The child TAO ID to check
-	 * @return return true if yes. Otherwise return false.
-	 */
-	function isChildTAOOfTAO(address _taoId, address _childTAOId) public isTAO(_taoId) isTAO(_childTAOId) view returns (bool) {
-		return TAO(_taoId).isChildTAO(_childTAOId);
-	}
-
-	/**
-	 * @dev Check if `_orphanTAOId` is orphan TAO of `_taoId`
-	 * @param _taoId The ID of the parent TAO
-	 * @param _orphanTAOId The orphan TAO ID to check
-	 * @return return true if yes. Otherwise return false.
-	 */
-	function isOrphanTAOOfTAO(address _taoId, address _orphanTAOId) public isTAO(_taoId) isTAO(_orphanTAOId) view returns (bool) {
-		return TAO(_taoId).isOrphanTAO(_orphanTAOId);
-	}
-
-	/**
-	 * @dev Listener approves orphan TAO.
-	 *		This will switch orphan TAO to becoming a child TAO.
-	 * @param _taoId The ID of the parent TAO
-	 * @param _orphanTAOId The orphan TAO ID to approve
-	 */
-	function approveOrphanTAO(address _taoId, address _orphanTAOId) public senderIsName() {
-		require (isOrphanTAOOfTAO(_taoId, _orphanTAOId));
-
-		TAO _tao = TAO(_taoId);
-
-		// Only TAO's current listener can approve orphan TAO
-		require (Name(_tao.listenerId()).originId() == msg.sender);
-
-		uint256 _nonce = _tao.approveOrphanTAO(_orphanTAOId);
-		require (_nonce > 0);
-
-		emit ApproveOrphanTAO(_tao.listenerId(), _taoId, _orphanTAOId, _nonce);
-	}
-
-	/**
-	 * @dev Advocate locks/unlocks a TAO.
-			When a TAO is locked, no transaction can happen on the TAO (i.e adding funds, adding sub TAO, etc.)
-			until the TAO is unlocked again.
-	 * @param _taoId The ID of the TAO
-	 * @param _locked The bool value to be set
-	 */
-	function setTAOLocked(address _taoId, bool _locked) public isTAO(_taoId) senderIsName() onlyAdvocateOfTAO(_taoId) {
-		uint256 _nonce = TAO(_taoId).setLocked(_locked);
-		require (_nonce > 0);
-
-		emit SetTAOLocked(_taoId, _locked, _nonce);
-	}
-
-	/**
-	 * @dev Advocate close a TAO.
-	 * @param _taoId The ID of the TAO
-	 */
-	function closeTAO(address _taoId) public isTAO(_taoId) senderIsName() onlyAdvocateOfTAO(_taoId) {
-		uint256 _nonce = TAO(_taoId).close();
-		require (_nonce > 0);
-
-		emit CloseTAO(_taoId, _nonce);
-	}
-
-	/**
 	 * @dev Check whether or not the signature is valid
 	 * @param _data The signed string data
 	 * @param _nonce The signed uint256 nonce (should be TAO's current nonce + 1)
@@ -387,7 +218,7 @@ contract TAOFactory is TAOController, TheAO {
 	) public isTAO(_getTAOIdByName(_name)) view returns (bool, string, uint256) {
 		address _signatureAddress = AOLibrary.getValidateSignatureAddress(address(this), _data, _nonce, _signatureV, _signatureR, _signatureS);
 		if (_isTAOSignatureAddressValid(_validateAddress, _signatureAddress, _getTAOIdByName(_name), _nonce)) {
-			return (true, Name(_nameFactory.ethAddressToNameId(_signatureAddress)).name(), AOLibrary.determineAddressPositionInTAO(nameFactoryAddress, _signatureAddress, _getTAOIdByName(_name)));
+			return (true, Name(_nameFactory.ethAddressToNameId(_signatureAddress)).name(), _nameTAOPosition.determinePosition(_signatureAddress, _getTAOIdByName(_name)));
 		} else {
 			return (false, "", 0);
 		}
@@ -408,16 +239,15 @@ contract TAOFactory is TAOController, TheAO {
 		address _taoId,
 		uint256 _nonce
 	) internal view returns (bool) {
-		TAO _tao = TAO(_taoId);
 		if (_validateAddress != address(0)) {
-			return (_nonce == _tao.nonce().add(1) &&
+			return (_nonce == nonces[_taoId].add(1) &&
 				_signatureAddress == _validateAddress &&
-				AOLibrary.addressIsTAOAdvocateListenerSpeaker(nameFactoryAddress, _validateAddress, _taoId)
+				_nameTAOPosition.senderIsPosition(_validateAddress, _taoId)
 			);
 		} else {
 			return (
-				_nonce == _tao.nonce().add(1) &&
-				AOLibrary.addressIsTAOAdvocateListenerSpeaker(nameFactoryAddress, _signatureAddress, _taoId)
+				_nonce == nonces[_taoId].add(1) &&
+				_nameTAOPosition.senderIsPosition(_signatureAddress, _taoId)
 			);
 		}
 	}
@@ -429,5 +259,14 @@ contract TAOFactory is TAOController, TheAO {
 	 */
 	function _getTAOIdByName(string _name) internal view returns (address) {
 		return _nameTAOLookup.getAddressByName(_name);
+	}
+
+	/**
+	 * @dev Get setting variables
+	 * @return createChildTAOMinLogos The minimum required Logos to create a TAO
+	 */
+	function _getSettingVariables() internal view returns (uint256) {
+		(uint256 createChildTAOMinLogos,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'createChildTAOMinLogos');
+		return createChildTAOMinLogos;
 	}
 }

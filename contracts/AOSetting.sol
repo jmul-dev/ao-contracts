@@ -8,6 +8,7 @@ import './AOAddressSetting.sol';
 import './AOBytesSetting.sol';
 import './AOStringSetting.sol';
 import './AOLibrary.sol';
+import './NameTAOPosition.sol';
 
 /**
  * @title AOSetting
@@ -23,6 +24,7 @@ contract AOSetting {
 	address public aoStringSettingAddress;
 
 	NameFactory internal _nameFactory;
+	NameTAOPosition internal _nameTAOPosition;
 	AOSettingAttribute internal _aoSettingAttribute;
 	AOUintSetting internal _aoUintSetting;
 	AOBoolSetting internal _aoBoolSetting;
@@ -75,6 +77,7 @@ contract AOSetting {
 	 * @dev Constructor function
 	 */
 	constructor(address _nameFactoryAddress,
+		address _nameTAOPositionAddress,
 		address _aoSettingAttributeAddress,
 		address _aoUintSettingAddress,
 		address _aoBoolSettingAddress,
@@ -87,7 +90,9 @@ contract AOSetting {
 		aoAddressSettingAddress = _aoAddressSettingAddress;
 		aoBytesSettingAddress = _aoBytesSettingAddress;
 		aoStringSettingAddress = _aoStringSettingAddress;
+
 		_nameFactory = NameFactory(_nameFactoryAddress);
+		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
 		_aoSettingAttribute = AOSettingAttribute(_aoSettingAttributeAddress);
 		_aoUintSetting = AOUintSetting(_aoUintSettingAddress);
 		_aoBoolSetting = AOBoolSetting(_aoBoolSettingAddress);
@@ -113,10 +118,10 @@ contract AOSetting {
 	}
 
 	/**
-	 * @dev Check if sender is the advocate of a TAO
+	 * @dev Check if msg.sender is the current advocate of Name ID
 	 */
-	modifier isAdvocateOfTAO(address _taoId) {
-		require (AOLibrary.isAdvocateOfTAO(msg.sender, _taoId));
+	modifier onlyAdvocate(address _id) {
+		require (_nameTAOPosition.senderIsAdvocate(msg.sender, _id));
 		_;
 	}
 
@@ -139,7 +144,7 @@ contract AOSetting {
 	 * @param _associatedTAOId The taoId that the setting affects
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
-	function addUintSetting(string _settingName, uint256 _value, address _creatorTAOId, address _associatedTAOId, string _extraData) public isTAO(_creatorTAOId) isTAO(_associatedTAOId) settingNameNotTaken(_settingName, _associatedTAOId) isAdvocateOfTAO(_creatorTAOId) {
+	function addUintSetting(string _settingName, uint256 _value, address _creatorTAOId, address _associatedTAOId, string _extraData) public isTAO(_creatorTAOId) isTAO(_associatedTAOId) settingNameNotTaken(_settingName, _associatedTAOId) onlyAdvocate(_creatorTAOId) {
 		// Update global variables
 		totalSetting++;
 
@@ -158,7 +163,7 @@ contract AOSetting {
 	 * @param _associatedTAOId The taoId that the setting affects
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
-	function addBoolSetting(string _settingName, bool _value, address _creatorTAOId, address _associatedTAOId, string _extraData) public isTAO(_creatorTAOId) isTAO(_associatedTAOId) settingNameNotTaken(_settingName, _associatedTAOId) isAdvocateOfTAO(_creatorTAOId) {
+	function addBoolSetting(string _settingName, bool _value, address _creatorTAOId, address _associatedTAOId, string _extraData) public isTAO(_creatorTAOId) isTAO(_associatedTAOId) settingNameNotTaken(_settingName, _associatedTAOId) onlyAdvocate(_creatorTAOId) {
 		// Update global variables
 		totalSetting++;
 
@@ -177,7 +182,7 @@ contract AOSetting {
 	 * @param _associatedTAOId The taoId that the setting affects
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
-	function addAddressSetting(string _settingName, address _value, address _creatorTAOId, address _associatedTAOId, string _extraData) public isTAO(_creatorTAOId) isTAO(_associatedTAOId) settingNameNotTaken(_settingName, _associatedTAOId) isAdvocateOfTAO(_creatorTAOId) {
+	function addAddressSetting(string _settingName, address _value, address _creatorTAOId, address _associatedTAOId, string _extraData) public isTAO(_creatorTAOId) isTAO(_associatedTAOId) settingNameNotTaken(_settingName, _associatedTAOId) onlyAdvocate(_creatorTAOId) {
 		// Update global variables
 		totalSetting++;
 
@@ -196,7 +201,7 @@ contract AOSetting {
 	 * @param _associatedTAOId The taoId that the setting affects
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
-	function addBytesSetting(string _settingName, bytes32 _value, address _creatorTAOId, address _associatedTAOId, string _extraData) public isTAO(_creatorTAOId) isTAO(_associatedTAOId) settingNameNotTaken(_settingName, _associatedTAOId) isAdvocateOfTAO(_creatorTAOId) {
+	function addBytesSetting(string _settingName, bytes32 _value, address _creatorTAOId, address _associatedTAOId, string _extraData) public isTAO(_creatorTAOId) isTAO(_associatedTAOId) settingNameNotTaken(_settingName, _associatedTAOId) onlyAdvocate(_creatorTAOId) {
 		// Update global variables
 		totalSetting++;
 
@@ -215,7 +220,7 @@ contract AOSetting {
 	 * @param _associatedTAOId The taoId that the setting affects
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
-	function addStringSetting(string _settingName, string _value, address _creatorTAOId, address _associatedTAOId, string _extraData) public isTAO(_creatorTAOId) isTAO(_associatedTAOId) settingNameNotTaken(_settingName, _associatedTAOId) isAdvocateOfTAO(_creatorTAOId) {
+	function addStringSetting(string _settingName, string _value, address _creatorTAOId, address _associatedTAOId, string _extraData) public isTAO(_creatorTAOId) isTAO(_associatedTAOId) settingNameNotTaken(_settingName, _associatedTAOId) onlyAdvocate(_creatorTAOId) {
 		// Update global variables
 		totalSetting++;
 
@@ -400,7 +405,7 @@ contract AOSetting {
 	 * @param _creatorTAOId The taoId that created the setting
 	 * @param _associatedTAOId The taoId that the setting affects
 	 */
-	function addSettingDeprecation(uint256 _settingId, uint256 _newSettingId, address _newSettingContractAddress, address _creatorTAOId, address _associatedTAOId) public isTAO(_creatorTAOId) isTAO(_associatedTAOId) isAdvocateOfTAO(_creatorTAOId) {
+	function addSettingDeprecation(uint256 _settingId, uint256 _newSettingId, address _newSettingContractAddress, address _creatorTAOId, address _associatedTAOId) public isTAO(_creatorTAOId) isTAO(_associatedTAOId) onlyAdvocate(_creatorTAOId) {
 		(bytes32 _associatedTAOSettingDeprecationId, bytes32 _creatorTAOSettingDeprecationId) = _aoSettingAttribute.addDeprecation(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _creatorTAOId, _associatedTAOId, _newSettingId, _newSettingContractAddress);
 
 		emit SettingDeprecation(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _creatorTAOId, _associatedTAOId, _newSettingId, _newSettingContractAddress, _associatedTAOSettingDeprecationId, _creatorTAOSettingDeprecationId);
@@ -438,7 +443,6 @@ contract AOSetting {
 	 * @return the ID of the setting
 	 */
 	function getSettingIdByTAOName(address _associatedTAOId, string _settingName) public view returns (uint256) {
-		require (settingNameExist(_settingName, _associatedTAOId));
 		return nameSettingLookup[_associatedTAOId][keccak256(abi.encodePacked(this, _settingName))];
 	}
 
@@ -453,7 +457,15 @@ contract AOSetting {
 	 * @return the string value of this setting ID
 	 */
 	function getSettingValuesById(uint256 _settingId) public view returns (uint256, bool, address, bytes32, string) {
-		return AOLibrary.getSettingValuesById(aoSettingAttributeAddress, aoUintSettingAddress, aoBoolSettingAddress, aoAddressSettingAddress, aoBytesSettingAddress, aoStringSettingAddress, _settingId);
+		require (_aoSettingAttribute.settingExist(_settingId));
+		_settingId = _aoSettingAttribute.getLatestSettingId(_settingId);
+		return (
+			_aoUintSetting.settingValue(_settingId),
+			_aoBoolSetting.settingValue(_settingId),
+			_aoAddressSetting.settingValue(_settingId),
+			_aoBytesSetting.settingValue(_settingId),
+			_aoStringSetting.settingValue(_settingId)
+		);
 	}
 
 	/**
@@ -468,7 +480,7 @@ contract AOSetting {
 	 * @return the string value of this setting ID
 	 */
 	function getSettingValuesByTAOName(address _taoId, string _settingName) public view returns (uint256, bool, address, bytes32, string) {
-		return AOLibrary.getSettingValuesById(aoSettingAttributeAddress, aoUintSettingAddress, aoBoolSettingAddress, aoAddressSettingAddress, aoBytesSettingAddress, aoStringSettingAddress, getSettingIdByTAOName(_taoId, _settingName));
+		return getSettingValuesById(getSettingIdByTAOName(_taoId, _settingName));
 	}
 
 	/***** Internal Method *****/
