@@ -158,7 +158,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	/**
 	 * @dev Whitelisted address transfer tokens from other address
 	 *
-	 * Send `_value` tokens to `_to` in behalf of `_from`
+	 * Send `_value` tokens to `_to` on behalf of `_from`
 	 *
 	 * @param _from The address of the sender
 	 * @param _to The address of the recipient

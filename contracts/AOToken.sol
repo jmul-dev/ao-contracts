@@ -192,6 +192,29 @@ contract AOToken is AOTokenInterface {
 		return true;
 	}
 
+	/**
+	 * @dev Send `_value` primordial tokens to `_to` on behalf of `_from`
+	 * @param _from The address of the sender
+	 * @param _to The address of the recipient
+	 * @param _value The amount to send
+	 * @return true on success
+	 */
+	function whitelistTransferPrimordialTokenFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
+		bytes32 _createdLotId = _createWeightedMultiplierLot(_to, _value, ownerWeightedMultiplier[_from]);
+		Lot memory _lot = lots[_createdLotId];
+
+		// Make sure the new lot is created successfully
+		require (_lot.lotOwner == _to);
+
+		// Update the weighted multiplier of the recipient
+		ownerWeightedMultiplier[_to] = AOLibrary.calculateWeightedMultiplier(ownerWeightedMultiplier[_to], primordialBalanceOf[_to], ownerWeightedMultiplier[_from], _value);
+
+		// Transfer the Primordial tokens
+		require (_transferPrimordialToken(_from, _to, _value));
+		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.multiplier, _lot.tokenAmount, 0);
+		return true;
+	}
+
 	/***** PUBLIC METHODS *****/
 	/***** Primordial TOKEN PUBLIC METHODS *****/
 	/**
