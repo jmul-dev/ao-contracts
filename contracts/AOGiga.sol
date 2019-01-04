@@ -1,15 +1,14 @@
 pragma solidity ^0.4.24;
 
-import "./AOToken.sol";
+import "./AOTokenInterface.sol";
 
-contract AOGiga is AOToken {
+contract AOGiga is AOTokenInterface {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _settingTAOId, address _aoSettingAddress)
-		AOToken(initialSupply, tokenName, tokenSymbol, _settingTAOId, _aoSettingAddress) public {
+	constructor(uint256 initialSupply, string tokenName, string tokenSymbol)
+		AOTokenInterface(initialSupply, tokenName, tokenSymbol) public {
 		powerOfTen = 9;
 		decimals = 9;
-		networkExchangeContract = false;
 	}
 }

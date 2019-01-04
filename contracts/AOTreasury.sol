@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
 import './TheAO.sol';
-import './AOToken.sol';
+import './AOTokenInterface.sol';
 
 /**
  * @title AOTreasury
@@ -89,8 +89,8 @@ contract AOTreasury is TheAO {
 		totalDenominations++;
 		// Make sure the new denomination is higher than the previous
 		if (totalDenominations > 1) {
-			AOToken _lastDenominationToken = AOToken(denominations[totalDenominations - 1].denominationAddress);
-			AOToken _newDenominationToken = AOToken(denominationAddress);
+			AOTokenInterface _lastDenominationToken = AOTokenInterface(denominations[totalDenominations - 1].denominationAddress);
+			AOTokenInterface _newDenominationToken = AOTokenInterface(denominationAddress);
 			require (_newDenominationToken.powerOfTen() > _lastDenominationToken.powerOfTen());
 		}
 		denominations[totalDenominations].name = denominationName;
@@ -110,13 +110,13 @@ contract AOTreasury is TheAO {
 		require (denominationIndex[denominationName] > 0);
 		require (denominationAddress != address(0));
 		uint256 _denominationNameIndex = denominationIndex[denominationName];
-		AOToken _newDenominationToken = AOToken(denominationAddress);
+		AOTokenInterface _newDenominationToken = AOTokenInterface(denominationAddress);
 		if (_denominationNameIndex > 1) {
-			AOToken _prevDenominationToken = AOToken(denominations[_denominationNameIndex - 1].denominationAddress);
+			AOTokenInterface _prevDenominationToken = AOTokenInterface(denominations[_denominationNameIndex - 1].denominationAddress);
 			require (_newDenominationToken.powerOfTen() > _prevDenominationToken.powerOfTen());
 		}
 		if (_denominationNameIndex < totalDenominations) {
-			AOToken _lastDenominationToken = AOToken(denominations[totalDenominations].denominationAddress);
+			AOTokenInterface _lastDenominationToken = AOTokenInterface(denominations[totalDenominations].denominationAddress);
 			require (_newDenominationToken.powerOfTen() < _lastDenominationToken.powerOfTen());
 		}
 		denominations[denominationIndex[denominationName]].denominationAddress = denominationAddress;
@@ -138,7 +138,7 @@ contract AOTreasury is TheAO {
 		require (denominationName.length != 0);
 		require (denominationIndex[denominationName] > 0);
 		require (denominations[denominationIndex[denominationName]].denominationAddress != address(0));
-		AOToken _ao = AOToken(denominations[denominationIndex[denominationName]].denominationAddress);
+		AOTokenInterface _ao = AOTokenInterface(denominations[denominationIndex[denominationName]].denominationAddress);
 		return (
 			denominations[denominationIndex[denominationName]].name,
 			denominations[denominationIndex[denominationName]].denominationAddress,
@@ -162,7 +162,7 @@ contract AOTreasury is TheAO {
 	function getDenominationByIndex(uint256 index) public view returns (bytes8, address, string, string, uint8, uint256) {
 		require (index > 0 && index <= totalDenominations);
 		require (denominations[index].denominationAddress != address(0));
-		AOToken _ao = AOToken(denominations[index].denominationAddress);
+		AOTokenInterface _ao = AOTokenInterface(denominations[index].denominationAddress);
 		return (
 			denominations[index].name,
 			denominations[index].denominationAddress,
@@ -208,7 +208,7 @@ contract AOTreasury is TheAO {
 			(integerAmount > 0 || fractionAmount > 0)) {
 
 			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
-			AOToken _denominationToken = AOToken(_denomination.denominationAddress);
+			AOTokenInterface _denominationToken = AOTokenInterface(_denomination.denominationAddress);
 			uint8 fractionNumDigits = _numDigits(fractionAmount);
 			require (fractionNumDigits <= _denominationToken.decimals());
 			uint256 baseInteger = integerAmount.mul(10 ** _denominationToken.powerOfTen());
@@ -231,7 +231,7 @@ contract AOTreasury is TheAO {
 	 */
 	function fromBase(uint256 integerAmount, bytes8 denominationName) public isValidDenomination(denominationName) view returns (uint256, uint256) {
 		Denomination memory _denomination = denominations[denominationIndex[denominationName]];
-		AOToken _denominationToken = AOToken(_denomination.denominationAddress);
+		AOTokenInterface _denominationToken = AOTokenInterface(_denomination.denominationAddress);
 		uint256 denominationInteger = integerAmount.div(10 ** _denominationToken.powerOfTen());
 		uint256 denominationFraction = integerAmount.sub(denominationInteger.mul(10 ** _denominationToken.powerOfTen()));
 		return (denominationInteger, denominationFraction);
@@ -247,8 +247,8 @@ contract AOTreasury is TheAO {
 		require (amount > 0);
 		Denomination memory _fromDenomination = denominations[denominationIndex[fromDenominationName]];
 		Denomination memory _toDenomination = denominations[denominationIndex[toDenominationName]];
-		AOToken _fromDenominationToken = AOToken(_fromDenomination.denominationAddress);
-		AOToken _toDenominationToken = AOToken(_toDenomination.denominationAddress);
+		AOTokenInterface _fromDenominationToken = AOTokenInterface(_fromDenomination.denominationAddress);
+		AOTokenInterface _toDenominationToken = AOTokenInterface(_toDenomination.denominationAddress);
 		require (_fromDenominationToken.whitelistBurnFrom(msg.sender, amount));
 		require (_toDenominationToken.mintToken(msg.sender, amount));
 		emit Exchange(msg.sender, amount, fromDenominationName, toDenominationName);
@@ -281,7 +281,7 @@ contract AOTreasury is TheAO {
 		require (index > 0 && index <= totalDenominations);
 		require (integerAmount > 0 || fractionAmount > 0);
 		require (denominations[index].denominationAddress != address(0));
-		AOToken _ao = AOToken(denominations[index].denominationAddress);
+		AOTokenInterface _ao = AOTokenInterface(denominations[index].denominationAddress);
 		return (
 			denominations[index].name,
 			denominations[index].denominationAddress,

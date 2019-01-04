@@ -1,8 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './TheAO.sol';
-import './TokenERC20.sol';
+import './AOTokenInterface.sol';
 import './tokenRecipient.sol';
 import './AOLibrary.sol';
 import './AOSetting.sol';
@@ -10,7 +9,7 @@ import './AOSetting.sol';
 /**
  * @title AOToken
  */
-contract AOToken is TheAO, TokenERC20 {
+contract AOToken is AOTokenInterface {
 	using SafeMath for uint256;
 
 	address public settingTAOId;
@@ -21,30 +20,11 @@ contract AOToken is TheAO, TokenERC20 {
 
 	AOSetting internal _aoSetting;
 
-	// To differentiate denomination of AO
-	uint256 public powerOfTen;
-
-	/***** NETWORK TOKEN VARIABLES *****/
-	uint256 public sellPrice;
-	uint256 public buyPrice;
-
-	mapping (address => bool) public frozenAccount;
-	mapping (address => uint256) public stakedBalance;
-	mapping (address => uint256) public escrowedBalance;
-
-	// This generates a public event on the blockchain that will notify clients
-	event FrozenFunds(address target, bool frozen);
-	event Stake(address indexed from, uint256 value);
-	event Unstake(address indexed from, uint256 value);
-	event Escrow(address indexed from, address indexed to, uint256 value);
-	event Unescrow(address indexed from, uint256 value);
-
 	/***** PRIMORDIAL TOKEN VARIABLES *****/
 	uint256 public primordialTotalSupply;
 	uint256 public primordialTotalBought;
 	uint256 public primordialSellPrice;
 	uint256 public primordialBuyPrice;
-	bool public networkExchangeContract;
 
 	// Total available primordial token for sale 1,125,899,906,842,620 AO+
 	uint256 constant public TOTAL_PRIMORDIAL_FOR_SALE = 1125899906842620;
@@ -133,23 +113,14 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @dev Constructor function
 	 */
 	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _settingTAOId, address _aoSettingAddress)
-		TokenERC20(initialSupply, tokenName, tokenSymbol) public {
+		AOTokenInterface(initialSupply, tokenName, tokenSymbol) public {
 		settingTAOId = _settingTAOId;
 		aoSettingAddress = _aoSettingAddress;
 		_aoSetting = AOSetting(_aoSettingAddress);
 
 		powerOfTen = 0;
 		decimals = 0;
-		networkExchangeContract = true;
 		setPrimordialPrices(0, 10000); // Set Primordial buy price to 10000 Wei/token
-	}
-
-	/**
-	 * @dev Checks if this is the Primordial contract
-	 */
-	modifier isNetworkExchange {
-		require (networkExchangeContract == true);
-		_;
 	}
 
 	/**
@@ -171,144 +142,13 @@ contract AOToken is TheAO, TokenERC20 {
 		aoDevTeam2 = _aoDevTeam2;
 	}
 
-	/***** NETWORK TOKEN The AO ONLY METHODS *****/
-	/**
-	 * @dev Prevent/Allow target from sending & receiving tokens
-	 * @param target Address to be frozen
-	 * @param freeze Either to freeze it or not
-	 */
-	function freezeAccount(address target, bool freeze) public onlyTheAO {
-		frozenAccount[target] = freeze;
-		emit FrozenFunds(target, freeze);
-	}
-
-	/**
-	 * @dev Allow users to buy tokens for `newBuyPrice` eth and sell tokens for `newSellPrice` eth
-	 * @param newSellPrice Price users can sell to the contract
-	 * @param newBuyPrice Price users can buy from the contract
-	 */
-	function setPrices(uint256 newSellPrice, uint256 newBuyPrice) public onlyTheAO {
-		sellPrice = newSellPrice;
-		buyPrice = newBuyPrice;
-	}
-
-	/***** NETWORK TOKEN WHITELISTED ADDRESS ONLY METHODS *****/
-	/**
-	 * @dev Create `mintedAmount` tokens and send it to `target`
-	 * @param target Address to receive the tokens
-	 * @param mintedAmount The amount of tokens it will receive
-	 * @return true on success
-	 */
-	function mintToken(address target, uint256 mintedAmount) public inWhitelist(msg.sender) returns (bool) {
-		_mintToken(target, mintedAmount);
-		return true;
-	}
-
-	/**
-	 * @dev Stake `_value` tokens on behalf of `_from`
-	 * @param _from The address of the target
-	 * @param _value The amount to stake
-	 * @return true on success
-	 */
-	function stakeFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
-		require (balanceOf[_from] >= _value);						// Check if the targeted balance is enough
-		balanceOf[_from] = balanceOf[_from].sub(_value);			// Subtract from the targeted balance
-		stakedBalance[_from] = stakedBalance[_from].add(_value);	// Add to the targeted staked balance
-		emit Stake(_from, _value);
-		return true;
-	}
-
-	/**
-	 * @dev Unstake `_value` tokens on behalf of `_from`
-	 * @param _from The address of the target
-	 * @param _value The amount to unstake
-	 * @return true on success
-	 */
-	function unstakeFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
-		require (stakedBalance[_from] >= _value);					// Check if the targeted staked balance is enough
-		stakedBalance[_from] = stakedBalance[_from].sub(_value);	// Subtract from the targeted staked balance
-		balanceOf[_from] = balanceOf[_from].add(_value);			// Add to the targeted balance
-		emit Unstake(_from, _value);
-		return true;
-	}
-
-	/**
-	 * @dev Store `_value` from `_from` to `_to` in escrow
-	 * @param _from The address of the sender
-	 * @param _to The address of the recipient
-	 * @param _value The amount of network tokens to put in escrow
-	 * @return true on success
-	 */
-	function escrowFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
-		require (balanceOf[_from] >= _value);						// Check if the targeted balance is enough
-		balanceOf[_from] = balanceOf[_from].sub(_value);			// Subtract from the targeted balance
-		escrowedBalance[_to] = escrowedBalance[_to].add(_value);	// Add to the targeted escrowed balance
-		emit Escrow(_from, _to, _value);
-		return true;
-	}
-
-	/**
-	 * @dev Create `mintedAmount` tokens and send it to `target` escrow balance
-	 * @param target Address to receive the tokens
-	 * @param mintedAmount The amount of tokens it will receive in escrow
-	 */
-	function mintTokenEscrow(address target, uint256 mintedAmount) public inWhitelist(msg.sender) returns (bool) {
-		escrowedBalance[target] = escrowedBalance[target].add(mintedAmount);
-		totalSupply = totalSupply.add(mintedAmount);
-		emit Escrow(this, target, mintedAmount);
-		return true;
-	}
-
-	/**
-	 * @dev Release escrowed `_value` from `_from`
-	 * @param _from The address of the sender
-	 * @param _value The amount of escrowed network tokens to be released
-	 * @return true on success
-	 */
-	function unescrowFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
-		require (escrowedBalance[_from] >= _value);						// Check if the targeted escrowed balance is enough
-		escrowedBalance[_from] = escrowedBalance[_from].sub(_value);	// Subtract from the targeted escrowed balance
-		balanceOf[_from] = balanceOf[_from].add(_value);				// Add to the targeted balance
-		emit Unescrow(_from, _value);
-		return true;
-	}
-
-	/**
-	 *
-	 * @dev Whitelisted address remove `_value` tokens from the system irreversibly on behalf of `_from`.
-	 *
-	 * @param _from the address of the sender
-	 * @param _value the amount of money to burn
-	 */
-	function whitelistBurnFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool success) {
-		require(balanceOf[_from] >= _value);                // Check if the targeted balance is enough
-		balanceOf[_from] = balanceOf[_from].sub(_value);    // Subtract from the targeted balance
-		totalSupply = totalSupply.sub(_value);              // Update totalSupply
-		emit Burn(_from, _value);
-		return true;
-	}
-
-	/**
-	 * @dev Whitelisted address transfer tokens from other address
-	 *
-	 * Send `_value` tokens to `_to` in behalf of `_from`
-	 *
-	 * @param _from The address of the sender
-	 * @param _to The address of the recipient
-	 * @param _value the amount to send
-	 */
-	function whitelistTransferFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool success) {
-		_transfer(_from, _to, _value);
-		return true;
-	}
-
 	/***** PRIMORDIAL TOKEN The AO ONLY METHODS *****/
 	/**
 	 * @dev Allow users to buy Primordial tokens for `newBuyPrice` eth and sell Primordial tokens for `newSellPrice` eth
 	 * @param newPrimordialSellPrice Price users can sell to the contract
 	 * @param newPrimordialBuyPrice Price users can buy from the contract
 	 */
-	function setPrimordialPrices(uint256 newPrimordialSellPrice, uint256 newPrimordialBuyPrice) public onlyTheAO isNetworkExchange {
+	function setPrimordialPrices(uint256 newPrimordialSellPrice, uint256 newPrimordialBuyPrice) public onlyTheAO {
 		primordialSellPrice = newPrimordialSellPrice;
 		primordialBuyPrice = newPrimordialBuyPrice;
 	}
@@ -321,7 +161,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _weightedMultiplier The weighted multiplier of the Primordial tokens
 	 * @return true on success
 	 */
-	function stakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist(msg.sender) isNetworkExchange returns (bool) {
+	function stakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist(msg.sender) returns (bool) {
 		// Check if the targeted balance is enough
 		require (primordialBalanceOf[_from] >= _value);
 		// Make sure the weighted multiplier is the same as account's current weighted multiplier
@@ -341,7 +181,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _weightedMultiplier The weighted multiplier of the Primordial tokens
 	 * @return true on success
 	 */
-	function unstakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist(msg.sender) isNetworkExchange returns (bool) {
+	function unstakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist(msg.sender) returns (bool) {
 		// Check if the targeted staked balance is enough
 		require (primordialStakedBalance[_from][_weightedMultiplier] >= _value);
 		// Subtract from the targeted staked balance
@@ -353,33 +193,11 @@ contract AOToken is TheAO, TokenERC20 {
 	}
 
 	/***** PUBLIC METHODS *****/
-	/***** NETWORK TOKEN PUBLIC METHODS *****/
-	/**
-	 * @dev Buy tokens from contract by sending ether
-	 */
-	function buy() public payable {
-		require (buyPrice > 0);
-		uint256 amount = msg.value.div(buyPrice);
-		_transfer(this, msg.sender, amount);
-	}
-
-	/**
-	 * @dev Sell `amount` tokens to contract
-	 * @param amount The amount of tokens to be sold
-	 */
-	function sell(uint256 amount) public {
-		require (sellPrice > 0);
-		address myAddress = this;
-		require (myAddress.balance >= amount.mul(sellPrice));
-		_transfer(msg.sender, this, amount);
-		msg.sender.transfer(amount.mul(sellPrice));
-	}
-
 	/***** Primordial TOKEN PUBLIC METHODS *****/
 	/**
 	 * @dev Buy Primordial tokens from contract by sending ether
 	 */
-	function buyPrimordialToken() public payable isNetworkExchange canBuyPrimordial(msg.value) {
+	function buyPrimordialToken() public payable canBuyPrimordial(msg.value) {
 		(uint256 tokenAmount, uint256 remainderBudget, bool shouldEndNetworkExchange) = _calculateTokenAmountAndRemainderBudget(msg.value);
 		require (tokenAmount > 0);
 
@@ -403,7 +221,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _value The amount to send
 	 * @return true on success
 	 */
-	function transferPrimordialToken(address _to, uint256 _value) public isNetworkExchange returns (bool success) {
+	function transferPrimordialToken(address _to, uint256 _value) public returns (bool success) {
 		bytes32 _createdLotId = _createWeightedMultiplierLot(_to, _value, ownerWeightedMultiplier[msg.sender]);
 		Lot memory _lot = lots[_createdLotId];
 
@@ -426,7 +244,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _value The amount to send
 	 * @return true on success
 	 */
-	function transferPrimordialTokenFrom(address _from, address _to, uint256 _value) public isNetworkExchange returns (bool success) {
+	function transferPrimordialTokenFrom(address _from, address _to, uint256 _value) public returns (bool success) {
 		require (_value <= primordialAllowance[_from][msg.sender]);
 		primordialAllowance[_from][msg.sender] = primordialAllowance[_from][msg.sender].sub(_value);
 
@@ -451,7 +269,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _value The max amount they can spend
 	 * @return true on success
 	 */
-	function approvePrimordialToken(address _spender, uint256 _value) public isNetworkExchange returns (bool success) {
+	function approvePrimordialToken(address _spender, uint256 _value) public returns (bool success) {
 		primordialAllowance[msg.sender][_spender] = _value;
 		emit PrimordialApproval(msg.sender, _spender, _value);
 		return true;
@@ -464,7 +282,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _extraData some extra information to send to the approved contract
 	 * @return true on success
 	 */
-	function approvePrimordialTokenAndCall(address _spender, uint256 _value, bytes _extraData) public isNetworkExchange returns (bool success) {
+	function approvePrimordialTokenAndCall(address _spender, uint256 _value, bytes _extraData) public returns (bool success) {
 		tokenRecipient spender = tokenRecipient(_spender);
 		if (approvePrimordialToken(_spender, _value)) {
 			spender.receiveApproval(msg.sender, _value, this, _extraData);
@@ -478,7 +296,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _value The amount to burn
 	 * @return true on success
 	 */
-	function burnPrimordialToken(uint256 _value) public isNetworkExchange returns (bool success) {
+	function burnPrimordialToken(uint256 _value) public returns (bool success) {
 		require (primordialBalanceOf[msg.sender] >= _value);
 		require (calculateMaximumBurnAmount(msg.sender) >= _value);
 
@@ -500,7 +318,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _value The amount to burn
 	 * @return true on success
 	 */
-	function burnPrimordialTokenFrom(address _from, uint256 _value) public isNetworkExchange returns (bool success) {
+	function burnPrimordialTokenFrom(address _from, uint256 _value) public returns (bool success) {
 		require (primordialBalanceOf[_from] >= _value);
 		require (primordialAllowance[_from][msg.sender] >= _value);
 		require (calculateMaximumBurnAmount(_from) >= _value);
@@ -522,7 +340,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _lotOwner The address of the lot owner
 	 * @return array of lot IDs
 	 */
-	function lotIdsByAddress(address _lotOwner) public isNetworkExchange view returns (bytes32[]) {
+	function lotIdsByAddress(address _lotOwner) public view returns (bytes32[]) {
 		return ownedLots[_lotOwner];
 	}
 
@@ -531,7 +349,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _lotOwner The address of the lot owner
 	 * @return total lots owner by the address
 	 */
-	function totalLotsByAddress(address _lotOwner) public isNetworkExchange view returns (uint256) {
+	function totalLotsByAddress(address _lotOwner) public view returns (uint256) {
 		return ownedLots[_lotOwner].length;
 	}
 
@@ -544,7 +362,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @return multiplier of the lot in (10 ** 6)
 	 * @return Primordial token amount in the lot
 	 */
-	function lotOfOwnerByIndex(address _lotOwner, uint256 _index) public isNetworkExchange view returns (bytes32, address, uint256, uint256) {
+	function lotOfOwnerByIndex(address _lotOwner, uint256 _index) public view returns (bytes32, address, uint256, uint256) {
 		require (_index < ownedLots[_lotOwner].length);
 		Lot memory _lot = lots[ownedLots[_lotOwner][_index]];
 		return (_lot.lotId, _lot.lotOwner, _lot.multiplier, _lot.tokenAmount);
@@ -558,7 +376,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @return multiplier of the lot in (10 ** 6)
 	 * @return Primordial token amount in the lot
 	 */
-	function lotById(bytes32 _lotId) public isNetworkExchange view returns (bytes32, address, uint256, uint256) {
+	function lotById(bytes32 _lotId) public view returns (bytes32, address, uint256, uint256) {
 		Lot memory _lot = lots[_lotId];
 		return (_lot.lotId, _lot.lotOwner, _lot.multiplier, _lot.tokenAmount);
 	}
@@ -568,7 +386,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _lotOwner The address of the burn lot owner
 	 * @return array of Burn Lot IDs
 	 */
-	function burnLotIdsByAddress(address _lotOwner) public isNetworkExchange view returns (bytes32[]) {
+	function burnLotIdsByAddress(address _lotOwner) public view returns (bytes32[]) {
 		return ownedBurnLots[_lotOwner];
 	}
 
@@ -577,7 +395,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _lotOwner The address of the burn lot owner
 	 * @return total burn lots owner by the address
 	 */
-	function totalBurnLotsByAddress(address _lotOwner) public isNetworkExchange view returns (uint256) {
+	function totalBurnLotsByAddress(address _lotOwner) public view returns (uint256) {
 		return ownedBurnLots[_lotOwner].length;
 	}
 
@@ -588,7 +406,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @return The address of the burn lot owner
 	 * @return Primordial token amount in the burn lot
 	 */
-	function burnLotById(bytes32 _burnLotId) public isNetworkExchange view returns (bytes32, address, uint256) {
+	function burnLotById(bytes32 _burnLotId) public view returns (bytes32, address, uint256) {
 		BurnLot memory _burnLot = burnLots[_burnLotId];
 		return (_burnLot.burnLotId, _burnLot.lotOwner, _burnLot.tokenAmount);
 	}
@@ -598,7 +416,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _lotOwner The address of the convert lot owner
 	 * @return array of Convert Lot IDs
 	 */
-	function convertLotIdsByAddress(address _lotOwner) public isNetworkExchange view returns (bytes32[]) {
+	function convertLotIdsByAddress(address _lotOwner) public view returns (bytes32[]) {
 		return ownedConvertLots[_lotOwner];
 	}
 
@@ -607,7 +425,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _lotOwner The address of the convert lot owner
 	 * @return total convert lots owner by the address
 	 */
-	function totalConvertLotsByAddress(address _lotOwner) public isNetworkExchange view returns (uint256) {
+	function totalConvertLotsByAddress(address _lotOwner) public view returns (uint256) {
 		return ownedConvertLots[_lotOwner].length;
 	}
 
@@ -618,7 +436,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @return The address of the convert lot owner
 	 * @return Primordial token amount in the convert lot
 	 */
-	function convertLotById(bytes32 _convertLotId) public isNetworkExchange view returns (bytes32, address, uint256) {
+	function convertLotById(bytes32 _convertLotId) public view returns (bytes32, address, uint256) {
 		ConvertLot memory _convertLot = convertLots[_convertLotId];
 		return (_convertLot.convertLotId, _convertLot.lotOwner, _convertLot.tokenAmount);
 	}
@@ -628,7 +446,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _lotOwner The address of the lot owner
 	 * @return the weighted multiplier of the address (in 10 ** 6)
 	 */
-	function weightedMultiplierByAddress(address _lotOwner) public isNetworkExchange view returns (uint256) {
+	function weightedMultiplierByAddress(address _lotOwner) public view returns (uint256) {
 		return ownerWeightedMultiplier[_lotOwner];
 	}
 
@@ -637,7 +455,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _target The address to query
 	 * @return the max multiplier of the address (in 10 ** 6)
 	 */
-	function maxMultiplierByAddress(address _target) public isNetworkExchange view returns (uint256) {
+	function maxMultiplierByAddress(address _target) public view returns (uint256) {
 		return (ownedLots[_target].length > 0) ? ownerMaxMultiplier[_target] : 0;
 	}
 
@@ -650,7 +468,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @return The bonus percentage
 	 * @return The amount of network token as bonus
 	 */
-	function calculateMultiplierAndBonus(uint256 _purchaseAmount) public isNetworkExchange view returns (uint256, uint256, uint256) {
+	function calculateMultiplierAndBonus(uint256 _purchaseAmount) public view returns (uint256, uint256, uint256) {
 		(uint256 startingPrimordialMultiplier, uint256 endingPrimordialMultiplier, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
 		return (
 			AOLibrary.calculatePrimordialMultiplier(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingPrimordialMultiplier, endingPrimordialMultiplier),
@@ -664,7 +482,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _account The address of the account
 	 * @return The maximum primordial token amount to burn
 	 */
-	function calculateMaximumBurnAmount(address _account) public isNetworkExchange view returns (uint256) {
+	function calculateMaximumBurnAmount(address _account) public view returns (uint256) {
 		return AOLibrary.calculateMaximumBurnAmount(primordialBalanceOf[_account], ownerWeightedMultiplier[_account], ownerMaxMultiplier[_account]);
 	}
 
@@ -674,7 +492,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _amountToBurn The amount of primordial token to burn
 	 * @return The new multiplier in (10 ** 6)
 	 */
-	function calculateMultiplierAfterBurn(address _account, uint256 _amountToBurn) public isNetworkExchange view returns (uint256) {
+	function calculateMultiplierAfterBurn(address _account, uint256 _amountToBurn) public view returns (uint256) {
 		require (calculateMaximumBurnAmount(_account) >= _amountToBurn);
 		return AOLibrary.calculateMultiplierAfterBurn(primordialBalanceOf[_account], ownerWeightedMultiplier[_account], _amountToBurn);
 	}
@@ -685,7 +503,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _amountToConvert The amount of network token to convert
 	 * @return The new multiplier in (10 ** 6)
 	 */
-	function calculateMultiplierAfterConversion(address _account, uint256 _amountToConvert) public isNetworkExchange view returns (uint256) {
+	function calculateMultiplierAfterConversion(address _account, uint256 _amountToConvert) public view returns (uint256) {
 		return AOLibrary.calculateMultiplierAfterConversion(primordialBalanceOf[_account], ownerWeightedMultiplier[_account], _amountToConvert);
 	}
 
@@ -695,7 +513,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _value The amount to convert
 	 * @return true on success
 	 */
-	function convertToPrimordial(uint256 _value) public isNetworkExchange returns (bool success) {
+	function convertToPrimordial(uint256 _value) public returns (bool success) {
 		require (balanceOf[msg.sender] >= _value);
 
 		// Update the account's multiplier
@@ -731,7 +549,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _primordialValue The amount of Primordial tokens to send
 	 * @return true on success
 	 */
-	function transferTokens(address _to, uint256 _value, uint256 _primordialValue) public isNetworkExchange returns (bool success) {
+	function transferTokens(address _to, uint256 _value, uint256 _primordialValue) public returns (bool success) {
 		require (super.transfer(_to, _value));
 		require (transferPrimordialToken(_to, _primordialValue));
 		return true;
@@ -745,7 +563,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _primordialValue The amount of Primordial tokens to send
 	 * @return true on success
 	 */
-	function transferTokensFrom(address _from, address _to, uint256 _value, uint256 _primordialValue) public isNetworkExchange returns (bool success) {
+	function transferTokensFrom(address _from, address _to, uint256 _value, uint256 _primordialValue) public returns (bool success) {
 		require (super.transferFrom(_from, _to, _value));
 		require (transferPrimordialTokenFrom(_from, _to, _primordialValue));
 		return true;
@@ -758,7 +576,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _primordialValue The max amount of network tokens they can spend
 	 * @return true on success
 	 */
-	function approveTokens(address _spender, uint256 _value, uint256 _primordialValue) public isNetworkExchange returns (bool success) {
+	function approveTokens(address _spender, uint256 _value, uint256 _primordialValue) public returns (bool success) {
 		require (super.approve(_spender, _value));
 		require (approvePrimordialToken(_spender, _primordialValue));
 		return true;
@@ -772,7 +590,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _extraData some extra information to send to the approved contract
 	 * @return true on success
 	 */
-	function approveTokensAndCall(address _spender, uint256 _value, uint256 _primordialValue, bytes _extraData) public isNetworkExchange returns (bool success) {
+	function approveTokensAndCall(address _spender, uint256 _value, uint256 _primordialValue, bytes _extraData) public returns (bool success) {
 		require (super.approveAndCall(_spender, _value, _extraData));
 		require (approvePrimordialTokenAndCall(_spender, _primordialValue, _extraData));
 		return true;
@@ -784,7 +602,7 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _primordialValue The amount of Primordial tokens to burn
 	 * @return true on success
 	 */
-	function burnTokens(uint256 _value, uint256 _primordialValue) public isNetworkExchange returns (bool success) {
+	function burnTokens(uint256 _value, uint256 _primordialValue) public returns (bool success) {
 		require (super.burn(_value));
 		require (burnPrimordialToken(_primordialValue));
 		return true;
@@ -797,45 +615,13 @@ contract AOToken is TheAO, TokenERC20 {
 	 * @param _primordialValue The amount of Primordial tokens to burn
 	 * @return true on success
 	 */
-	function burnTokensFrom(address _from, uint256 _value, uint256 _primordialValue) public isNetworkExchange returns (bool success) {
+	function burnTokensFrom(address _from, uint256 _value, uint256 _primordialValue) public returns (bool success) {
 		require (super.burnFrom(_from, _value));
 		require (burnPrimordialTokenFrom(_from, _primordialValue));
 		return true;
 	}
 
 	/***** INTERNAL METHODS *****/
-	/***** NETWORK TOKENS INTERNAL METHODS *****/
-	/**
-	 * @dev Send `_value` tokens from `_from` to `_to`
-	 * @param _from The address of sender
-	 * @param _to The address of the recipient
-	 * @param _value The amount to send
-	 */
-	function _transfer(address _from, address _to, uint256 _value) internal {
-		require (_to != address(0));							// Prevent transfer to 0x0 address. Use burn() instead
-		require (balanceOf[_from] >= _value);					// Check if the sender has enough
-		require (balanceOf[_to].add(_value) >= balanceOf[_to]); // Check for overflows
-		require (!frozenAccount[_from]);						// Check if sender is frozen
-		require (!frozenAccount[_to]);							// Check if recipient is frozen
-		uint256 previousBalances = balanceOf[_from].add(balanceOf[_to]);
-		balanceOf[_from] = balanceOf[_from].sub(_value);        // Subtract from the sender
-		balanceOf[_to] = balanceOf[_to].add(_value);            // Add the same to the recipient
-		emit Transfer(_from, _to, _value);
-		assert(balanceOf[_from].add(balanceOf[_to]) == previousBalances);
-	}
-
-	/**
-	 * @dev Create `mintedAmount` tokens and send it to `target`
-	 * @param target Address to receive the tokens
-	 * @param mintedAmount The amount of tokens it will receive
-	 */
-	function _mintToken(address target, uint256 mintedAmount) internal {
-		balanceOf[target] = balanceOf[target].add(mintedAmount);
-		totalSupply = totalSupply.add(mintedAmount);
-		emit Transfer(0, this, mintedAmount);
-		emit Transfer(this, target, mintedAmount);
-	}
-
 	/***** PRIMORDIAL TOKEN INTERNAL METHODS *****/
 	/**
 	 * @dev Calculate the amount of token the buyer will receive and remaining budget if exist

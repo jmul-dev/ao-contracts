@@ -179,7 +179,7 @@ contract AOEarning is TheAO {
 	 * @param _newBaseDenominationAddress The new address
 	 */
 	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyTheAO {
-		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0 && AOToken(_newBaseDenominationAddress).networkExchangeContract() == true);
+		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0);
 		baseDenominationAddress = _newBaseDenominationAddress;
 		_baseAO = AOToken(baseDenominationAddress);
 	}
