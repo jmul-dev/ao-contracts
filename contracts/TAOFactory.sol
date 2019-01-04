@@ -20,6 +20,7 @@ contract TAOFactory is TAOController, TheAO {
 
 	address public nameTAOPositionAddress;
 	address public taoFamilyAddress;
+	address public nameTAOVaultAddress;
 	address public settingTAOId;
 
 	NameTAOLookup internal _nameTAOLookup;
@@ -36,9 +37,10 @@ contract TAOFactory is TAOController, TheAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _nameTAOLookupAddress, address _nameTAOPositionAddress, address _aoSettingAddress, address _logosAddress)
+	constructor(address _nameFactoryAddress, address _nameTAOLookupAddress, address _nameTAOPositionAddress, address _aoSettingAddress, address _logosAddress, address _nameTAOVaultAddress)
 		TAOController(_nameFactoryAddress, _nameTAOPositionAddress) public {
 		nameTAOPositionAddress = _nameTAOPositionAddress;
+		nameTAOVaultAddress = _nameTAOVaultAddress;
 
 		_nameTAOLookup = NameTAOLookup(_nameTAOLookupAddress);
 		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
@@ -122,7 +124,7 @@ contract TAOFactory is TAOController, TheAO {
 		}
 
 		// Create the TAO
-		address taoId = new TAO(_name, _nameId, _datHash, _database, _keyValue, _contentId);
+		address taoId = new TAO(_name, _nameId, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
 
 		// Increment the nonce
 		nonces[taoId]++;

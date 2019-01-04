@@ -41,6 +41,7 @@ var PathosTreasury = artifacts.require("./PathosTreasury.sol");
 
 // Name/TAO Contracts
 var Position = artifacts.require("./Position.sol");
+var NameTAOVault = artifacts.require("./NameTAOVault.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var NameTAOLookup = artifacts.require("./NameTAOLookup.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
@@ -123,6 +124,7 @@ module.exports = function(deployer, network, accounts) {
 		pathosxona,
 		pathostreasury,
 		position,
+		nametaovault,
 		namefactory,
 		nametaolookup,
 		nametaoposition,
@@ -184,6 +186,7 @@ module.exports = function(deployer, network, accounts) {
 	deployer.link(AOLibrary, PathosZetta);
 	deployer.link(AOLibrary, PathosYotta);
 	deployer.link(AOLibrary, PathosXona);
+	deployer.link(AOLibrary, NameTAOVault);
 	deployer.link(AOLibrary, NameFactory);
 	deployer.link(AOLibrary, NameTAOPosition);
 	deployer.link(AOLibrary, NamePublicKey);
@@ -227,6 +230,7 @@ module.exports = function(deployer, network, accounts) {
 		[PathosYotta, 0, "Pathos Yotta", "PATHOSYOTTA"],
 		[PathosXona, 0, "Pathos Xona", "PATHOSXONA"],
 		[Position, 0, "AO Position", "AOPOS"],
+		NameTAOVault,
 		AOUintSetting,
 		AOBoolSetting,
 		AOAddressSetting,
@@ -257,19 +261,23 @@ module.exports = function(deployer, network, accounts) {
 			pathosyotta = await PathosYotta.deployed();
 			pathosxona = await PathosXona.deployed();
 			position = await Position.deployed();
+			nametaovault = await NameTAOVault.deployed();
 			aouintsetting = await AOUintSetting.deployed();
 			aoboolsetting = await AOBoolSetting.deployed();
 			aoaddresssetting = await AOAddressSetting.deployed();
 			aobytessetting = await AOBytesSetting.deployed();
 			aostringsetting = await AOStringSetting.deployed();
 
-			return deployer.deploy(NameFactory, position.address);
+			return deployer.deploy(NameFactory, position.address, nametaovault.address);
 		})
 		.then(async function() {
 			namefactory = await NameFactory.deployed();
 
 			// position grant access to namefactory
 			await position.setWhitelist(namefactory.address, true, { from: primordialAccount });
+
+			// Link NameFactory to NameTAOVault
+			await nametaovault.setNameFactoryAddress(namefactory.address, { from: primordialAccount });
 
 			// Deploy NameTAOLookup, NameTAOPosition, LogosTreasury, EthosTreasury, PathosTreasury
 			return deployer.deploy([
@@ -292,6 +300,9 @@ module.exports = function(deployer, network, accounts) {
 
 			// Link NameTAOPosition to NameFactory
 			await namefactory.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+
+			// Link NameTAOPosition to NameTAOVault
+			await nametaovault.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
 
 			// Store Ethos denominations in the treasury contract
 			await ethostreasury.addDenomination("ethos", ethos.address, { from: primordialAccount });
@@ -434,7 +445,8 @@ module.exports = function(deployer, network, accounts) {
 				nametaolookup.address,
 				nametaoposition.address,
 				aosetting.address,
-				logos.address
+				logos.address,
+				nametaovault.address
 			);
 		})
 		.then(async function() {
@@ -859,15 +871,15 @@ module.exports = function(deployer, network, accounts) {
 			// Deploy AOToken and all of the denominations
 			return deployer.deploy([
 				[AOToken, 0, "AO Token", "AOTKN", settingTAOId, aosetting.address],
-				[AOKilo, 0, "AO Kilo", "AOKILO", settingTAOId, aosetting.address],
-				[AOMega, 0, "AO Mega", "AOMEGA", settingTAOId, aosetting.address],
-				[AOGiga, 0, "AO Giga", "AOGIGA", settingTAOId, aosetting.address],
-				[AOTera, 0, "AO Tera", "AOTERA", settingTAOId, aosetting.address],
-				[AOPeta, 0, "AO Peta", "AOPETA", settingTAOId, aosetting.address],
-				[AOExa, 0, "AO Exa", "AOEXA", settingTAOId, aosetting.address],
-				[AOZetta, 0, "AO Zetta", "AOZETTA", settingTAOId, aosetting.address],
-				[AOYotta, 0, "AO Yotta", "AOYOTTA", settingTAOId, aosetting.address],
-				[AOXona, 0, "AO Xona", "AOXONA", settingTAOId, aosetting.address],
+				[AOKilo, 0, "AO Kilo", "AOKILO"],
+				[AOMega, 0, "AO Mega", "AOMEGA"],
+				[AOGiga, 0, "AO Giga", "AOGIGA"],
+				[AOTera, 0, "AO Tera", "AOTERA"],
+				[AOPeta, 0, "AO Peta", "AOPETA"],
+				[AOExa, 0, "AO Exa", "AOEXA"],
+				[AOZetta, 0, "AO Zetta", "AOZETTA"],
+				[AOYotta, 0, "AO Yotta", "AOYOTTA"],
+				[AOXona, 0, "AO Xona", "AOXONA"],
 				AOTreasury
 			]);
 		})
@@ -883,6 +895,9 @@ module.exports = function(deployer, network, accounts) {
 			aoyotta = await AOYotta.deployed();
 			aoxona = await AOXona.deployed();
 			aotreasury = await AOTreasury.deployed();
+
+			// Link AOToken to NameTAOVault
+			await nametaovault.setAOTokenAddress(aotoken.address, { from: primordialAccount });
 
 			// Store AO denominations in the treasury contract
 			await aotreasury.addDenomination("ao", aotoken.address, { from: primordialAccount });
@@ -907,6 +922,9 @@ module.exports = function(deployer, network, accounts) {
 			await aozetta.setWhitelist(aotreasury.address, true, { from: primordialAccount });
 			await aoyotta.setWhitelist(aotreasury.address, true, { from: primordialAccount });
 			await aoxona.setWhitelist(aotreasury.address, true, { from: primordialAccount });
+
+			// AOToken Grant access to NameTAOVault
+			await aotoken.setWhitelist(nametaovault.address, true, { from: primordialAccount });
 
 			return deployer.deploy([
 				[AOPool, aotoken.address],

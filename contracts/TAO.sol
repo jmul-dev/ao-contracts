@@ -1,6 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
+import './TokenERC20.sol';
 
 /**
  * @title TAO
@@ -8,6 +9,7 @@ import './SafeMath.sol';
 contract TAO {
 	using SafeMath for uint256;
 
+	address public vaultAddress;
 	string public name;				// the name for this TAO
 	address public originId;		// the ID of the Name that created this TAO. If Name, it's the eth address
 
@@ -23,12 +25,17 @@ contract TAO {
 	 */
 	uint8 public typeId;
 
-	uint256 public balance;
-
 	/**
 	 * @dev Constructor function
 	 */
-	constructor (string _name, address _originId, string _datHash, string _database, string _keyValue, bytes32 _contentId) public {
+	constructor (string _name,
+		address _originId,
+		string _datHash,
+		string _database,
+		string _keyValue,
+		bytes32 _contentId,
+		address _vaultAddress
+	) public {
 		name = _name;
 		originId = _originId;
 		datHash = _datHash;
@@ -38,12 +45,39 @@ contract TAO {
 
 		// Creating TAO
 		typeId = 0;
+
+		vaultAddress = _vaultAddress;
 	}
 
 	/**
-	 * @dev Receive ETH
+	 * @dev Checks if calling address is Vault contract
 	 */
-	function () public payable {
-		balance = balance.add(msg.value);
+	modifier onlyVault {
+		require (msg.sender == vaultAddress);
+		_;
+	}
+
+	/**
+	 * @dev Allows Vault to transfer `_amount` of ETH from this TAO to `_recipient`
+	 * @param _recipient The recipient address
+	 * @param _amount The amount to transfer
+	 * @return true on success
+	 */
+	function transferEth(address _recipient, uint256 _amount) public onlyVault returns (bool) {
+		_recipient.transfer(_amount);
+		return true;
+	}
+
+	/**
+	 * @dev Allows Vault to transfer `_amount` of ERC20 Token from this TAO to `_recipient`
+	 * @param _erc20TokenAddress The address of ERC20 Token
+	 * @param _recipient The recipient address
+	 * @param _amount The amount to transfer
+	 * @return true on success
+	 */
+	function transferERC20(address _erc20TokenAddress, address _recipient, uint256 _amount) public onlyVault returns (bool) {
+		TokenERC20 _erc20 = TokenERC20(_erc20TokenAddress);
+		_erc20.transfer(_recipient, _amount);
+		return true;
 	}
 }

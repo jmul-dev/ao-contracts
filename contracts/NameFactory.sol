@@ -18,6 +18,7 @@ contract NameFactory is TheAO {
 	using SafeMath for uint256;
 
 	address public positionAddress;
+	address public nameTAOVaultAddress;
 	address public nameTAOLookupAddress;
 	address public nameTAOPositionAddress;
 	address public namePublicKeyAddress;
@@ -41,8 +42,9 @@ contract NameFactory is TheAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _positionAddress) public {
+	constructor(address _positionAddress, address _nameTAOVaultAddress) public {
 		positionAddress = _positionAddress;
+		nameTAOVaultAddress = _nameTAOVaultAddress;
 		_position = Position(positionAddress);
 	}
 
@@ -114,7 +116,7 @@ contract NameFactory is TheAO {
 		require (ethAddressToNameId[msg.sender] == address(0));
 
 		// The address is the Name ID (which is also a TAO ID)
-		address nameId = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId);
+		address nameId = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
 
 		// Increment the nonce
 		nonces[nameId]++;
