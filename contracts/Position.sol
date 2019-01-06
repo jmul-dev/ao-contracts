@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
 import './TheAO.sol';
+import './AOLibrary.sol';
 
 /**
  * @title Position
@@ -47,13 +48,52 @@ contract Position is TheAO {
 		symbol = tokenSymbol;					// Set the symbol for display purposes
 	}
 
+	/**
+	 * @dev Checks if the calling contract address is The AO
+	 *		OR
+	 *		If The AO is set to a Name/TAO, then check if calling address is the Advocate
+	 */
+	modifier onlyTheAO {
+		require (AOLibrary.isTheAO(msg.sender, theAO, nameTAOPositionAddress));
+		_;
+	}
+
+	/***** The AO ONLY METHODS *****/
+	/**
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
+	}
+
+	/**
+	 * @dev Transfer ownership of The AO to new address
+	 * @param _theAO The new address to be transferred
+	 */
+	function transferOwnership(address _theAO) public onlyTheAO {
+		require (_theAO != address(0));
+		theAO = _theAO;
+	}
+
+	/**
+	 * @dev Whitelist `_account` address to transact on behalf of others
+	 * @param _account The address to whitelist
+	 * @param _whitelist Either to whitelist or not
+	 */
+	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
+		require (_account != address(0));
+		whitelist[_account] = _whitelist;
+	}
+
 	/***** PUBLIC METHODS *****/
 	/**
 	 * @dev Create `MAX_SUPPLY_PER_NAME` tokens and send it to `_nameId`
 	 * @param _nameId Address to receive the tokens
 	 * @return true on success
 	 */
-	function mintToken(address _nameId) public inWhitelist(msg.sender) returns (bool) {
+	function mintToken(address _nameId) public inWhitelist returns (bool) {
 		// Make sure _nameId has not received Position Token
 		require (receivedToken[_nameId] == false);
 
@@ -80,7 +120,7 @@ contract Position is TheAO {
 	 * @param _value The amount to stake
 	 * @return true on success
 	 */
-	function stake(address _nameId, address _taoId, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
+	function stake(address _nameId, address _taoId, uint256 _value) public inWhitelist returns (bool) {
 		require (_value > 0 && _value <= MAX_SUPPLY_PER_NAME);
 		require (balanceOf[_nameId] >= _value);							// Check if the targeted balance is enough
 		balanceOf[_nameId] = balanceOf[_nameId].sub(_value);			// Subtract from the targeted balance
@@ -97,7 +137,7 @@ contract Position is TheAO {
 	 * @param _value The amount to unstake
 	 * @return true on success
 	 */
-	function unstake(address _nameId, address _taoId, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
+	function unstake(address _nameId, address _taoId, uint256 _value) public inWhitelist returns (bool) {
 		require (_value > 0 && _value <= MAX_SUPPLY_PER_NAME);
 		require (taoStakedBalance[_nameId][_taoId] >= _value);	// Check if the targeted staked balance is enough
 		require (totalTAOStakedBalance[_taoId] >= _value);	// Check if the total targeted staked balance is enough

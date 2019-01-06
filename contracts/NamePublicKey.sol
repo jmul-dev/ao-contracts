@@ -12,7 +12,6 @@ contract NamePublicKey {
 	using SafeMath for uint256;
 
 	address public nameFactoryAddress;
-	address public nameTAOPositionAddress;
 
 	NameFactory internal _nameFactory;
 	NameTAOPosition internal _nameTAOPosition;
@@ -40,10 +39,9 @@ contract NamePublicKey {
 	 */
 	constructor(address _nameFactoryAddress, address _nameTAOPositionAddress) public {
 		nameFactoryAddress = _nameFactoryAddress;
-		nameTAOPositionAddress = _nameTAOPositionAddress;
 
 		_nameFactory = NameFactory(_nameFactoryAddress);
-		_nameTAOPosition = NameTAOPosition(_nameTAOPosition);
+		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
 	}
 
 	/**

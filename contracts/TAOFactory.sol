@@ -14,11 +14,10 @@ import './Logos.sol';
  *
  * The purpose of this contract is to allow node to create TAO
  */
-contract TAOFactory is TAOController, TheAO {
+contract TAOFactory is TheAO, TAOController {
 	using SafeMath for uint256;
 	address[] internal taos;
 
-	address public nameTAOPositionAddress;
 	address public taoFamilyAddress;
 	address public nameTAOVaultAddress;
 	address public settingTAOId;
@@ -49,6 +48,16 @@ contract TAOFactory is TAOController, TheAO {
 	}
 
 	/**
+	 * @dev Checks if the calling contract address is The AO
+	 *		OR
+	 *		If The AO is set to a Name/TAO, then check if calling address is the Advocate
+	 */
+	modifier onlyTheAO {
+		require (AOLibrary.isTheAO(msg.sender, theAO, nameTAOPositionAddress));
+		_;
+	}
+
+	/**
 	 * @dev Checks if calling address can update TAO's nonce
 	 */
 	modifier canUpdateNonce {
@@ -57,6 +66,25 @@ contract TAOFactory is TAOController, TheAO {
 	}
 
 	/***** The AO ONLY METHODS *****/
+	/**
+	 * @dev Transfer ownership of The AO to new address
+	 * @param _theAO The new address to be transferred
+	 */
+	function transferOwnership(address _theAO) public onlyTheAO {
+		require (_theAO != address(0));
+		theAO = _theAO;
+	}
+
+	/**
+	 * @dev Whitelist `_account` address to transact on behalf of others
+	 * @param _account The address to whitelist
+	 * @param _whitelist Either to whitelist or not
+	 */
+	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
+		require (_account != address(0));
+		whitelist[_account] = _whitelist;
+	}
+
 	/**
 	 * @dev The AO set the TAOFamily Address
 	 * @param _taoFamilyAddress The address of TAOFamily

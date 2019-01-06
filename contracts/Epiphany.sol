@@ -1,6 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './TheAO.sol';
+import './AOLibrary.sol';
 
 contract Epiphany is TheAO {
 	string public what;
@@ -18,6 +19,45 @@ contract Epiphany is TheAO {
 		who = 'You.  Set the world, Free. – Truth';
 		aSign = '08e2c4e1ccf3bccfb3b8eef14679b28442649a2a733960661210a0b00d9c93bf';
 		logos = 'hashofthewp';
+	}
+
+	/**
+	 * @dev Checks if the calling contract address is The AO
+	 *		OR
+	 *		If The AO is set to a Name/TAO, then check if calling address is the Advocate
+	 */
+	modifier onlyTheAO {
+		require (AOLibrary.isTheAO(msg.sender, theAO, nameTAOPositionAddress));
+		_;
+	}
+
+	/***** The AO ONLY METHODS *****/
+	/**
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
+	}
+
+	/**
+	 * @dev Transfer ownership of The AO to new address
+	 * @param _theAO The new address to be transferred
+	 */
+	function transferOwnership(address _theAO) public onlyTheAO {
+		require (_theAO != address(0));
+		theAO = _theAO;
+	}
+
+	/**
+	 * @dev Whitelist `_account` address to transact on behalf of others
+	 * @param _account The address to whitelist
+	 * @param _whitelist Either to whitelist or not
+	 */
+	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
+		require (_account != address(0));
+		whitelist[_account] = _whitelist;
 	}
 
 	/**

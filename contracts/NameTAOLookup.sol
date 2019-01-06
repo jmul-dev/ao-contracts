@@ -1,6 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './TheAO.sol';
+import './AOLibrary.sol';
 
 /**
  * @title NameTAOLookup
@@ -32,6 +33,16 @@ contract NameTAOLookup is TheAO {
 	}
 
 	/**
+	 * @dev Checks if the calling contract address is The AO
+	 *		OR
+	 *		If The AO is set to a Name/TAO, then check if calling address is the Advocate
+	 */
+	modifier onlyTheAO {
+		require (AOLibrary.isTheAO(msg.sender, theAO, nameTAOPositionAddress));
+		_;
+	}
+
+	/**
 	 * @dev Check if calling address is Factory
 	 */
 	modifier onlyFactory {
@@ -40,6 +51,34 @@ contract NameTAOLookup is TheAO {
 	}
 
 	/***** The AO ONLY METHODS *****/
+	/**
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
+	}
+
+	/**
+	 * @dev Transfer ownership of The AO to new address
+	 * @param _theAO The new address to be transferred
+	 */
+	function transferOwnership(address _theAO) public onlyTheAO {
+		require (_theAO != address(0));
+		theAO = _theAO;
+	}
+
+	/**
+	 * @dev Whitelist `_account` address to transact on behalf of others
+	 * @param _account The address to whitelist
+	 * @param _whitelist Either to whitelist or not
+	 */
+	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
+		require (_account != address(0));
+		whitelist[_account] = _whitelist;
+	}
+
 	/**
 	 * @dev The AO set the taoFactoryAddress Address
 	 * @param _taoFactoryAddress The address of TAOFactory

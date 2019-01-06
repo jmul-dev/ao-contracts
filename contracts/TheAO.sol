@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 contract TheAO {
 	address public theAO;
+	address public nameTAOPositionAddress;
 
 	// Check whether an address is whitelisted and granted access to transact
 	// on behalf of others
@@ -12,19 +13,10 @@ contract TheAO {
 	}
 
 	/**
-	 * @dev Checks if the calling contract address is The AO
+	 * @dev Checks if msg.sender is in whitelist.
 	 */
-	modifier onlyTheAO {
-		require(msg.sender == theAO);
-		_;
-	}
-
-	/**
-	 * @dev Checks if `_account` is in whitelist.
-	 *		i.e, `_account` is granted access to transact on behalf of others
-	 */
-	modifier inWhitelist(address _account) {
-		require (whitelist[_account] == true || _account == theAO);
+	modifier inWhitelist() {
+		require (whitelist[msg.sender] == true);
 		_;
 	}
 
@@ -32,7 +24,8 @@ contract TheAO {
 	 * @dev Transfer ownership of The AO to new address
 	 * @param _theAO The new address to be transferred
 	 */
-	function transferOwnership(address _theAO) public onlyTheAO {
+	function transferOwnership(address _theAO) public {
+		require (msg.sender == theAO);
 		require (_theAO != address(0));
 		theAO = _theAO;
 	}
@@ -42,7 +35,8 @@ contract TheAO {
 	 * @param _account The address to whitelist
 	 * @param _whitelist Either to whitelist or not
 	 */
-	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
+	function setWhitelist(address _account, bool _whitelist) public {
+		require (msg.sender == theAO);
 		require (_account != address(0));
 		whitelist[_account] = _whitelist;
 	}

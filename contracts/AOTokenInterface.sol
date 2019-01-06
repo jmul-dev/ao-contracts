@@ -4,6 +4,7 @@ import './SafeMath.sol';
 import './TheAO.sol';
 import './TokenERC20.sol';
 import './tokenRecipient.sol';
+import './AOLibrary.sol';
 
 /**
  * @title AOTokenInterface
@@ -38,7 +39,45 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 		decimals = 0;
 	}
 
+	/**
+	 * @dev Checks if the calling contract address is The AO
+	 *		OR
+	 *		If The AO is set to a Name/TAO, then check if calling address is the Advocate
+	 */
+	modifier onlyTheAO {
+		require (AOLibrary.isTheAO(msg.sender, theAO, nameTAOPositionAddress));
+		_;
+	}
+
 	/***** The AO ONLY METHODS *****/
+	/**
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
+	}
+
+	/**
+	 * @dev Transfer ownership of The AO to new address
+	 * @param _theAO The new address to be transferred
+	 */
+	function transferOwnership(address _theAO) public onlyTheAO {
+		require (_theAO != address(0));
+		theAO = _theAO;
+	}
+
+	/**
+	 * @dev Whitelist `_account` address to transact on behalf of others
+	 * @param _account The address to whitelist
+	 * @param _whitelist Either to whitelist or not
+	 */
+	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
+		require (_account != address(0));
+		whitelist[_account] = _whitelist;
+	}
+
 	/**
 	 * @dev Prevent/Allow target from sending & receiving tokens
 	 * @param target Address to be frozen
@@ -66,7 +105,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	 * @param mintedAmount The amount of tokens it will receive
 	 * @return true on success
 	 */
-	function mintToken(address target, uint256 mintedAmount) public inWhitelist(msg.sender) returns (bool) {
+	function mintToken(address target, uint256 mintedAmount) public inWhitelist returns (bool) {
 		_mintToken(target, mintedAmount);
 		return true;
 	}
@@ -77,7 +116,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	 * @param _value The amount to stake
 	 * @return true on success
 	 */
-	function stakeFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
+	function stakeFrom(address _from, uint256 _value) public inWhitelist returns (bool) {
 		require (balanceOf[_from] >= _value);						// Check if the targeted balance is enough
 		balanceOf[_from] = balanceOf[_from].sub(_value);			// Subtract from the targeted balance
 		stakedBalance[_from] = stakedBalance[_from].add(_value);	// Add to the targeted staked balance
@@ -91,7 +130,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	 * @param _value The amount to unstake
 	 * @return true on success
 	 */
-	function unstakeFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
+	function unstakeFrom(address _from, uint256 _value) public inWhitelist returns (bool) {
 		require (stakedBalance[_from] >= _value);					// Check if the targeted staked balance is enough
 		stakedBalance[_from] = stakedBalance[_from].sub(_value);	// Subtract from the targeted staked balance
 		balanceOf[_from] = balanceOf[_from].add(_value);			// Add to the targeted balance
@@ -106,7 +145,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	 * @param _value The amount of network tokens to put in escrow
 	 * @return true on success
 	 */
-	function escrowFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
+	function escrowFrom(address _from, address _to, uint256 _value) public inWhitelist returns (bool) {
 		require (balanceOf[_from] >= _value);						// Check if the targeted balance is enough
 		balanceOf[_from] = balanceOf[_from].sub(_value);			// Subtract from the targeted balance
 		escrowedBalance[_to] = escrowedBalance[_to].add(_value);	// Add to the targeted escrowed balance
@@ -119,7 +158,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	 * @param target Address to receive the tokens
 	 * @param mintedAmount The amount of tokens it will receive in escrow
 	 */
-	function mintTokenEscrow(address target, uint256 mintedAmount) public inWhitelist(msg.sender) returns (bool) {
+	function mintTokenEscrow(address target, uint256 mintedAmount) public inWhitelist returns (bool) {
 		escrowedBalance[target] = escrowedBalance[target].add(mintedAmount);
 		totalSupply = totalSupply.add(mintedAmount);
 		emit Escrow(this, target, mintedAmount);
@@ -132,7 +171,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	 * @param _value The amount of escrowed network tokens to be released
 	 * @return true on success
 	 */
-	function unescrowFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
+	function unescrowFrom(address _from, uint256 _value) public inWhitelist returns (bool) {
 		require (escrowedBalance[_from] >= _value);						// Check if the targeted escrowed balance is enough
 		escrowedBalance[_from] = escrowedBalance[_from].sub(_value);	// Subtract from the targeted escrowed balance
 		balanceOf[_from] = balanceOf[_from].add(_value);				// Add to the targeted balance
@@ -147,7 +186,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	 * @param _from the address of the sender
 	 * @param _value the amount of money to burn
 	 */
-	function whitelistBurnFrom(address _from, uint256 _value) public inWhitelist(msg.sender) returns (bool success) {
+	function whitelistBurnFrom(address _from, uint256 _value) public inWhitelist returns (bool success) {
 		require(balanceOf[_from] >= _value);                // Check if the targeted balance is enough
 		balanceOf[_from] = balanceOf[_from].sub(_value);    // Subtract from the targeted balance
 		totalSupply = totalSupply.sub(_value);              // Update totalSupply
@@ -164,7 +203,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	 * @param _to The address of the recipient
 	 * @param _value the amount to send
 	 */
-	function whitelistTransferFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool success) {
+	function whitelistTransferFrom(address _from, address _to, uint256 _value) public inWhitelist returns (bool success) {
 		_transfer(_from, _to, _value);
 		return true;
 	}

@@ -161,7 +161,7 @@ contract AOToken is AOTokenInterface {
 	 * @param _weightedMultiplier The weighted multiplier of the Primordial tokens
 	 * @return true on success
 	 */
-	function stakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist(msg.sender) returns (bool) {
+	function stakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist returns (bool) {
 		// Check if the targeted balance is enough
 		require (primordialBalanceOf[_from] >= _value);
 		// Make sure the weighted multiplier is the same as account's current weighted multiplier
@@ -181,7 +181,7 @@ contract AOToken is AOTokenInterface {
 	 * @param _weightedMultiplier The weighted multiplier of the Primordial tokens
 	 * @return true on success
 	 */
-	function unstakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist(msg.sender) returns (bool) {
+	function unstakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist returns (bool) {
 		// Check if the targeted staked balance is enough
 		require (primordialStakedBalance[_from][_weightedMultiplier] >= _value);
 		// Subtract from the targeted staked balance
@@ -199,7 +199,7 @@ contract AOToken is AOTokenInterface {
 	 * @param _value The amount to send
 	 * @return true on success
 	 */
-	function whitelistTransferPrimordialTokenFrom(address _from, address _to, uint256 _value) public inWhitelist(msg.sender) returns (bool) {
+	function whitelistTransferPrimordialTokenFrom(address _from, address _to, uint256 _value) public inWhitelist returns (bool) {
 		bytes32 _createdLotId = _createWeightedMultiplierLot(_to, _value, ownerWeightedMultiplier[_from]);
 		Lot memory _lot = lots[_createdLotId];
 

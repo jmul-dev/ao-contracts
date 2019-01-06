@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
 import './TheAO.sol';
+import './AOLibrary.sol';
 import './TokenERC20.sol';
 import './AOToken.sol';
 
@@ -161,14 +162,6 @@ contract AOPool is TheAO {
 	// This is to help optimize calculating the total token withdrawn before certain Lot
 	mapping (uint256 => mapping (uint256 => uint256)) internal poolMillionthLotTokenWithdrawnSnapshot;
 
-	/**
-	 * @dev Constructor function
-	 */
-	constructor(address _baseDenominationAddress) public {
-		baseDenominationAddress = _baseDenominationAddress;
-		_baseAO = AOToken(_baseDenominationAddress);
-	}
-
 	// Event to be broadcasted to public when Pool is created
 	event CreatePool(uint256 indexed poolId, address indexed adminAddress, uint256 price, bool status, bool sellCapStatus, uint256 sellCapAmount, bool quantityCapStatus, uint256 quantityCapAmount, bool erc20CounterAsset, address erc20TokenAddress, uint256 erc20TokenMultiplier);
 
@@ -197,7 +190,53 @@ contract AOPool is TheAO {
 	// Event to be broadcasted to public when a seller withdraw token from Lot
 	event WithdrawToken(address indexed seller, bytes32 indexed lotId, uint256 indexed poolId, uint256 withdrawnAmount, uint256 currentlotValueInCounterAsset, uint256 currentLotTokenWithdrawn);
 
-	/***** The AO Only Methods *****/
+	/**
+	 * @dev Constructor function
+	 */
+	constructor(address _baseDenominationAddress) public {
+		baseDenominationAddress = _baseDenominationAddress;
+		_baseAO = AOToken(_baseDenominationAddress);
+	}
+
+	/**
+	 * @dev Checks if the calling contract address is The AO
+	 *		OR
+	 *		If The AO is set to a Name/TAO, then check if calling address is the Advocate
+	 */
+	modifier onlyTheAO {
+		require (AOLibrary.isTheAO(msg.sender, theAO, nameTAOPositionAddress));
+		_;
+	}
+
+	/***** THE AO ONLY METHODS *****/
+	/**
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
+	}
+
+	/**
+	 * @dev Transfer ownership of The AO to new address
+	 * @param _theAO The new address to be transferred
+	 */
+	function transferOwnership(address _theAO) public onlyTheAO {
+		require (_theAO != address(0));
+		theAO = _theAO;
+	}
+
+	/**
+	 * @dev Whitelist `_account` address to transact on behalf of others
+	 * @param _account The address to whitelist
+	 * @param _whitelist Either to whitelist or not
+	 */
+	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
+		require (_account != address(0));
+		whitelist[_account] = _whitelist;
+	}
+
 	/**
 	 * @dev DAO creates a Pool
 	 * @param _price The flat price of AO

@@ -148,6 +148,16 @@ contract AOEarning is TheAO {
 	}
 
 	/**
+	 * @dev Checks if the calling contract address is The AO
+	 *		OR
+	 *		If The AO is set to a Name/TAO, then check if calling address is the Advocate
+	 */
+	modifier onlyTheAO {
+		require (AOLibrary.isTheAO(msg.sender, theAO, nameTAOPositionAddress));
+		_;
+	}
+
+	/**
 	 * @dev Checks if contract is currently active
 	 */
 	modifier isContractActive {
@@ -156,6 +166,34 @@ contract AOEarning is TheAO {
 	}
 
 	/***** The AO ONLY METHODS *****/
+	/**
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
+	}
+
+	/**
+	 * @dev Transfer ownership of The AO to new address
+	 * @param _theAO The new address to be transferred
+	 */
+	function transferOwnership(address _theAO) public onlyTheAO {
+		require (_theAO != address(0));
+		theAO = _theAO;
+	}
+
+	/**
+	 * @dev Whitelist `_account` address to transact on behalf of others
+	 * @param _account The address to whitelist
+	 * @param _whitelist Either to whitelist or not
+	 */
+	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
+		require (_account != address(0));
+		whitelist[_account] = _whitelist;
+	}
+
 	/**
 	 * @dev The AO pauses/unpauses contract
 	 * @param _paused Either to pause contract or not
@@ -208,7 +246,7 @@ contract AOEarning is TheAO {
 		address _stakeOwner,
 		address _host,
 		bool _isAOContentUsageType
-	) public isContractActive inWhitelist(msg.sender) returns (bool) {
+	) public isContractActive inWhitelist returns (bool) {
 		// Split the payment earning between content creator and host and store them in escrow
 		_escrowPaymentEarning(_buyer, _purchaseId, _networkAmountStaked.add(_primordialAmountStaked), _profitPercentage, _stakeOwner, _host, _isAOContentUsageType);
 
@@ -228,7 +266,7 @@ contract AOEarning is TheAO {
 	 * @param _host The address of the node that host the file
 	 * @return true on success
 	 */
-	function releaseEarning(bytes32 _stakeId, bytes32 _contentHostId, bytes32 _purchaseId, bool _buyerPaidMoreThanFileSize, address _stakeOwner, address _host) public isContractActive inWhitelist(msg.sender) returns (bool) {
+	function releaseEarning(bytes32 _stakeId, bytes32 _contentHostId, bytes32 _purchaseId, bool _buyerPaidMoreThanFileSize, address _stakeOwner, address _host) public isContractActive inWhitelist returns (bool) {
 		// Release the earning in escrow for stake owner
 		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidMoreThanFileSize, _stakeOwner, 0);
 

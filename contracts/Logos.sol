@@ -39,6 +39,7 @@ contract Logos is TAOCurrency {
 	 */
 	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _nameTAOPositionAddress)
 		TAOCurrency(initialSupply, tokenName, tokenSymbol) public {
+		nameTAOPositionAddress = _nameTAOPositionAddress;
 		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
 	}
 
@@ -137,7 +138,7 @@ contract Logos is TAOCurrency {
 	 * @param _amount the amount to reward
 	 * @return true on success
 	 */
-	function addAdvocatedTAOLogos(address _taoId, uint256 _amount) public inWhitelist(msg.sender) isTAO(_taoId) returns (bool) {
+	function addAdvocatedTAOLogos(address _taoId, uint256 _amount) public inWhitelist isTAO(_taoId) returns (bool) {
 		require (_amount > 0);
 		address _nameId = _nameTAOPosition.getAdvocate(_taoId);
 
@@ -155,7 +156,7 @@ contract Logos is TAOCurrency {
 	 * @param _taoId The ID of the advocated TAO
 	 * @return true on success
 	 */
-	function transferAdvocatedTAOLogos(address _fromNameId, address _toNameId, address _taoId) public inWhitelist(msg.sender) isName(_fromNameId) isName(_toNameId) isTAO(_taoId) returns (bool) {
+	function transferAdvocatedTAOLogos(address _fromNameId, address _toNameId, address _taoId) public inWhitelist isName(_fromNameId) isName(_toNameId) isTAO(_taoId) returns (bool) {
 		require (_nameTAOPosition.nameIsAdvocate(_toNameId, _taoId));
 		require (advocatedTAOLogos[_fromNameId][_taoId] > 0);
 		require (totalAdvocatedTAOLogos[_fromNameId] >= advocatedTAOLogos[_fromNameId][_taoId]);

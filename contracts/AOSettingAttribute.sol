@@ -1,5 +1,6 @@
 pragma solidity ^0.4.24;
 
+import './AOLibrary.sol';
 import "./TheAO.sol";
 import './NameTAOPosition.sol';
 
@@ -130,7 +131,38 @@ contract AOSettingAttribute is TheAO {
 	 * @dev Constructor function
 	 */
 	constructor(address _nameTAOPositionAddress) public {
+		nameTAOPositionAddress = _nameTAOPositionAddress;
 		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+	}
+
+	/**
+	 * @dev Checks if the calling contract address is The AO
+	 *		OR
+	 *		If The AO is set to a Name/TAO, then check if calling address is the Advocate
+	 */
+	modifier onlyTheAO {
+		require (AOLibrary.isTheAO(msg.sender, theAO, nameTAOPositionAddress));
+		_;
+	}
+
+	/***** The AO ONLY METHODS *****/
+	/**
+	 * @dev Transfer ownership of The AO to new address
+	 * @param _theAO The new address to be transferred
+	 */
+	function transferOwnership(address _theAO) public onlyTheAO {
+		require (_theAO != address(0));
+		theAO = _theAO;
+	}
+
+	/**
+	 * @dev Whitelist `_account` address to transact on behalf of others
+	 * @param _account The address to whitelist
+	 * @param _whitelist Either to whitelist or not
+	 */
+	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
+		require (_account != address(0));
+		whitelist[_account] = _whitelist;
 	}
 
 	/**
@@ -145,7 +177,7 @@ contract AOSettingAttribute is TheAO {
 	 * @return The ID of the "Associated" setting
 	 * @return The ID of the "Creator" setting
 	 */
-	function add(uint256 _settingId, address _creatorNameId, uint8 _settingType, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) public inWhitelist(msg.sender) returns (bytes32, bytes32) {
+	function add(uint256 _settingId, address _creatorNameId, uint8 _settingType, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) public inWhitelist returns (bytes32, bytes32) {
 		// Store setting data/state
 		require (_storeSettingDataState(_settingId, _creatorNameId, _settingType, _settingName, _creatorTAOId, _associatedTAOId, _extraData));
 
@@ -219,7 +251,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _approved Whether to approve or reject
 	 * @return true on success
 	 */
-	function approveAdd(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) public inWhitelist(msg.sender) returns (bool) {
+	function approveAdd(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) public inWhitelist returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingData storage _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId &&
@@ -248,7 +280,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _creatorTAOAdvocate The advocate of the creator TAO
 	 * @return true on success
 	 */
-	function finalizeAdd(uint256 _settingId, address _creatorTAOAdvocate) public inWhitelist(msg.sender) returns (bool) {
+	function finalizeAdd(uint256 _settingId, address _creatorTAOAdvocate) public inWhitelist returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingData storage _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId &&
@@ -276,7 +308,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 * @return true on success
 	 */
-	function update(uint256 _settingId, uint8 _settingType, address _associatedTAOAdvocate, address _proposalTAOId, string _updateSignature, string _extraData) public inWhitelist(msg.sender) returns (bool) {
+	function update(uint256 _settingId, uint8 _settingType, address _associatedTAOAdvocate, address _proposalTAOId, string _updateSignature, string _extraData) public inWhitelist returns (bool) {
 		// Make sure setting is created
 		SettingData memory _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId &&
@@ -333,7 +365,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _approved Whether to approve or reject
 	 * @return true on success
 	 */
-	function approveUpdate(uint256 _settingId, address _proposalTAOAdvocate, bool _approved) public inWhitelist(msg.sender) returns (bool) {
+	function approveUpdate(uint256 _settingId, address _proposalTAOAdvocate, bool _approved) public inWhitelist returns (bool) {
 		// Make sure setting is created
 		SettingData storage _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == true && _settingData.rejected == false);
@@ -363,7 +395,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _associatedTAOAdvocate The advocate of the associated TAO
 	 * @return true on success
 	 */
-	function finalizeUpdate(uint256 _settingId, address _associatedTAOAdvocate) public inWhitelist(msg.sender) returns (bool) {
+	function finalizeUpdate(uint256 _settingId, address _associatedTAOAdvocate) public inWhitelist returns (bool) {
 		// Make sure setting is created
 		SettingData storage _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId &&
@@ -402,7 +434,7 @@ contract AOSettingAttribute is TheAO {
 	 * @return The ID of the "Associated" setting deprecation
 	 * @return The ID of the "Creator" setting deprecation
 	 */
-	function addDeprecation(uint256 _settingId, address _creatorNameId, address _creatorTAOId, address _associatedTAOId, uint256 _newSettingId, address _newSettingContractAddress) public inWhitelist(msg.sender) returns (bytes32, bytes32) {
+	function addDeprecation(uint256 _settingId, address _creatorNameId, address _creatorTAOId, address _associatedTAOId, uint256 _newSettingId, address _newSettingContractAddress) public inWhitelist returns (bytes32, bytes32) {
 		require (_storeSettingDeprecation(_settingId, _creatorNameId, _creatorTAOId, _associatedTAOId, _newSettingId, _newSettingContractAddress));
 
 		// Store the associatedTAOSettingDeprecation info
@@ -477,7 +509,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _approved Whether to approve or reject
 	 * @return true on success
 	 */
-	function approveDeprecation(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) public inWhitelist(msg.sender) returns (bool) {
+	function approveDeprecation(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) public inWhitelist returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingDeprecation storage _settingDeprecation = settingDeprecations[_settingId];
 		require (_settingDeprecation.settingId == _settingId &&
@@ -506,7 +538,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _creatorTAOAdvocate The advocate of the creator TAO
 	 * @return true on success
 	 */
-	function finalizeDeprecation(uint256 _settingId, address _creatorTAOAdvocate) public inWhitelist(msg.sender) returns (bool) {
+	function finalizeDeprecation(uint256 _settingId, address _creatorTAOAdvocate) public inWhitelist returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingDeprecation storage _settingDeprecation = settingDeprecations[_settingId];
 		require (_settingDeprecation.settingId == _settingId &&

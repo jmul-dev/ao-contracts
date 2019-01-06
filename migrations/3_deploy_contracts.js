@@ -1,4 +1,5 @@
 var AOLibrary = artifacts.require("./AOLibrary.sol");
+var Epiphany = artifacts.require("./Epiphany.sol");
 
 // Logos and its denominations
 var Logos = artifacts.require("./Logos.sol");
@@ -85,12 +86,16 @@ module.exports = function(deployer, network, accounts) {
 	if (network === "rinkeby") {
 		primordialAccount = "0x16a038099561ac8ad73c497c18207e6c88ff6593";
 		settingAccount = "0xd2021e918ed447797fb66c48efa2899ea17dbddb";
+	} else if (network === "live") {
+		primordialAccount = "0x268c85ef559be52f3749791445dfd9a5abc37186";
+		settingAccount = "0x5a5ee57f51d412018d6da04e66d97ad0e7f02a04";
 	} else {
 		primordialAccount = accounts[0];
 		settingAccount = accounts[9];
 	}
 
-	var logos,
+	var epiphany,
+		logos,
 		logoskilo,
 		logosmega,
 		logosgiga,
@@ -155,7 +160,7 @@ module.exports = function(deployer, network, accounts) {
 		aoearning,
 		aocontent;
 
-	deployer.deploy(AOLibrary);
+	deployer.deploy(AOLibrary, { overwrite: false });
 	deployer.link(AOLibrary, Logos);
 	deployer.link(AOLibrary, LogosKilo);
 	deployer.link(AOLibrary, LogosMega);
@@ -208,7 +213,22 @@ module.exports = function(deployer, network, accounts) {
 	deployer.link(AOLibrary, AOContent);
 	deployer.link(AOLibrary, AOEarning);
 
+	deployer.link(AOLibrary, AOAddressSetting);
+	deployer.link(AOLibrary, AOBoolSetting);
+	deployer.link(AOLibrary, AOBytesSetting);
+	deployer.link(AOLibrary, AOStringSetting);
+	deployer.link(AOLibrary, AOPool);
+	deployer.link(AOLibrary, AOSettingAttribute);
+	deployer.link(AOLibrary, AOTreasury);
+	deployer.link(AOLibrary, AOUintSetting);
+	deployer.link(AOLibrary, NameTAOLookup);
+	deployer.link(AOLibrary, Position);
+	deployer.link(AOLibrary, LogosTreasury);
+	deployer.link(AOLibrary, EthosTreasury);
+	deployer.link(AOLibrary, PathosTreasury);
+
 	deployer.deploy([
+		[Epiphany, { overwrite: false }],
 		[Ethos, 0, "Ethos", "ETHOS"],
 		[EthosKilo, 0, "Ethos Kilo", "ETHOSKILO"],
 		[EthosMega, 0, "Ethos Mega", "ETHOSMEGA"],
@@ -240,6 +260,7 @@ module.exports = function(deployer, network, accounts) {
 
 	deployer
 		.then(async function() {
+			epiphany = await Epiphany.deployed();
 			ethos = await Ethos.deployed();
 			ethoskilo = await EthosKilo.deployed();
 			ethosmega = await EthosMega.deployed();
@@ -854,7 +875,7 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			/**
-			 * createChildTAOMinLogos 1Giga = 10 ^^ 9
+			 * createChildTAOMinLogos 1Giga = 10 ** 9
 			 */
 			try {
 				var result = await aosetting.addUintSetting("createChildTAOMinLogos", 10 ** 9, primordialTAOId, settingTAOId, "", {
@@ -1021,6 +1042,70 @@ module.exports = function(deployer, network, accounts) {
 
 			// aoearning grant access to aocontent
 			await aoearning.setWhitelist(aocontent.address, true, { from: primordialAccount });
+
+			// Set NameTAOPositionAddress on the following contracts
+			await aoaddresssetting.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aoboolsetting.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aobytessetting.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aostringsetting.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aouintsetting.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+
+			await epiphany.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await nametaolookup.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await position.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+
+			await aoearning.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aopool.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+
+			await aotoken.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aokilo.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aomega.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aogiga.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aotera.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aopeta.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aoexa.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aozetta.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aoyotta.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aoxona.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await aotreasury.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+
+			await logos.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await logoskilo.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await logosmega.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await logosgiga.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await logostera.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await logospeta.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await logosexa.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await logoszetta.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await logosyotta.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await logosxona.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await logostreasury.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+
+			await ethos.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await ethoskilo.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await ethosmega.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await ethosgiga.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await ethostera.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await ethospeta.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await ethosexa.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await ethoszetta.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await ethosyotta.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await ethosxona.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await ethostreasury.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+
+			await pathos.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await pathoskilo.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await pathosmega.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await pathosgiga.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await pathostera.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await pathospeta.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await pathosexa.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await pathoszetta.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await pathosyotta.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await pathosxona.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			await pathostreasury.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+
+			// TODO: Transfer TheAO ownership to Primordial TAO
 
 			console.log("Primordial TAO ID", primordialTAOId);
 			console.log("Setting TAO ID", settingTAOId);

@@ -16,6 +16,7 @@ import './NameFactory.sol';
 import './AOSetting.sol';
 import './TAOCurrency.sol';
 import './Logos.sol';
+import './NameTAOPosition.sol';
 
 /**
  * @title AOLibrary
@@ -25,6 +26,43 @@ library AOLibrary {
 
 	uint256 constant private _MULTIPLIER_DIVISOR = 10 ** 6; // 1000000 = 1
 	uint256 constant private _PERCENTAGE_DIVISOR = 10 ** 6; // 100% = 1000000
+
+	/**
+	 * @dev Check whether or not the given TAO ID is a TAO
+	 * @param _taoId The ID of the TAO
+	 * @return true if yes. false otherwise
+	 */
+	function isTAO(address _taoId) public view returns (bool) {
+		return (_taoId != address(0) && bytes(TAO(_taoId).name()).length > 0 && TAO(_taoId).originId() != address(0) && TAO(_taoId).typeId() == 0);
+	}
+
+	/**
+	 * @dev Check whether or not the given Name ID is a Name
+	 * @param _nameId The ID of the Name
+	 * @return true if yes. false otherwise
+	 */
+	function isName(address _nameId) public view returns (bool) {
+		return (_nameId != address(0) && bytes(TAO(_nameId).name()).length > 0 && Name(_nameId).originId() != address(0) && Name(_nameId).typeId() == 1);
+	}
+
+	/**
+	 * @dev Checks if the calling contract address is The AO
+	 *		OR
+	 *		If The AO is set to a Name/TAO, then check if calling address is the Advocate
+	 * @param _sender The address to check
+	 * @param _theAO The AO address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 * @return true if yes, false otherwise
+	 */
+	function isTheAO(address _sender, address _theAO, address _nameTAOPositionAddress) public view returns (bool) {
+		return (_sender == _theAO ||
+			(
+				(isTAO(_theAO) || isName(_theAO)) &&
+				_nameTAOPositionAddress != address(0) &&
+				NameTAOPosition(_nameTAOPositionAddress).senderIsAdvocate(_sender, _theAO)
+			)
+		);
+	}
 
 	/**
 	 * @dev Return the divisor used to correctly calculate percentage.
@@ -424,24 +462,6 @@ library AOLibrary {
 	 */
 	function calculateMultiplierAfterConversion(uint256 _primordialBalance, uint256 _currentWeightedMultiplier, uint256 _amountToConvert) public pure returns (uint256) {
 		return _primordialBalance.mul(_currentWeightedMultiplier).div(_primordialBalance.add(_amountToConvert));
-	}
-
-	/**
-	 * @dev Check whether or not the given TAO ID is a TAO
-	 * @param _taoId The ID of the TAO
-	 * @return true if yes. false otherwise
-	 */
-	function isTAO(address _taoId) public view returns (bool) {
-		return (_taoId != address(0) && TAO(_taoId).originId() != address(0) && TAO(_taoId).typeId() == 0);
-	}
-
-	/**
-	 * @dev Check whether or not the given Name ID is a Name
-	 * @param _nameId The ID of the Name
-	 * @return true if yes. false otherwise
-	 */
-	function isName(address _nameId) public view returns (bool) {
-		return (_nameId != address(0) && Name(_nameId).originId() != address(0) && Name(_nameId).typeId() == 1);
 	}
 
 	/**
