@@ -15,14 +15,14 @@ contract NameTAOPosition is TheAO {
 	NameFactory internal _nameFactory;
 	TAOFactory internal _taoFactory;
 
-	struct Position {
+	struct PositionDetail {
 		address advocateId;
 		address listenerId;
 		address speakerId;
 		bool created;
 	}
 
-	mapping (address => Position) internal positions;
+	mapping (address => PositionDetail) internal positionDetails;
 
 	// Event to be broadcasted to public when current Advocate of TAO sets New Advocate
 	event SetAdvocate(address indexed taoId, address oldAdvocateId, address newAdvocateId, uint256 nonce);
@@ -137,7 +137,7 @@ contract NameTAOPosition is TheAO {
 	 * @return true if yes, false otherwise
 	 */
 	function isExist(address _id) public view returns (bool) {
-		return positions[_id].created;
+		return positionDetails[_id].created;
 	}
 
 	/**
@@ -147,7 +147,7 @@ contract NameTAOPosition is TheAO {
 	 * @return true if yes, false otherwise
 	 */
 	function senderIsAdvocate(address _sender, address _id) public view returns (bool) {
-		return (positions[_id].created && positions[_id].advocateId == _nameFactory.ethAddressToNameId(_sender));
+		return (positionDetails[_id].created && positionDetails[_id].advocateId == _nameFactory.ethAddressToNameId(_sender));
 	}
 
 	/**
@@ -161,10 +161,10 @@ contract NameTAOPosition is TheAO {
 		if (_nameId == address(0)) {
 			return false;
 		} else {
-			return (positions[_id].created &&
-				(positions[_id].advocateId == _nameId ||
-				 positions[_id].listenerId == _nameId ||
-				 positions[_id].speakerId == _nameId
+			return (positionDetails[_id].created &&
+				(positionDetails[_id].advocateId == _nameId ||
+				 positionDetails[_id].listenerId == _nameId ||
+				 positionDetails[_id].speakerId == _nameId
 				)
 			);
 		}
@@ -177,7 +177,7 @@ contract NameTAOPosition is TheAO {
 	 * @return true if yes, false otherwise
 	 */
 	function nameIsAdvocate(address _nameId, address _id) public view returns (bool) {
-		return (positions[_id].created && positions[_id].advocateId == _nameId);
+		return (positionDetails[_id].created && positionDetails[_id].advocateId == _nameId);
 	}
 
 	/**
@@ -188,11 +188,11 @@ contract NameTAOPosition is TheAO {
 	 */
 	function determinePosition(address _sender, address _id) public view returns (uint256) {
 		require (senderIsPosition(_sender, _id));
-		Position memory _position = positions[_id];
+		PositionDetail memory _positionDetail = positionDetails[_id];
 		address _nameId = _nameFactory.ethAddressToNameId(_sender);
-		if (_nameId == _position.advocateId) {
+		if (_nameId == _positionDetail.advocateId) {
 			return 1;
-		} else if (_nameId == _position.listenerId) {
+		} else if (_nameId == _positionDetail.listenerId) {
 			return 2;
 		} else {
 			return 3;
@@ -216,11 +216,11 @@ contract NameTAOPosition is TheAO {
 		onlyFactory returns (bool) {
 		require (!isExist(_id));
 
-		Position storage _position = positions[_id];
-		_position.advocateId = _advocateId;
-		_position.listenerId = _listenerId;
-		_position.speakerId = _speakerId;
-		_position.created = true;
+		PositionDetail storage _positionDetail = positionDetails[_id];
+		_positionDetail.advocateId = _advocateId;
+		_positionDetail.listenerId = _listenerId;
+		_positionDetail.speakerId = _speakerId;
+		_positionDetail.created = true;
 		return true;
 	}
 
@@ -233,11 +233,11 @@ contract NameTAOPosition is TheAO {
 	 */
 	function getPositionById(address _id) public view returns (address, address, address) {
 		require (isExist(_id));
-		Position memory _position = positions[_id];
+		PositionDetail memory _positionDetail = positionDetails[_id];
 		return (
-			_position.advocateId,
-			_position.listenerId,
-			_position.speakerId
+			_positionDetail.advocateId,
+			_positionDetail.listenerId,
+			_positionDetail.speakerId
 		);
 	}
 
@@ -248,8 +248,8 @@ contract NameTAOPosition is TheAO {
 	 */
 	function getAdvocate(address _id) public view returns (address) {
 		require (isExist(_id));
-		Position memory _position = positions[_id];
-		return _position.advocateId;
+		PositionDetail memory _positionDetail = positionDetails[_id];
+		return _positionDetail.advocateId;
 	}
 
 	/**
@@ -259,8 +259,8 @@ contract NameTAOPosition is TheAO {
 	 */
 	function getListener(address _id) public view returns (address) {
 		require (isExist(_id));
-		Position memory _position = positions[_id];
-		return _position.listenerId;
+		PositionDetail memory _positionDetail = positionDetails[_id];
+		return _positionDetail.listenerId;
 	}
 
 	/**
@@ -270,8 +270,8 @@ contract NameTAOPosition is TheAO {
 	 */
 	function getSpeaker(address _id) public view returns (address) {
 		require (isExist(_id));
-		Position memory _position = positions[_id];
-		return _position.speakerId;
+		PositionDetail memory _positionDetail = positionDetails[_id];
+		return _positionDetail.speakerId;
 	}
 
 	/**
@@ -286,13 +286,13 @@ contract NameTAOPosition is TheAO {
 		senderIsName()
 		onlyAdvocate(_taoId) {
 
-		Position storage _position = positions[_taoId];
-		address _currentAdvocateId = _position.advocateId;
-		_position.advocateId = _newAdvocateId;
+		PositionDetail storage _positionDetail = positionDetails[_taoId];
+		address _currentAdvocateId = _positionDetail.advocateId;
+		_positionDetail.advocateId = _newAdvocateId;
 
 		uint256 _nonce = _taoFactory.incrementNonce(_taoId);
 		require (_nonce > 0);
-		emit SetAdvocate(_taoId, _currentAdvocateId, _position.advocateId, _nonce);
+		emit SetAdvocate(_taoId, _currentAdvocateId, _positionDetail.advocateId, _nonce);
 	}
 
 	/**
@@ -315,16 +315,16 @@ contract NameTAOPosition is TheAO {
 			require (AOLibrary.isName(_newListenerId));
 		}
 
-		Position storage _position = positions[_id];
-		address _currentListenerId = _position.listenerId;
-		_position.listenerId = _newListenerId;
+		PositionDetail storage _positionDetail = positionDetails[_id];
+		address _currentListenerId = _positionDetail.listenerId;
+		_positionDetail.listenerId = _newListenerId;
 
 		if (_isName) {
 			uint256 _nonce = _nameFactory.incrementNonce(_id);
 		} else {
 			_nonce = _taoFactory.incrementNonce(_id);
 		}
-		emit SetListener(_id, _currentListenerId, _position.listenerId, _nonce);
+		emit SetListener(_id, _currentListenerId, _positionDetail.listenerId, _nonce);
 	}
 
 	/**
@@ -347,15 +347,15 @@ contract NameTAOPosition is TheAO {
 			require (AOLibrary.isName(_newSpeakerId));
 		}
 
-		Position storage _position = positions[_id];
-		address _currentSpeakerId = _position.speakerId;
-		_position.speakerId = _newSpeakerId;
+		PositionDetail storage _positionDetail = positionDetails[_id];
+		address _currentSpeakerId = _positionDetail.speakerId;
+		_positionDetail.speakerId = _newSpeakerId;
 
 		if (_isName) {
 			uint256 _nonce = _nameFactory.incrementNonce(_id);
 		} else {
 			_nonce = _taoFactory.incrementNonce(_id);
 		}
-		emit SetSpeaker(_id, _currentSpeakerId, _position.speakerId, _nonce);
+		emit SetSpeaker(_id, _currentSpeakerId, _positionDetail.speakerId, _nonce);
 	}
 }
