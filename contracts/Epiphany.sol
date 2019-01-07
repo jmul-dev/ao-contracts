@@ -18,7 +18,7 @@ contract Epiphany is TheAO {
 		why = 'To Hear, See, and Speak the Human inside Humanity.';
 		who = 'You.  Set the world, Free. – Truth';
 		aSign = '08e2c4e1ccf3bccfb3b8eef14679b28442649a2a733960661210a0b00d9c93bf';
-		logos = 'hashofthewp';
+		logos = '0920c6ab1848df83a332a21e8c9ec1a393e694c396b872aee053722d023e2a32';
 	}
 
 	/**

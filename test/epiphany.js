@@ -67,7 +67,11 @@ contract("Epiphany", function(accounts) {
 
 	it("should have the correct `logos` value", async function() {
 		var what = await epiphany.logos();
-		assert.equal(what, "hashofthewp", "Contract returns incorrect value for `logos`");
+		assert.equal(
+			what,
+			"0920c6ab1848df83a332a21e8c9ec1a393e694c396b872aee053722d023e2a32",
+			"Contract returns incorrect value for `logos`"
+		);
 	});
 
 	it("only The AO can set `where` value", async function() {

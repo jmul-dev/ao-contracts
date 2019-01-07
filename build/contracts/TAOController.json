@@ -2,41 +2,13 @@
 	"contractName": "TAOController",
 	"abi": [
 		{
-			"constant": true,
-			"inputs": [],
-			"name": "positionAddress",
-			"outputs": [
-				{
-					"name": "",
-					"type": "address"
-				}
-			],
-			"payable": false,
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"constant": true,
-			"inputs": [],
-			"name": "nameFactoryAddress",
-			"outputs": [
-				{
-					"name": "",
-					"type": "address"
-				}
-			],
-			"payable": false,
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
 			"inputs": [
 				{
 					"name": "_nameFactoryAddress",
 					"type": "address"
 				},
 				{
-					"name": "_positionAddress",
+					"name": "_nameTAOPositionAddress",
 					"type": "address"
 				}
 			],
@@ -45,78 +17,56 @@
 			"type": "constructor"
 		}
 	],
-	"bytecode": "0x608060405234801561001057600080fd5b5060405160408061018583398101604052805160209091015160008054600160a060020a03938416600160a060020a0319918216179182905560018054938516938216939093179283905560028054821692851692909217909155600380549091169190921617905560fe806100876000396000f30060806040526004361060485763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663636a8bd78114604d578063bc406206146088575b600080fd5b348015605857600080fd5b50605f609a565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b348015609357600080fd5b50605f60b6565b60015473ffffffffffffffffffffffffffffffffffffffff1681565b60005473ffffffffffffffffffffffffffffffffffffffff16815600a165627a7a72305820e79191ca2f68361bf136b8228cf9e00f7724b64971b451c5d140a18ffd9d2d590029",
-	"deployedBytecode": "0x60806040526004361060485763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663636a8bd78114604d578063bc406206146088575b600080fd5b348015605857600080fd5b50605f609a565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b348015609357600080fd5b50605f60b6565b60015473ffffffffffffffffffffffffffffffffffffffff1681565b60005473ffffffffffffffffffffffffffffffffffffffff16815600a165627a7a72305820e79191ca2f68361bf136b8228cf9e00f7724b64971b451c5d140a18ffd9d2d590029",
-	"sourceMap": "183:1101:35:-;;;415:252;8:9:-1;5:2;;;30:1;27;20:12;5:2;415:252:35;;;;;;;;;;;;;;;;;;;493:18;:40;;-1:-1:-1;;;;;493:40:35;;;-1:-1:-1;;;;;;493:40:35;;;;;;;;;537:34;;;;;;;;;;;;;;;;576:12;:46;;;;603:18;;;576:46;;;;;;;626:9;:37;;;;;647:15;;;;626:37;;;183:1101;;;;;;",
-	"deployedSourceMap": "183:1101:35:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;275:30;;8:9:-1;5:2;;;30:1;27;20:12;5:2;275:30:35;;;;;;;;;;;;;;;;;;;;;;;239:33;;8:9:-1;5:2;;;30:1;27;20:12;5:2;239:33:35;;;;275:30;;;;;;:::o;239:33::-;;;;;;:::o",
-	"source": "pragma solidity ^0.4.24;\n\nimport './AOLibrary.sol';\nimport './TAO.sol';\nimport './NameFactory.sol';\nimport './Position.sol';\nimport './SafeMath.sol';\n\n/**\n * @title TAOController\n */\ncontract TAOController {\n\tusing SafeMath for uint256;\n\n\taddress public nameFactoryAddress;\n\taddress public positionAddress;\n\tNameFactory internal _nameFactory;\n\tPosition internal _position;\n\n\t/**\n\t * @dev Constructor function\n\t */\n\tconstructor(address _nameFactoryAddress, address _positionAddress) public {\n\t\tnameFactoryAddress = _nameFactoryAddress;\n\t\tpositionAddress = _positionAddress;\n\n\t\t_nameFactory = NameFactory(nameFactoryAddress);\n\t\t_position = Position(positionAddress);\n\t}\n\n\t/**\n\t * @dev Check if `_taoId` is a TAO\n\t */\n\tmodifier isTAO(address _taoId) {\n\t\trequire (AOLibrary.isTAO(_taoId));\n\t\t_;\n\t}\n\n\t/**\n\t * @dev Check if `_nameId` is a Name\n\t */\n\tmodifier isName(address _nameId) {\n\t\trequire (AOLibrary.isName(_nameId));\n\t\t_;\n\t}\n\n\t/**\n\t * @dev Check if msg.sender is the current advocate of a `_taoId`\n\t */\n\tmodifier onlyAdvocateOfTAO(address _taoId) {\n\t\trequire (AOLibrary.isAdvocateOfTAO(msg.sender, _taoId));\n\t\t_;\n\t}\n\n\t/**\n\t * @dev Check is msg.sender address is a Name\n\t */\n\t modifier senderIsName() {\n\t\trequire (_nameFactory.ethAddressToNameId(msg.sender) != address(0));\n\t\t_;\n\t }\n}\n",
-	"sourcePath": "/home/jmulyono/ao-contracts/contracts/TAOController.sol",
+	"bytecode": "0x6080604052348015600f57600080fd5b50604051604080609883398101604052805160209091015160008054600160a060020a03938416600160a060020a0319918216179091556001805493909216921691909117905560358060636000396000f3006080604052600080fd00a165627a7a7230582033aab312358460f1b447d360fce474c5cbea6661e84df41d8ba75ba3475674be0029",
+	"deployedBytecode": "0x6080604052600080fd00a165627a7a7230582033aab312358460f1b447d360fce474c5cbea6661e84df41d8ba75ba3475674be0029",
+	"sourceMap": "145:1114:68:-;;;292:199;8:9:-1;5:2;;;30:1;27;20:12;5:2;292:199:68;;;;;;;;;;;;;;;;;;;377:12;:47;;-1:-1:-1;;;;;377:47:68;;;-1:-1:-1;;;;;;377:47:68;;;;;;;;428:59;;;;;;;;;;;;;;145:1114;;;;;;",
+	"deployedSourceMap": "145:1114:68:-;;;;;",
+	"source": "pragma solidity ^0.4.24;\n\nimport './AOLibrary.sol';\nimport './NameFactory.sol';\nimport './NameTAOPosition.sol';\n\n/**\n * @title TAOController\n */\ncontract TAOController {\n\tNameFactory internal _nameFactory;\n\tNameTAOPosition internal _nameTAOPosition;\n\n\t/**\n\t * @dev Constructor function\n\t */\n\tconstructor(address _nameFactoryAddress, address _nameTAOPositionAddress) public {\n\t\t_nameFactory = NameFactory(_nameFactoryAddress);\n\t\t_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);\n\t}\n\n\t/**\n\t * @dev Check if `_taoId` is a TAO\n\t */\n\tmodifier isTAO(address _taoId) {\n\t\trequire (AOLibrary.isTAO(_taoId));\n\t\t_;\n\t}\n\n\t/**\n\t * @dev Check if `_nameId` is a Name\n\t */\n\tmodifier isName(address _nameId) {\n\t\trequire (AOLibrary.isName(_nameId));\n\t\t_;\n\t}\n\n\t/**\n\t * @dev Check if `_id` is a Name or a TAO\n\t */\n\tmodifier isNameOrTAO(address _id) {\n\t\trequire (AOLibrary.isName(_id) || AOLibrary.isTAO(_id));\n\t\t_;\n\t}\n\n\t/**\n\t * @dev Check is msg.sender address is a Name\n\t */\n\t modifier senderIsName() {\n\t\trequire (_nameFactory.ethAddressToNameId(msg.sender) != address(0));\n\t\t_;\n\t }\n\n\t/**\n\t * @dev Check if msg.sender is the current advocate of TAO ID\n\t */\n\tmodifier onlyAdvocate(address _id) {\n\t\trequire (_nameTAOPosition.senderIsAdvocate(msg.sender, _id));\n\t\t_;\n\t}\n}\n",
+	"sourcePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/TAOController.sol",
 	"ast": {
-		"absolutePath": "/home/jmulyono/ao-contracts/contracts/TAOController.sol",
+		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/TAOController.sol",
 		"exportedSymbols": {
-			"TAOController": [17879]
+			"TAOController": [21660]
 		},
-		"id": 17880,
+		"id": 21661,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 17777,
+				"id": 21557,
 				"literals": ["solidity", "^", "0.4", ".24"],
 				"nodeType": "PragmaDirective",
-				"src": "0:24:35"
+				"src": "0:24:68"
 			},
 			{
-				"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOLibrary.sol",
+				"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/AOLibrary.sol",
 				"file": "./AOLibrary.sol",
-				"id": 17778,
+				"id": 21558,
 				"nodeType": "ImportDirective",
-				"scope": 17880,
-				"sourceUnit": 5670,
-				"src": "26:25:35",
+				"scope": 21661,
+				"sourceUnit": 5983,
+				"src": "26:25:68",
 				"symbolAliases": [],
 				"unitAlias": ""
 			},
 			{
-				"absolutePath": "/home/jmulyono/ao-contracts/contracts/TAO.sol",
-				"file": "./TAO.sol",
-				"id": 17779,
-				"nodeType": "ImportDirective",
-				"scope": 17880,
-				"sourceUnit": 17776,
-				"src": "52:19:35",
-				"symbolAliases": [],
-				"unitAlias": ""
-			},
-			{
-				"absolutePath": "/home/jmulyono/ao-contracts/contracts/NameFactory.sol",
+				"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/NameFactory.sol",
 				"file": "./NameFactory.sol",
-				"id": 17780,
+				"id": 21559,
 				"nodeType": "ImportDirective",
-				"scope": 17880,
-				"sourceUnit": 16750,
-				"src": "72:27:35",
+				"scope": 21661,
+				"sourceUnit": 18168,
+				"src": "52:27:68",
 				"symbolAliases": [],
 				"unitAlias": ""
 			},
 			{
-				"absolutePath": "/home/jmulyono/ao-contracts/contracts/Position.sol",
-				"file": "./Position.sol",
-				"id": 17781,
+				"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/NameTAOPosition.sol",
+				"file": "./NameTAOPosition.sol",
+				"id": 21560,
 				"nodeType": "ImportDirective",
-				"scope": 17880,
-				"sourceUnit": 17104,
-				"src": "100:24:35",
-				"symbolAliases": [],
-				"unitAlias": ""
-			},
-			{
-				"absolutePath": "/home/jmulyono/ao-contracts/contracts/SafeMath.sol",
-				"file": "./SafeMath.sol",
-				"id": 17782,
-				"nodeType": "ImportDirective",
-				"scope": 17880,
-				"sourceUnit": 17198,
-				"src": "125:24:35",
+				"scope": 21661,
+				"sourceUnit": 20050,
+				"src": "80:31:68",
 				"symbolAliases": [],
 				"unitAlias": ""
 			},
@@ -126,112 +76,33 @@
 				"contractKind": "contract",
 				"documentation": "@title TAOController",
 				"fullyImplemented": true,
-				"id": 17879,
-				"linearizedBaseContracts": [17879],
+				"id": 21660,
+				"linearizedBaseContracts": [21660],
 				"name": "TAOController",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
-						"id": 17785,
-						"libraryName": {
-							"contractScope": null,
-							"id": 17783,
-							"name": "SafeMath",
-							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 17197,
-							"src": "215:8:35",
-							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_SafeMath_$17197",
-								"typeString": "library SafeMath"
-							}
-						},
-						"nodeType": "UsingForDirective",
-						"src": "209:27:35",
-						"typeName": {
-							"id": 17784,
-							"name": "uint256",
-							"nodeType": "ElementaryTypeName",
-							"src": "228:7:35",
-							"typeDescriptions": {
-								"typeIdentifier": "t_uint256",
-								"typeString": "uint256"
-							}
-						}
-					},
-					{
 						"constant": false,
-						"id": 17787,
-						"name": "nameFactoryAddress",
-						"nodeType": "VariableDeclaration",
-						"scope": 17879,
-						"src": "239:33:35",
-						"stateVariable": true,
-						"storageLocation": "default",
-						"typeDescriptions": {
-							"typeIdentifier": "t_address",
-							"typeString": "address"
-						},
-						"typeName": {
-							"id": 17786,
-							"name": "address",
-							"nodeType": "ElementaryTypeName",
-							"src": "239:7:35",
-							"typeDescriptions": {
-								"typeIdentifier": "t_address",
-								"typeString": "address"
-							}
-						},
-						"value": null,
-						"visibility": "public"
-					},
-					{
-						"constant": false,
-						"id": 17789,
-						"name": "positionAddress",
-						"nodeType": "VariableDeclaration",
-						"scope": 17879,
-						"src": "275:30:35",
-						"stateVariable": true,
-						"storageLocation": "default",
-						"typeDescriptions": {
-							"typeIdentifier": "t_address",
-							"typeString": "address"
-						},
-						"typeName": {
-							"id": 17788,
-							"name": "address",
-							"nodeType": "ElementaryTypeName",
-							"src": "275:7:35",
-							"typeDescriptions": {
-								"typeIdentifier": "t_address",
-								"typeString": "address"
-							}
-						},
-						"value": null,
-						"visibility": "public"
-					},
-					{
-						"constant": false,
-						"id": 17791,
+						"id": 21562,
 						"name": "_nameFactory",
 						"nodeType": "VariableDeclaration",
-						"scope": 17879,
-						"src": "308:33:35",
+						"scope": 21660,
+						"src": "171:33:68",
 						"stateVariable": true,
 						"storageLocation": "default",
 						"typeDescriptions": {
-							"typeIdentifier": "t_contract$_NameFactory_$16749",
+							"typeIdentifier": "t_contract$_NameFactory_$18167",
 							"typeString": "contract NameFactory"
 						},
 						"typeName": {
 							"contractScope": null,
-							"id": 17790,
+							"id": 21561,
 							"name": "NameFactory",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 16749,
-							"src": "308:11:35",
+							"referencedDeclaration": 18167,
+							"src": "171:11:68",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_NameFactory_$16749",
+								"typeIdentifier": "t_contract$_NameFactory_$18167",
 								"typeString": "contract NameFactory"
 							}
 						},
@@ -240,27 +111,27 @@
 					},
 					{
 						"constant": false,
-						"id": 17793,
-						"name": "_position",
+						"id": 21564,
+						"name": "_nameTAOPosition",
 						"nodeType": "VariableDeclaration",
-						"scope": 17879,
-						"src": "344:27:35",
+						"scope": 21660,
+						"src": "207:41:68",
 						"stateVariable": true,
 						"storageLocation": "default",
 						"typeDescriptions": {
-							"typeIdentifier": "t_contract$_Position_$17103",
-							"typeString": "contract Position"
+							"typeIdentifier": "t_contract$_NameTAOPosition_$20049",
+							"typeString": "contract NameTAOPosition"
 						},
 						"typeName": {
 							"contractScope": null,
-							"id": 17792,
-							"name": "Position",
+							"id": 21563,
+							"name": "NameTAOPosition",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 17103,
-							"src": "344:8:35",
+							"referencedDeclaration": 20049,
+							"src": "207:15:68",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_Position_$17103",
-								"typeString": "contract Position"
+								"typeIdentifier": "t_contract$_NameTAOPosition_$20049",
+								"typeString": "contract NameTAOPosition"
 							}
 						},
 						"value": null,
@@ -268,120 +139,28 @@
 					},
 					{
 						"body": {
-							"id": 17820,
+							"id": 21583,
 							"nodeType": "Block",
-							"src": "489:178:35",
+							"src": "373:118:68",
 							"statements": [
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 17802,
+										"id": 21575,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 17800,
-											"name": "nameFactoryAddress",
-											"nodeType": "Identifier",
-											"overloadedDeclarations": [],
-											"referencedDeclaration": 17787,
-											"src": "493:18:35",
-											"typeDescriptions": {
-												"typeIdentifier": "t_address",
-												"typeString": "address"
-											}
-										},
-										"nodeType": "Assignment",
-										"operator": "=",
-										"rightHandSide": {
-											"argumentTypes": null,
-											"id": 17801,
-											"name": "_nameFactoryAddress",
-											"nodeType": "Identifier",
-											"overloadedDeclarations": [],
-											"referencedDeclaration": 17795,
-											"src": "514:19:35",
-											"typeDescriptions": {
-												"typeIdentifier": "t_address",
-												"typeString": "address"
-											}
-										},
-										"src": "493:40:35",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									},
-									"id": 17803,
-									"nodeType": "ExpressionStatement",
-									"src": "493:40:35"
-								},
-								{
-									"expression": {
-										"argumentTypes": null,
-										"id": 17806,
-										"isConstant": false,
-										"isLValue": false,
-										"isPure": false,
-										"lValueRequested": false,
-										"leftHandSide": {
-											"argumentTypes": null,
-											"id": 17804,
-											"name": "positionAddress",
-											"nodeType": "Identifier",
-											"overloadedDeclarations": [],
-											"referencedDeclaration": 17789,
-											"src": "537:15:35",
-											"typeDescriptions": {
-												"typeIdentifier": "t_address",
-												"typeString": "address"
-											}
-										},
-										"nodeType": "Assignment",
-										"operator": "=",
-										"rightHandSide": {
-											"argumentTypes": null,
-											"id": 17805,
-											"name": "_positionAddress",
-											"nodeType": "Identifier",
-											"overloadedDeclarations": [],
-											"referencedDeclaration": 17797,
-											"src": "555:16:35",
-											"typeDescriptions": {
-												"typeIdentifier": "t_address",
-												"typeString": "address"
-											}
-										},
-										"src": "537:34:35",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									},
-									"id": 17807,
-									"nodeType": "ExpressionStatement",
-									"src": "537:34:35"
-								},
-								{
-									"expression": {
-										"argumentTypes": null,
-										"id": 17812,
-										"isConstant": false,
-										"isLValue": false,
-										"isPure": false,
-										"lValueRequested": false,
-										"leftHandSide": {
-											"argumentTypes": null,
-											"id": 17808,
+											"id": 21571,
 											"name": "_nameFactory",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 17791,
-											"src": "576:12:35",
+											"referencedDeclaration": 21562,
+											"src": "377:12:68",
 											"typeDescriptions": {
-												"typeIdentifier": "t_contract$_NameFactory_$16749",
+												"typeIdentifier": "t_contract$_NameFactory_$18167",
 												"typeString": "contract NameFactory"
 											}
 										},
@@ -392,12 +171,12 @@
 											"arguments": [
 												{
 													"argumentTypes": null,
-													"id": 17810,
-													"name": "nameFactoryAddress",
+													"id": 21573,
+													"name": "_nameFactoryAddress",
 													"nodeType": "Identifier",
 													"overloadedDeclarations": [],
-													"referencedDeclaration": 17787,
-													"src": "603:18:35",
+													"referencedDeclaration": 21566,
+													"src": "404:19:68",
 													"typeDescriptions": {
 														"typeIdentifier": "t_address",
 														"typeString": "address"
@@ -411,18 +190,18 @@
 														"typeString": "address"
 													}
 												],
-												"id": 17809,
+												"id": 21572,
 												"name": "NameFactory",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 16749,
-												"src": "591:11:35",
+												"referencedDeclaration": 18167,
+												"src": "392:11:68",
 												"typeDescriptions": {
-													"typeIdentifier": "t_type$_t_contract$_NameFactory_$16749_$",
+													"typeIdentifier": "t_type$_t_contract$_NameFactory_$18167_$",
 													"typeString": "type(contract NameFactory)"
 												}
 											},
-											"id": 17811,
+											"id": 21574,
 											"isConstant": false,
 											"isLValue": false,
 											"isPure": false,
@@ -430,41 +209,41 @@
 											"lValueRequested": false,
 											"names": [],
 											"nodeType": "FunctionCall",
-											"src": "591:31:35",
+											"src": "392:32:68",
 											"typeDescriptions": {
-												"typeIdentifier": "t_contract$_NameFactory_$16749",
+												"typeIdentifier": "t_contract$_NameFactory_$18167",
 												"typeString": "contract NameFactory"
 											}
 										},
-										"src": "576:46:35",
+										"src": "377:47:68",
 										"typeDescriptions": {
-											"typeIdentifier": "t_contract$_NameFactory_$16749",
+											"typeIdentifier": "t_contract$_NameFactory_$18167",
 											"typeString": "contract NameFactory"
 										}
 									},
-									"id": 17813,
+									"id": 21576,
 									"nodeType": "ExpressionStatement",
-									"src": "576:46:35"
+									"src": "377:47:68"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 17818,
+										"id": 21581,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 17814,
-											"name": "_position",
+											"id": 21577,
+											"name": "_nameTAOPosition",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 17793,
-											"src": "626:9:35",
+											"referencedDeclaration": 21564,
+											"src": "428:16:68",
 											"typeDescriptions": {
-												"typeIdentifier": "t_contract$_Position_$17103",
-												"typeString": "contract Position"
+												"typeIdentifier": "t_contract$_NameTAOPosition_$20049",
+												"typeString": "contract NameTAOPosition"
 											}
 										},
 										"nodeType": "Assignment",
@@ -474,12 +253,12 @@
 											"arguments": [
 												{
 													"argumentTypes": null,
-													"id": 17816,
-													"name": "positionAddress",
+													"id": 21579,
+													"name": "_nameTAOPositionAddress",
 													"nodeType": "Identifier",
 													"overloadedDeclarations": [],
-													"referencedDeclaration": 17789,
-													"src": "647:15:35",
+													"referencedDeclaration": 21568,
+													"src": "463:23:68",
 													"typeDescriptions": {
 														"typeIdentifier": "t_address",
 														"typeString": "address"
@@ -493,18 +272,18 @@
 														"typeString": "address"
 													}
 												],
-												"id": 17815,
-												"name": "Position",
+												"id": 21578,
+												"name": "NameTAOPosition",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 17103,
-												"src": "638:8:35",
+												"referencedDeclaration": 20049,
+												"src": "447:15:68",
 												"typeDescriptions": {
-													"typeIdentifier": "t_type$_t_contract$_Position_$17103_$",
-													"typeString": "type(contract Position)"
+													"typeIdentifier": "t_type$_t_contract$_NameTAOPosition_$20049_$",
+													"typeString": "type(contract NameTAOPosition)"
 												}
 											},
-											"id": 17817,
+											"id": 21580,
 											"isConstant": false,
 											"isLValue": false,
 											"isPure": false,
@@ -512,26 +291,26 @@
 											"lValueRequested": false,
 											"names": [],
 											"nodeType": "FunctionCall",
-											"src": "638:25:35",
+											"src": "447:40:68",
 											"typeDescriptions": {
-												"typeIdentifier": "t_contract$_Position_$17103",
-												"typeString": "contract Position"
+												"typeIdentifier": "t_contract$_NameTAOPosition_$20049",
+												"typeString": "contract NameTAOPosition"
 											}
 										},
-										"src": "626:37:35",
+										"src": "428:59:68",
 										"typeDescriptions": {
-											"typeIdentifier": "t_contract$_Position_$17103",
-											"typeString": "contract Position"
+											"typeIdentifier": "t_contract$_NameTAOPosition_$20049",
+											"typeString": "contract NameTAOPosition"
 										}
 									},
-									"id": 17819,
+									"id": 21582,
 									"nodeType": "ExpressionStatement",
-									"src": "626:37:35"
+									"src": "428:59:68"
 								}
 							]
 						},
 						"documentation": "@dev Constructor function",
-						"id": 17821,
+						"id": 21584,
 						"implemented": true,
 						"isConstructor": true,
 						"isDeclaredConst": false,
@@ -539,16 +318,16 @@
 						"name": "",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 17798,
+							"id": 21569,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 17795,
+									"id": 21566,
 									"name": "_nameFactoryAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 17821,
-									"src": "427:27:35",
+									"scope": 21584,
+									"src": "304:27:68",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -556,10 +335,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 17794,
+										"id": 21565,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "427:7:35",
+										"src": "304:7:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -570,11 +349,11 @@
 								},
 								{
 									"constant": false,
-									"id": 17797,
-									"name": "_positionAddress",
+									"id": 21568,
+									"name": "_nameTAOPositionAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 17821,
-									"src": "456:24:35",
+									"scope": 21584,
+									"src": "333:31:68",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -582,10 +361,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 17796,
+										"id": 21567,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "456:7:35",
+										"src": "333:7:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -595,26 +374,26 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "426:55:35"
+							"src": "303:62:68"
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 17799,
+							"id": 21570,
 							"nodeType": "ParameterList",
 							"parameters": [],
-							"src": "489:0:35"
+							"src": "373:0:68"
 						},
-						"scope": 17879,
-						"src": "415:252:35",
+						"scope": 21660,
+						"src": "292:199:68",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					},
 					{
 						"body": {
-							"id": 17833,
+							"id": 21596,
 							"nodeType": "Block",
-							"src": "747:46:35",
+							"src": "571:46:68",
 							"statements": [
 								{
 									"expression": {
@@ -625,12 +404,12 @@
 												"arguments": [
 													{
 														"argumentTypes": null,
-														"id": 17828,
+														"id": 21591,
 														"name": "_taoId",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 17823,
-														"src": "776:6:35",
+														"referencedDeclaration": 21586,
+														"src": "600:6:68",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
 															"typeString": "address"
@@ -646,32 +425,32 @@
 													],
 													"expression": {
 														"argumentTypes": null,
-														"id": 17826,
+														"id": 21589,
 														"name": "AOLibrary",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 5669,
-														"src": "760:9:35",
+														"referencedDeclaration": 5982,
+														"src": "584:9:68",
 														"typeDescriptions": {
-															"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5669_$",
+															"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5982_$",
 															"typeString": "type(library AOLibrary)"
 														}
 													},
-													"id": 17827,
+													"id": 21590,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
 													"lValueRequested": false,
 													"memberName": "isTAO",
 													"nodeType": "MemberAccess",
-													"referencedDeclaration": 5144,
-													"src": "760:15:35",
+													"referencedDeclaration": 4998,
+													"src": "584:15:68",
 													"typeDescriptions": {
 														"typeIdentifier": "t_function_delegatecall_view$_t_address_$returns$_t_bool_$",
 														"typeString": "function (address) view returns (bool)"
 													}
 												},
-												"id": 17829,
+												"id": 21592,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -679,7 +458,7 @@
 												"lValueRequested": false,
 												"names": [],
 												"nodeType": "FunctionCall",
-												"src": "760:23:35",
+												"src": "584:23:68",
 												"typeDescriptions": {
 													"typeIdentifier": "t_bool",
 													"typeString": "bool"
@@ -693,18 +472,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 17825,
+											"id": 21588,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "751:7:35",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "575:7:68",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 17830,
+										"id": 21593,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -712,38 +491,38 @@
 										"lValueRequested": false,
 										"names": [],
 										"nodeType": "FunctionCall",
-										"src": "751:33:35",
+										"src": "575:33:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_tuple$__$",
 											"typeString": "tuple()"
 										}
 									},
-									"id": 17831,
+									"id": 21594,
 									"nodeType": "ExpressionStatement",
-									"src": "751:33:35"
+									"src": "575:33:68"
 								},
 								{
-									"id": 17832,
+									"id": 21595,
 									"nodeType": "PlaceholderStatement",
-									"src": "788:1:35"
+									"src": "612:1:68"
 								}
 							]
 						},
 						"documentation": "@dev Check if `_taoId` is a TAO",
-						"id": 17834,
+						"id": 21597,
 						"name": "isTAO",
 						"nodeType": "ModifierDefinition",
 						"parameters": {
-							"id": 17824,
+							"id": 21587,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 17823,
+									"id": 21586,
 									"name": "_taoId",
 									"nodeType": "VariableDeclaration",
-									"scope": 17834,
-									"src": "731:14:35",
+									"scope": 21597,
+									"src": "555:14:68",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -751,10 +530,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 17822,
+										"id": 21585,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "731:7:35",
+										"src": "555:7:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -764,16 +543,16 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "730:16:35"
+							"src": "554:16:68"
 						},
-						"src": "716:77:35",
+						"src": "540:77:68",
 						"visibility": "internal"
 					},
 					{
 						"body": {
-							"id": 17846,
+							"id": 21609,
 							"nodeType": "Block",
-							"src": "877:48:35",
+							"src": "701:48:68",
 							"statements": [
 								{
 									"expression": {
@@ -784,12 +563,12 @@
 												"arguments": [
 													{
 														"argumentTypes": null,
-														"id": 17841,
+														"id": 21604,
 														"name": "_nameId",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 17836,
-														"src": "907:7:35",
+														"referencedDeclaration": 21599,
+														"src": "731:7:68",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
 															"typeString": "address"
@@ -805,32 +584,32 @@
 													],
 													"expression": {
 														"argumentTypes": null,
-														"id": 17839,
+														"id": 21602,
 														"name": "AOLibrary",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 5669,
-														"src": "890:9:35",
+														"referencedDeclaration": 5982,
+														"src": "714:9:68",
 														"typeDescriptions": {
-															"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5669_$",
+															"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5982_$",
 															"typeString": "type(library AOLibrary)"
 														}
 													},
-													"id": 17840,
+													"id": 21603,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
 													"lValueRequested": false,
 													"memberName": "isName",
 													"nodeType": "MemberAccess",
-													"referencedDeclaration": 5177,
-													"src": "890:16:35",
+													"referencedDeclaration": 5042,
+													"src": "714:16:68",
 													"typeDescriptions": {
 														"typeIdentifier": "t_function_delegatecall_view$_t_address_$returns$_t_bool_$",
 														"typeString": "function (address) view returns (bool)"
 													}
 												},
-												"id": 17842,
+												"id": 21605,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -838,7 +617,7 @@
 												"lValueRequested": false,
 												"names": [],
 												"nodeType": "FunctionCall",
-												"src": "890:25:35",
+												"src": "714:25:68",
 												"typeDescriptions": {
 													"typeIdentifier": "t_bool",
 													"typeString": "bool"
@@ -852,18 +631,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 17838,
+											"id": 21601,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "881:7:35",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "705:7:68",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 17843,
+										"id": 21606,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -871,38 +650,38 @@
 										"lValueRequested": false,
 										"names": [],
 										"nodeType": "FunctionCall",
-										"src": "881:35:35",
+										"src": "705:35:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_tuple$__$",
 											"typeString": "tuple()"
 										}
 									},
-									"id": 17844,
+									"id": 21607,
 									"nodeType": "ExpressionStatement",
-									"src": "881:35:35"
+									"src": "705:35:68"
 								},
 								{
-									"id": 17845,
+									"id": 21608,
 									"nodeType": "PlaceholderStatement",
-									"src": "920:1:35"
+									"src": "744:1:68"
 								}
 							]
 						},
 						"documentation": "@dev Check if `_nameId` is a Name",
-						"id": 17847,
+						"id": 21610,
 						"name": "isName",
 						"nodeType": "ModifierDefinition",
 						"parameters": {
-							"id": 17837,
+							"id": 21600,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 17836,
+									"id": 21599,
 									"name": "_nameId",
 									"nodeType": "VariableDeclaration",
-									"scope": 17847,
-									"src": "860:15:35",
+									"scope": 21610,
+									"src": "684:15:68",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -910,10 +689,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 17835,
+										"id": 21598,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "860:7:35",
+										"src": "684:7:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -923,208 +702,16 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "859:17:35"
+							"src": "683:17:68"
 						},
-						"src": "844:81:35",
+						"src": "668:81:68",
 						"visibility": "internal"
 					},
 					{
 						"body": {
-							"id": 17861,
+							"id": 21627,
 							"nodeType": "Block",
-							"src": "1048:68:35",
-							"statements": [
-								{
-									"expression": {
-										"argumentTypes": null,
-										"arguments": [
-											{
-												"argumentTypes": null,
-												"arguments": [
-													{
-														"argumentTypes": null,
-														"expression": {
-															"argumentTypes": null,
-															"id": 17854,
-															"name": "msg",
-															"nodeType": "Identifier",
-															"overloadedDeclarations": [],
-															"referencedDeclaration": 19715,
-															"src": "1087:3:35",
-															"typeDescriptions": {
-																"typeIdentifier": "t_magic_message",
-																"typeString": "msg"
-															}
-														},
-														"id": 17855,
-														"isConstant": false,
-														"isLValue": false,
-														"isPure": false,
-														"lValueRequested": false,
-														"memberName": "sender",
-														"nodeType": "MemberAccess",
-														"referencedDeclaration": null,
-														"src": "1087:10:35",
-														"typeDescriptions": {
-															"typeIdentifier": "t_address",
-															"typeString": "address"
-														}
-													},
-													{
-														"argumentTypes": null,
-														"id": 17856,
-														"name": "_taoId",
-														"nodeType": "Identifier",
-														"overloadedDeclarations": [],
-														"referencedDeclaration": 17849,
-														"src": "1099:6:35",
-														"typeDescriptions": {
-															"typeIdentifier": "t_address",
-															"typeString": "address"
-														}
-													}
-												],
-												"expression": {
-													"argumentTypes": [
-														{
-															"typeIdentifier": "t_address",
-															"typeString": "address"
-														},
-														{
-															"typeIdentifier": "t_address",
-															"typeString": "address"
-														}
-													],
-													"expression": {
-														"argumentTypes": null,
-														"id": 17852,
-														"name": "AOLibrary",
-														"nodeType": "Identifier",
-														"overloadedDeclarations": [],
-														"referencedDeclaration": 5669,
-														"src": "1061:9:35",
-														"typeDescriptions": {
-															"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5669_$",
-															"typeString": "type(library AOLibrary)"
-														}
-													},
-													"id": 17853,
-													"isConstant": false,
-													"isLValue": false,
-													"isPure": false,
-													"lValueRequested": false,
-													"memberName": "isAdvocateOfTAO",
-													"nodeType": "MemberAccess",
-													"referencedDeclaration": 5471,
-													"src": "1061:25:35",
-													"typeDescriptions": {
-														"typeIdentifier": "t_function_delegatecall_view$_t_address_$_t_address_$returns$_t_bool_$",
-														"typeString": "function (address,address) view returns (bool)"
-													}
-												},
-												"id": 17857,
-												"isConstant": false,
-												"isLValue": false,
-												"isPure": false,
-												"kind": "functionCall",
-												"lValueRequested": false,
-												"names": [],
-												"nodeType": "FunctionCall",
-												"src": "1061:45:35",
-												"typeDescriptions": {
-													"typeIdentifier": "t_bool",
-													"typeString": "bool"
-												}
-											}
-										],
-										"expression": {
-											"argumentTypes": [
-												{
-													"typeIdentifier": "t_bool",
-													"typeString": "bool"
-												}
-											],
-											"id": 17851,
-											"name": "require",
-											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "1052:7:35",
-											"typeDescriptions": {
-												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
-												"typeString": "function (bool) pure"
-											}
-										},
-										"id": 17858,
-										"isConstant": false,
-										"isLValue": false,
-										"isPure": false,
-										"kind": "functionCall",
-										"lValueRequested": false,
-										"names": [],
-										"nodeType": "FunctionCall",
-										"src": "1052:55:35",
-										"typeDescriptions": {
-											"typeIdentifier": "t_tuple$__$",
-											"typeString": "tuple()"
-										}
-									},
-									"id": 17859,
-									"nodeType": "ExpressionStatement",
-									"src": "1052:55:35"
-								},
-								{
-									"id": 17860,
-									"nodeType": "PlaceholderStatement",
-									"src": "1111:1:35"
-								}
-							]
-						},
-						"documentation": "@dev Check if msg.sender is the current advocate of a `_taoId`",
-						"id": 17862,
-						"name": "onlyAdvocateOfTAO",
-						"nodeType": "ModifierDefinition",
-						"parameters": {
-							"id": 17850,
-							"nodeType": "ParameterList",
-							"parameters": [
-								{
-									"constant": false,
-									"id": 17849,
-									"name": "_taoId",
-									"nodeType": "VariableDeclaration",
-									"scope": 17862,
-									"src": "1032:14:35",
-									"stateVariable": false,
-									"storageLocation": "default",
-									"typeDescriptions": {
-										"typeIdentifier": "t_address",
-										"typeString": "address"
-									},
-									"typeName": {
-										"id": 17848,
-										"name": "address",
-										"nodeType": "ElementaryTypeName",
-										"src": "1032:7:35",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									},
-									"value": null,
-									"visibility": "internal"
-								}
-							],
-							"src": "1031:16:35"
-						},
-						"src": "1005:111:35",
-						"visibility": "internal"
-					},
-					{
-						"body": {
-							"id": 17877,
-							"nodeType": "Block",
-							"src": "1201:81:35",
+							"src": "839:68:68",
 							"statements": [
 								{
 									"expression": {
@@ -1133,10 +720,10 @@
 											{
 												"argumentTypes": null,
 												"commonType": {
-													"typeIdentifier": "t_address",
-													"typeString": "address"
+													"typeIdentifier": "t_bool",
+													"typeString": "bool"
 												},
-												"id": 17873,
+												"id": 21623,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -1146,28 +733,12 @@
 													"arguments": [
 														{
 															"argumentTypes": null,
-															"expression": {
-																"argumentTypes": null,
-																"id": 17867,
-																"name": "msg",
-																"nodeType": "Identifier",
-																"overloadedDeclarations": [],
-																"referencedDeclaration": 19715,
-																"src": "1246:3:35",
-																"typeDescriptions": {
-																	"typeIdentifier": "t_magic_message",
-																	"typeString": "msg"
-																}
-															},
-															"id": 17868,
-															"isConstant": false,
-															"isLValue": false,
-															"isPure": false,
-															"lValueRequested": false,
-															"memberName": "sender",
-															"nodeType": "MemberAccess",
-															"referencedDeclaration": null,
-															"src": "1246:10:35",
+															"id": 21617,
+															"name": "_id",
+															"nodeType": "Identifier",
+															"overloadedDeclarations": [],
+															"referencedDeclaration": 21612,
+															"src": "869:3:68",
 															"typeDescriptions": {
 																"typeIdentifier": "t_address",
 																"typeString": "address"
@@ -1183,32 +754,32 @@
 														],
 														"expression": {
 															"argumentTypes": null,
-															"id": 17865,
-															"name": "_nameFactory",
+															"id": 21615,
+															"name": "AOLibrary",
 															"nodeType": "Identifier",
 															"overloadedDeclarations": [],
-															"referencedDeclaration": 17791,
-															"src": "1214:12:35",
+															"referencedDeclaration": 5982,
+															"src": "852:9:68",
 															"typeDescriptions": {
-																"typeIdentifier": "t_contract$_NameFactory_$16749",
-																"typeString": "contract NameFactory"
+																"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5982_$",
+																"typeString": "type(library AOLibrary)"
 															}
 														},
-														"id": 17866,
+														"id": 21616,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": false,
 														"lValueRequested": false,
-														"memberName": "ethAddressToNameId",
+														"memberName": "isName",
 														"nodeType": "MemberAccess",
-														"referencedDeclaration": 15857,
-														"src": "1214:31:35",
+														"referencedDeclaration": 5042,
+														"src": "852:16:68",
 														"typeDescriptions": {
-															"typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
-															"typeString": "function (address) view external returns (address)"
+															"typeIdentifier": "t_function_delegatecall_view$_t_address_$returns$_t_bool_$",
+															"typeString": "function (address) view returns (bool)"
 														}
 													},
-													"id": 17869,
+													"id": 21618,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
@@ -1216,7 +787,266 @@
 													"lValueRequested": false,
 													"names": [],
 													"nodeType": "FunctionCall",
-													"src": "1214:43:35",
+													"src": "852:21:68",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bool",
+														"typeString": "bool"
+													}
+												},
+												"nodeType": "BinaryOperation",
+												"operator": "||",
+												"rightExpression": {
+													"argumentTypes": null,
+													"arguments": [
+														{
+															"argumentTypes": null,
+															"id": 21621,
+															"name": "_id",
+															"nodeType": "Identifier",
+															"overloadedDeclarations": [],
+															"referencedDeclaration": 21612,
+															"src": "893:3:68",
+															"typeDescriptions": {
+																"typeIdentifier": "t_address",
+																"typeString": "address"
+															}
+														}
+													],
+													"expression": {
+														"argumentTypes": [
+															{
+																"typeIdentifier": "t_address",
+																"typeString": "address"
+															}
+														],
+														"expression": {
+															"argumentTypes": null,
+															"id": 21619,
+															"name": "AOLibrary",
+															"nodeType": "Identifier",
+															"overloadedDeclarations": [],
+															"referencedDeclaration": 5982,
+															"src": "877:9:68",
+															"typeDescriptions": {
+																"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5982_$",
+																"typeString": "type(library AOLibrary)"
+															}
+														},
+														"id": 21620,
+														"isConstant": false,
+														"isLValue": false,
+														"isPure": false,
+														"lValueRequested": false,
+														"memberName": "isTAO",
+														"nodeType": "MemberAccess",
+														"referencedDeclaration": 4998,
+														"src": "877:15:68",
+														"typeDescriptions": {
+															"typeIdentifier": "t_function_delegatecall_view$_t_address_$returns$_t_bool_$",
+															"typeString": "function (address) view returns (bool)"
+														}
+													},
+													"id": 21622,
+													"isConstant": false,
+													"isLValue": false,
+													"isPure": false,
+													"kind": "functionCall",
+													"lValueRequested": false,
+													"names": [],
+													"nodeType": "FunctionCall",
+													"src": "877:20:68",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bool",
+														"typeString": "bool"
+													}
+												},
+												"src": "852:45:68",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bool",
+													"typeString": "bool"
+												}
+											}
+										],
+										"expression": {
+											"argumentTypes": [
+												{
+													"typeIdentifier": "t_bool",
+													"typeString": "bool"
+												}
+											],
+											"id": 21614,
+											"name": "require",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "843:7:68",
+											"typeDescriptions": {
+												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+												"typeString": "function (bool) pure"
+											}
+										},
+										"id": 21624,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"kind": "functionCall",
+										"lValueRequested": false,
+										"names": [],
+										"nodeType": "FunctionCall",
+										"src": "843:55:68",
+										"typeDescriptions": {
+											"typeIdentifier": "t_tuple$__$",
+											"typeString": "tuple()"
+										}
+									},
+									"id": 21625,
+									"nodeType": "ExpressionStatement",
+									"src": "843:55:68"
+								},
+								{
+									"id": 21626,
+									"nodeType": "PlaceholderStatement",
+									"src": "902:1:68"
+								}
+							]
+						},
+						"documentation": "@dev Check if `_id` is a Name or a TAO",
+						"id": 21628,
+						"name": "isNameOrTAO",
+						"nodeType": "ModifierDefinition",
+						"parameters": {
+							"id": 21613,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 21612,
+									"name": "_id",
+									"nodeType": "VariableDeclaration",
+									"scope": 21628,
+									"src": "826:11:68",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_address",
+										"typeString": "address"
+									},
+									"typeName": {
+										"id": 21611,
+										"name": "address",
+										"nodeType": "ElementaryTypeName",
+										"src": "826:7:68",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "825:13:68"
+						},
+						"src": "805:102:68",
+						"visibility": "internal"
+					},
+					{
+						"body": {
+							"id": 21643,
+							"nodeType": "Block",
+							"src": "992:81:68",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"arguments": [
+											{
+												"argumentTypes": null,
+												"commonType": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"id": 21639,
+												"isConstant": false,
+												"isLValue": false,
+												"isPure": false,
+												"lValueRequested": false,
+												"leftExpression": {
+													"argumentTypes": null,
+													"arguments": [
+														{
+															"argumentTypes": null,
+															"expression": {
+																"argumentTypes": null,
+																"id": 21633,
+																"name": "msg",
+																"nodeType": "Identifier",
+																"overloadedDeclarations": [],
+																"referencedDeclaration": 26036,
+																"src": "1037:3:68",
+																"typeDescriptions": {
+																	"typeIdentifier": "t_magic_message",
+																	"typeString": "msg"
+																}
+															},
+															"id": 21634,
+															"isConstant": false,
+															"isLValue": false,
+															"isPure": false,
+															"lValueRequested": false,
+															"memberName": "sender",
+															"nodeType": "MemberAccess",
+															"referencedDeclaration": null,
+															"src": "1037:10:68",
+															"typeDescriptions": {
+																"typeIdentifier": "t_address",
+																"typeString": "address"
+															}
+														}
+													],
+													"expression": {
+														"argumentTypes": [
+															{
+																"typeIdentifier": "t_address",
+																"typeString": "address"
+															}
+														],
+														"expression": {
+															"argumentTypes": null,
+															"id": 21631,
+															"name": "_nameFactory",
+															"nodeType": "Identifier",
+															"overloadedDeclarations": [],
+															"referencedDeclaration": 21562,
+															"src": "1005:12:68",
+															"typeDescriptions": {
+																"typeIdentifier": "t_contract$_NameFactory_$18167",
+																"typeString": "contract NameFactory"
+															}
+														},
+														"id": 21632,
+														"isConstant": false,
+														"isLValue": false,
+														"isPure": false,
+														"lValueRequested": false,
+														"memberName": "ethAddressToNameId",
+														"nodeType": "MemberAccess",
+														"referencedDeclaration": 17592,
+														"src": "1005:31:68",
+														"typeDescriptions": {
+															"typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
+															"typeString": "function (address) view external returns (address)"
+														}
+													},
+													"id": 21635,
+													"isConstant": false,
+													"isLValue": false,
+													"isPure": false,
+													"kind": "functionCall",
+													"lValueRequested": false,
+													"names": [],
+													"nodeType": "FunctionCall",
+													"src": "1005:43:68",
 													"typeDescriptions": {
 														"typeIdentifier": "t_address",
 														"typeString": "address"
@@ -1230,14 +1060,14 @@
 														{
 															"argumentTypes": null,
 															"hexValue": "30",
-															"id": 17871,
+															"id": 21637,
 															"isConstant": false,
 															"isLValue": false,
 															"isPure": true,
 															"kind": "number",
 															"lValueRequested": false,
 															"nodeType": "Literal",
-															"src": "1269:1:35",
+															"src": "1060:1:68",
 															"subdenomination": null,
 															"typeDescriptions": {
 																"typeIdentifier": "t_rational_0_by_1",
@@ -1253,20 +1083,20 @@
 																"typeString": "int_const 0"
 															}
 														],
-														"id": 17870,
+														"id": 21636,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": true,
 														"lValueRequested": false,
 														"nodeType": "ElementaryTypeNameExpression",
-														"src": "1261:7:35",
+														"src": "1052:7:68",
 														"typeDescriptions": {
 															"typeIdentifier": "t_type$_t_address_$",
 															"typeString": "type(address)"
 														},
 														"typeName": "address"
 													},
-													"id": 17872,
+													"id": 21638,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": true,
@@ -1274,13 +1104,13 @@
 													"lValueRequested": false,
 													"names": [],
 													"nodeType": "FunctionCall",
-													"src": "1261:10:35",
+													"src": "1052:10:68",
 													"typeDescriptions": {
 														"typeIdentifier": "t_address",
 														"typeString": "address"
 													}
 												},
-												"src": "1214:57:35",
+												"src": "1005:57:68",
 												"typeDescriptions": {
 													"typeIdentifier": "t_bool",
 													"typeString": "bool"
@@ -1294,18 +1124,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 17864,
+											"id": 21630,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "1205:7:35",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "996:7:68",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 17874,
+										"id": 21640,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -1313,109 +1143,279 @@
 										"lValueRequested": false,
 										"names": [],
 										"nodeType": "FunctionCall",
-										"src": "1205:67:35",
+										"src": "996:67:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_tuple$__$",
 											"typeString": "tuple()"
 										}
 									},
-									"id": 17875,
+									"id": 21641,
 									"nodeType": "ExpressionStatement",
-									"src": "1205:67:35"
+									"src": "996:67:68"
 								},
 								{
-									"id": 17876,
+									"id": 21642,
 									"nodeType": "PlaceholderStatement",
-									"src": "1276:1:35"
+									"src": "1067:1:68"
 								}
 							]
 						},
 						"documentation": "@dev Check is msg.sender address is a Name",
-						"id": 17878,
+						"id": 21644,
 						"name": "senderIsName",
 						"nodeType": "ModifierDefinition",
 						"parameters": {
-							"id": 17863,
+							"id": 21629,
 							"nodeType": "ParameterList",
 							"parameters": [],
-							"src": "1198:2:35"
+							"src": "989:2:68"
 						},
-						"src": "1177:105:35",
+						"src": "968:105:68",
+						"visibility": "internal"
+					},
+					{
+						"body": {
+							"id": 21658,
+							"nodeType": "Block",
+							"src": "1184:73:68",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"arguments": [
+											{
+												"argumentTypes": null,
+												"arguments": [
+													{
+														"argumentTypes": null,
+														"expression": {
+															"argumentTypes": null,
+															"id": 21651,
+															"name": "msg",
+															"nodeType": "Identifier",
+															"overloadedDeclarations": [],
+															"referencedDeclaration": 26036,
+															"src": "1231:3:68",
+															"typeDescriptions": {
+																"typeIdentifier": "t_magic_message",
+																"typeString": "msg"
+															}
+														},
+														"id": 21652,
+														"isConstant": false,
+														"isLValue": false,
+														"isPure": false,
+														"lValueRequested": false,
+														"memberName": "sender",
+														"nodeType": "MemberAccess",
+														"referencedDeclaration": null,
+														"src": "1231:10:68",
+														"typeDescriptions": {
+															"typeIdentifier": "t_address",
+															"typeString": "address"
+														}
+													},
+													{
+														"argumentTypes": null,
+														"id": 21653,
+														"name": "_id",
+														"nodeType": "Identifier",
+														"overloadedDeclarations": [],
+														"referencedDeclaration": 21646,
+														"src": "1243:3:68",
+														"typeDescriptions": {
+															"typeIdentifier": "t_address",
+															"typeString": "address"
+														}
+													}
+												],
+												"expression": {
+													"argumentTypes": [
+														{
+															"typeIdentifier": "t_address",
+															"typeString": "address"
+														},
+														{
+															"typeIdentifier": "t_address",
+															"typeString": "address"
+														}
+													],
+													"expression": {
+														"argumentTypes": null,
+														"id": 21649,
+														"name": "_nameTAOPosition",
+														"nodeType": "Identifier",
+														"overloadedDeclarations": [],
+														"referencedDeclaration": 21564,
+														"src": "1197:16:68",
+														"typeDescriptions": {
+															"typeIdentifier": "t_contract$_NameTAOPosition_$20049",
+															"typeString": "contract NameTAOPosition"
+														}
+													},
+													"id": 21650,
+													"isConstant": false,
+													"isLValue": false,
+													"isPure": false,
+													"lValueRequested": false,
+													"memberName": "senderIsAdvocate",
+													"nodeType": "MemberAccess",
+													"referencedDeclaration": 19530,
+													"src": "1197:33:68",
+													"typeDescriptions": {
+														"typeIdentifier": "t_function_external_view$_t_address_$_t_address_$returns$_t_bool_$",
+														"typeString": "function (address,address) view external returns (bool)"
+													}
+												},
+												"id": 21654,
+												"isConstant": false,
+												"isLValue": false,
+												"isPure": false,
+												"kind": "functionCall",
+												"lValueRequested": false,
+												"names": [],
+												"nodeType": "FunctionCall",
+												"src": "1197:50:68",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bool",
+													"typeString": "bool"
+												}
+											}
+										],
+										"expression": {
+											"argumentTypes": [
+												{
+													"typeIdentifier": "t_bool",
+													"typeString": "bool"
+												}
+											],
+											"id": 21648,
+											"name": "require",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "1188:7:68",
+											"typeDescriptions": {
+												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+												"typeString": "function (bool) pure"
+											}
+										},
+										"id": 21655,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"kind": "functionCall",
+										"lValueRequested": false,
+										"names": [],
+										"nodeType": "FunctionCall",
+										"src": "1188:60:68",
+										"typeDescriptions": {
+											"typeIdentifier": "t_tuple$__$",
+											"typeString": "tuple()"
+										}
+									},
+									"id": 21656,
+									"nodeType": "ExpressionStatement",
+									"src": "1188:60:68"
+								},
+								{
+									"id": 21657,
+									"nodeType": "PlaceholderStatement",
+									"src": "1252:1:68"
+								}
+							]
+						},
+						"documentation": "@dev Check if msg.sender is the current advocate of TAO ID",
+						"id": 21659,
+						"name": "onlyAdvocate",
+						"nodeType": "ModifierDefinition",
+						"parameters": {
+							"id": 21647,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 21646,
+									"name": "_id",
+									"nodeType": "VariableDeclaration",
+									"scope": 21659,
+									"src": "1171:11:68",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_address",
+										"typeString": "address"
+									},
+									"typeName": {
+										"id": 21645,
+										"name": "address",
+										"nodeType": "ElementaryTypeName",
+										"src": "1171:7:68",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "1170:13:68"
+						},
+						"src": "1149:108:68",
 						"visibility": "internal"
 					}
 				],
-				"scope": 17880,
-				"src": "183:1101:35"
+				"scope": 21661,
+				"src": "145:1114:68"
 			}
 		],
-		"src": "0:1285:35"
+		"src": "0:1260:68"
 	},
 	"legacyAST": {
-		"absolutePath": "/home/jmulyono/ao-contracts/contracts/TAOController.sol",
+		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/TAOController.sol",
 		"exportedSymbols": {
-			"TAOController": [17879]
+			"TAOController": [21660]
 		},
-		"id": 17880,
+		"id": 21661,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 17777,
+				"id": 21557,
 				"literals": ["solidity", "^", "0.4", ".24"],
 				"nodeType": "PragmaDirective",
-				"src": "0:24:35"
+				"src": "0:24:68"
 			},
 			{
-				"absolutePath": "/home/jmulyono/ao-contracts/contracts/AOLibrary.sol",
+				"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/AOLibrary.sol",
 				"file": "./AOLibrary.sol",
-				"id": 17778,
+				"id": 21558,
 				"nodeType": "ImportDirective",
-				"scope": 17880,
-				"sourceUnit": 5670,
-				"src": "26:25:35",
+				"scope": 21661,
+				"sourceUnit": 5983,
+				"src": "26:25:68",
 				"symbolAliases": [],
 				"unitAlias": ""
 			},
 			{
-				"absolutePath": "/home/jmulyono/ao-contracts/contracts/TAO.sol",
-				"file": "./TAO.sol",
-				"id": 17779,
-				"nodeType": "ImportDirective",
-				"scope": 17880,
-				"sourceUnit": 17776,
-				"src": "52:19:35",
-				"symbolAliases": [],
-				"unitAlias": ""
-			},
-			{
-				"absolutePath": "/home/jmulyono/ao-contracts/contracts/NameFactory.sol",
+				"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/NameFactory.sol",
 				"file": "./NameFactory.sol",
-				"id": 17780,
+				"id": 21559,
 				"nodeType": "ImportDirective",
-				"scope": 17880,
-				"sourceUnit": 16750,
-				"src": "72:27:35",
+				"scope": 21661,
+				"sourceUnit": 18168,
+				"src": "52:27:68",
 				"symbolAliases": [],
 				"unitAlias": ""
 			},
 			{
-				"absolutePath": "/home/jmulyono/ao-contracts/contracts/Position.sol",
-				"file": "./Position.sol",
-				"id": 17781,
+				"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/NameTAOPosition.sol",
+				"file": "./NameTAOPosition.sol",
+				"id": 21560,
 				"nodeType": "ImportDirective",
-				"scope": 17880,
-				"sourceUnit": 17104,
-				"src": "100:24:35",
-				"symbolAliases": [],
-				"unitAlias": ""
-			},
-			{
-				"absolutePath": "/home/jmulyono/ao-contracts/contracts/SafeMath.sol",
-				"file": "./SafeMath.sol",
-				"id": 17782,
-				"nodeType": "ImportDirective",
-				"scope": 17880,
-				"sourceUnit": 17198,
-				"src": "125:24:35",
+				"scope": 21661,
+				"sourceUnit": 20050,
+				"src": "80:31:68",
 				"symbolAliases": [],
 				"unitAlias": ""
 			},
@@ -1425,112 +1425,33 @@
 				"contractKind": "contract",
 				"documentation": "@title TAOController",
 				"fullyImplemented": true,
-				"id": 17879,
-				"linearizedBaseContracts": [17879],
+				"id": 21660,
+				"linearizedBaseContracts": [21660],
 				"name": "TAOController",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
-						"id": 17785,
-						"libraryName": {
-							"contractScope": null,
-							"id": 17783,
-							"name": "SafeMath",
-							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 17197,
-							"src": "215:8:35",
-							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_SafeMath_$17197",
-								"typeString": "library SafeMath"
-							}
-						},
-						"nodeType": "UsingForDirective",
-						"src": "209:27:35",
-						"typeName": {
-							"id": 17784,
-							"name": "uint256",
-							"nodeType": "ElementaryTypeName",
-							"src": "228:7:35",
-							"typeDescriptions": {
-								"typeIdentifier": "t_uint256",
-								"typeString": "uint256"
-							}
-						}
-					},
-					{
 						"constant": false,
-						"id": 17787,
-						"name": "nameFactoryAddress",
-						"nodeType": "VariableDeclaration",
-						"scope": 17879,
-						"src": "239:33:35",
-						"stateVariable": true,
-						"storageLocation": "default",
-						"typeDescriptions": {
-							"typeIdentifier": "t_address",
-							"typeString": "address"
-						},
-						"typeName": {
-							"id": 17786,
-							"name": "address",
-							"nodeType": "ElementaryTypeName",
-							"src": "239:7:35",
-							"typeDescriptions": {
-								"typeIdentifier": "t_address",
-								"typeString": "address"
-							}
-						},
-						"value": null,
-						"visibility": "public"
-					},
-					{
-						"constant": false,
-						"id": 17789,
-						"name": "positionAddress",
-						"nodeType": "VariableDeclaration",
-						"scope": 17879,
-						"src": "275:30:35",
-						"stateVariable": true,
-						"storageLocation": "default",
-						"typeDescriptions": {
-							"typeIdentifier": "t_address",
-							"typeString": "address"
-						},
-						"typeName": {
-							"id": 17788,
-							"name": "address",
-							"nodeType": "ElementaryTypeName",
-							"src": "275:7:35",
-							"typeDescriptions": {
-								"typeIdentifier": "t_address",
-								"typeString": "address"
-							}
-						},
-						"value": null,
-						"visibility": "public"
-					},
-					{
-						"constant": false,
-						"id": 17791,
+						"id": 21562,
 						"name": "_nameFactory",
 						"nodeType": "VariableDeclaration",
-						"scope": 17879,
-						"src": "308:33:35",
+						"scope": 21660,
+						"src": "171:33:68",
 						"stateVariable": true,
 						"storageLocation": "default",
 						"typeDescriptions": {
-							"typeIdentifier": "t_contract$_NameFactory_$16749",
+							"typeIdentifier": "t_contract$_NameFactory_$18167",
 							"typeString": "contract NameFactory"
 						},
 						"typeName": {
 							"contractScope": null,
-							"id": 17790,
+							"id": 21561,
 							"name": "NameFactory",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 16749,
-							"src": "308:11:35",
+							"referencedDeclaration": 18167,
+							"src": "171:11:68",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_NameFactory_$16749",
+								"typeIdentifier": "t_contract$_NameFactory_$18167",
 								"typeString": "contract NameFactory"
 							}
 						},
@@ -1539,27 +1460,27 @@
 					},
 					{
 						"constant": false,
-						"id": 17793,
-						"name": "_position",
+						"id": 21564,
+						"name": "_nameTAOPosition",
 						"nodeType": "VariableDeclaration",
-						"scope": 17879,
-						"src": "344:27:35",
+						"scope": 21660,
+						"src": "207:41:68",
 						"stateVariable": true,
 						"storageLocation": "default",
 						"typeDescriptions": {
-							"typeIdentifier": "t_contract$_Position_$17103",
-							"typeString": "contract Position"
+							"typeIdentifier": "t_contract$_NameTAOPosition_$20049",
+							"typeString": "contract NameTAOPosition"
 						},
 						"typeName": {
 							"contractScope": null,
-							"id": 17792,
-							"name": "Position",
+							"id": 21563,
+							"name": "NameTAOPosition",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 17103,
-							"src": "344:8:35",
+							"referencedDeclaration": 20049,
+							"src": "207:15:68",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_Position_$17103",
-								"typeString": "contract Position"
+								"typeIdentifier": "t_contract$_NameTAOPosition_$20049",
+								"typeString": "contract NameTAOPosition"
 							}
 						},
 						"value": null,
@@ -1567,120 +1488,28 @@
 					},
 					{
 						"body": {
-							"id": 17820,
+							"id": 21583,
 							"nodeType": "Block",
-							"src": "489:178:35",
+							"src": "373:118:68",
 							"statements": [
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 17802,
+										"id": 21575,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 17800,
-											"name": "nameFactoryAddress",
-											"nodeType": "Identifier",
-											"overloadedDeclarations": [],
-											"referencedDeclaration": 17787,
-											"src": "493:18:35",
-											"typeDescriptions": {
-												"typeIdentifier": "t_address",
-												"typeString": "address"
-											}
-										},
-										"nodeType": "Assignment",
-										"operator": "=",
-										"rightHandSide": {
-											"argumentTypes": null,
-											"id": 17801,
-											"name": "_nameFactoryAddress",
-											"nodeType": "Identifier",
-											"overloadedDeclarations": [],
-											"referencedDeclaration": 17795,
-											"src": "514:19:35",
-											"typeDescriptions": {
-												"typeIdentifier": "t_address",
-												"typeString": "address"
-											}
-										},
-										"src": "493:40:35",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									},
-									"id": 17803,
-									"nodeType": "ExpressionStatement",
-									"src": "493:40:35"
-								},
-								{
-									"expression": {
-										"argumentTypes": null,
-										"id": 17806,
-										"isConstant": false,
-										"isLValue": false,
-										"isPure": false,
-										"lValueRequested": false,
-										"leftHandSide": {
-											"argumentTypes": null,
-											"id": 17804,
-											"name": "positionAddress",
-											"nodeType": "Identifier",
-											"overloadedDeclarations": [],
-											"referencedDeclaration": 17789,
-											"src": "537:15:35",
-											"typeDescriptions": {
-												"typeIdentifier": "t_address",
-												"typeString": "address"
-											}
-										},
-										"nodeType": "Assignment",
-										"operator": "=",
-										"rightHandSide": {
-											"argumentTypes": null,
-											"id": 17805,
-											"name": "_positionAddress",
-											"nodeType": "Identifier",
-											"overloadedDeclarations": [],
-											"referencedDeclaration": 17797,
-											"src": "555:16:35",
-											"typeDescriptions": {
-												"typeIdentifier": "t_address",
-												"typeString": "address"
-											}
-										},
-										"src": "537:34:35",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									},
-									"id": 17807,
-									"nodeType": "ExpressionStatement",
-									"src": "537:34:35"
-								},
-								{
-									"expression": {
-										"argumentTypes": null,
-										"id": 17812,
-										"isConstant": false,
-										"isLValue": false,
-										"isPure": false,
-										"lValueRequested": false,
-										"leftHandSide": {
-											"argumentTypes": null,
-											"id": 17808,
+											"id": 21571,
 											"name": "_nameFactory",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 17791,
-											"src": "576:12:35",
+											"referencedDeclaration": 21562,
+											"src": "377:12:68",
 											"typeDescriptions": {
-												"typeIdentifier": "t_contract$_NameFactory_$16749",
+												"typeIdentifier": "t_contract$_NameFactory_$18167",
 												"typeString": "contract NameFactory"
 											}
 										},
@@ -1691,12 +1520,12 @@
 											"arguments": [
 												{
 													"argumentTypes": null,
-													"id": 17810,
-													"name": "nameFactoryAddress",
+													"id": 21573,
+													"name": "_nameFactoryAddress",
 													"nodeType": "Identifier",
 													"overloadedDeclarations": [],
-													"referencedDeclaration": 17787,
-													"src": "603:18:35",
+													"referencedDeclaration": 21566,
+													"src": "404:19:68",
 													"typeDescriptions": {
 														"typeIdentifier": "t_address",
 														"typeString": "address"
@@ -1710,18 +1539,18 @@
 														"typeString": "address"
 													}
 												],
-												"id": 17809,
+												"id": 21572,
 												"name": "NameFactory",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 16749,
-												"src": "591:11:35",
+												"referencedDeclaration": 18167,
+												"src": "392:11:68",
 												"typeDescriptions": {
-													"typeIdentifier": "t_type$_t_contract$_NameFactory_$16749_$",
+													"typeIdentifier": "t_type$_t_contract$_NameFactory_$18167_$",
 													"typeString": "type(contract NameFactory)"
 												}
 											},
-											"id": 17811,
+											"id": 21574,
 											"isConstant": false,
 											"isLValue": false,
 											"isPure": false,
@@ -1729,41 +1558,41 @@
 											"lValueRequested": false,
 											"names": [],
 											"nodeType": "FunctionCall",
-											"src": "591:31:35",
+											"src": "392:32:68",
 											"typeDescriptions": {
-												"typeIdentifier": "t_contract$_NameFactory_$16749",
+												"typeIdentifier": "t_contract$_NameFactory_$18167",
 												"typeString": "contract NameFactory"
 											}
 										},
-										"src": "576:46:35",
+										"src": "377:47:68",
 										"typeDescriptions": {
-											"typeIdentifier": "t_contract$_NameFactory_$16749",
+											"typeIdentifier": "t_contract$_NameFactory_$18167",
 											"typeString": "contract NameFactory"
 										}
 									},
-									"id": 17813,
+									"id": 21576,
 									"nodeType": "ExpressionStatement",
-									"src": "576:46:35"
+									"src": "377:47:68"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 17818,
+										"id": 21581,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 17814,
-											"name": "_position",
+											"id": 21577,
+											"name": "_nameTAOPosition",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 17793,
-											"src": "626:9:35",
+											"referencedDeclaration": 21564,
+											"src": "428:16:68",
 											"typeDescriptions": {
-												"typeIdentifier": "t_contract$_Position_$17103",
-												"typeString": "contract Position"
+												"typeIdentifier": "t_contract$_NameTAOPosition_$20049",
+												"typeString": "contract NameTAOPosition"
 											}
 										},
 										"nodeType": "Assignment",
@@ -1773,12 +1602,12 @@
 											"arguments": [
 												{
 													"argumentTypes": null,
-													"id": 17816,
-													"name": "positionAddress",
+													"id": 21579,
+													"name": "_nameTAOPositionAddress",
 													"nodeType": "Identifier",
 													"overloadedDeclarations": [],
-													"referencedDeclaration": 17789,
-													"src": "647:15:35",
+													"referencedDeclaration": 21568,
+													"src": "463:23:68",
 													"typeDescriptions": {
 														"typeIdentifier": "t_address",
 														"typeString": "address"
@@ -1792,18 +1621,18 @@
 														"typeString": "address"
 													}
 												],
-												"id": 17815,
-												"name": "Position",
+												"id": 21578,
+												"name": "NameTAOPosition",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 17103,
-												"src": "638:8:35",
+												"referencedDeclaration": 20049,
+												"src": "447:15:68",
 												"typeDescriptions": {
-													"typeIdentifier": "t_type$_t_contract$_Position_$17103_$",
-													"typeString": "type(contract Position)"
+													"typeIdentifier": "t_type$_t_contract$_NameTAOPosition_$20049_$",
+													"typeString": "type(contract NameTAOPosition)"
 												}
 											},
-											"id": 17817,
+											"id": 21580,
 											"isConstant": false,
 											"isLValue": false,
 											"isPure": false,
@@ -1811,26 +1640,26 @@
 											"lValueRequested": false,
 											"names": [],
 											"nodeType": "FunctionCall",
-											"src": "638:25:35",
+											"src": "447:40:68",
 											"typeDescriptions": {
-												"typeIdentifier": "t_contract$_Position_$17103",
-												"typeString": "contract Position"
+												"typeIdentifier": "t_contract$_NameTAOPosition_$20049",
+												"typeString": "contract NameTAOPosition"
 											}
 										},
-										"src": "626:37:35",
+										"src": "428:59:68",
 										"typeDescriptions": {
-											"typeIdentifier": "t_contract$_Position_$17103",
-											"typeString": "contract Position"
+											"typeIdentifier": "t_contract$_NameTAOPosition_$20049",
+											"typeString": "contract NameTAOPosition"
 										}
 									},
-									"id": 17819,
+									"id": 21582,
 									"nodeType": "ExpressionStatement",
-									"src": "626:37:35"
+									"src": "428:59:68"
 								}
 							]
 						},
 						"documentation": "@dev Constructor function",
-						"id": 17821,
+						"id": 21584,
 						"implemented": true,
 						"isConstructor": true,
 						"isDeclaredConst": false,
@@ -1838,16 +1667,16 @@
 						"name": "",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 17798,
+							"id": 21569,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 17795,
+									"id": 21566,
 									"name": "_nameFactoryAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 17821,
-									"src": "427:27:35",
+									"scope": 21584,
+									"src": "304:27:68",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -1855,10 +1684,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 17794,
+										"id": 21565,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "427:7:35",
+										"src": "304:7:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -1869,11 +1698,11 @@
 								},
 								{
 									"constant": false,
-									"id": 17797,
-									"name": "_positionAddress",
+									"id": 21568,
+									"name": "_nameTAOPositionAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 17821,
-									"src": "456:24:35",
+									"scope": 21584,
+									"src": "333:31:68",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -1881,10 +1710,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 17796,
+										"id": 21567,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "456:7:35",
+										"src": "333:7:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -1894,26 +1723,26 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "426:55:35"
+							"src": "303:62:68"
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 17799,
+							"id": 21570,
 							"nodeType": "ParameterList",
 							"parameters": [],
-							"src": "489:0:35"
+							"src": "373:0:68"
 						},
-						"scope": 17879,
-						"src": "415:252:35",
+						"scope": 21660,
+						"src": "292:199:68",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					},
 					{
 						"body": {
-							"id": 17833,
+							"id": 21596,
 							"nodeType": "Block",
-							"src": "747:46:35",
+							"src": "571:46:68",
 							"statements": [
 								{
 									"expression": {
@@ -1924,12 +1753,12 @@
 												"arguments": [
 													{
 														"argumentTypes": null,
-														"id": 17828,
+														"id": 21591,
 														"name": "_taoId",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 17823,
-														"src": "776:6:35",
+														"referencedDeclaration": 21586,
+														"src": "600:6:68",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
 															"typeString": "address"
@@ -1945,32 +1774,32 @@
 													],
 													"expression": {
 														"argumentTypes": null,
-														"id": 17826,
+														"id": 21589,
 														"name": "AOLibrary",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 5669,
-														"src": "760:9:35",
+														"referencedDeclaration": 5982,
+														"src": "584:9:68",
 														"typeDescriptions": {
-															"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5669_$",
+															"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5982_$",
 															"typeString": "type(library AOLibrary)"
 														}
 													},
-													"id": 17827,
+													"id": 21590,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
 													"lValueRequested": false,
 													"memberName": "isTAO",
 													"nodeType": "MemberAccess",
-													"referencedDeclaration": 5144,
-													"src": "760:15:35",
+													"referencedDeclaration": 4998,
+													"src": "584:15:68",
 													"typeDescriptions": {
 														"typeIdentifier": "t_function_delegatecall_view$_t_address_$returns$_t_bool_$",
 														"typeString": "function (address) view returns (bool)"
 													}
 												},
-												"id": 17829,
+												"id": 21592,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -1978,7 +1807,7 @@
 												"lValueRequested": false,
 												"names": [],
 												"nodeType": "FunctionCall",
-												"src": "760:23:35",
+												"src": "584:23:68",
 												"typeDescriptions": {
 													"typeIdentifier": "t_bool",
 													"typeString": "bool"
@@ -1992,18 +1821,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 17825,
+											"id": 21588,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "751:7:35",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "575:7:68",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 17830,
+										"id": 21593,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -2011,38 +1840,38 @@
 										"lValueRequested": false,
 										"names": [],
 										"nodeType": "FunctionCall",
-										"src": "751:33:35",
+										"src": "575:33:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_tuple$__$",
 											"typeString": "tuple()"
 										}
 									},
-									"id": 17831,
+									"id": 21594,
 									"nodeType": "ExpressionStatement",
-									"src": "751:33:35"
+									"src": "575:33:68"
 								},
 								{
-									"id": 17832,
+									"id": 21595,
 									"nodeType": "PlaceholderStatement",
-									"src": "788:1:35"
+									"src": "612:1:68"
 								}
 							]
 						},
 						"documentation": "@dev Check if `_taoId` is a TAO",
-						"id": 17834,
+						"id": 21597,
 						"name": "isTAO",
 						"nodeType": "ModifierDefinition",
 						"parameters": {
-							"id": 17824,
+							"id": 21587,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 17823,
+									"id": 21586,
 									"name": "_taoId",
 									"nodeType": "VariableDeclaration",
-									"scope": 17834,
-									"src": "731:14:35",
+									"scope": 21597,
+									"src": "555:14:68",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -2050,10 +1879,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 17822,
+										"id": 21585,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "731:7:35",
+										"src": "555:7:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -2063,16 +1892,16 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "730:16:35"
+							"src": "554:16:68"
 						},
-						"src": "716:77:35",
+						"src": "540:77:68",
 						"visibility": "internal"
 					},
 					{
 						"body": {
-							"id": 17846,
+							"id": 21609,
 							"nodeType": "Block",
-							"src": "877:48:35",
+							"src": "701:48:68",
 							"statements": [
 								{
 									"expression": {
@@ -2083,12 +1912,12 @@
 												"arguments": [
 													{
 														"argumentTypes": null,
-														"id": 17841,
+														"id": 21604,
 														"name": "_nameId",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 17836,
-														"src": "907:7:35",
+														"referencedDeclaration": 21599,
+														"src": "731:7:68",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
 															"typeString": "address"
@@ -2104,32 +1933,32 @@
 													],
 													"expression": {
 														"argumentTypes": null,
-														"id": 17839,
+														"id": 21602,
 														"name": "AOLibrary",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 5669,
-														"src": "890:9:35",
+														"referencedDeclaration": 5982,
+														"src": "714:9:68",
 														"typeDescriptions": {
-															"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5669_$",
+															"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5982_$",
 															"typeString": "type(library AOLibrary)"
 														}
 													},
-													"id": 17840,
+													"id": 21603,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
 													"lValueRequested": false,
 													"memberName": "isName",
 													"nodeType": "MemberAccess",
-													"referencedDeclaration": 5177,
-													"src": "890:16:35",
+													"referencedDeclaration": 5042,
+													"src": "714:16:68",
 													"typeDescriptions": {
 														"typeIdentifier": "t_function_delegatecall_view$_t_address_$returns$_t_bool_$",
 														"typeString": "function (address) view returns (bool)"
 													}
 												},
-												"id": 17842,
+												"id": 21605,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -2137,7 +1966,7 @@
 												"lValueRequested": false,
 												"names": [],
 												"nodeType": "FunctionCall",
-												"src": "890:25:35",
+												"src": "714:25:68",
 												"typeDescriptions": {
 													"typeIdentifier": "t_bool",
 													"typeString": "bool"
@@ -2151,18 +1980,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 17838,
+											"id": 21601,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "881:7:35",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "705:7:68",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 17843,
+										"id": 21606,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -2170,38 +1999,38 @@
 										"lValueRequested": false,
 										"names": [],
 										"nodeType": "FunctionCall",
-										"src": "881:35:35",
+										"src": "705:35:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_tuple$__$",
 											"typeString": "tuple()"
 										}
 									},
-									"id": 17844,
+									"id": 21607,
 									"nodeType": "ExpressionStatement",
-									"src": "881:35:35"
+									"src": "705:35:68"
 								},
 								{
-									"id": 17845,
+									"id": 21608,
 									"nodeType": "PlaceholderStatement",
-									"src": "920:1:35"
+									"src": "744:1:68"
 								}
 							]
 						},
 						"documentation": "@dev Check if `_nameId` is a Name",
-						"id": 17847,
+						"id": 21610,
 						"name": "isName",
 						"nodeType": "ModifierDefinition",
 						"parameters": {
-							"id": 17837,
+							"id": 21600,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 17836,
+									"id": 21599,
 									"name": "_nameId",
 									"nodeType": "VariableDeclaration",
-									"scope": 17847,
-									"src": "860:15:35",
+									"scope": 21610,
+									"src": "684:15:68",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -2209,10 +2038,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 17835,
+										"id": 21598,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "860:7:35",
+										"src": "684:7:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -2222,208 +2051,16 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "859:17:35"
+							"src": "683:17:68"
 						},
-						"src": "844:81:35",
+						"src": "668:81:68",
 						"visibility": "internal"
 					},
 					{
 						"body": {
-							"id": 17861,
+							"id": 21627,
 							"nodeType": "Block",
-							"src": "1048:68:35",
-							"statements": [
-								{
-									"expression": {
-										"argumentTypes": null,
-										"arguments": [
-											{
-												"argumentTypes": null,
-												"arguments": [
-													{
-														"argumentTypes": null,
-														"expression": {
-															"argumentTypes": null,
-															"id": 17854,
-															"name": "msg",
-															"nodeType": "Identifier",
-															"overloadedDeclarations": [],
-															"referencedDeclaration": 19715,
-															"src": "1087:3:35",
-															"typeDescriptions": {
-																"typeIdentifier": "t_magic_message",
-																"typeString": "msg"
-															}
-														},
-														"id": 17855,
-														"isConstant": false,
-														"isLValue": false,
-														"isPure": false,
-														"lValueRequested": false,
-														"memberName": "sender",
-														"nodeType": "MemberAccess",
-														"referencedDeclaration": null,
-														"src": "1087:10:35",
-														"typeDescriptions": {
-															"typeIdentifier": "t_address",
-															"typeString": "address"
-														}
-													},
-													{
-														"argumentTypes": null,
-														"id": 17856,
-														"name": "_taoId",
-														"nodeType": "Identifier",
-														"overloadedDeclarations": [],
-														"referencedDeclaration": 17849,
-														"src": "1099:6:35",
-														"typeDescriptions": {
-															"typeIdentifier": "t_address",
-															"typeString": "address"
-														}
-													}
-												],
-												"expression": {
-													"argumentTypes": [
-														{
-															"typeIdentifier": "t_address",
-															"typeString": "address"
-														},
-														{
-															"typeIdentifier": "t_address",
-															"typeString": "address"
-														}
-													],
-													"expression": {
-														"argumentTypes": null,
-														"id": 17852,
-														"name": "AOLibrary",
-														"nodeType": "Identifier",
-														"overloadedDeclarations": [],
-														"referencedDeclaration": 5669,
-														"src": "1061:9:35",
-														"typeDescriptions": {
-															"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5669_$",
-															"typeString": "type(library AOLibrary)"
-														}
-													},
-													"id": 17853,
-													"isConstant": false,
-													"isLValue": false,
-													"isPure": false,
-													"lValueRequested": false,
-													"memberName": "isAdvocateOfTAO",
-													"nodeType": "MemberAccess",
-													"referencedDeclaration": 5471,
-													"src": "1061:25:35",
-													"typeDescriptions": {
-														"typeIdentifier": "t_function_delegatecall_view$_t_address_$_t_address_$returns$_t_bool_$",
-														"typeString": "function (address,address) view returns (bool)"
-													}
-												},
-												"id": 17857,
-												"isConstant": false,
-												"isLValue": false,
-												"isPure": false,
-												"kind": "functionCall",
-												"lValueRequested": false,
-												"names": [],
-												"nodeType": "FunctionCall",
-												"src": "1061:45:35",
-												"typeDescriptions": {
-													"typeIdentifier": "t_bool",
-													"typeString": "bool"
-												}
-											}
-										],
-										"expression": {
-											"argumentTypes": [
-												{
-													"typeIdentifier": "t_bool",
-													"typeString": "bool"
-												}
-											],
-											"id": 17851,
-											"name": "require",
-											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "1052:7:35",
-											"typeDescriptions": {
-												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
-												"typeString": "function (bool) pure"
-											}
-										},
-										"id": 17858,
-										"isConstant": false,
-										"isLValue": false,
-										"isPure": false,
-										"kind": "functionCall",
-										"lValueRequested": false,
-										"names": [],
-										"nodeType": "FunctionCall",
-										"src": "1052:55:35",
-										"typeDescriptions": {
-											"typeIdentifier": "t_tuple$__$",
-											"typeString": "tuple()"
-										}
-									},
-									"id": 17859,
-									"nodeType": "ExpressionStatement",
-									"src": "1052:55:35"
-								},
-								{
-									"id": 17860,
-									"nodeType": "PlaceholderStatement",
-									"src": "1111:1:35"
-								}
-							]
-						},
-						"documentation": "@dev Check if msg.sender is the current advocate of a `_taoId`",
-						"id": 17862,
-						"name": "onlyAdvocateOfTAO",
-						"nodeType": "ModifierDefinition",
-						"parameters": {
-							"id": 17850,
-							"nodeType": "ParameterList",
-							"parameters": [
-								{
-									"constant": false,
-									"id": 17849,
-									"name": "_taoId",
-									"nodeType": "VariableDeclaration",
-									"scope": 17862,
-									"src": "1032:14:35",
-									"stateVariable": false,
-									"storageLocation": "default",
-									"typeDescriptions": {
-										"typeIdentifier": "t_address",
-										"typeString": "address"
-									},
-									"typeName": {
-										"id": 17848,
-										"name": "address",
-										"nodeType": "ElementaryTypeName",
-										"src": "1032:7:35",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									},
-									"value": null,
-									"visibility": "internal"
-								}
-							],
-							"src": "1031:16:35"
-						},
-						"src": "1005:111:35",
-						"visibility": "internal"
-					},
-					{
-						"body": {
-							"id": 17877,
-							"nodeType": "Block",
-							"src": "1201:81:35",
+							"src": "839:68:68",
 							"statements": [
 								{
 									"expression": {
@@ -2432,10 +2069,10 @@
 											{
 												"argumentTypes": null,
 												"commonType": {
-													"typeIdentifier": "t_address",
-													"typeString": "address"
+													"typeIdentifier": "t_bool",
+													"typeString": "bool"
 												},
-												"id": 17873,
+												"id": 21623,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -2445,28 +2082,12 @@
 													"arguments": [
 														{
 															"argumentTypes": null,
-															"expression": {
-																"argumentTypes": null,
-																"id": 17867,
-																"name": "msg",
-																"nodeType": "Identifier",
-																"overloadedDeclarations": [],
-																"referencedDeclaration": 19715,
-																"src": "1246:3:35",
-																"typeDescriptions": {
-																	"typeIdentifier": "t_magic_message",
-																	"typeString": "msg"
-																}
-															},
-															"id": 17868,
-															"isConstant": false,
-															"isLValue": false,
-															"isPure": false,
-															"lValueRequested": false,
-															"memberName": "sender",
-															"nodeType": "MemberAccess",
-															"referencedDeclaration": null,
-															"src": "1246:10:35",
+															"id": 21617,
+															"name": "_id",
+															"nodeType": "Identifier",
+															"overloadedDeclarations": [],
+															"referencedDeclaration": 21612,
+															"src": "869:3:68",
 															"typeDescriptions": {
 																"typeIdentifier": "t_address",
 																"typeString": "address"
@@ -2482,32 +2103,32 @@
 														],
 														"expression": {
 															"argumentTypes": null,
-															"id": 17865,
-															"name": "_nameFactory",
+															"id": 21615,
+															"name": "AOLibrary",
 															"nodeType": "Identifier",
 															"overloadedDeclarations": [],
-															"referencedDeclaration": 17791,
-															"src": "1214:12:35",
+															"referencedDeclaration": 5982,
+															"src": "852:9:68",
 															"typeDescriptions": {
-																"typeIdentifier": "t_contract$_NameFactory_$16749",
-																"typeString": "contract NameFactory"
+																"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5982_$",
+																"typeString": "type(library AOLibrary)"
 															}
 														},
-														"id": 17866,
+														"id": 21616,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": false,
 														"lValueRequested": false,
-														"memberName": "ethAddressToNameId",
+														"memberName": "isName",
 														"nodeType": "MemberAccess",
-														"referencedDeclaration": 15857,
-														"src": "1214:31:35",
+														"referencedDeclaration": 5042,
+														"src": "852:16:68",
 														"typeDescriptions": {
-															"typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
-															"typeString": "function (address) view external returns (address)"
+															"typeIdentifier": "t_function_delegatecall_view$_t_address_$returns$_t_bool_$",
+															"typeString": "function (address) view returns (bool)"
 														}
 													},
-													"id": 17869,
+													"id": 21618,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
@@ -2515,7 +2136,266 @@
 													"lValueRequested": false,
 													"names": [],
 													"nodeType": "FunctionCall",
-													"src": "1214:43:35",
+													"src": "852:21:68",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bool",
+														"typeString": "bool"
+													}
+												},
+												"nodeType": "BinaryOperation",
+												"operator": "||",
+												"rightExpression": {
+													"argumentTypes": null,
+													"arguments": [
+														{
+															"argumentTypes": null,
+															"id": 21621,
+															"name": "_id",
+															"nodeType": "Identifier",
+															"overloadedDeclarations": [],
+															"referencedDeclaration": 21612,
+															"src": "893:3:68",
+															"typeDescriptions": {
+																"typeIdentifier": "t_address",
+																"typeString": "address"
+															}
+														}
+													],
+													"expression": {
+														"argumentTypes": [
+															{
+																"typeIdentifier": "t_address",
+																"typeString": "address"
+															}
+														],
+														"expression": {
+															"argumentTypes": null,
+															"id": 21619,
+															"name": "AOLibrary",
+															"nodeType": "Identifier",
+															"overloadedDeclarations": [],
+															"referencedDeclaration": 5982,
+															"src": "877:9:68",
+															"typeDescriptions": {
+																"typeIdentifier": "t_type$_t_contract$_AOLibrary_$5982_$",
+																"typeString": "type(library AOLibrary)"
+															}
+														},
+														"id": 21620,
+														"isConstant": false,
+														"isLValue": false,
+														"isPure": false,
+														"lValueRequested": false,
+														"memberName": "isTAO",
+														"nodeType": "MemberAccess",
+														"referencedDeclaration": 4998,
+														"src": "877:15:68",
+														"typeDescriptions": {
+															"typeIdentifier": "t_function_delegatecall_view$_t_address_$returns$_t_bool_$",
+															"typeString": "function (address) view returns (bool)"
+														}
+													},
+													"id": 21622,
+													"isConstant": false,
+													"isLValue": false,
+													"isPure": false,
+													"kind": "functionCall",
+													"lValueRequested": false,
+													"names": [],
+													"nodeType": "FunctionCall",
+													"src": "877:20:68",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bool",
+														"typeString": "bool"
+													}
+												},
+												"src": "852:45:68",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bool",
+													"typeString": "bool"
+												}
+											}
+										],
+										"expression": {
+											"argumentTypes": [
+												{
+													"typeIdentifier": "t_bool",
+													"typeString": "bool"
+												}
+											],
+											"id": 21614,
+											"name": "require",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "843:7:68",
+											"typeDescriptions": {
+												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+												"typeString": "function (bool) pure"
+											}
+										},
+										"id": 21624,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"kind": "functionCall",
+										"lValueRequested": false,
+										"names": [],
+										"nodeType": "FunctionCall",
+										"src": "843:55:68",
+										"typeDescriptions": {
+											"typeIdentifier": "t_tuple$__$",
+											"typeString": "tuple()"
+										}
+									},
+									"id": 21625,
+									"nodeType": "ExpressionStatement",
+									"src": "843:55:68"
+								},
+								{
+									"id": 21626,
+									"nodeType": "PlaceholderStatement",
+									"src": "902:1:68"
+								}
+							]
+						},
+						"documentation": "@dev Check if `_id` is a Name or a TAO",
+						"id": 21628,
+						"name": "isNameOrTAO",
+						"nodeType": "ModifierDefinition",
+						"parameters": {
+							"id": 21613,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 21612,
+									"name": "_id",
+									"nodeType": "VariableDeclaration",
+									"scope": 21628,
+									"src": "826:11:68",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_address",
+										"typeString": "address"
+									},
+									"typeName": {
+										"id": 21611,
+										"name": "address",
+										"nodeType": "ElementaryTypeName",
+										"src": "826:7:68",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "825:13:68"
+						},
+						"src": "805:102:68",
+						"visibility": "internal"
+					},
+					{
+						"body": {
+							"id": 21643,
+							"nodeType": "Block",
+							"src": "992:81:68",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"arguments": [
+											{
+												"argumentTypes": null,
+												"commonType": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"id": 21639,
+												"isConstant": false,
+												"isLValue": false,
+												"isPure": false,
+												"lValueRequested": false,
+												"leftExpression": {
+													"argumentTypes": null,
+													"arguments": [
+														{
+															"argumentTypes": null,
+															"expression": {
+																"argumentTypes": null,
+																"id": 21633,
+																"name": "msg",
+																"nodeType": "Identifier",
+																"overloadedDeclarations": [],
+																"referencedDeclaration": 26036,
+																"src": "1037:3:68",
+																"typeDescriptions": {
+																	"typeIdentifier": "t_magic_message",
+																	"typeString": "msg"
+																}
+															},
+															"id": 21634,
+															"isConstant": false,
+															"isLValue": false,
+															"isPure": false,
+															"lValueRequested": false,
+															"memberName": "sender",
+															"nodeType": "MemberAccess",
+															"referencedDeclaration": null,
+															"src": "1037:10:68",
+															"typeDescriptions": {
+																"typeIdentifier": "t_address",
+																"typeString": "address"
+															}
+														}
+													],
+													"expression": {
+														"argumentTypes": [
+															{
+																"typeIdentifier": "t_address",
+																"typeString": "address"
+															}
+														],
+														"expression": {
+															"argumentTypes": null,
+															"id": 21631,
+															"name": "_nameFactory",
+															"nodeType": "Identifier",
+															"overloadedDeclarations": [],
+															"referencedDeclaration": 21562,
+															"src": "1005:12:68",
+															"typeDescriptions": {
+																"typeIdentifier": "t_contract$_NameFactory_$18167",
+																"typeString": "contract NameFactory"
+															}
+														},
+														"id": 21632,
+														"isConstant": false,
+														"isLValue": false,
+														"isPure": false,
+														"lValueRequested": false,
+														"memberName": "ethAddressToNameId",
+														"nodeType": "MemberAccess",
+														"referencedDeclaration": 17592,
+														"src": "1005:31:68",
+														"typeDescriptions": {
+															"typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
+															"typeString": "function (address) view external returns (address)"
+														}
+													},
+													"id": 21635,
+													"isConstant": false,
+													"isLValue": false,
+													"isPure": false,
+													"kind": "functionCall",
+													"lValueRequested": false,
+													"names": [],
+													"nodeType": "FunctionCall",
+													"src": "1005:43:68",
 													"typeDescriptions": {
 														"typeIdentifier": "t_address",
 														"typeString": "address"
@@ -2529,14 +2409,14 @@
 														{
 															"argumentTypes": null,
 															"hexValue": "30",
-															"id": 17871,
+															"id": 21637,
 															"isConstant": false,
 															"isLValue": false,
 															"isPure": true,
 															"kind": "number",
 															"lValueRequested": false,
 															"nodeType": "Literal",
-															"src": "1269:1:35",
+															"src": "1060:1:68",
 															"subdenomination": null,
 															"typeDescriptions": {
 																"typeIdentifier": "t_rational_0_by_1",
@@ -2552,20 +2432,20 @@
 																"typeString": "int_const 0"
 															}
 														],
-														"id": 17870,
+														"id": 21636,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": true,
 														"lValueRequested": false,
 														"nodeType": "ElementaryTypeNameExpression",
-														"src": "1261:7:35",
+														"src": "1052:7:68",
 														"typeDescriptions": {
 															"typeIdentifier": "t_type$_t_address_$",
 															"typeString": "type(address)"
 														},
 														"typeName": "address"
 													},
-													"id": 17872,
+													"id": 21638,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": true,
@@ -2573,13 +2453,13 @@
 													"lValueRequested": false,
 													"names": [],
 													"nodeType": "FunctionCall",
-													"src": "1261:10:35",
+													"src": "1052:10:68",
 													"typeDescriptions": {
 														"typeIdentifier": "t_address",
 														"typeString": "address"
 													}
 												},
-												"src": "1214:57:35",
+												"src": "1005:57:68",
 												"typeDescriptions": {
 													"typeIdentifier": "t_bool",
 													"typeString": "bool"
@@ -2593,18 +2473,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 17864,
+											"id": 21630,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "1205:7:35",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "996:7:68",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 17874,
+										"id": 21640,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -2612,42 +2492,234 @@
 										"lValueRequested": false,
 										"names": [],
 										"nodeType": "FunctionCall",
-										"src": "1205:67:35",
+										"src": "996:67:68",
 										"typeDescriptions": {
 											"typeIdentifier": "t_tuple$__$",
 											"typeString": "tuple()"
 										}
 									},
-									"id": 17875,
+									"id": 21641,
 									"nodeType": "ExpressionStatement",
-									"src": "1205:67:35"
+									"src": "996:67:68"
 								},
 								{
-									"id": 17876,
+									"id": 21642,
 									"nodeType": "PlaceholderStatement",
-									"src": "1276:1:35"
+									"src": "1067:1:68"
 								}
 							]
 						},
 						"documentation": "@dev Check is msg.sender address is a Name",
-						"id": 17878,
+						"id": 21644,
 						"name": "senderIsName",
 						"nodeType": "ModifierDefinition",
 						"parameters": {
-							"id": 17863,
+							"id": 21629,
 							"nodeType": "ParameterList",
 							"parameters": [],
-							"src": "1198:2:35"
+							"src": "989:2:68"
 						},
-						"src": "1177:105:35",
+						"src": "968:105:68",
+						"visibility": "internal"
+					},
+					{
+						"body": {
+							"id": 21658,
+							"nodeType": "Block",
+							"src": "1184:73:68",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"arguments": [
+											{
+												"argumentTypes": null,
+												"arguments": [
+													{
+														"argumentTypes": null,
+														"expression": {
+															"argumentTypes": null,
+															"id": 21651,
+															"name": "msg",
+															"nodeType": "Identifier",
+															"overloadedDeclarations": [],
+															"referencedDeclaration": 26036,
+															"src": "1231:3:68",
+															"typeDescriptions": {
+																"typeIdentifier": "t_magic_message",
+																"typeString": "msg"
+															}
+														},
+														"id": 21652,
+														"isConstant": false,
+														"isLValue": false,
+														"isPure": false,
+														"lValueRequested": false,
+														"memberName": "sender",
+														"nodeType": "MemberAccess",
+														"referencedDeclaration": null,
+														"src": "1231:10:68",
+														"typeDescriptions": {
+															"typeIdentifier": "t_address",
+															"typeString": "address"
+														}
+													},
+													{
+														"argumentTypes": null,
+														"id": 21653,
+														"name": "_id",
+														"nodeType": "Identifier",
+														"overloadedDeclarations": [],
+														"referencedDeclaration": 21646,
+														"src": "1243:3:68",
+														"typeDescriptions": {
+															"typeIdentifier": "t_address",
+															"typeString": "address"
+														}
+													}
+												],
+												"expression": {
+													"argumentTypes": [
+														{
+															"typeIdentifier": "t_address",
+															"typeString": "address"
+														},
+														{
+															"typeIdentifier": "t_address",
+															"typeString": "address"
+														}
+													],
+													"expression": {
+														"argumentTypes": null,
+														"id": 21649,
+														"name": "_nameTAOPosition",
+														"nodeType": "Identifier",
+														"overloadedDeclarations": [],
+														"referencedDeclaration": 21564,
+														"src": "1197:16:68",
+														"typeDescriptions": {
+															"typeIdentifier": "t_contract$_NameTAOPosition_$20049",
+															"typeString": "contract NameTAOPosition"
+														}
+													},
+													"id": 21650,
+													"isConstant": false,
+													"isLValue": false,
+													"isPure": false,
+													"lValueRequested": false,
+													"memberName": "senderIsAdvocate",
+													"nodeType": "MemberAccess",
+													"referencedDeclaration": 19530,
+													"src": "1197:33:68",
+													"typeDescriptions": {
+														"typeIdentifier": "t_function_external_view$_t_address_$_t_address_$returns$_t_bool_$",
+														"typeString": "function (address,address) view external returns (bool)"
+													}
+												},
+												"id": 21654,
+												"isConstant": false,
+												"isLValue": false,
+												"isPure": false,
+												"kind": "functionCall",
+												"lValueRequested": false,
+												"names": [],
+												"nodeType": "FunctionCall",
+												"src": "1197:50:68",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bool",
+													"typeString": "bool"
+												}
+											}
+										],
+										"expression": {
+											"argumentTypes": [
+												{
+													"typeIdentifier": "t_bool",
+													"typeString": "bool"
+												}
+											],
+											"id": 21648,
+											"name": "require",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "1188:7:68",
+											"typeDescriptions": {
+												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+												"typeString": "function (bool) pure"
+											}
+										},
+										"id": 21655,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"kind": "functionCall",
+										"lValueRequested": false,
+										"names": [],
+										"nodeType": "FunctionCall",
+										"src": "1188:60:68",
+										"typeDescriptions": {
+											"typeIdentifier": "t_tuple$__$",
+											"typeString": "tuple()"
+										}
+									},
+									"id": 21656,
+									"nodeType": "ExpressionStatement",
+									"src": "1188:60:68"
+								},
+								{
+									"id": 21657,
+									"nodeType": "PlaceholderStatement",
+									"src": "1252:1:68"
+								}
+							]
+						},
+						"documentation": "@dev Check if msg.sender is the current advocate of TAO ID",
+						"id": 21659,
+						"name": "onlyAdvocate",
+						"nodeType": "ModifierDefinition",
+						"parameters": {
+							"id": 21647,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 21646,
+									"name": "_id",
+									"nodeType": "VariableDeclaration",
+									"scope": 21659,
+									"src": "1171:11:68",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_address",
+										"typeString": "address"
+									},
+									"typeName": {
+										"id": 21645,
+										"name": "address",
+										"nodeType": "ElementaryTypeName",
+										"src": "1171:7:68",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "1170:13:68"
+						},
+						"src": "1149:108:68",
 						"visibility": "internal"
 					}
 				],
-				"scope": 17880,
-				"src": "183:1101:35"
+				"scope": 21661,
+				"src": "145:1114:68"
 			}
 		],
-		"src": "0:1285:35"
+		"src": "0:1260:68"
 	},
 	"compiler": {
 		"name": "solc",
@@ -2655,5 +2727,5 @@
 	},
 	"networks": {},
 	"schemaVersion": "2.0.1",
-	"updatedAt": "2018-12-19T04:35:19.220Z"
+	"updatedAt": "2019-01-07T03:04:13.068Z"
 }

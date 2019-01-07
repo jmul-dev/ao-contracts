@@ -2,37 +2,13 @@
 	"contractName": "TAOPosition",
 	"abi": [
 		{
-			"constant": true,
-			"inputs": [],
-			"name": "positionAddress",
-			"outputs": [
-				{
-					"name": "",
-					"type": "address"
-				}
-			],
-			"payable": false,
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"constant": true,
-			"inputs": [],
-			"name": "nameFactoryAddress",
-			"outputs": [
-				{
-					"name": "",
-					"type": "address"
-				}
-			],
-			"payable": false,
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
 			"inputs": [
 				{
 					"name": "_nameFactoryAddress",
+					"type": "address"
+				},
+				{
+					"name": "_nameTAOPositionAddress",
 					"type": "address"
 				},
 				{
@@ -81,34 +57,45 @@
 			"type": "function"
 		}
 	],
-	"bytecode": "0x608060405234801561001057600080fd5b5060405160408061074a83398101604052805160209091015160008054600160a060020a03938416600160a060020a031991821617918290556001805493851693821693909317928390556002805482169285169290921790915560038054909116919092161790556106c2806100886000396000f3006080604052600436106100485763ffffffff60e060020a600035041663636a8bd7811461004d5780638f4c4ea11461007e578063a9d02ed2146100a4578063bc406206146100c8575b600080fd5b34801561005957600080fd5b506100626100dd565b60408051600160a060020a039092168252519081900360200190f35b34801561008a57600080fd5b506100a2600160a060020a03600435166024356100ec565b005b3480156100b057600080fd5b506100a2600160a060020a0360043516602435610418565b3480156100d457600080fd5b50610062610687565b600154600160a060020a031681565b8173__AOLibrary_____________________________632fca5414826040518263ffffffff1660e060020a0281526004018082600160a060020a0316600160a060020a0316815260200191505060206040518083038186803b15801561015157600080fd5b505af4158015610165573d6000803e3d6000fd5b505050506040513d602081101561017b57600080fd5b5051151561018857600080fd5b6002546040805160e060020a63029b7d530281523360048201529051600092600160a060020a03169163029b7d5391602480830192602092919082900301818787803b1580156101d757600080fd5b505af11580156101eb573d6000803e3d6000fd5b505050506040513d602081101561020157600080fd5b5051600160a060020a0316141561021757600080fd5b8280600160a060020a031663cf3090126040518163ffffffff1660e060020a028152600401602060405180830381600087803b15801561025657600080fd5b505af115801561026a573d6000803e3d6000fd5b505050506040513d602081101561028057600080fd5b50511580156102f6575080600160a060020a031663597e1fb56040518163ffffffff1660e060020a028152600401602060405180830381600087803b1580156102c857600080fd5b505af11580156102dc573d6000803e3d6000fd5b505050506040513d60208110156102f257600080fd5b5051155b151561030157600080fd5b6003546002546040805160e060020a63029b7d530281523360048201529051600160a060020a039384169363bf6eac2f93169163029b7d539160248083019260209291908290030181600087803b15801561035b57600080fd5b505af115801561036f573d6000803e3d6000fd5b505050506040513d602081101561038557600080fd5b50516040805160e060020a63ffffffff8516028152600160a060020a0392831660048201529188166024830152604482018790525160648083019260209291908290030181600087803b1580156103db57600080fd5b505af11580156103ef573d6000803e3d6000fd5b505050506040513d602081101561040557600080fd5b5051151561041257600080fd5b50505050565b8173__AOLibrary_____________________________632fca5414826040518263ffffffff1660e060020a0281526004018082600160a060020a0316600160a060020a0316815260200191505060206040518083038186803b15801561047d57600080fd5b505af4158015610491573d6000803e3d6000fd5b505050506040513d60208110156104a757600080fd5b505115156104b457600080fd5b6002546040805160e060020a63029b7d530281523360048201529051600092600160a060020a03169163029b7d5391602480830192602092919082900301818787803b15801561050357600080fd5b505af1158015610517573d6000803e3d6000fd5b505050506040513d602081101561052d57600080fd5b5051600160a060020a0316141561054357600080fd5b8280600160a060020a031663cf3090126040518163ffffffff1660e060020a028152600401602060405180830381600087803b15801561058257600080fd5b505af1158015610596573d6000803e3d6000fd5b505050506040513d60208110156105ac57600080fd5b5051158015610622575080600160a060020a031663597e1fb56040518163ffffffff1660e060020a028152600401602060405180830381600087803b1580156105f457600080fd5b505af1158015610608573d6000803e3d6000fd5b505050506040513d602081101561061e57600080fd5b5051155b151561062d57600080fd5b6003546002546040805160e060020a63029b7d530281523360048201529051600160a060020a03938416936360829f8a93169163029b7d539160248083019260209291908290030181600087803b15801561035b57600080fd5b600054600160a060020a0316815600a165627a7a72305820b6e89c2ab30d1908e75133483dd2f65bf4fefb339f7c8546e7128907b263dfe80029",
-	"deployedBytecode": "0x6080604052600436106100485763ffffffff60e060020a600035041663636a8bd7811461004d5780638f4c4ea11461007e578063a9d02ed2146100a4578063bc406206146100c8575b600080fd5b34801561005957600080fd5b506100626100dd565b60408051600160a060020a039092168252519081900360200190f35b34801561008a57600080fd5b506100a2600160a060020a03600435166024356100ec565b005b3480156100b057600080fd5b506100a2600160a060020a0360043516602435610418565b3480156100d457600080fd5b50610062610687565b600154600160a060020a031681565b8173__AOLibrary_____________________________632fca5414826040518263ffffffff1660e060020a0281526004018082600160a060020a0316600160a060020a0316815260200191505060206040518083038186803b15801561015157600080fd5b505af4158015610165573d6000803e3d6000fd5b505050506040513d602081101561017b57600080fd5b5051151561018857600080fd5b6002546040805160e060020a63029b7d530281523360048201529051600092600160a060020a03169163029b7d5391602480830192602092919082900301818787803b1580156101d757600080fd5b505af11580156101eb573d6000803e3d6000fd5b505050506040513d602081101561020157600080fd5b5051600160a060020a0316141561021757600080fd5b8280600160a060020a031663cf3090126040518163ffffffff1660e060020a028152600401602060405180830381600087803b15801561025657600080fd5b505af115801561026a573d6000803e3d6000fd5b505050506040513d602081101561028057600080fd5b50511580156102f6575080600160a060020a031663597e1fb56040518163ffffffff1660e060020a028152600401602060405180830381600087803b1580156102c857600080fd5b505af11580156102dc573d6000803e3d6000fd5b505050506040513d60208110156102f257600080fd5b5051155b151561030157600080fd5b6003546002546040805160e060020a63029b7d530281523360048201529051600160a060020a039384169363bf6eac2f93169163029b7d539160248083019260209291908290030181600087803b15801561035b57600080fd5b505af115801561036f573d6000803e3d6000fd5b505050506040513d602081101561038557600080fd5b50516040805160e060020a63ffffffff8516028152600160a060020a0392831660048201529188166024830152604482018790525160648083019260209291908290030181600087803b1580156103db57600080fd5b505af11580156103ef573d6000803e3d6000fd5b505050506040513d602081101561040557600080fd5b5051151561041257600080fd5b50505050565b8173__AOLibrary_____________________________632fca5414826040518263ffffffff1660e060020a0281526004018082600160a060020a0316600160a060020a0316815260200191505060206040518083038186803b15801561047d57600080fd5b505af4158015610491573d6000803e3d6000fd5b505050506040513d60208110156104a757600080fd5b505115156104b457600080fd5b6002546040805160e060020a63029b7d530281523360048201529051600092600160a060020a03169163029b7d5391602480830192602092919082900301818787803b15801561050357600080fd5b505af1158015610517573d6000803e3d6000fd5b505050506040513d602081101561052d57600080fd5b5051600160a060020a0316141561054357600080fd5b8280600160a060020a031663cf3090126040518163ffffffff1660e060020a028152600401602060405180830381600087803b15801561058257600080fd5b505af1158015610596573d6000803e3d6000fd5b505050506040513d60208110156105ac57600080fd5b5051158015610622575080600160a060020a031663597e1fb56040518163ffffffff1660e060020a028152600401602060405180830381600087803b1580156105f457600080fd5b505af1158015610608573d6000803e3d6000fd5b505050506040513d602081101561061e57600080fd5b5051155b151561062d57600080fd5b6003546002546040805160e060020a63029b7d530281523360048201529051600160a060020a03938416936360829f8a93169163029b7d539160248083019260209291908290030181600087803b15801561035b57600080fd5b600054600160a060020a0316815600a165627a7a72305820b6e89c2ab30d1908e75133483dd2f65bf4fefb339f7c8546e7128907b263dfe80029",
-	"sourceMap": "169:1144:38:-;;;250:131;8:9:-1;5:2;;;30:1;27;20:12;5:2;250:131:38;;;;;;;;;;;;;;;;;;;493:18:35;:40;;-1:-1:-1;;;;;493:40:35;;;-1:-1:-1;;;;;;493:40:35;;;;;;;;;537:34;;;;;;;;;;;;;;;;576:12;:46;;;;603:18;;;576:46;;;;;;;626:9;:37;;;;;647:15;;;;626:37;;;169:1144:38;;;;;;",
-	"deployedSourceMap": "169:1144:38:-;;;;;;;;;-1:-1:-1;;;169:1144:38;;;;;;;;;;;;;;;;;;;;;;;;;;;;275:30:35;;8:9:-1;5:2;;;30:1;27;20:12;5:2;275:30:35;;;;;;;;-1:-1:-1;;;;;275:30:35;;;;;;;;;;;;;;710:223:38;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;710:223:38;-1:-1:-1;;;;;710:223:38;;;;;;;;;1084:227;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1084:227:38;-1:-1:-1;;;;;1084:227:38;;;;;;;239:33:35;;8:9:-1;5:2;;;30:1;27;20:12;5:2;239:33:35;;;;275:30;;;-1:-1:-1;;;;;275:30:35;;:::o;710:223:38:-;787:6;760:9:35;:15;776:6;760:23;;;;;-1:-1:-1;;;760:23:35;;;;;;;-1:-1:-1;;;;;760:23:35;-1:-1:-1;;;;;760:23:35;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;760:23:35;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;760:23:35;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;760:23:35;751:33;;;;;;;;1214:12;;:43;;;-1:-1:-1;;;;;1214:43:35;;1246:10;1214:43;;;;;;1269:1;;-1:-1:-1;;;;;1214:12:35;;:31;;:43;;;;;;;;;;;;;;1269:1;1214:12;:43;;;5:2:-1;;;;30:1;27;20:12;5:2;1214:43:35;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;1214:43:35;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;1214:43:35;-1:-1:-1;;;;;1214:57:35;;;1205:67;;;;;;822:6:38;495;-1:-1:-1;;;;;491:18:38;;:20;;;;;-1:-1:-1;;;491:20:38;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;491:20:38;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;491:20:38;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;491:20:38;:29;;;:62;;;528:6;-1:-1:-1;;;;;524:18:38;;:20;;;;;-1:-1:-1;;;524:20:38;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;524:20:38;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;524:20:38;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;524:20:38;:29;491:62;482:72;;;;;;;;843:9;;859:12;;:43;;;-1:-1:-1;;;;;859:43:38;;891:10;859:43;;;;;;-1:-1:-1;;;;;843:9:38;;;;:15;;859:12;;:31;;:43;;;;;;;;;;;;;;843:9;859:12;:43;;;5:2:-1;;;;30:1;27;20:12;5:2;859:43:38;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;859:43:38;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;859:43:38;843:85;;;-1:-1:-1;;;843:85:38;;;;;;-1:-1:-1;;;;;843:85:38;;;;;;;;;;;;;;;;;;;;;;;;;;859:43;;843:85;;;;;;;-1:-1:-1;843:85:38;;;;5:2:-1;;;;30:1;27;20:12;5:2;843:85:38;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;843:85:38;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;843:85:38;834:95;;;;;;;;1276:1:35;710:223:38;;;:::o;1084:227::-;1163:6;760:9:35;:15;776:6;760:23;;;;;-1:-1:-1;;;760:23:35;;;;;;;-1:-1:-1;;;;;760:23:35;-1:-1:-1;;;;;760:23:35;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;760:23:35;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;760:23:35;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;760:23:35;751:33;;;;;;;;1214:12;;:43;;;-1:-1:-1;;;;;1214:43:35;;1246:10;1214:43;;;;;;1269:1;;-1:-1:-1;;;;;1214:12:35;;:31;;:43;;;;;;;;;;;;;;1269:1;1214:12;:43;;;5:2:-1;;;;30:1;27;20:12;5:2;1214:43:35;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;1214:43:35;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;1214:43:35;-1:-1:-1;;;;;1214:57:35;;;1205:67;;;;;;1198:6:38;495;-1:-1:-1;;;;;491:18:38;;:20;;;;;-1:-1:-1;;;491:20:38;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;491:20:38;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;491:20:38;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;491:20:38;:29;;;:62;;;528:6;-1:-1:-1;;;;;524:18:38;;:20;;;;;-1:-1:-1;;;524:20:38;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;524:20:38;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;524:20:38;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;524:20:38;:29;491:62;482:72;;;;;;;;1219:9;;1237:12;;:43;;;-1:-1:-1;;;;;1237:43:38;;1269:10;1237:43;;;;;;-1:-1:-1;;;;;1219:9:38;;;;:17;;1237:12;;:31;;:43;;;;;;;;;;;;;;1219:9;1237:12;:43;;;5:2:-1;;;;30:1;27;20:12;239:33:35;;;-1:-1:-1;;;;;239:33:35;;:::o",
-	"source": "pragma solidity ^0.4.24;\n\nimport './TAOController.sol';\n\n/**\n * @title TAOPosition\n *\n * The purpose of this contract is for Name to stake/unstake Position on a TAO\n */\ncontract TAOPosition is TAOController {\n\t/**\n\t * @dev Constructor function\n\t */\n\tconstructor(address _nameFactoryAddress, address _positionAddress)\n\t\tTAOController(_nameFactoryAddress, _positionAddress) public {}\n\n\t/**\n\t * @dev Check if TAO is not locked and closed\n\t */\n\tmodifier isActiveTAO(address _taoId) {\n\t\trequire (TAO(_taoId).locked() == false && TAO(_taoId).closed() == false);\n\t\t_;\n\t}\n\n\t/**\n\t * @dev Name stakes Position on a TAO\n\t * @param _taoId The ID of the TAO\n\t * @param _positionAmount The amount of Position to stake\n\t */\n\tfunction stakePosition(address _taoId, uint256 _positionAmount) public isTAO(_taoId) senderIsName() isActiveTAO(_taoId) {\n\t\trequire (_position.stake(_nameFactory.ethAddressToNameId(msg.sender), _taoId, _positionAmount));\n\t}\n\n\t/**\n\t * @dev Name unstakes Position on a TAO\n\t * @param _taoId The ID of the TAO\n\t * @param _positionAmount The amount of Position to unstake\n\t */\n\tfunction unstakePosition(address _taoId, uint256 _positionAmount) public isTAO(_taoId) senderIsName() isActiveTAO(_taoId) {\n\t\trequire (_position.unstake(_nameFactory.ethAddressToNameId(msg.sender), _taoId, _positionAmount));\n\t}\n}\n",
-	"sourcePath": "/home/jmulyono/ao-contracts/contracts/TAOPosition.sol",
+	"bytecode": "0x608060405234801561001057600080fd5b506040516060806104fb83398101604090815281516020830151919092015160008054600160a060020a0319908116600160a060020a0395861617825560018054821694861694909417909355600280549093169390911692909217905561047d90819061007e90396000f3006080604052600436106100325763ffffffff60e060020a6000350416638f4c4ea18114610037578063a9d02ed21461005d575b600080fd5b34801561004357600080fd5b5061005b600160a060020a0360043516602435610081565b005b34801561006957600080fd5b5061005b600160a060020a03600435166024356102c7565b8173__AOLibrary_____________________________632fca5414826040518263ffffffff1660e060020a0281526004018082600160a060020a0316600160a060020a0316815260200191505060206040518083038186803b1580156100e657600080fd5b505af41580156100fa573d6000803e3d6000fd5b505050506040513d602081101561011057600080fd5b5051151561011d57600080fd5b600080546040805160e060020a63029b7d530281523360048201529051600160a060020a039092169163029b7d539160248082019260209290919082900301818787803b15801561016d57600080fd5b505af1158015610181573d6000803e3d6000fd5b505050506040513d602081101561019757600080fd5b5051600160a060020a031614156101ad57600080fd5b600254600080546040805160e060020a63029b7d530281523360048201529051600160a060020a039485169463bf6eac2f9493169263029b7d5392602480820193602093909283900390910190829087803b15801561020b57600080fd5b505af115801561021f573d6000803e3d6000fd5b505050506040513d602081101561023557600080fd5b50516040805160e060020a63ffffffff8516028152600160a060020a0392831660048201529187166024830152604482018690525160648083019260209291908290030181600087803b15801561028b57600080fd5b505af115801561029f573d6000803e3d6000fd5b505050506040513d60208110156102b557600080fd5b505115156102c257600080fd5b505050565b8173__AOLibrary_____________________________632fca5414826040518263ffffffff1660e060020a0281526004018082600160a060020a0316600160a060020a0316815260200191505060206040518083038186803b15801561032c57600080fd5b505af4158015610340573d6000803e3d6000fd5b505050506040513d602081101561035657600080fd5b5051151561036357600080fd5b600080546040805160e060020a63029b7d530281523360048201529051600160a060020a039092169163029b7d539160248082019260209290919082900301818787803b1580156103b357600080fd5b505af11580156103c7573d6000803e3d6000fd5b505050506040513d60208110156103dd57600080fd5b5051600160a060020a031614156103f357600080fd5b600254600080546040805160e060020a63029b7d530281523360048201529051600160a060020a03948516946360829f8a9493169263029b7d5392602480820193602093909283900390910190829087803b15801561020b57600080fd00a165627a7a7230582072f9e574b80c5daac7262ebd79925fef81d5413f279631380024b0c3820ba5490029",
+	"deployedBytecode": "0x6080604052600436106100325763ffffffff60e060020a6000350416638f4c4ea18114610037578063a9d02ed21461005d575b600080fd5b34801561004357600080fd5b5061005b600160a060020a0360043516602435610081565b005b34801561006957600080fd5b5061005b600160a060020a03600435166024356102c7565b8173__AOLibrary_____________________________632fca5414826040518263ffffffff1660e060020a0281526004018082600160a060020a0316600160a060020a0316815260200191505060206040518083038186803b1580156100e657600080fd5b505af41580156100fa573d6000803e3d6000fd5b505050506040513d602081101561011057600080fd5b5051151561011d57600080fd5b600080546040805160e060020a63029b7d530281523360048201529051600160a060020a039092169163029b7d539160248082019260209290919082900301818787803b15801561016d57600080fd5b505af1158015610181573d6000803e3d6000fd5b505050506040513d602081101561019757600080fd5b5051600160a060020a031614156101ad57600080fd5b600254600080546040805160e060020a63029b7d530281523360048201529051600160a060020a039485169463bf6eac2f9493169263029b7d5392602480820193602093909283900390910190829087803b15801561020b57600080fd5b505af115801561021f573d6000803e3d6000fd5b505050506040513d602081101561023557600080fd5b50516040805160e060020a63ffffffff8516028152600160a060020a0392831660048201529187166024830152604482018690525160648083019260209291908290030181600087803b15801561028b57600080fd5b505af115801561029f573d6000803e3d6000fd5b505050506040513d60208110156102b557600080fd5b505115156102c257600080fd5b505050565b8173__AOLibrary_____________________________632fca5414826040518263ffffffff1660e060020a0281526004018082600160a060020a0316600160a060020a0316815260200191505060206040518083038186803b15801561032c57600080fd5b505af4158015610340573d6000803e3d6000fd5b505050506040513d602081101561035657600080fd5b5051151561036357600080fd5b600080546040805160e060020a63029b7d530281523360048201529051600160a060020a039092169163029b7d539160248082019260209290919082900301818787803b1580156103b357600080fd5b505af11580156103c7573d6000803e3d6000fd5b505050506040513d60208110156103dd57600080fd5b5051600160a060020a031614156103f357600080fd5b600254600080546040805160e060020a63029b7d530281523360048201529051600160a060020a03948516946360829f8a9493169263029b7d5392602480820193602093909283900390910190829087803b15801561020b57600080fd00a165627a7a7230582072f9e574b80c5daac7262ebd79925fef81d5413f279631380024b0c3820ba5490029",
+	"sourceMap": "194:1036:74:-;;;305:215;8:9:-1;5:2;;;30:1;27;20:12;5:2;305:215:74;;;;;;;;;;;;;;;;;;;;;;;;;377:12:68;:47;;-1:-1:-1;;;;;;377:47:68;;;-1:-1:-1;;;;;377:47:68;;;;;;-1:-1:-1;428:59:68;;;;;;;;;;;;;;478:9:74;:38;;;;;;;;;;;;;;;194:1036;;;;;;;;",
+	"deployedSourceMap": "194:1036:74:-;;;;;;;;;-1:-1:-1;;;194:1036:74;;;;;;;;;;;;;;;;;;667:203;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;667:203:74;-1:-1:-1;;;;;667:203:74;;;;;;;;;1021:207;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1021:207:74;-1:-1:-1;;;;;1021:207:74;;;;;;;667:203;744:6;584:9:68;:15;600:6;584:23;;;;;-1:-1:-1;;;584:23:68;;;;;;;-1:-1:-1;;;;;584:23:68;-1:-1:-1;;;;;584:23:68;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;584:23:68;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;584:23:68;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;584:23:68;575:33;;;;;;;;1060:1;1005:12;;:43;;;-1:-1:-1;;;;;1005:43:68;;1037:10;1005:43;;;;;;-1:-1:-1;;;;;1005:12:68;;;;:31;;:43;;;;;;;;;;;;;;;1060:1;1005:12;:43;;;5:2:-1;;;;30:1;27;20:12;5:2;1005:43:68;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;1005:43:68;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;1005:43:68;-1:-1:-1;;;;;1005:57:68;;;996:67;;;;;;780:9:74;;;796:12;;:43;;;-1:-1:-1;;;;;796:43:74;;828:10;796:43;;;;;;-1:-1:-1;;;;;780:9:74;;;;:15;;796:12;;;:31;;:43;;;;;;;;;;;;;;;;;;:12;:43;;;5:2:-1;;;;30:1;27;20:12;5:2;796:43:74;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;796:43:74;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;796:43:74;780:85;;;-1:-1:-1;;;780:85:74;;;;;;-1:-1:-1;;;;;780:85:74;;;;;;;;;;;;;;;;;;;;;;;;;;796:43;;780:85;;;;;;;-1:-1:-1;780:85:74;;;;5:2:-1;;;;30:1;27;20:12;5:2;780:85:74;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;780:85:74;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;780:85:74;771:95;;;;;;;;667:203;;;:::o;1021:207::-;1100:6;584:9:68;:15;600:6;584:23;;;;;-1:-1:-1;;;584:23:68;;;;;;;-1:-1:-1;;;;;584:23:68;-1:-1:-1;;;;;584:23:68;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;584:23:68;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;584:23:68;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;584:23:68;575:33;;;;;;;;1060:1;1005:12;;:43;;;-1:-1:-1;;;;;1005:43:68;;1037:10;1005:43;;;;;;-1:-1:-1;;;;;1005:12:68;;;;:31;;:43;;;;;;;;;;;;;;;1060:1;1005:12;:43;;;5:2:-1;;;;30:1;27;20:12;5:2;1005:43:68;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;1005:43:68;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;1005:43:68;-1:-1:-1;;;;;1005:57:68;;;996:67;;;;;;1136:9:74;;;1154:12;;:43;;;-1:-1:-1;;;;;1154:43:74;;1186:10;1154:43;;;;;;-1:-1:-1;;;;;1136:9:74;;;;:17;;1154:12;;;:31;;:43;;;;;;;;;;;;;;;;;;:12;:43;;;5:2:-1;;;;30:1;27;20:12",
+	"source": "pragma solidity ^0.4.24;\n\nimport './TAOController.sol';\nimport './Position.sol';\n\n/**\n * @title TAOPosition\n *\n * The purpose of this contract is for Name to stake/unstake Position on a TAO\n */\ncontract TAOPosition is TAOController {\n\tPosition internal _position;\n\t/**\n\t * @dev Constructor function\n\t */\n\tconstructor(address _nameFactoryAddress, address _nameTAOPositionAddress, address _positionAddress)\n\t\tTAOController(_nameFactoryAddress, _nameTAOPositionAddress) public {\n\t\t_position = Position(_positionAddress);\n\t}\n\n\t/**\n\t * @dev Name stakes Position on a TAO\n\t * @param _taoId The ID of the TAO\n\t * @param _positionAmount The amount of Position to stake\n\t */\n\tfunction stakePosition(address _taoId, uint256 _positionAmount) public isTAO(_taoId) senderIsName() {\n\t\trequire (_position.stake(_nameFactory.ethAddressToNameId(msg.sender), _taoId, _positionAmount));\n\t}\n\n\t/**\n\t * @dev Name unstakes Position on a TAO\n\t * @param _taoId The ID of the TAO\n\t * @param _positionAmount The amount of Position to unstake\n\t */\n\tfunction unstakePosition(address _taoId, uint256 _positionAmount) public isTAO(_taoId) senderIsName() {\n\t\trequire (_position.unstake(_nameFactory.ethAddressToNameId(msg.sender), _taoId, _positionAmount));\n\t}\n}\n",
+	"sourcePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/TAOPosition.sol",
 	"ast": {
-		"absolutePath": "/home/jmulyono/ao-contracts/contracts/TAOPosition.sol",
+		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/TAOPosition.sol",
 		"exportedSymbols": {
-			"TAOPosition": [19217]
+			"TAOPosition": [25550]
 		},
-		"id": 19218,
+		"id": 25551,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 19119,
+				"id": 25471,
 				"literals": ["solidity", "^", "0.4", ".24"],
 				"nodeType": "PragmaDirective",
-				"src": "0:24:38"
+				"src": "0:24:74"
 			},
 			{
-				"absolutePath": "/home/jmulyono/ao-contracts/contracts/TAOController.sol",
+				"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/TAOController.sol",
 				"file": "./TAOController.sol",
-				"id": 19120,
+				"id": 25472,
 				"nodeType": "ImportDirective",
-				"scope": 19218,
-				"sourceUnit": 17880,
-				"src": "26:29:38",
+				"scope": 25551,
+				"sourceUnit": 21661,
+				"src": "26:29:74",
+				"symbolAliases": [],
+				"unitAlias": ""
+			},
+			{
+				"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/Position.sol",
+				"file": "./Position.sol",
+				"id": 25473,
+				"nodeType": "ImportDirective",
+				"scope": 25551,
+				"sourceUnit": 21328,
+				"src": "56:24:74",
 				"symbolAliases": [],
 				"unitAlias": ""
 			},
@@ -118,39 +105,150 @@
 						"arguments": null,
 						"baseName": {
 							"contractScope": null,
-							"id": 19121,
+							"id": 25474,
 							"name": "TAOController",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 17879,
-							"src": "193:13:38",
+							"referencedDeclaration": 21660,
+							"src": "218:13:74",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_TAOController_$17879",
+								"typeIdentifier": "t_contract$_TAOController_$21660",
 								"typeString": "contract TAOController"
 							}
 						},
-						"id": 19122,
+						"id": 25475,
 						"nodeType": "InheritanceSpecifier",
-						"src": "193:13:38"
+						"src": "218:13:74"
 					}
 				],
-				"contractDependencies": [17879],
+				"contractDependencies": [21660],
 				"contractKind": "contract",
 				"documentation": "@title TAOPosition\n * The purpose of this contract is for Name to stake/unstake Position on a TAO",
 				"fullyImplemented": true,
-				"id": 19217,
-				"linearizedBaseContracts": [19217, 17879],
+				"id": 25550,
+				"linearizedBaseContracts": [25550, 21660],
 				"name": "TAOPosition",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
+						"constant": false,
+						"id": 25477,
+						"name": "_position",
+						"nodeType": "VariableDeclaration",
+						"scope": 25550,
+						"src": "235:27:74",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_contract$_Position_$21327",
+							"typeString": "contract Position"
+						},
+						"typeName": {
+							"contractScope": null,
+							"id": 25476,
+							"name": "Position",
+							"nodeType": "UserDefinedTypeName",
+							"referencedDeclaration": 21327,
+							"src": "235:8:74",
+							"typeDescriptions": {
+								"typeIdentifier": "t_contract$_Position_$21327",
+								"typeString": "contract Position"
+							}
+						},
+						"value": null,
+						"visibility": "internal"
+					},
+					{
 						"body": {
-							"id": 19133,
+							"id": 25496,
 							"nodeType": "Block",
-							"src": "379:2:38",
-							"statements": []
+							"src": "474:46:74",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 25494,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"id": 25490,
+											"name": "_position",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 25477,
+											"src": "478:9:74",
+											"typeDescriptions": {
+												"typeIdentifier": "t_contract$_Position_$21327",
+												"typeString": "contract Position"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"arguments": [
+												{
+													"argumentTypes": null,
+													"id": 25492,
+													"name": "_positionAddress",
+													"nodeType": "Identifier",
+													"overloadedDeclarations": [],
+													"referencedDeclaration": 25483,
+													"src": "499:16:74",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												}
+											],
+											"expression": {
+												"argumentTypes": [
+													{
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												],
+												"id": 25491,
+												"name": "Position",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 21327,
+												"src": "490:8:74",
+												"typeDescriptions": {
+													"typeIdentifier": "t_type$_t_contract$_Position_$21327_$",
+													"typeString": "type(contract Position)"
+												}
+											},
+											"id": 25493,
+											"isConstant": false,
+											"isLValue": false,
+											"isPure": false,
+											"kind": "typeConversion",
+											"lValueRequested": false,
+											"names": [],
+											"nodeType": "FunctionCall",
+											"src": "490:26:74",
+											"typeDescriptions": {
+												"typeIdentifier": "t_contract$_Position_$21327",
+												"typeString": "contract Position"
+											}
+										},
+										"src": "478:38:74",
+										"typeDescriptions": {
+											"typeIdentifier": "t_contract$_Position_$21327",
+											"typeString": "contract Position"
+										}
+									},
+									"id": 25495,
+									"nodeType": "ExpressionStatement",
+									"src": "478:38:74"
+								}
+							]
 						},
 						"documentation": "@dev Constructor function",
-						"id": 19134,
+						"id": 25497,
 						"implemented": true,
 						"isConstructor": true,
 						"isDeclaredConst": false,
@@ -159,12 +257,12 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 19129,
+										"id": 25486,
 										"name": "_nameFactoryAddress",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 19124,
-										"src": "333:19:38",
+										"referencedDeclaration": 25479,
+										"src": "421:19:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -172,49 +270,49 @@
 									},
 									{
 										"argumentTypes": null,
-										"id": 19130,
-										"name": "_positionAddress",
+										"id": 25487,
+										"name": "_nameTAOPositionAddress",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 19126,
-										"src": "354:16:38",
+										"referencedDeclaration": 25481,
+										"src": "442:23:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
 										}
 									}
 								],
-								"id": 19131,
+								"id": 25488,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 19128,
+									"id": 25485,
 									"name": "TAOController",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 17879,
-									"src": "319:13:38",
+									"referencedDeclaration": 21660,
+									"src": "407:13:74",
 									"typeDescriptions": {
-										"typeIdentifier": "t_type$_t_contract$_TAOController_$17879_$",
+										"typeIdentifier": "t_type$_t_contract$_TAOController_$21660_$",
 										"typeString": "type(contract TAOController)"
 									}
 								},
 								"nodeType": "ModifierInvocation",
-								"src": "319:52:38"
+								"src": "407:59:74"
 							}
 						],
 						"name": "",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 19127,
+							"id": 25484,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 19124,
+									"id": 25479,
 									"name": "_nameFactoryAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 19134,
-									"src": "262:27:38",
+									"scope": 25497,
+									"src": "317:27:74",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -222,10 +320,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 19123,
+										"id": 25478,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "262:7:38",
+										"src": "317:7:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -236,11 +334,11 @@
 								},
 								{
 									"constant": false,
-									"id": 19126,
-									"name": "_positionAddress",
+									"id": 25481,
+									"name": "_nameTAOPositionAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 19134,
-									"src": "291:24:38",
+									"scope": 25497,
+									"src": "346:31:74",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -248,10 +346,36 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 19125,
+										"id": 25480,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "291:7:38",
+										"src": "346:7:74",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 25483,
+									"name": "_positionAddress",
+									"nodeType": "VariableDeclaration",
+									"scope": 25497,
+									"src": "379:24:74",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_address",
+										"typeString": "address"
+									},
+									"typeName": {
+										"id": 25482,
+										"name": "address",
+										"nodeType": "ElementaryTypeName",
+										"src": "379:7:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -261,377 +385,26 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "261:55:38"
+							"src": "316:88:74"
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 19132,
+							"id": 25489,
 							"nodeType": "ParameterList",
 							"parameters": [],
-							"src": "379:0:38"
+							"src": "474:0:74"
 						},
-						"scope": 19217,
-						"src": "250:131:38",
+						"scope": 25550,
+						"src": "305:215:74",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					},
 					{
 						"body": {
-							"id": 19157,
+							"id": 25522,
 							"nodeType": "Block",
-							"src": "478:85:38",
-							"statements": [
-								{
-									"expression": {
-										"argumentTypes": null,
-										"arguments": [
-											{
-												"argumentTypes": null,
-												"commonType": {
-													"typeIdentifier": "t_bool",
-													"typeString": "bool"
-												},
-												"id": 19153,
-												"isConstant": false,
-												"isLValue": false,
-												"isPure": false,
-												"lValueRequested": false,
-												"leftExpression": {
-													"argumentTypes": null,
-													"commonType": {
-														"typeIdentifier": "t_bool",
-														"typeString": "bool"
-													},
-													"id": 19145,
-													"isConstant": false,
-													"isLValue": false,
-													"isPure": false,
-													"lValueRequested": false,
-													"leftExpression": {
-														"argumentTypes": null,
-														"arguments": [],
-														"expression": {
-															"argumentTypes": [],
-															"expression": {
-																"argumentTypes": null,
-																"arguments": [
-																	{
-																		"argumentTypes": null,
-																		"id": 19140,
-																		"name": "_taoId",
-																		"nodeType": "Identifier",
-																		"overloadedDeclarations": [],
-																		"referencedDeclaration": 19136,
-																		"src": "495:6:38",
-																		"typeDescriptions": {
-																			"typeIdentifier": "t_address",
-																			"typeString": "address"
-																		}
-																	}
-																],
-																"expression": {
-																	"argumentTypes": [
-																		{
-																			"typeIdentifier": "t_address",
-																			"typeString": "address"
-																		}
-																	],
-																	"id": 19139,
-																	"name": "TAO",
-																	"nodeType": "Identifier",
-																	"overloadedDeclarations": [],
-																	"referencedDeclaration": 17775,
-																	"src": "491:3:38",
-																	"typeDescriptions": {
-																		"typeIdentifier": "t_type$_t_contract$_TAO_$17775_$",
-																		"typeString": "type(contract TAO)"
-																	}
-																},
-																"id": 19141,
-																"isConstant": false,
-																"isLValue": false,
-																"isPure": false,
-																"kind": "typeConversion",
-																"lValueRequested": false,
-																"names": [],
-																"nodeType": "FunctionCall",
-																"src": "491:11:38",
-																"typeDescriptions": {
-																	"typeIdentifier": "t_contract$_TAO_$17775",
-																	"typeString": "contract TAO"
-																}
-															},
-															"id": 19142,
-															"isConstant": false,
-															"isLValue": false,
-															"isPure": false,
-															"lValueRequested": false,
-															"memberName": "locked",
-															"nodeType": "MemberAccess",
-															"referencedDeclaration": 17205,
-															"src": "491:18:38",
-															"typeDescriptions": {
-																"typeIdentifier": "t_function_external_view$__$returns$_t_bool_$",
-																"typeString": "function () view external returns (bool)"
-															}
-														},
-														"id": 19143,
-														"isConstant": false,
-														"isLValue": false,
-														"isPure": false,
-														"kind": "functionCall",
-														"lValueRequested": false,
-														"names": [],
-														"nodeType": "FunctionCall",
-														"src": "491:20:38",
-														"typeDescriptions": {
-															"typeIdentifier": "t_bool",
-															"typeString": "bool"
-														}
-													},
-													"nodeType": "BinaryOperation",
-													"operator": "==",
-													"rightExpression": {
-														"argumentTypes": null,
-														"hexValue": "66616c7365",
-														"id": 19144,
-														"isConstant": false,
-														"isLValue": false,
-														"isPure": true,
-														"kind": "bool",
-														"lValueRequested": false,
-														"nodeType": "Literal",
-														"src": "515:5:38",
-														"subdenomination": null,
-														"typeDescriptions": {
-															"typeIdentifier": "t_bool",
-															"typeString": "bool"
-														},
-														"value": "false"
-													},
-													"src": "491:29:38",
-													"typeDescriptions": {
-														"typeIdentifier": "t_bool",
-														"typeString": "bool"
-													}
-												},
-												"nodeType": "BinaryOperation",
-												"operator": "&&",
-												"rightExpression": {
-													"argumentTypes": null,
-													"commonType": {
-														"typeIdentifier": "t_bool",
-														"typeString": "bool"
-													},
-													"id": 19152,
-													"isConstant": false,
-													"isLValue": false,
-													"isPure": false,
-													"lValueRequested": false,
-													"leftExpression": {
-														"argumentTypes": null,
-														"arguments": [],
-														"expression": {
-															"argumentTypes": [],
-															"expression": {
-																"argumentTypes": null,
-																"arguments": [
-																	{
-																		"argumentTypes": null,
-																		"id": 19147,
-																		"name": "_taoId",
-																		"nodeType": "Identifier",
-																		"overloadedDeclarations": [],
-																		"referencedDeclaration": 19136,
-																		"src": "528:6:38",
-																		"typeDescriptions": {
-																			"typeIdentifier": "t_address",
-																			"typeString": "address"
-																		}
-																	}
-																],
-																"expression": {
-																	"argumentTypes": [
-																		{
-																			"typeIdentifier": "t_address",
-																			"typeString": "address"
-																		}
-																	],
-																	"id": 19146,
-																	"name": "TAO",
-																	"nodeType": "Identifier",
-																	"overloadedDeclarations": [],
-																	"referencedDeclaration": 17775,
-																	"src": "524:3:38",
-																	"typeDescriptions": {
-																		"typeIdentifier": "t_type$_t_contract$_TAO_$17775_$",
-																		"typeString": "type(contract TAO)"
-																	}
-																},
-																"id": 19148,
-																"isConstant": false,
-																"isLValue": false,
-																"isPure": false,
-																"kind": "typeConversion",
-																"lValueRequested": false,
-																"names": [],
-																"nodeType": "FunctionCall",
-																"src": "524:11:38",
-																"typeDescriptions": {
-																	"typeIdentifier": "t_contract$_TAO_$17775",
-																	"typeString": "contract TAO"
-																}
-															},
-															"id": 19149,
-															"isConstant": false,
-															"isLValue": false,
-															"isPure": false,
-															"lValueRequested": false,
-															"memberName": "closed",
-															"nodeType": "MemberAccess",
-															"referencedDeclaration": 17207,
-															"src": "524:18:38",
-															"typeDescriptions": {
-																"typeIdentifier": "t_function_external_view$__$returns$_t_bool_$",
-																"typeString": "function () view external returns (bool)"
-															}
-														},
-														"id": 19150,
-														"isConstant": false,
-														"isLValue": false,
-														"isPure": false,
-														"kind": "functionCall",
-														"lValueRequested": false,
-														"names": [],
-														"nodeType": "FunctionCall",
-														"src": "524:20:38",
-														"typeDescriptions": {
-															"typeIdentifier": "t_bool",
-															"typeString": "bool"
-														}
-													},
-													"nodeType": "BinaryOperation",
-													"operator": "==",
-													"rightExpression": {
-														"argumentTypes": null,
-														"hexValue": "66616c7365",
-														"id": 19151,
-														"isConstant": false,
-														"isLValue": false,
-														"isPure": true,
-														"kind": "bool",
-														"lValueRequested": false,
-														"nodeType": "Literal",
-														"src": "548:5:38",
-														"subdenomination": null,
-														"typeDescriptions": {
-															"typeIdentifier": "t_bool",
-															"typeString": "bool"
-														},
-														"value": "false"
-													},
-													"src": "524:29:38",
-													"typeDescriptions": {
-														"typeIdentifier": "t_bool",
-														"typeString": "bool"
-													}
-												},
-												"src": "491:62:38",
-												"typeDescriptions": {
-													"typeIdentifier": "t_bool",
-													"typeString": "bool"
-												}
-											}
-										],
-										"expression": {
-											"argumentTypes": [
-												{
-													"typeIdentifier": "t_bool",
-													"typeString": "bool"
-												}
-											],
-											"id": 19138,
-											"name": "require",
-											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "482:7:38",
-											"typeDescriptions": {
-												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
-												"typeString": "function (bool) pure"
-											}
-										},
-										"id": 19154,
-										"isConstant": false,
-										"isLValue": false,
-										"isPure": false,
-										"kind": "functionCall",
-										"lValueRequested": false,
-										"names": [],
-										"nodeType": "FunctionCall",
-										"src": "482:72:38",
-										"typeDescriptions": {
-											"typeIdentifier": "t_tuple$__$",
-											"typeString": "tuple()"
-										}
-									},
-									"id": 19155,
-									"nodeType": "ExpressionStatement",
-									"src": "482:72:38"
-								},
-								{
-									"id": 19156,
-									"nodeType": "PlaceholderStatement",
-									"src": "558:1:38"
-								}
-							]
-						},
-						"documentation": "@dev Check if TAO is not locked and closed",
-						"id": 19158,
-						"name": "isActiveTAO",
-						"nodeType": "ModifierDefinition",
-						"parameters": {
-							"id": 19137,
-							"nodeType": "ParameterList",
-							"parameters": [
-								{
-									"constant": false,
-									"id": 19136,
-									"name": "_taoId",
-									"nodeType": "VariableDeclaration",
-									"scope": 19158,
-									"src": "462:14:38",
-									"stateVariable": false,
-									"storageLocation": "default",
-									"typeDescriptions": {
-										"typeIdentifier": "t_address",
-										"typeString": "address"
-									},
-									"typeName": {
-										"id": 19135,
-										"name": "address",
-										"nodeType": "ElementaryTypeName",
-										"src": "462:7:38",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									},
-									"value": null,
-									"visibility": "internal"
-								}
-							],
-							"src": "461:16:38"
-						},
-						"src": "441:122:38",
-						"visibility": "internal"
-					},
-					{
-						"body": {
-							"id": 19186,
-							"nodeType": "Block",
-							"src": "830:103:38",
+							"src": "767:103:74",
 							"statements": [
 								{
 									"expression": {
@@ -647,18 +420,18 @@
 																"argumentTypes": null,
 																"expression": {
 																	"argumentTypes": null,
-																	"id": 19178,
+																	"id": 25514,
 																	"name": "msg",
 																	"nodeType": "Identifier",
 																	"overloadedDeclarations": [],
-																	"referencedDeclaration": 19715,
-																	"src": "891:3:38",
+																	"referencedDeclaration": 26036,
+																	"src": "828:3:74",
 																	"typeDescriptions": {
 																		"typeIdentifier": "t_magic_message",
 																		"typeString": "msg"
 																	}
 																},
-																"id": 19179,
+																"id": 25515,
 																"isConstant": false,
 																"isLValue": false,
 																"isPure": false,
@@ -666,7 +439,7 @@
 																"memberName": "sender",
 																"nodeType": "MemberAccess",
 																"referencedDeclaration": null,
-																"src": "891:10:38",
+																"src": "828:10:74",
 																"typeDescriptions": {
 																	"typeIdentifier": "t_address",
 																	"typeString": "address"
@@ -682,32 +455,32 @@
 															],
 															"expression": {
 																"argumentTypes": null,
-																"id": 19176,
+																"id": 25512,
 																"name": "_nameFactory",
 																"nodeType": "Identifier",
 																"overloadedDeclarations": [],
-																"referencedDeclaration": 17791,
-																"src": "859:12:38",
+																"referencedDeclaration": 21562,
+																"src": "796:12:74",
 																"typeDescriptions": {
-																	"typeIdentifier": "t_contract$_NameFactory_$16749",
+																	"typeIdentifier": "t_contract$_NameFactory_$18167",
 																	"typeString": "contract NameFactory"
 																}
 															},
-															"id": 19177,
+															"id": 25513,
 															"isConstant": false,
 															"isLValue": false,
 															"isPure": false,
 															"lValueRequested": false,
 															"memberName": "ethAddressToNameId",
 															"nodeType": "MemberAccess",
-															"referencedDeclaration": 15857,
-															"src": "859:31:38",
+															"referencedDeclaration": 17592,
+															"src": "796:31:74",
 															"typeDescriptions": {
 																"typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
 																"typeString": "function (address) view external returns (address)"
 															}
 														},
-														"id": 19180,
+														"id": 25516,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": false,
@@ -715,7 +488,7 @@
 														"lValueRequested": false,
 														"names": [],
 														"nodeType": "FunctionCall",
-														"src": "859:43:38",
+														"src": "796:43:74",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
 															"typeString": "address"
@@ -723,12 +496,12 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 19181,
+														"id": 25517,
 														"name": "_taoId",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 19160,
-														"src": "904:6:38",
+														"referencedDeclaration": 25499,
+														"src": "841:6:74",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
 															"typeString": "address"
@@ -736,12 +509,12 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 19182,
+														"id": 25518,
 														"name": "_positionAmount",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 19162,
-														"src": "912:15:38",
+														"referencedDeclaration": 25501,
+														"src": "849:15:74",
 														"typeDescriptions": {
 															"typeIdentifier": "t_uint256",
 															"typeString": "uint256"
@@ -765,32 +538,32 @@
 													],
 													"expression": {
 														"argumentTypes": null,
-														"id": 19174,
+														"id": 25510,
 														"name": "_position",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 17793,
-														"src": "843:9:38",
+														"referencedDeclaration": 25477,
+														"src": "780:9:74",
 														"typeDescriptions": {
-															"typeIdentifier": "t_contract$_Position_$17103",
+															"typeIdentifier": "t_contract$_Position_$21327",
 															"typeString": "contract Position"
 														}
 													},
-													"id": 19175,
+													"id": 25511,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
 													"lValueRequested": false,
 													"memberName": "stake",
 													"nodeType": "MemberAccess",
-													"referencedDeclaration": 17013,
-													"src": "843:15:38",
+													"referencedDeclaration": 21239,
+													"src": "780:15:74",
 													"typeDescriptions": {
 														"typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
 														"typeString": "function (address,address,uint256) external returns (bool)"
 													}
 												},
-												"id": 19183,
+												"id": 25519,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -798,7 +571,7 @@
 												"lValueRequested": false,
 												"names": [],
 												"nodeType": "FunctionCall",
-												"src": "843:85:38",
+												"src": "780:85:74",
 												"typeDescriptions": {
 													"typeIdentifier": "t_bool",
 													"typeString": "bool"
@@ -812,18 +585,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 19173,
+											"id": 25509,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "834:7:38",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "771:7:74",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 19184,
+										"id": 25520,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -831,20 +604,20 @@
 										"lValueRequested": false,
 										"names": [],
 										"nodeType": "FunctionCall",
-										"src": "834:95:38",
+										"src": "771:95:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_tuple$__$",
 											"typeString": "tuple()"
 										}
 									},
-									"id": 19185,
+									"id": 25521,
 									"nodeType": "ExpressionStatement",
-									"src": "834:95:38"
+									"src": "771:95:74"
 								}
 							]
 						},
 						"documentation": "@dev Name stakes Position on a TAO\n@param _taoId The ID of the TAO\n@param _positionAmount The amount of Position to stake",
-						"id": 19187,
+						"id": 25523,
 						"implemented": true,
 						"isConstructor": false,
 						"isDeclaredConst": false,
@@ -853,101 +626,68 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 19165,
+										"id": 25504,
 										"name": "_taoId",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 19160,
-										"src": "787:6:38",
+										"referencedDeclaration": 25499,
+										"src": "744:6:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
 										}
 									}
 								],
-								"id": 19166,
+								"id": 25505,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 19164,
+									"id": 25503,
 									"name": "isTAO",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 17834,
-									"src": "781:5:38",
+									"referencedDeclaration": 21597,
+									"src": "738:5:74",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$_t_address_$",
 										"typeString": "modifier (address)"
 									}
 								},
 								"nodeType": "ModifierInvocation",
-								"src": "781:13:38"
+								"src": "738:13:74"
 							},
 							{
 								"arguments": [],
-								"id": 19168,
+								"id": 25507,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 19167,
+									"id": 25506,
 									"name": "senderIsName",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 17878,
-									"src": "795:12:38",
+									"referencedDeclaration": 21644,
+									"src": "752:12:74",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
 										"typeString": "modifier ()"
 									}
 								},
 								"nodeType": "ModifierInvocation",
-								"src": "795:14:38"
-							},
-							{
-								"arguments": [
-									{
-										"argumentTypes": null,
-										"id": 19170,
-										"name": "_taoId",
-										"nodeType": "Identifier",
-										"overloadedDeclarations": [],
-										"referencedDeclaration": 19160,
-										"src": "822:6:38",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									}
-								],
-								"id": 19171,
-								"modifierName": {
-									"argumentTypes": null,
-									"id": 19169,
-									"name": "isActiveTAO",
-									"nodeType": "Identifier",
-									"overloadedDeclarations": [],
-									"referencedDeclaration": 19158,
-									"src": "810:11:38",
-									"typeDescriptions": {
-										"typeIdentifier": "t_modifier$_t_address_$",
-										"typeString": "modifier (address)"
-									}
-								},
-								"nodeType": "ModifierInvocation",
-								"src": "810:19:38"
+								"src": "752:14:74"
 							}
 						],
 						"name": "stakePosition",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 19163,
+							"id": 25502,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 19160,
+									"id": 25499,
 									"name": "_taoId",
 									"nodeType": "VariableDeclaration",
-									"scope": 19187,
-									"src": "733:14:38",
+									"scope": 25523,
+									"src": "690:14:74",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -955,10 +695,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 19159,
+										"id": 25498,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "733:7:38",
+										"src": "690:7:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -969,11 +709,11 @@
 								},
 								{
 									"constant": false,
-									"id": 19162,
+									"id": 25501,
 									"name": "_positionAmount",
 									"nodeType": "VariableDeclaration",
-									"scope": 19187,
-									"src": "749:23:38",
+									"scope": 25523,
+									"src": "706:23:74",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -981,10 +721,10 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 19161,
+										"id": 25500,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
-										"src": "749:7:38",
+										"src": "706:7:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_uint256",
 											"typeString": "uint256"
@@ -994,26 +734,26 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "732:41:38"
+							"src": "689:41:74"
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 19172,
+							"id": 25508,
 							"nodeType": "ParameterList",
 							"parameters": [],
-							"src": "830:0:38"
+							"src": "767:0:74"
 						},
-						"scope": 19217,
-						"src": "710:223:38",
+						"scope": 25550,
+						"src": "667:203:74",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					},
 					{
 						"body": {
-							"id": 19215,
+							"id": 25548,
 							"nodeType": "Block",
-							"src": "1206:105:38",
+							"src": "1123:105:74",
 							"statements": [
 								{
 									"expression": {
@@ -1029,18 +769,18 @@
 																"argumentTypes": null,
 																"expression": {
 																	"argumentTypes": null,
-																	"id": 19207,
+																	"id": 25540,
 																	"name": "msg",
 																	"nodeType": "Identifier",
 																	"overloadedDeclarations": [],
-																	"referencedDeclaration": 19715,
-																	"src": "1269:3:38",
+																	"referencedDeclaration": 26036,
+																	"src": "1186:3:74",
 																	"typeDescriptions": {
 																		"typeIdentifier": "t_magic_message",
 																		"typeString": "msg"
 																	}
 																},
-																"id": 19208,
+																"id": 25541,
 																"isConstant": false,
 																"isLValue": false,
 																"isPure": false,
@@ -1048,7 +788,7 @@
 																"memberName": "sender",
 																"nodeType": "MemberAccess",
 																"referencedDeclaration": null,
-																"src": "1269:10:38",
+																"src": "1186:10:74",
 																"typeDescriptions": {
 																	"typeIdentifier": "t_address",
 																	"typeString": "address"
@@ -1064,32 +804,32 @@
 															],
 															"expression": {
 																"argumentTypes": null,
-																"id": 19205,
+																"id": 25538,
 																"name": "_nameFactory",
 																"nodeType": "Identifier",
 																"overloadedDeclarations": [],
-																"referencedDeclaration": 17791,
-																"src": "1237:12:38",
+																"referencedDeclaration": 21562,
+																"src": "1154:12:74",
 																"typeDescriptions": {
-																	"typeIdentifier": "t_contract$_NameFactory_$16749",
+																	"typeIdentifier": "t_contract$_NameFactory_$18167",
 																	"typeString": "contract NameFactory"
 																}
 															},
-															"id": 19206,
+															"id": 25539,
 															"isConstant": false,
 															"isLValue": false,
 															"isPure": false,
 															"lValueRequested": false,
 															"memberName": "ethAddressToNameId",
 															"nodeType": "MemberAccess",
-															"referencedDeclaration": 15857,
-															"src": "1237:31:38",
+															"referencedDeclaration": 17592,
+															"src": "1154:31:74",
 															"typeDescriptions": {
 																"typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
 																"typeString": "function (address) view external returns (address)"
 															}
 														},
-														"id": 19209,
+														"id": 25542,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": false,
@@ -1097,7 +837,7 @@
 														"lValueRequested": false,
 														"names": [],
 														"nodeType": "FunctionCall",
-														"src": "1237:43:38",
+														"src": "1154:43:74",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
 															"typeString": "address"
@@ -1105,12 +845,12 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 19210,
+														"id": 25543,
 														"name": "_taoId",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 19189,
-														"src": "1282:6:38",
+														"referencedDeclaration": 25525,
+														"src": "1199:6:74",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
 															"typeString": "address"
@@ -1118,12 +858,12 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 19211,
+														"id": 25544,
 														"name": "_positionAmount",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 19191,
-														"src": "1290:15:38",
+														"referencedDeclaration": 25527,
+														"src": "1207:15:74",
 														"typeDescriptions": {
 															"typeIdentifier": "t_uint256",
 															"typeString": "uint256"
@@ -1147,32 +887,32 @@
 													],
 													"expression": {
 														"argumentTypes": null,
-														"id": 19203,
+														"id": 25536,
 														"name": "_position",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 17793,
-														"src": "1219:9:38",
+														"referencedDeclaration": 25477,
+														"src": "1136:9:74",
 														"typeDescriptions": {
-															"typeIdentifier": "t_contract$_Position_$17103",
+															"typeIdentifier": "t_contract$_Position_$21327",
 															"typeString": "contract Position"
 														}
 													},
-													"id": 19204,
+													"id": 25537,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
 													"lValueRequested": false,
 													"memberName": "unstake",
 													"nodeType": "MemberAccess",
-													"referencedDeclaration": 17102,
-													"src": "1219:17:38",
+													"referencedDeclaration": 21326,
+													"src": "1136:17:74",
 													"typeDescriptions": {
 														"typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
 														"typeString": "function (address,address,uint256) external returns (bool)"
 													}
 												},
-												"id": 19212,
+												"id": 25545,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -1180,7 +920,7 @@
 												"lValueRequested": false,
 												"names": [],
 												"nodeType": "FunctionCall",
-												"src": "1219:87:38",
+												"src": "1136:87:74",
 												"typeDescriptions": {
 													"typeIdentifier": "t_bool",
 													"typeString": "bool"
@@ -1194,18 +934,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 19202,
+											"id": 25535,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "1210:7:38",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "1127:7:74",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 19213,
+										"id": 25546,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -1213,20 +953,20 @@
 										"lValueRequested": false,
 										"names": [],
 										"nodeType": "FunctionCall",
-										"src": "1210:97:38",
+										"src": "1127:97:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_tuple$__$",
 											"typeString": "tuple()"
 										}
 									},
-									"id": 19214,
+									"id": 25547,
 									"nodeType": "ExpressionStatement",
-									"src": "1210:97:38"
+									"src": "1127:97:74"
 								}
 							]
 						},
 						"documentation": "@dev Name unstakes Position on a TAO\n@param _taoId The ID of the TAO\n@param _positionAmount The amount of Position to unstake",
-						"id": 19216,
+						"id": 25549,
 						"implemented": true,
 						"isConstructor": false,
 						"isDeclaredConst": false,
@@ -1235,101 +975,68 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 19194,
+										"id": 25530,
 										"name": "_taoId",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 19189,
-										"src": "1163:6:38",
+										"referencedDeclaration": 25525,
+										"src": "1100:6:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
 										}
 									}
 								],
-								"id": 19195,
+								"id": 25531,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 19193,
+									"id": 25529,
 									"name": "isTAO",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 17834,
-									"src": "1157:5:38",
+									"referencedDeclaration": 21597,
+									"src": "1094:5:74",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$_t_address_$",
 										"typeString": "modifier (address)"
 									}
 								},
 								"nodeType": "ModifierInvocation",
-								"src": "1157:13:38"
+								"src": "1094:13:74"
 							},
 							{
 								"arguments": [],
-								"id": 19197,
+								"id": 25533,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 19196,
+									"id": 25532,
 									"name": "senderIsName",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 17878,
-									"src": "1171:12:38",
+									"referencedDeclaration": 21644,
+									"src": "1108:12:74",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
 										"typeString": "modifier ()"
 									}
 								},
 								"nodeType": "ModifierInvocation",
-								"src": "1171:14:38"
-							},
-							{
-								"arguments": [
-									{
-										"argumentTypes": null,
-										"id": 19199,
-										"name": "_taoId",
-										"nodeType": "Identifier",
-										"overloadedDeclarations": [],
-										"referencedDeclaration": 19189,
-										"src": "1198:6:38",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									}
-								],
-								"id": 19200,
-								"modifierName": {
-									"argumentTypes": null,
-									"id": 19198,
-									"name": "isActiveTAO",
-									"nodeType": "Identifier",
-									"overloadedDeclarations": [],
-									"referencedDeclaration": 19158,
-									"src": "1186:11:38",
-									"typeDescriptions": {
-										"typeIdentifier": "t_modifier$_t_address_$",
-										"typeString": "modifier (address)"
-									}
-								},
-								"nodeType": "ModifierInvocation",
-								"src": "1186:19:38"
+								"src": "1108:14:74"
 							}
 						],
 						"name": "unstakePosition",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 19192,
+							"id": 25528,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 19189,
+									"id": 25525,
 									"name": "_taoId",
 									"nodeType": "VariableDeclaration",
-									"scope": 19216,
-									"src": "1109:14:38",
+									"scope": 25549,
+									"src": "1046:14:74",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -1337,10 +1044,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 19188,
+										"id": 25524,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "1109:7:38",
+										"src": "1046:7:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -1351,11 +1058,11 @@
 								},
 								{
 									"constant": false,
-									"id": 19191,
+									"id": 25527,
 									"name": "_positionAmount",
 									"nodeType": "VariableDeclaration",
-									"scope": 19216,
-									"src": "1125:23:38",
+									"scope": 25549,
+									"src": "1062:23:74",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -1363,10 +1070,10 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 19190,
+										"id": 25526,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
-										"src": "1125:7:38",
+										"src": "1062:7:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_uint256",
 											"typeString": "uint256"
@@ -1376,50 +1083,61 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "1108:41:38"
+							"src": "1045:41:74"
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 19201,
+							"id": 25534,
 							"nodeType": "ParameterList",
 							"parameters": [],
-							"src": "1206:0:38"
+							"src": "1123:0:74"
 						},
-						"scope": 19217,
-						"src": "1084:227:38",
+						"scope": 25550,
+						"src": "1021:207:74",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					}
 				],
-				"scope": 19218,
-				"src": "169:1144:38"
+				"scope": 25551,
+				"src": "194:1036:74"
 			}
 		],
-		"src": "0:1314:38"
+		"src": "0:1231:74"
 	},
 	"legacyAST": {
-		"absolutePath": "/home/jmulyono/ao-contracts/contracts/TAOPosition.sol",
+		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/TAOPosition.sol",
 		"exportedSymbols": {
-			"TAOPosition": [19217]
+			"TAOPosition": [25550]
 		},
-		"id": 19218,
+		"id": 25551,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 19119,
+				"id": 25471,
 				"literals": ["solidity", "^", "0.4", ".24"],
 				"nodeType": "PragmaDirective",
-				"src": "0:24:38"
+				"src": "0:24:74"
 			},
 			{
-				"absolutePath": "/home/jmulyono/ao-contracts/contracts/TAOController.sol",
+				"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/TAOController.sol",
 				"file": "./TAOController.sol",
-				"id": 19120,
+				"id": 25472,
 				"nodeType": "ImportDirective",
-				"scope": 19218,
-				"sourceUnit": 17880,
-				"src": "26:29:38",
+				"scope": 25551,
+				"sourceUnit": 21661,
+				"src": "26:29:74",
+				"symbolAliases": [],
+				"unitAlias": ""
+			},
+			{
+				"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/Position.sol",
+				"file": "./Position.sol",
+				"id": 25473,
+				"nodeType": "ImportDirective",
+				"scope": 25551,
+				"sourceUnit": 21328,
+				"src": "56:24:74",
 				"symbolAliases": [],
 				"unitAlias": ""
 			},
@@ -1429,39 +1147,150 @@
 						"arguments": null,
 						"baseName": {
 							"contractScope": null,
-							"id": 19121,
+							"id": 25474,
 							"name": "TAOController",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 17879,
-							"src": "193:13:38",
+							"referencedDeclaration": 21660,
+							"src": "218:13:74",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_TAOController_$17879",
+								"typeIdentifier": "t_contract$_TAOController_$21660",
 								"typeString": "contract TAOController"
 							}
 						},
-						"id": 19122,
+						"id": 25475,
 						"nodeType": "InheritanceSpecifier",
-						"src": "193:13:38"
+						"src": "218:13:74"
 					}
 				],
-				"contractDependencies": [17879],
+				"contractDependencies": [21660],
 				"contractKind": "contract",
 				"documentation": "@title TAOPosition\n * The purpose of this contract is for Name to stake/unstake Position on a TAO",
 				"fullyImplemented": true,
-				"id": 19217,
-				"linearizedBaseContracts": [19217, 17879],
+				"id": 25550,
+				"linearizedBaseContracts": [25550, 21660],
 				"name": "TAOPosition",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
+						"constant": false,
+						"id": 25477,
+						"name": "_position",
+						"nodeType": "VariableDeclaration",
+						"scope": 25550,
+						"src": "235:27:74",
+						"stateVariable": true,
+						"storageLocation": "default",
+						"typeDescriptions": {
+							"typeIdentifier": "t_contract$_Position_$21327",
+							"typeString": "contract Position"
+						},
+						"typeName": {
+							"contractScope": null,
+							"id": 25476,
+							"name": "Position",
+							"nodeType": "UserDefinedTypeName",
+							"referencedDeclaration": 21327,
+							"src": "235:8:74",
+							"typeDescriptions": {
+								"typeIdentifier": "t_contract$_Position_$21327",
+								"typeString": "contract Position"
+							}
+						},
+						"value": null,
+						"visibility": "internal"
+					},
+					{
 						"body": {
-							"id": 19133,
+							"id": 25496,
 							"nodeType": "Block",
-							"src": "379:2:38",
-							"statements": []
+							"src": "474:46:74",
+							"statements": [
+								{
+									"expression": {
+										"argumentTypes": null,
+										"id": 25494,
+										"isConstant": false,
+										"isLValue": false,
+										"isPure": false,
+										"lValueRequested": false,
+										"leftHandSide": {
+											"argumentTypes": null,
+											"id": 25490,
+											"name": "_position",
+											"nodeType": "Identifier",
+											"overloadedDeclarations": [],
+											"referencedDeclaration": 25477,
+											"src": "478:9:74",
+											"typeDescriptions": {
+												"typeIdentifier": "t_contract$_Position_$21327",
+												"typeString": "contract Position"
+											}
+										},
+										"nodeType": "Assignment",
+										"operator": "=",
+										"rightHandSide": {
+											"argumentTypes": null,
+											"arguments": [
+												{
+													"argumentTypes": null,
+													"id": 25492,
+													"name": "_positionAddress",
+													"nodeType": "Identifier",
+													"overloadedDeclarations": [],
+													"referencedDeclaration": 25483,
+													"src": "499:16:74",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												}
+											],
+											"expression": {
+												"argumentTypes": [
+													{
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												],
+												"id": 25491,
+												"name": "Position",
+												"nodeType": "Identifier",
+												"overloadedDeclarations": [],
+												"referencedDeclaration": 21327,
+												"src": "490:8:74",
+												"typeDescriptions": {
+													"typeIdentifier": "t_type$_t_contract$_Position_$21327_$",
+													"typeString": "type(contract Position)"
+												}
+											},
+											"id": 25493,
+											"isConstant": false,
+											"isLValue": false,
+											"isPure": false,
+											"kind": "typeConversion",
+											"lValueRequested": false,
+											"names": [],
+											"nodeType": "FunctionCall",
+											"src": "490:26:74",
+											"typeDescriptions": {
+												"typeIdentifier": "t_contract$_Position_$21327",
+												"typeString": "contract Position"
+											}
+										},
+										"src": "478:38:74",
+										"typeDescriptions": {
+											"typeIdentifier": "t_contract$_Position_$21327",
+											"typeString": "contract Position"
+										}
+									},
+									"id": 25495,
+									"nodeType": "ExpressionStatement",
+									"src": "478:38:74"
+								}
+							]
 						},
 						"documentation": "@dev Constructor function",
-						"id": 19134,
+						"id": 25497,
 						"implemented": true,
 						"isConstructor": true,
 						"isDeclaredConst": false,
@@ -1470,12 +1299,12 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 19129,
+										"id": 25486,
 										"name": "_nameFactoryAddress",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 19124,
-										"src": "333:19:38",
+										"referencedDeclaration": 25479,
+										"src": "421:19:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -1483,49 +1312,49 @@
 									},
 									{
 										"argumentTypes": null,
-										"id": 19130,
-										"name": "_positionAddress",
+										"id": 25487,
+										"name": "_nameTAOPositionAddress",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 19126,
-										"src": "354:16:38",
+										"referencedDeclaration": 25481,
+										"src": "442:23:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
 										}
 									}
 								],
-								"id": 19131,
+								"id": 25488,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 19128,
+									"id": 25485,
 									"name": "TAOController",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 17879,
-									"src": "319:13:38",
+									"referencedDeclaration": 21660,
+									"src": "407:13:74",
 									"typeDescriptions": {
-										"typeIdentifier": "t_type$_t_contract$_TAOController_$17879_$",
+										"typeIdentifier": "t_type$_t_contract$_TAOController_$21660_$",
 										"typeString": "type(contract TAOController)"
 									}
 								},
 								"nodeType": "ModifierInvocation",
-								"src": "319:52:38"
+								"src": "407:59:74"
 							}
 						],
 						"name": "",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 19127,
+							"id": 25484,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 19124,
+									"id": 25479,
 									"name": "_nameFactoryAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 19134,
-									"src": "262:27:38",
+									"scope": 25497,
+									"src": "317:27:74",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -1533,10 +1362,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 19123,
+										"id": 25478,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "262:7:38",
+										"src": "317:7:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -1547,11 +1376,11 @@
 								},
 								{
 									"constant": false,
-									"id": 19126,
-									"name": "_positionAddress",
+									"id": 25481,
+									"name": "_nameTAOPositionAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 19134,
-									"src": "291:24:38",
+									"scope": 25497,
+									"src": "346:31:74",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -1559,10 +1388,36 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 19125,
+										"id": 25480,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "291:7:38",
+										"src": "346:7:74",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								},
+								{
+									"constant": false,
+									"id": 25483,
+									"name": "_positionAddress",
+									"nodeType": "VariableDeclaration",
+									"scope": 25497,
+									"src": "379:24:74",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_address",
+										"typeString": "address"
+									},
+									"typeName": {
+										"id": 25482,
+										"name": "address",
+										"nodeType": "ElementaryTypeName",
+										"src": "379:7:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -1572,377 +1427,26 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "261:55:38"
+							"src": "316:88:74"
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 19132,
+							"id": 25489,
 							"nodeType": "ParameterList",
 							"parameters": [],
-							"src": "379:0:38"
+							"src": "474:0:74"
 						},
-						"scope": 19217,
-						"src": "250:131:38",
+						"scope": 25550,
+						"src": "305:215:74",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					},
 					{
 						"body": {
-							"id": 19157,
+							"id": 25522,
 							"nodeType": "Block",
-							"src": "478:85:38",
-							"statements": [
-								{
-									"expression": {
-										"argumentTypes": null,
-										"arguments": [
-											{
-												"argumentTypes": null,
-												"commonType": {
-													"typeIdentifier": "t_bool",
-													"typeString": "bool"
-												},
-												"id": 19153,
-												"isConstant": false,
-												"isLValue": false,
-												"isPure": false,
-												"lValueRequested": false,
-												"leftExpression": {
-													"argumentTypes": null,
-													"commonType": {
-														"typeIdentifier": "t_bool",
-														"typeString": "bool"
-													},
-													"id": 19145,
-													"isConstant": false,
-													"isLValue": false,
-													"isPure": false,
-													"lValueRequested": false,
-													"leftExpression": {
-														"argumentTypes": null,
-														"arguments": [],
-														"expression": {
-															"argumentTypes": [],
-															"expression": {
-																"argumentTypes": null,
-																"arguments": [
-																	{
-																		"argumentTypes": null,
-																		"id": 19140,
-																		"name": "_taoId",
-																		"nodeType": "Identifier",
-																		"overloadedDeclarations": [],
-																		"referencedDeclaration": 19136,
-																		"src": "495:6:38",
-																		"typeDescriptions": {
-																			"typeIdentifier": "t_address",
-																			"typeString": "address"
-																		}
-																	}
-																],
-																"expression": {
-																	"argumentTypes": [
-																		{
-																			"typeIdentifier": "t_address",
-																			"typeString": "address"
-																		}
-																	],
-																	"id": 19139,
-																	"name": "TAO",
-																	"nodeType": "Identifier",
-																	"overloadedDeclarations": [],
-																	"referencedDeclaration": 17775,
-																	"src": "491:3:38",
-																	"typeDescriptions": {
-																		"typeIdentifier": "t_type$_t_contract$_TAO_$17775_$",
-																		"typeString": "type(contract TAO)"
-																	}
-																},
-																"id": 19141,
-																"isConstant": false,
-																"isLValue": false,
-																"isPure": false,
-																"kind": "typeConversion",
-																"lValueRequested": false,
-																"names": [],
-																"nodeType": "FunctionCall",
-																"src": "491:11:38",
-																"typeDescriptions": {
-																	"typeIdentifier": "t_contract$_TAO_$17775",
-																	"typeString": "contract TAO"
-																}
-															},
-															"id": 19142,
-															"isConstant": false,
-															"isLValue": false,
-															"isPure": false,
-															"lValueRequested": false,
-															"memberName": "locked",
-															"nodeType": "MemberAccess",
-															"referencedDeclaration": 17205,
-															"src": "491:18:38",
-															"typeDescriptions": {
-																"typeIdentifier": "t_function_external_view$__$returns$_t_bool_$",
-																"typeString": "function () view external returns (bool)"
-															}
-														},
-														"id": 19143,
-														"isConstant": false,
-														"isLValue": false,
-														"isPure": false,
-														"kind": "functionCall",
-														"lValueRequested": false,
-														"names": [],
-														"nodeType": "FunctionCall",
-														"src": "491:20:38",
-														"typeDescriptions": {
-															"typeIdentifier": "t_bool",
-															"typeString": "bool"
-														}
-													},
-													"nodeType": "BinaryOperation",
-													"operator": "==",
-													"rightExpression": {
-														"argumentTypes": null,
-														"hexValue": "66616c7365",
-														"id": 19144,
-														"isConstant": false,
-														"isLValue": false,
-														"isPure": true,
-														"kind": "bool",
-														"lValueRequested": false,
-														"nodeType": "Literal",
-														"src": "515:5:38",
-														"subdenomination": null,
-														"typeDescriptions": {
-															"typeIdentifier": "t_bool",
-															"typeString": "bool"
-														},
-														"value": "false"
-													},
-													"src": "491:29:38",
-													"typeDescriptions": {
-														"typeIdentifier": "t_bool",
-														"typeString": "bool"
-													}
-												},
-												"nodeType": "BinaryOperation",
-												"operator": "&&",
-												"rightExpression": {
-													"argumentTypes": null,
-													"commonType": {
-														"typeIdentifier": "t_bool",
-														"typeString": "bool"
-													},
-													"id": 19152,
-													"isConstant": false,
-													"isLValue": false,
-													"isPure": false,
-													"lValueRequested": false,
-													"leftExpression": {
-														"argumentTypes": null,
-														"arguments": [],
-														"expression": {
-															"argumentTypes": [],
-															"expression": {
-																"argumentTypes": null,
-																"arguments": [
-																	{
-																		"argumentTypes": null,
-																		"id": 19147,
-																		"name": "_taoId",
-																		"nodeType": "Identifier",
-																		"overloadedDeclarations": [],
-																		"referencedDeclaration": 19136,
-																		"src": "528:6:38",
-																		"typeDescriptions": {
-																			"typeIdentifier": "t_address",
-																			"typeString": "address"
-																		}
-																	}
-																],
-																"expression": {
-																	"argumentTypes": [
-																		{
-																			"typeIdentifier": "t_address",
-																			"typeString": "address"
-																		}
-																	],
-																	"id": 19146,
-																	"name": "TAO",
-																	"nodeType": "Identifier",
-																	"overloadedDeclarations": [],
-																	"referencedDeclaration": 17775,
-																	"src": "524:3:38",
-																	"typeDescriptions": {
-																		"typeIdentifier": "t_type$_t_contract$_TAO_$17775_$",
-																		"typeString": "type(contract TAO)"
-																	}
-																},
-																"id": 19148,
-																"isConstant": false,
-																"isLValue": false,
-																"isPure": false,
-																"kind": "typeConversion",
-																"lValueRequested": false,
-																"names": [],
-																"nodeType": "FunctionCall",
-																"src": "524:11:38",
-																"typeDescriptions": {
-																	"typeIdentifier": "t_contract$_TAO_$17775",
-																	"typeString": "contract TAO"
-																}
-															},
-															"id": 19149,
-															"isConstant": false,
-															"isLValue": false,
-															"isPure": false,
-															"lValueRequested": false,
-															"memberName": "closed",
-															"nodeType": "MemberAccess",
-															"referencedDeclaration": 17207,
-															"src": "524:18:38",
-															"typeDescriptions": {
-																"typeIdentifier": "t_function_external_view$__$returns$_t_bool_$",
-																"typeString": "function () view external returns (bool)"
-															}
-														},
-														"id": 19150,
-														"isConstant": false,
-														"isLValue": false,
-														"isPure": false,
-														"kind": "functionCall",
-														"lValueRequested": false,
-														"names": [],
-														"nodeType": "FunctionCall",
-														"src": "524:20:38",
-														"typeDescriptions": {
-															"typeIdentifier": "t_bool",
-															"typeString": "bool"
-														}
-													},
-													"nodeType": "BinaryOperation",
-													"operator": "==",
-													"rightExpression": {
-														"argumentTypes": null,
-														"hexValue": "66616c7365",
-														"id": 19151,
-														"isConstant": false,
-														"isLValue": false,
-														"isPure": true,
-														"kind": "bool",
-														"lValueRequested": false,
-														"nodeType": "Literal",
-														"src": "548:5:38",
-														"subdenomination": null,
-														"typeDescriptions": {
-															"typeIdentifier": "t_bool",
-															"typeString": "bool"
-														},
-														"value": "false"
-													},
-													"src": "524:29:38",
-													"typeDescriptions": {
-														"typeIdentifier": "t_bool",
-														"typeString": "bool"
-													}
-												},
-												"src": "491:62:38",
-												"typeDescriptions": {
-													"typeIdentifier": "t_bool",
-													"typeString": "bool"
-												}
-											}
-										],
-										"expression": {
-											"argumentTypes": [
-												{
-													"typeIdentifier": "t_bool",
-													"typeString": "bool"
-												}
-											],
-											"id": 19138,
-											"name": "require",
-											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "482:7:38",
-											"typeDescriptions": {
-												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
-												"typeString": "function (bool) pure"
-											}
-										},
-										"id": 19154,
-										"isConstant": false,
-										"isLValue": false,
-										"isPure": false,
-										"kind": "functionCall",
-										"lValueRequested": false,
-										"names": [],
-										"nodeType": "FunctionCall",
-										"src": "482:72:38",
-										"typeDescriptions": {
-											"typeIdentifier": "t_tuple$__$",
-											"typeString": "tuple()"
-										}
-									},
-									"id": 19155,
-									"nodeType": "ExpressionStatement",
-									"src": "482:72:38"
-								},
-								{
-									"id": 19156,
-									"nodeType": "PlaceholderStatement",
-									"src": "558:1:38"
-								}
-							]
-						},
-						"documentation": "@dev Check if TAO is not locked and closed",
-						"id": 19158,
-						"name": "isActiveTAO",
-						"nodeType": "ModifierDefinition",
-						"parameters": {
-							"id": 19137,
-							"nodeType": "ParameterList",
-							"parameters": [
-								{
-									"constant": false,
-									"id": 19136,
-									"name": "_taoId",
-									"nodeType": "VariableDeclaration",
-									"scope": 19158,
-									"src": "462:14:38",
-									"stateVariable": false,
-									"storageLocation": "default",
-									"typeDescriptions": {
-										"typeIdentifier": "t_address",
-										"typeString": "address"
-									},
-									"typeName": {
-										"id": 19135,
-										"name": "address",
-										"nodeType": "ElementaryTypeName",
-										"src": "462:7:38",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									},
-									"value": null,
-									"visibility": "internal"
-								}
-							],
-							"src": "461:16:38"
-						},
-						"src": "441:122:38",
-						"visibility": "internal"
-					},
-					{
-						"body": {
-							"id": 19186,
-							"nodeType": "Block",
-							"src": "830:103:38",
+							"src": "767:103:74",
 							"statements": [
 								{
 									"expression": {
@@ -1958,18 +1462,18 @@
 																"argumentTypes": null,
 																"expression": {
 																	"argumentTypes": null,
-																	"id": 19178,
+																	"id": 25514,
 																	"name": "msg",
 																	"nodeType": "Identifier",
 																	"overloadedDeclarations": [],
-																	"referencedDeclaration": 19715,
-																	"src": "891:3:38",
+																	"referencedDeclaration": 26036,
+																	"src": "828:3:74",
 																	"typeDescriptions": {
 																		"typeIdentifier": "t_magic_message",
 																		"typeString": "msg"
 																	}
 																},
-																"id": 19179,
+																"id": 25515,
 																"isConstant": false,
 																"isLValue": false,
 																"isPure": false,
@@ -1977,7 +1481,7 @@
 																"memberName": "sender",
 																"nodeType": "MemberAccess",
 																"referencedDeclaration": null,
-																"src": "891:10:38",
+																"src": "828:10:74",
 																"typeDescriptions": {
 																	"typeIdentifier": "t_address",
 																	"typeString": "address"
@@ -1993,32 +1497,32 @@
 															],
 															"expression": {
 																"argumentTypes": null,
-																"id": 19176,
+																"id": 25512,
 																"name": "_nameFactory",
 																"nodeType": "Identifier",
 																"overloadedDeclarations": [],
-																"referencedDeclaration": 17791,
-																"src": "859:12:38",
+																"referencedDeclaration": 21562,
+																"src": "796:12:74",
 																"typeDescriptions": {
-																	"typeIdentifier": "t_contract$_NameFactory_$16749",
+																	"typeIdentifier": "t_contract$_NameFactory_$18167",
 																	"typeString": "contract NameFactory"
 																}
 															},
-															"id": 19177,
+															"id": 25513,
 															"isConstant": false,
 															"isLValue": false,
 															"isPure": false,
 															"lValueRequested": false,
 															"memberName": "ethAddressToNameId",
 															"nodeType": "MemberAccess",
-															"referencedDeclaration": 15857,
-															"src": "859:31:38",
+															"referencedDeclaration": 17592,
+															"src": "796:31:74",
 															"typeDescriptions": {
 																"typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
 																"typeString": "function (address) view external returns (address)"
 															}
 														},
-														"id": 19180,
+														"id": 25516,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": false,
@@ -2026,7 +1530,7 @@
 														"lValueRequested": false,
 														"names": [],
 														"nodeType": "FunctionCall",
-														"src": "859:43:38",
+														"src": "796:43:74",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
 															"typeString": "address"
@@ -2034,12 +1538,12 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 19181,
+														"id": 25517,
 														"name": "_taoId",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 19160,
-														"src": "904:6:38",
+														"referencedDeclaration": 25499,
+														"src": "841:6:74",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
 															"typeString": "address"
@@ -2047,12 +1551,12 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 19182,
+														"id": 25518,
 														"name": "_positionAmount",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 19162,
-														"src": "912:15:38",
+														"referencedDeclaration": 25501,
+														"src": "849:15:74",
 														"typeDescriptions": {
 															"typeIdentifier": "t_uint256",
 															"typeString": "uint256"
@@ -2076,32 +1580,32 @@
 													],
 													"expression": {
 														"argumentTypes": null,
-														"id": 19174,
+														"id": 25510,
 														"name": "_position",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 17793,
-														"src": "843:9:38",
+														"referencedDeclaration": 25477,
+														"src": "780:9:74",
 														"typeDescriptions": {
-															"typeIdentifier": "t_contract$_Position_$17103",
+															"typeIdentifier": "t_contract$_Position_$21327",
 															"typeString": "contract Position"
 														}
 													},
-													"id": 19175,
+													"id": 25511,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
 													"lValueRequested": false,
 													"memberName": "stake",
 													"nodeType": "MemberAccess",
-													"referencedDeclaration": 17013,
-													"src": "843:15:38",
+													"referencedDeclaration": 21239,
+													"src": "780:15:74",
 													"typeDescriptions": {
 														"typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
 														"typeString": "function (address,address,uint256) external returns (bool)"
 													}
 												},
-												"id": 19183,
+												"id": 25519,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -2109,7 +1613,7 @@
 												"lValueRequested": false,
 												"names": [],
 												"nodeType": "FunctionCall",
-												"src": "843:85:38",
+												"src": "780:85:74",
 												"typeDescriptions": {
 													"typeIdentifier": "t_bool",
 													"typeString": "bool"
@@ -2123,18 +1627,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 19173,
+											"id": 25509,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "834:7:38",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "771:7:74",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 19184,
+										"id": 25520,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -2142,20 +1646,20 @@
 										"lValueRequested": false,
 										"names": [],
 										"nodeType": "FunctionCall",
-										"src": "834:95:38",
+										"src": "771:95:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_tuple$__$",
 											"typeString": "tuple()"
 										}
 									},
-									"id": 19185,
+									"id": 25521,
 									"nodeType": "ExpressionStatement",
-									"src": "834:95:38"
+									"src": "771:95:74"
 								}
 							]
 						},
 						"documentation": "@dev Name stakes Position on a TAO\n@param _taoId The ID of the TAO\n@param _positionAmount The amount of Position to stake",
-						"id": 19187,
+						"id": 25523,
 						"implemented": true,
 						"isConstructor": false,
 						"isDeclaredConst": false,
@@ -2164,101 +1668,68 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 19165,
+										"id": 25504,
 										"name": "_taoId",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 19160,
-										"src": "787:6:38",
+										"referencedDeclaration": 25499,
+										"src": "744:6:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
 										}
 									}
 								],
-								"id": 19166,
+								"id": 25505,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 19164,
+									"id": 25503,
 									"name": "isTAO",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 17834,
-									"src": "781:5:38",
+									"referencedDeclaration": 21597,
+									"src": "738:5:74",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$_t_address_$",
 										"typeString": "modifier (address)"
 									}
 								},
 								"nodeType": "ModifierInvocation",
-								"src": "781:13:38"
+								"src": "738:13:74"
 							},
 							{
 								"arguments": [],
-								"id": 19168,
+								"id": 25507,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 19167,
+									"id": 25506,
 									"name": "senderIsName",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 17878,
-									"src": "795:12:38",
+									"referencedDeclaration": 21644,
+									"src": "752:12:74",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
 										"typeString": "modifier ()"
 									}
 								},
 								"nodeType": "ModifierInvocation",
-								"src": "795:14:38"
-							},
-							{
-								"arguments": [
-									{
-										"argumentTypes": null,
-										"id": 19170,
-										"name": "_taoId",
-										"nodeType": "Identifier",
-										"overloadedDeclarations": [],
-										"referencedDeclaration": 19160,
-										"src": "822:6:38",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									}
-								],
-								"id": 19171,
-								"modifierName": {
-									"argumentTypes": null,
-									"id": 19169,
-									"name": "isActiveTAO",
-									"nodeType": "Identifier",
-									"overloadedDeclarations": [],
-									"referencedDeclaration": 19158,
-									"src": "810:11:38",
-									"typeDescriptions": {
-										"typeIdentifier": "t_modifier$_t_address_$",
-										"typeString": "modifier (address)"
-									}
-								},
-								"nodeType": "ModifierInvocation",
-								"src": "810:19:38"
+								"src": "752:14:74"
 							}
 						],
 						"name": "stakePosition",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 19163,
+							"id": 25502,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 19160,
+									"id": 25499,
 									"name": "_taoId",
 									"nodeType": "VariableDeclaration",
-									"scope": 19187,
-									"src": "733:14:38",
+									"scope": 25523,
+									"src": "690:14:74",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -2266,10 +1737,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 19159,
+										"id": 25498,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "733:7:38",
+										"src": "690:7:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -2280,11 +1751,11 @@
 								},
 								{
 									"constant": false,
-									"id": 19162,
+									"id": 25501,
 									"name": "_positionAmount",
 									"nodeType": "VariableDeclaration",
-									"scope": 19187,
-									"src": "749:23:38",
+									"scope": 25523,
+									"src": "706:23:74",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -2292,10 +1763,10 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 19161,
+										"id": 25500,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
-										"src": "749:7:38",
+										"src": "706:7:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_uint256",
 											"typeString": "uint256"
@@ -2305,26 +1776,26 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "732:41:38"
+							"src": "689:41:74"
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 19172,
+							"id": 25508,
 							"nodeType": "ParameterList",
 							"parameters": [],
-							"src": "830:0:38"
+							"src": "767:0:74"
 						},
-						"scope": 19217,
-						"src": "710:223:38",
+						"scope": 25550,
+						"src": "667:203:74",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					},
 					{
 						"body": {
-							"id": 19215,
+							"id": 25548,
 							"nodeType": "Block",
-							"src": "1206:105:38",
+							"src": "1123:105:74",
 							"statements": [
 								{
 									"expression": {
@@ -2340,18 +1811,18 @@
 																"argumentTypes": null,
 																"expression": {
 																	"argumentTypes": null,
-																	"id": 19207,
+																	"id": 25540,
 																	"name": "msg",
 																	"nodeType": "Identifier",
 																	"overloadedDeclarations": [],
-																	"referencedDeclaration": 19715,
-																	"src": "1269:3:38",
+																	"referencedDeclaration": 26036,
+																	"src": "1186:3:74",
 																	"typeDescriptions": {
 																		"typeIdentifier": "t_magic_message",
 																		"typeString": "msg"
 																	}
 																},
-																"id": 19208,
+																"id": 25541,
 																"isConstant": false,
 																"isLValue": false,
 																"isPure": false,
@@ -2359,7 +1830,7 @@
 																"memberName": "sender",
 																"nodeType": "MemberAccess",
 																"referencedDeclaration": null,
-																"src": "1269:10:38",
+																"src": "1186:10:74",
 																"typeDescriptions": {
 																	"typeIdentifier": "t_address",
 																	"typeString": "address"
@@ -2375,32 +1846,32 @@
 															],
 															"expression": {
 																"argumentTypes": null,
-																"id": 19205,
+																"id": 25538,
 																"name": "_nameFactory",
 																"nodeType": "Identifier",
 																"overloadedDeclarations": [],
-																"referencedDeclaration": 17791,
-																"src": "1237:12:38",
+																"referencedDeclaration": 21562,
+																"src": "1154:12:74",
 																"typeDescriptions": {
-																	"typeIdentifier": "t_contract$_NameFactory_$16749",
+																	"typeIdentifier": "t_contract$_NameFactory_$18167",
 																	"typeString": "contract NameFactory"
 																}
 															},
-															"id": 19206,
+															"id": 25539,
 															"isConstant": false,
 															"isLValue": false,
 															"isPure": false,
 															"lValueRequested": false,
 															"memberName": "ethAddressToNameId",
 															"nodeType": "MemberAccess",
-															"referencedDeclaration": 15857,
-															"src": "1237:31:38",
+															"referencedDeclaration": 17592,
+															"src": "1154:31:74",
 															"typeDescriptions": {
 																"typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
 																"typeString": "function (address) view external returns (address)"
 															}
 														},
-														"id": 19209,
+														"id": 25542,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": false,
@@ -2408,7 +1879,7 @@
 														"lValueRequested": false,
 														"names": [],
 														"nodeType": "FunctionCall",
-														"src": "1237:43:38",
+														"src": "1154:43:74",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
 															"typeString": "address"
@@ -2416,12 +1887,12 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 19210,
+														"id": 25543,
 														"name": "_taoId",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 19189,
-														"src": "1282:6:38",
+														"referencedDeclaration": 25525,
+														"src": "1199:6:74",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
 															"typeString": "address"
@@ -2429,12 +1900,12 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 19211,
+														"id": 25544,
 														"name": "_positionAmount",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 19191,
-														"src": "1290:15:38",
+														"referencedDeclaration": 25527,
+														"src": "1207:15:74",
 														"typeDescriptions": {
 															"typeIdentifier": "t_uint256",
 															"typeString": "uint256"
@@ -2458,32 +1929,32 @@
 													],
 													"expression": {
 														"argumentTypes": null,
-														"id": 19203,
+														"id": 25536,
 														"name": "_position",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 17793,
-														"src": "1219:9:38",
+														"referencedDeclaration": 25477,
+														"src": "1136:9:74",
 														"typeDescriptions": {
-															"typeIdentifier": "t_contract$_Position_$17103",
+															"typeIdentifier": "t_contract$_Position_$21327",
 															"typeString": "contract Position"
 														}
 													},
-													"id": 19204,
+													"id": 25537,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
 													"lValueRequested": false,
 													"memberName": "unstake",
 													"nodeType": "MemberAccess",
-													"referencedDeclaration": 17102,
-													"src": "1219:17:38",
+													"referencedDeclaration": 21326,
+													"src": "1136:17:74",
 													"typeDescriptions": {
 														"typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
 														"typeString": "function (address,address,uint256) external returns (bool)"
 													}
 												},
-												"id": 19212,
+												"id": 25545,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -2491,7 +1962,7 @@
 												"lValueRequested": false,
 												"names": [],
 												"nodeType": "FunctionCall",
-												"src": "1219:87:38",
+												"src": "1136:87:74",
 												"typeDescriptions": {
 													"typeIdentifier": "t_bool",
 													"typeString": "bool"
@@ -2505,18 +1976,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 19202,
+											"id": 25535,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [19718, 19719],
-											"referencedDeclaration": 19718,
-											"src": "1210:7:38",
+											"overloadedDeclarations": [26039, 26040],
+											"referencedDeclaration": 26039,
+											"src": "1127:7:74",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 19213,
+										"id": 25546,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -2524,20 +1995,20 @@
 										"lValueRequested": false,
 										"names": [],
 										"nodeType": "FunctionCall",
-										"src": "1210:97:38",
+										"src": "1127:97:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_tuple$__$",
 											"typeString": "tuple()"
 										}
 									},
-									"id": 19214,
+									"id": 25547,
 									"nodeType": "ExpressionStatement",
-									"src": "1210:97:38"
+									"src": "1127:97:74"
 								}
 							]
 						},
 						"documentation": "@dev Name unstakes Position on a TAO\n@param _taoId The ID of the TAO\n@param _positionAmount The amount of Position to unstake",
-						"id": 19216,
+						"id": 25549,
 						"implemented": true,
 						"isConstructor": false,
 						"isDeclaredConst": false,
@@ -2546,101 +2017,68 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 19194,
+										"id": 25530,
 										"name": "_taoId",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 19189,
-										"src": "1163:6:38",
+										"referencedDeclaration": 25525,
+										"src": "1100:6:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
 										}
 									}
 								],
-								"id": 19195,
+								"id": 25531,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 19193,
+									"id": 25529,
 									"name": "isTAO",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 17834,
-									"src": "1157:5:38",
+									"referencedDeclaration": 21597,
+									"src": "1094:5:74",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$_t_address_$",
 										"typeString": "modifier (address)"
 									}
 								},
 								"nodeType": "ModifierInvocation",
-								"src": "1157:13:38"
+								"src": "1094:13:74"
 							},
 							{
 								"arguments": [],
-								"id": 19197,
+								"id": 25533,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 19196,
+									"id": 25532,
 									"name": "senderIsName",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 17878,
-									"src": "1171:12:38",
+									"referencedDeclaration": 21644,
+									"src": "1108:12:74",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
 										"typeString": "modifier ()"
 									}
 								},
 								"nodeType": "ModifierInvocation",
-								"src": "1171:14:38"
-							},
-							{
-								"arguments": [
-									{
-										"argumentTypes": null,
-										"id": 19199,
-										"name": "_taoId",
-										"nodeType": "Identifier",
-										"overloadedDeclarations": [],
-										"referencedDeclaration": 19189,
-										"src": "1198:6:38",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									}
-								],
-								"id": 19200,
-								"modifierName": {
-									"argumentTypes": null,
-									"id": 19198,
-									"name": "isActiveTAO",
-									"nodeType": "Identifier",
-									"overloadedDeclarations": [],
-									"referencedDeclaration": 19158,
-									"src": "1186:11:38",
-									"typeDescriptions": {
-										"typeIdentifier": "t_modifier$_t_address_$",
-										"typeString": "modifier (address)"
-									}
-								},
-								"nodeType": "ModifierInvocation",
-								"src": "1186:19:38"
+								"src": "1108:14:74"
 							}
 						],
 						"name": "unstakePosition",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 19192,
+							"id": 25528,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 19189,
+									"id": 25525,
 									"name": "_taoId",
 									"nodeType": "VariableDeclaration",
-									"scope": 19216,
-									"src": "1109:14:38",
+									"scope": 25549,
+									"src": "1046:14:74",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -2648,10 +2086,10 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 19188,
+										"id": 25524,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
-										"src": "1109:7:38",
+										"src": "1046:7:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
 											"typeString": "address"
@@ -2662,11 +2100,11 @@
 								},
 								{
 									"constant": false,
-									"id": 19191,
+									"id": 25527,
 									"name": "_positionAmount",
 									"nodeType": "VariableDeclaration",
-									"scope": 19216,
-									"src": "1125:23:38",
+									"scope": 25549,
+									"src": "1062:23:74",
 									"stateVariable": false,
 									"storageLocation": "default",
 									"typeDescriptions": {
@@ -2674,10 +2112,10 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 19190,
+										"id": 25526,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
-										"src": "1125:7:38",
+										"src": "1062:7:74",
 										"typeDescriptions": {
 											"typeIdentifier": "t_uint256",
 											"typeString": "uint256"
@@ -2687,42 +2125,33 @@
 									"visibility": "internal"
 								}
 							],
-							"src": "1108:41:38"
+							"src": "1045:41:74"
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 19201,
+							"id": 25534,
 							"nodeType": "ParameterList",
 							"parameters": [],
-							"src": "1206:0:38"
+							"src": "1123:0:74"
 						},
-						"scope": 19217,
-						"src": "1084:227:38",
+						"scope": 25550,
+						"src": "1021:207:74",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					}
 				],
-				"scope": 19218,
-				"src": "169:1144:38"
+				"scope": 25551,
+				"src": "194:1036:74"
 			}
 		],
-		"src": "0:1314:38"
+		"src": "0:1231:74"
 	},
 	"compiler": {
 		"name": "solc",
 		"version": "0.4.24+commit.e67f0147.Emscripten.clang"
 	},
-	"networks": {
-		"4": {
-			"events": {},
-			"links": {
-				"AOLibrary": "0xf16349ac1950abb7d39f0c0658c9659fb19d8eb1"
-			},
-			"address": "0x12fd963137afa0c88b0237ebfa7696842e3bd860",
-			"transactionHash": "0x8b47f63c2476ca497469b354e5706293ed98cbe55bc260b336dba7e49ac7b775"
-		}
-	},
+	"networks": {},
 	"schemaVersion": "2.0.1",
-	"updatedAt": "2018-12-19T05:20:18.319Z"
+	"updatedAt": "2019-01-07T03:04:13.107Z"
 }
