@@ -77,6 +77,7 @@ var AOXona = artifacts.require("./AOXona.sol");
 var AOPool = artifacts.require("./AOPool.sol");
 
 // Contracts that interact with AO and its denominations contracts
+var AOETH = artifacts.require("./AOETH.sol");
 var AOTreasury = artifacts.require("./AOTreasury.sol");
 var AOEarning = artifacts.require("./AOEarning.sol");
 var AOContent = artifacts.require("./AOContent.sol");
@@ -156,6 +157,7 @@ module.exports = function(deployer, network, accounts) {
 		aoyotta,
 		aoxona,
 		aopool,
+		aoeth,
 		aotreasury,
 		aoearning,
 		aocontent;
@@ -219,6 +221,7 @@ module.exports = function(deployer, network, accounts) {
 	deployer.link(AOLibrary, AOStringSetting);
 	deployer.link(AOLibrary, AOPool);
 	deployer.link(AOLibrary, AOSettingAttribute);
+	deployer.link(AOLibrary, AOETH);
 	deployer.link(AOLibrary, AOTreasury);
 	deployer.link(AOLibrary, AOUintSetting);
 	deployer.link(AOLibrary, NameTAOLookup);
@@ -949,6 +952,7 @@ module.exports = function(deployer, network, accounts) {
 
 			return deployer.deploy([
 				[AOPool, aotoken.address],
+				[AOETH, 0, "AO ETH", "AOETH", aotoken.address],
 				[
 					AOEarning,
 					settingTAOId,
@@ -963,6 +967,7 @@ module.exports = function(deployer, network, accounts) {
 		})
 		.then(async function() {
 			aopool = await AOPool.deployed();
+			aoeth = await AOETH.deployed();
 			aoearning = await AOEarning.deployed();
 
 			// Grant access to aopool to transact on behalf of others on base denomination
@@ -1014,6 +1019,12 @@ module.exports = function(deployer, network, accounts) {
 			// quantityCapAmount: 5000
 			// erc20CounterAsset: false (priced in Eth)
 			await aopool.createPool(10000, false, true, 10000000, true, 5000, false, "", "", { from: primordialAccount });
+
+			// Link AOETH to AOToken
+			await aotoken.setAOEthAddress(aoeth.address, { from: primordialAccount });
+
+			// AOETH grant access to AOToken
+			await aoeth.setWhitelist(aotoken.address, true, { from: primordialAccount });
 
 			// Grant access to aoearning to transact on behalf of others on base denomination
 			await aotoken.setWhitelist(aoearning.address, true, { from: primordialAccount });
