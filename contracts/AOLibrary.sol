@@ -17,6 +17,7 @@ import './AOSetting.sol';
 import './TAOCurrency.sol';
 import './Logos.sol';
 import './NameTAOPosition.sol';
+import './TokenERC20.sol';
 
 /**
  * @title AOLibrary
@@ -500,6 +501,18 @@ library AOLibrary {
 	function getValidateSignatureAddress(address _callingContractAddress, string _data, uint256 _nonce, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
 		bytes32 _hash = keccak256(abi.encodePacked(_callingContractAddress, _data, _nonce));
 		return ecrecover(_hash, _v, _r, _s);
+	}
+
+	/**
+	 * @dev Check if `_tokenAddress` is a valid ERC20 Token address
+	 * @param _tokenAddress The ERC20 Token address to check
+	 */
+	function isValidERC20TokenAddress(address _tokenAddress) public view returns (bool) {
+		if (_tokenAddress == address(0)) {
+			return false;
+		}
+		TokenERC20 _erc20 = TokenERC20(_tokenAddress);
+		return (_erc20.totalSupply() > 0 && bytes(_erc20.name()).length > 0 && bytes(_erc20.symbol()).length > 0);
 	}
 
 	/***** Internal Methods *****/
