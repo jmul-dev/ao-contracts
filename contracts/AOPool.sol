@@ -61,7 +61,7 @@ contract AOPool is TheAO {
 		 */
 		uint256 erc20TokenMultiplier;
 
-		address adminAddress;				// defaults to DAO address, but can be modified
+		address adminAddress;				// defaults to TheAO address, but can be modified
 	}
 
 	struct Lot {
@@ -238,7 +238,27 @@ contract AOPool is TheAO {
 	}
 
 	/**
-	 * @dev DAO creates a Pool
+	 * @dev Allows TheAO to transfer `_amount` of ETH from this address to `_recipient`
+	 * @param _recipient The recipient address
+	 * @param _amount The amount to transfer
+	 */
+	function transferEth(address _recipient, uint256 _amount) public onlyTheAO {
+		_recipient.transfer(_amount);
+	}
+
+	/**
+	 * @dev Allows TheAO to transfer `_amount` of ERC20 Token from this address to `_recipient`
+	 * @param _erc20TokenAddress The address of ERC20 Token
+	 * @param _recipient The recipient address
+	 * @param _amount The amount to transfer
+	 */
+	function transferERC20(address _erc20TokenAddress, address _recipient, uint256 _amount) public onlyTheAO {
+		TokenERC20 _erc20 = TokenERC20(_erc20TokenAddress);
+		require (_erc20.transfer(_recipient, _amount));
+	}
+
+	/**
+	 * @dev TheAO creates a Pool
 	 * @param _price The flat price of AO
 	 * @param _status The status of the Pool
 	 *					true = Pool is live and can be sold into
@@ -279,7 +299,7 @@ contract AOPool is TheAO {
 		// Make sure the ERC20 token address and multiplier are provided
 		// if this Pool is priced in ERC20 compatible Token
 		if (_erc20CounterAsset == true) {
-			require (_erc20TokenAddress != address(0) && bytes(TokenERC20(_erc20TokenAddress).name()).length > 0);
+			require (AOLibrary.isValidERC20TokenAddress(_erc20TokenAddress));
 			require (_erc20TokenMultiplier > 0);
 		}
 
