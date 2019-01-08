@@ -172,10 +172,8 @@ contract NameTAOVault is TheAO {
 	 * @param _amount The amount to transfer
 	 */
 	function transferERC20(address _erc20TokenAddress, address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) {
-		require (_erc20TokenAddress != address(0));
+		require (AOLibrary.isValidERC20TokenAddress(_erc20TokenAddress));
 		TokenERC20 _erc20 = TokenERC20(_erc20TokenAddress);
-		// Make sure it's a valid ERC20 Token Address
-		require (_erc20.totalSupply() > 0);
 		require (_amount > 0 && _erc20.balanceOf(_from) >= _amount);
 		require (_to != address(0) && _from != _to);
 		require (TAO(_from).transferERC20(_erc20TokenAddress, _to, _amount));
