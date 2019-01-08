@@ -17,11 +17,22 @@ contract TAOCurrencyTreasury is TheAO {
 	bool public paused;
 	bool public killed;
 
+	uint256 public totalDenominations;
+	uint256 public totalDenominationExchanges;
+
 	NameFactory internal _nameFactory;
 
 	struct Denomination {
 		bytes8 name;
 		address denominationAddress;
+	}
+
+	struct DenominationExchange {
+		bytes32 exchangeId;
+		address nameId;			// The nameId that perform this exchange
+		address fromDenominationAddress;	// The address of the from denomination
+		address toDenominationAddress;		// The address of the target denomination
+		uint256 amount;
 	}
 
 	// Mapping from denomination index to Denomination object
@@ -32,10 +43,12 @@ contract TAOCurrencyTreasury is TheAO {
 	// Mapping from denomination ID to index of denominations
 	mapping (bytes8 => uint256) internal denominationIndex;
 
-	uint256 public totalDenominations;
+	// Mapping from exchange id to DenominationExchange object
+	mapping (uint256 => DenominationExchange) internal denominationExchanges;
+	mapping (bytes32 => uint256) internal denominationExchangeIdLookup;
 
-	// Event to be broadcasted to public when a token exchange happens
-	event Exchange(address indexed nameId, uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName);
+	// Event to be broadcasted to public when a exchange between denominations happens
+	event ExchangeDenomination(address indexed nameId, bytes32 indexed exchangeId, uint256 amount, address fromDenominationAddress, string fromDenominationSymbol, address toDenominationAddress, string toDenominationSymbol);
 
 	// Event to be broadcasted to public when emergency mode is triggered
 	event EscapeHatch();
@@ -287,17 +300,53 @@ contract TAOCurrencyTreasury is TheAO {
 	 * @param fromDenominationName The origin denomination
 	 * @param toDenominationName The target denomination
 	 */
-	function exchange(uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName) public isContractActive isValidDenomination(fromDenominationName) isValidDenomination(toDenominationName) {
+	function exchangeDenomination(uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName) public isContractActive isValidDenomination(fromDenominationName) isValidDenomination(toDenominationName) {
 		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
 		require (_nameId != address(0));
 		require (amount > 0);
 		Denomination memory _fromDenomination = denominations[denominationIndex[fromDenominationName]];
 		Denomination memory _toDenomination = denominations[denominationIndex[toDenominationName]];
-		TAOCurrency _fromDenominationToken = TAOCurrency(_fromDenomination.denominationAddress);
-		TAOCurrency _toDenominationToken = TAOCurrency(_toDenomination.denominationAddress);
-		require (_fromDenominationToken.whitelistBurnFrom(_nameId, amount));
-		require (_toDenominationToken.mintToken(_nameId, amount));
-		emit Exchange(_nameId, amount, fromDenominationName, toDenominationName);
+		TAOCurrency _fromDenominationCurrency = TAOCurrency(_fromDenomination.denominationAddress);
+		TAOCurrency _toDenominationCurrency = TAOCurrency(_toDenomination.denominationAddress);
+		require (_fromDenominationCurrency.whitelistBurnFrom(_nameId, amount));
+		require (_toDenominationCurrency.mintToken(_nameId, amount));
+
+		// Store the DenominationExchange information
+		totalDenominationExchanges++;
+		bytes32 _exchangeId = keccak256(abi.encodePacked(this, _nameId, totalDenominationExchanges));
+		denominationExchangeIdLookup[_exchangeId] = totalDenominationExchanges;
+
+		DenominationExchange storage _denominationExchange = denominationExchanges[totalDenominationExchanges];
+		_denominationExchange.exchangeId = _exchangeId;
+		_denominationExchange.nameId = _nameId;
+		_denominationExchange.fromDenominationAddress = _fromDenomination.denominationAddress;
+		_denominationExchange.toDenominationAddress = _toDenomination.denominationAddress;
+		_denominationExchange.amount = amount;
+
+		emit ExchangeDenomination(_nameId, _exchangeId, amount, _fromDenomination.denominationAddress, TAOCurrency(_fromDenomination.denominationAddress).symbol(), _toDenomination.denominationAddress, TAOCurrency(_toDenomination.denominationAddress).symbol());
+	}
+
+	/**
+	 * @dev Get DenominationExchange information given an exchange ID
+	 * @param _exchangeId The exchange ID to query
+	 * @return The name ID that performed the exchange
+	 * @return The from denomination address
+	 * @return The to denomination address
+	 * @return The from denomination symbol
+	 * @return The to denomination symbol
+	 * @return The amount exchanged
+	 */
+	function getDenominationExchangeById(bytes32 _exchangeId) public view returns (address, address, address, string, string, uint256) {
+		require (denominationExchangeIdLookup[_exchangeId] > 0);
+		DenominationExchange memory _denominationExchange = denominationExchanges[denominationExchangeIdLookup[_exchangeId]];
+		return (
+			_denominationExchange.nameId,
+			_denominationExchange.fromDenominationAddress,
+			_denominationExchange.toDenominationAddress,
+			TAOCurrency(_denominationExchange.fromDenominationAddress).symbol(),
+			TAOCurrency(_denominationExchange.toDenominationAddress).symbol(),
+			_denominationExchange.amount
+		);
 	}
 
 	/**
