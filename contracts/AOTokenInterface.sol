@@ -79,6 +79,26 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	}
 
 	/**
+	 * @dev Allows TheAO to transfer `_amount` of ETH from this address to `_recipient`
+	 * @param _recipient The recipient address
+	 * @param _amount The amount to transfer
+	 */
+	function transferEth(address _recipient, uint256 _amount) public onlyTheAO {
+		_recipient.transfer(_amount);
+	}
+
+	/**
+	 * @dev Allows TheAO to transfer `_amount` of ERC20 Token from this address to `_recipient`
+	 * @param _erc20TokenAddress The address of ERC20 Token
+	 * @param _recipient The recipient address
+	 * @param _amount The amount to transfer
+	 */
+	function transferERC20(address _erc20TokenAddress, address _recipient, uint256 _amount) public onlyTheAO {
+		TokenERC20 _erc20 = TokenERC20(_erc20TokenAddress);
+		require (_erc20.transfer(_recipient, _amount));
+	}
+
+	/**
 	 * @dev Prevent/Allow target from sending & receiving tokens
 	 * @param target Address to be frozen
 	 * @param freeze Either to freeze it or not
