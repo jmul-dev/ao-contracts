@@ -5,6 +5,7 @@ import './AOTokenInterface.sol';
 import './tokenRecipient.sol';
 import './AOLibrary.sol';
 import './AOSetting.sol';
+import './AOETH.sol';
 
 /**
  * @title AOToken
@@ -19,12 +20,15 @@ contract AOToken is AOTokenInterface {
 	address public aoDevTeam2 = 0x156C79bf4347D1891da834Ea30662A14177CbF28;
 
 	AOSetting internal _aoSetting;
+	AOETH internal _aoeth;
 
 	/***** PRIMORDIAL TOKEN VARIABLES *****/
 	uint256 public primordialTotalSupply;
 	uint256 public primordialTotalBought;
 	uint256 public primordialSellPrice;
 	uint256 public primordialBuyPrice;
+	uint256 public totalEthForPrimordial;	// Total ETH sent for Primordial AO+
+	uint256 public totalRedeemedAOETH;		// Total AOETH redeemed for Primordial AO+
 
 	// Total available primordial token for sale 1,125,899,906,842,620 AO+
 	uint256 constant public TOTAL_PRIMORDIAL_FOR_SALE = 1125899906842620;
@@ -103,6 +107,11 @@ contract AOToken is AOTokenInterface {
 	// multiplier value is in 10^6 to account for 6 decimal points
 	event LotCreation(address indexed lotOwner, bytes32 indexed lotId, uint256 multiplier, uint256 primordialTokenAmount, uint256 networkTokenBonusAmount);
 
+	// Event to be broadcasted to public when user buys primordial token
+	// payWith 1 == with Ethereum
+	// payWith 2 == with AOETH
+	event BuyPrimordialToken(address indexed lotOwner, bytes32 indexed lotId, uint8 payWith, uint256 sentAmount, uint256 refundedAmount);
+
 	// Event to be broadcasted to public when burn lot is created (when account burns primordial tokens)
 	event BurnLotCreation(address indexed lotOwner, bytes32 indexed burnLotId, uint256 burnTokenAmount, uint256 multiplierAfterBurn);
 
@@ -126,8 +135,16 @@ contract AOToken is AOTokenInterface {
 	/**
 	 * @dev Checks if buyer can buy primordial token
 	 */
-	modifier canBuyPrimordial(uint256 _sentAmount) {
-		require (networkExchangeEnded == false && primordialTotalBought < TOTAL_PRIMORDIAL_FOR_SALE && primordialBuyPrice > 0 && _sentAmount > 0);
+	modifier canBuyPrimordial(uint256 _sentAmount, bool _withETH) {
+		require (networkExchangeEnded == false &&
+			primordialTotalBought < TOTAL_PRIMORDIAL_FOR_SALE &&
+			primordialBuyPrice > 0 &&
+			_sentAmount > 0 &&
+			(
+				(_withETH && availableETH() > 0) ||
+				(!_withETH && availablePrimordialForSaleInETH() > 0)
+			)
+		);
 		_;
 	}
 
@@ -140,6 +157,15 @@ contract AOToken is AOTokenInterface {
 	function setAODevTeamAddresses(address _aoDevTeam1, address _aoDevTeam2) public onlyTheAO {
 		aoDevTeam1 = _aoDevTeam1;
 		aoDevTeam2 = _aoDevTeam2;
+	}
+
+	/**
+	 * @dev Set AOETH address
+	 * @param _aoethAddress The address of AOETH
+	 */
+	function setAOEthAddress(address _aoethAddress) public onlyTheAO {
+		require (_aoethAddress != address(0));
+		_aoeth = AOETH(_aoethAddress);
 	}
 
 	/***** PRIMORDIAL TOKEN The AO ONLY METHODS *****/
@@ -220,7 +246,7 @@ contract AOToken is AOTokenInterface {
 	/**
 	 * @dev Buy Primordial tokens from contract by sending ether
 	 */
-	function buyPrimordialToken() public payable canBuyPrimordial(msg.value) {
+	function buyPrimordialToken() public payable canBuyPrimordial(msg.value, true) {
 		(uint256 tokenAmount, uint256 remainderBudget, bool shouldEndNetworkExchange) = _calculateTokenAmountAndRemainderBudget(msg.value);
 		require (tokenAmount > 0);
 
@@ -229,13 +255,45 @@ contract AOToken is AOTokenInterface {
 			networkExchangeEnded = true;
 		}
 
+		// Update totalEthForPrimordial
+		totalEthForPrimordial = totalEthForPrimordial.add(msg.value.sub(remainderBudget));
+
 		// Send the primordial token to buyer and reward AO devs
-		_sendPrimordialTokenAndRewardDev(tokenAmount, msg.sender);
+		bytes32 _lotId = _sendPrimordialTokenAndRewardDev(tokenAmount, msg.sender);
+
+		emit BuyPrimordialToken(msg.sender, _lotId, 1, msg.value, remainderBudget);
 
 		// Send remainder budget back to buyer if exist
 		if (remainderBudget > 0) {
 			msg.sender.transfer(remainderBudget);
 		}
+	}
+
+	/**
+	 * @dev Buy Primordial tokens from contract by sending AOETH
+	 */
+	function buyPrimordialTokenWithAOETH(uint256 _aoethAmount) public canBuyPrimordial(_aoethAmount, false) {
+		(uint256 tokenAmount, uint256 remainderBudget, bool shouldEndNetworkExchange) = _calculateTokenAmountAndRemainderBudget(_aoethAmount);
+		require (tokenAmount > 0);
+
+		// Ends network exchange if necessary
+		if (shouldEndNetworkExchange) {
+			networkExchangeEnded = true;
+		}
+
+		// Calculate the actual AOETH that was charged for this transaction
+		uint256 actualCharge = _aoethAmount.sub(remainderBudget);
+
+		// Update totalRedeemedAOETH
+		totalRedeemedAOETH = totalRedeemedAOETH.add(actualCharge);
+
+		// Transfer AOETH from buyer to here
+		require (_aoeth.whitelistTransferFrom(msg.sender, address(this), actualCharge));
+
+		// Send the primordial token to buyer and reward AO devs
+		bytes32 _lotId = _sendPrimordialTokenAndRewardDev(tokenAmount, msg.sender);
+
+		emit BuyPrimordialToken(msg.sender, _lotId, 2, _aoethAmount, remainderBudget);
 	}
 
 	/**
@@ -644,6 +702,31 @@ contract AOToken is AOTokenInterface {
 		return true;
 	}
 
+	/**
+	 * @dev Get quantity of AO+ left in Network Exchange
+	 * @return The quantity of AO+ left in Network Exchange
+	 */
+	function availablePrimordialForSale() public view returns (uint256) {
+		return TOTAL_PRIMORDIAL_FOR_SALE.sub(primordialTotalBought);
+	}
+
+	/**
+	 * @dev Get quantity of AO+ in ETH left in Network Exchange (i.e How much ETH is there total that can be
+	 *		exchanged for AO+
+	 * @return The quantity of AO+ in ETH left in Network Exchange
+	 */
+	function availablePrimordialForSaleInETH() public view returns (uint256) {
+		return availablePrimordialForSale().mul(primordialBuyPrice);
+	}
+
+	/**
+	 * @dev Get maximum quantity of AOETH or ETH that can still be sold
+	 * @return The maximum quantity of AOETH or ETH that can still be sold
+	 */
+	function availableETH() public view returns (uint256) {
+		return availablePrimordialForSaleInETH().sub(_aoeth.totalSupply()).sub(totalRedeemedAOETH);
+	}
+
 	/***** INTERNAL METHODS *****/
 	/***** PRIMORDIAL TOKEN INTERNAL METHODS *****/
 	/**
@@ -667,7 +750,7 @@ contract AOToken is AOTokenInterface {
 		if (primordialTotalBought.add(tokenAmount) >= TOTAL_PRIMORDIAL_FOR_SALE) {
 			tokenAmount = TOTAL_PRIMORDIAL_FOR_SALE.sub(primordialTotalBought);
 			shouldEndNetworkExchange = true;
-			remainderEth = msg.value.sub(tokenAmount.mul(primordialBuyPrice));
+			remainderEth = _budget.sub(tokenAmount.mul(primordialBuyPrice));
 		}
 		return (tokenAmount, remainderEth, shouldEndNetworkExchange);
 	}
@@ -676,14 +759,15 @@ contract AOToken is AOTokenInterface {
 	 * @dev Actually sending the primordial token to buyer and reward AO devs accordingly
 	 * @param tokenAmount The amount of primordial token to be sent to buyer
 	 * @param to The recipient of the token
+	 * @return the lot Id of the buyer
 	 */
-	function _sendPrimordialTokenAndRewardDev(uint256 tokenAmount, address to) internal {
+	function _sendPrimordialTokenAndRewardDev(uint256 tokenAmount, address to) internal returns (bytes32) {
 		(uint256 startingPrimordialMultiplier,, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
 
 		// Update primordialTotalBought
 		(uint256 multiplier, uint256 networkTokenBonusPercentage, uint256 networkTokenBonusAmount) = calculateMultiplierAndBonus(tokenAmount);
 		primordialTotalBought = primordialTotalBought.add(tokenAmount);
-		_createPrimordialLot(to, tokenAmount, multiplier, networkTokenBonusAmount);
+		bytes32 _lotId = _createPrimordialLot(to, tokenAmount, multiplier, networkTokenBonusAmount);
 
 		// Calculate The AO and AO Dev Team's portion of Primordial and Network Token Bonus
 		uint256 inverseMultiplier = startingPrimordialMultiplier.sub(multiplier); // Inverse of the buyer's multiplier
@@ -695,6 +779,7 @@ contract AOToken is AOTokenInterface {
 			_createPrimordialLot(aoDevTeam2, tokenAmount.div(2), inverseMultiplier, theAONetworkTokenBonusAmount.div(2));
 		}
 		_mintToken(theAO, theAONetworkTokenBonusAmount);
+		return _lotId;
 	}
 
 	/**
@@ -704,8 +789,9 @@ contract AOToken is AOTokenInterface {
 	 * @param _primordialTokenAmount The amount of primordial tokens to be stored in the lot
 	 * @param _multiplier The multiplier for this lot in (10 ** 6)
 	 * @param _networkTokenBonusAmount The network token bonus amount
+	 * @return Created lot Id
 	 */
-	function _createPrimordialLot(address _account, uint256 _primordialTokenAmount, uint256 _multiplier, uint256 _networkTokenBonusAmount) internal {
+	function _createPrimordialLot(address _account, uint256 _primordialTokenAmount, uint256 _multiplier, uint256 _networkTokenBonusAmount) internal returns (bytes32) {
 		totalLots++;
 
 		// Generate lotId
@@ -729,6 +815,7 @@ contract AOToken is AOTokenInterface {
 		_mintToken(_account, _networkTokenBonusAmount);
 
 		emit LotCreation(lot.lotOwner, lot.lotId, lot.multiplier, lot.tokenAmount, _networkTokenBonusAmount);
+		return lotId;
 	}
 
 	/**
