@@ -4,9 +4,6 @@
 	"main": "index.js",
 	"author": "Johan <johan@paramation.com>",
 	"license": "MIT",
-	"publishConfig": {
-		"registry": "https://npm.y-designs.com"
-	},
 	"files": [
 		"build"
 	],
@@ -19,8 +16,7 @@
 		"compile": "truffle compile",
 		"migrate": "truffle migrate",
 		"deploy": "yarn compile && yarn migrate",
-		"test": "truffle test",
-		"release": "CI_BUILD_REPO=$CI_REPOSITORY_URL CI_BUILD_REF_NAME=$CI_COMMIT_REF_NAME CI_BUILD_ID=$CI_JOB_ID gitlab-ci-releaser"
+		"test": "truffle test"
 	},
 	"devDependencies": {
 		"ganache-cli": "^6.1.6",
