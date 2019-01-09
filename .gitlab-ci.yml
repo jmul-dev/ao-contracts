@@ -23,7 +23,7 @@ contracts_release:
     script:
         - npm install
         - npm run compile
-        - CI_BUILD_REPO=$CI_REPOSITORY_URL CI_BUILD_REF_NAME=$CI_COMMIT_REF_NAME CI_BUILD_ID=$CI_JOB_ID $(npm bin)/gitlab-ci-releaser
+        - npm run release
         - npm publish
     when: manual
     only:

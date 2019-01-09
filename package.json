@@ -1,6 +1,6 @@
 {
 	"name": "ao-contracts",
-	"version": "1.0.9",
+	"version": "1.0.10",
 	"main": "index.js",
 	"author": "Johan <johan@paramation.com>",
 	"license": "MIT",
@@ -12,15 +12,15 @@
 	],
 	"dependencies": {
 		"bignumber.js": "^7.2.1",
-		"eth-crypto": "^1.2.3",
-		"gitlab-ci-releaser": "^1.5.0"
+		"eth-crypto": "^1.2.3"
 	},
 	"scripts": {
 		"chain": "ganache-cli -p 8545 -m 'stomach six rural battle middle jazz chalk camera grain render feed job' -g 10000000000 -e 1000 -l 6900000",
 		"compile": "truffle compile",
 		"migrate": "truffle migrate",
 		"deploy": "yarn compile && yarn migrate",
-		"test": "truffle test"
+		"test": "truffle test",
+		"release": "CI_BUILD_REPO=$CI_REPOSITORY_URL CI_BUILD_REF_NAME=$CI_COMMIT_REF_NAME CI_BUILD_ID=$CI_JOB_ID gitlab-ci-releaser"
 	},
 	"devDependencies": {
 		"ganache-cli": "^6.1.6",
