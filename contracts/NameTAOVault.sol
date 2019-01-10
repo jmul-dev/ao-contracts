@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './TheAO.sol';
 import './AOLibrary.sol';
+import './TheAO.sol';
 import './NameFactory.sol';
 import './NameTAOPosition.sol';
 import './TokenERC20.sol';
@@ -14,9 +14,12 @@ import './AOToken.sol';
 contract NameTAOVault is TheAO {
 	using SafeMath for uint256;
 
+	address public nameFactoryAddress;
+	address public aoTokenAddress;
+
 	NameFactory internal _nameFactory;
 	NameTAOPosition internal _nameTAOPosition;
-	AOToken internal _ao;
+	AOToken internal _aoToken;
 
 	// Event to be broadcasted to public when Advocate of `from` Name/TAO transfer ETH
 	// `from` is a Name/TAO
@@ -37,7 +40,11 @@ contract NameTAOVault is TheAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor() public {}
+	constructor(address _nameFactoryAddress, address _nameTAOPositionAddress, address _aoTokenAddress) public {
+		setNameFactoryAddress(_nameFactoryAddress);
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
+		setAOTokenAddress(_aoTokenAddress);
+	}
 
 	/**
 	 * @dev Checks if the calling contract address is The AO
@@ -67,25 +74,6 @@ contract NameTAOVault is TheAO {
 
 	/***** THE AO ONLY METHODS *****/
 	/**
-	 * @dev The AO sets NameFactory address
-	 * @param _nameFactoryAddress The address of NameFactory
-	 */
-	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
-		require (_nameFactoryAddress != address(0));
-		_nameFactory = NameFactory(_nameFactoryAddress);
-	}
-
-	/**
-	 * @dev The AO sets NameTAOPosition address
-	 * @param _nameTAOPositionAddress The address of NameTAOPosition
-	 */
-	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
-		require (_nameTAOPositionAddress != address(0));
-		nameTAOPositionAddress = _nameTAOPositionAddress;
-		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
-	}
-
-	/**
 	 * @dev Transfer ownership of The AO to new address
 	 * @param _theAO The new address to be transferred
 	 */
@@ -105,12 +93,33 @@ contract NameTAOVault is TheAO {
 	}
 
 	/**
+	 * @dev The AO sets NameFactory address
+	 * @param _nameFactoryAddress The address of NameFactory
+	 */
+	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
+		require (_nameFactoryAddress != address(0));
+		nameFactoryAddress = _nameFactoryAddress;
+		_nameFactory = NameFactory(_nameFactoryAddress);
+	}
+
+	/**
+	 * @dev The AO sets NameTAOPosition address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
+		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+	}
+
+	/**
 	 * @dev The AO sets AOToken (base denomination of AO) address
 	 * @param _aoTokenAddress The address of AOToken
 	 */
 	function setAOTokenAddress(address _aoTokenAddress) public onlyTheAO {
 		require (_aoTokenAddress != address(0));
-		_ao = AOToken(_aoTokenAddress);
+		aoTokenAddress = _aoTokenAddress;
+		_aoToken = AOToken(_aoTokenAddress);
 	}
 
 	/***** PUBLIC METHODS *****/
@@ -139,7 +148,7 @@ contract NameTAOVault is TheAO {
 	 * @return The AO balance
 	 */
 	function AOBalanceOf(address _id) public isNameOrTAO(_id) view returns (uint256) {
-		return _ao.balanceOf(_id);
+		return _aoToken.balanceOf(_id);
 	}
 
 	/**
@@ -148,7 +157,7 @@ contract NameTAOVault is TheAO {
 	 * @return The AO+ balance
 	 */
 	function primordialAOBalanceOf(address _id) public isNameOrTAO(_id) view returns (uint256) {
-		return _ao.primordialBalanceOf(_id);
+		return _aoToken.primordialBalanceOf(_id);
 	}
 
 	/**
@@ -187,9 +196,9 @@ contract NameTAOVault is TheAO {
 	 * @param _amount The amount to transfer
 	 */
 	function transferAO(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) {
-		require (_amount > 0 && _ao.balanceOf(_from) >= _amount);
+		require (_amount > 0 && _aoToken.balanceOf(_from) >= _amount);
 		require (_to != address(0) && _from != _to);
-		require (_ao.whitelistTransferFrom(_from, _to, _amount));
+		require (_aoToken.whitelistTransferFrom(_from, _to, _amount));
 		emit TransferAO(_nameFactory.ethAddressToNameId(msg.sender), _from, _to, _amount);
 	}
 
@@ -200,9 +209,9 @@ contract NameTAOVault is TheAO {
 	 * @param _amount The amount to transfer
 	 */
 	function transferPrimordialAO(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) {
-		require (_amount > 0 && _ao.primordialBalanceOf(_from) >= _amount);
+		require (_amount > 0 && _aoToken.primordialBalanceOf(_from) >= _amount);
 		require (_to != address(0) && _from != _to);
-		require (_ao.whitelistTransferPrimordialTokenFrom(_from, _to, _amount));
+		require (_aoToken.whitelistTransferPrimordialTokenFrom(_from, _to, _amount));
 		emit TransferPrimordialAO(_nameFactory.ethAddressToNameId(msg.sender), _from, _to, _amount);
 	}
 }

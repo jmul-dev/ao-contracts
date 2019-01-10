@@ -9,15 +9,30 @@ import './Position.sol';
  * The purpose of this contract is for Name to stake/unstake Position on a TAO
  */
 contract TAOPosition is TAOController {
+	address public positionAddress;
+
 	Position internal _position;
+
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _nameTAOPositionAddress, address _positionAddress)
-		TAOController(_nameFactoryAddress, _nameTAOPositionAddress) public {
+	constructor(address _nameFactoryAddress, address _positionAddress)
+		TAOController(_nameFactoryAddress) public {
+		setPositionAddress(_positionAddress);
+	}
+
+	/***** The AO ONLY METHODS *****/
+	/**
+	 * @dev The AO set the Position Address
+	 * @param _positionAddress The address of Position
+	 */
+	function setPositionAddress(address _positionAddress) public onlyTheAO {
+		require (_positionAddress != address(0));
+		positionAddress = _positionAddress;
 		_position = Position(_positionAddress);
 	}
 
+	/***** PUBLIC METHODS *****/
 	/**
 	 * @dev Name stakes Position on a TAO
 	 * @param _taoId The ID of the TAO

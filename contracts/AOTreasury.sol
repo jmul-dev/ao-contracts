@@ -13,9 +13,6 @@ import './AOTokenInterface.sol';
 contract AOTreasury is TheAO {
 	using SafeMath for uint256;
 
-	bool public paused;
-	bool public killed;
-
 	uint256 public totalDenominations;
 	uint256 public totalDenominationExchanges;
 
@@ -47,13 +44,12 @@ contract AOTreasury is TheAO {
 	// Event to be broadcasted to public when a exchange between denominations happens
 	event ExchangeDenomination(address indexed account, bytes32 indexed exchangeId, uint256 amount, address fromDenominationAddress, string fromDenominationSymbol, address toDenominationAddress, string toDenominationSymbol);
 
-	// Event to be broadcasted to public when emergency mode is triggered
-	event EscapeHatch();
-
 	/**
 	 * @dev Constructor function
 	 */
-	constructor() public {}
+	constructor(address _nameTAOPositionAddress) public {
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
+	}
 
 	/**
 	 * @dev Checks if the calling contract address is The AO
@@ -66,14 +62,6 @@ contract AOTreasury is TheAO {
 	}
 
 	/**
-	 * @dev Checks if contract is currently active
-	 */
-	modifier isContractActive {
-		require (paused == false && killed == false);
-		_;
-	}
-
-	/**
 	 * @dev Checks if denomination is valid
 	 */
 	modifier isValidDenomination(bytes8 denominationName) {
@@ -82,15 +70,6 @@ contract AOTreasury is TheAO {
 	}
 
 	/***** The AO ONLY METHODS *****/
-	/**
-	 * @dev The AO set the NameTAOPosition Address
-	 * @param _nameTAOPositionAddress The address of NameTAOPosition
-	 */
-	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
-		require (_nameTAOPositionAddress != address(0));
-		nameTAOPositionAddress = _nameTAOPositionAddress;
-	}
-
 	/**
 	 * @dev Transfer ownership of The AO to new address
 	 * @param _theAO The new address to be transferred
@@ -111,21 +90,12 @@ contract AOTreasury is TheAO {
 	}
 
 	/**
-	 * @dev The AO pauses/unpauses contract
-	 * @param _paused Either to pause contract or not
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
-	function setPaused(bool _paused) public onlyTheAO {
-		paused = _paused;
-	}
-
-	/**
-	 * @dev The AO triggers emergency mode.
-	 *
-	 */
-	function escapeHatch() public onlyTheAO {
-		require (killed == false);
-		killed = true;
-		emit EscapeHatch();
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
 	}
 
 	/**
@@ -261,7 +231,7 @@ contract AOTreasury is TheAO {
 
 			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
 			AOTokenInterface _denominationToken = AOTokenInterface(_denomination.denominationAddress);
-			uint8 fractionNumDigits = _numDigits(fractionAmount);
+			uint8 fractionNumDigits = AOLibrary.numDigits(fractionAmount);
 			require (fractionNumDigits <= _denominationToken.decimals());
 			uint256 baseInteger = integerAmount.mul(10 ** _denominationToken.powerOfTen());
 			if (_denominationToken.decimals() == 0) {
@@ -295,7 +265,7 @@ contract AOTreasury is TheAO {
 	 * @param fromDenominationName The origin denomination
 	 * @param toDenominationName The target denomination
 	 */
-	function exchangeDenomination(uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName) public isContractActive isValidDenomination(fromDenominationName) isValidDenomination(toDenominationName) {
+	function exchangeDenomination(uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName) public isValidDenomination(fromDenominationName) isValidDenomination(toDenominationName) {
 		require (amount > 0);
 		Denomination memory _fromDenomination = denominations[denominationIndex[fromDenominationName]];
 		Denomination memory _toDenomination = denominations[denominationIndex[toDenominationName]];
@@ -380,20 +350,5 @@ contract AOTreasury is TheAO {
 			_ao.decimals(),
 			_ao.powerOfTen()
 		);
-	}
-
-	/***** INTERNAL METHOD *****/
-	/**
-	 * @dev count num of digits
-	 * @param number uint256 of the nuumber to be checked
-	 * @return uint8 num of digits
-	 */
-	function _numDigits(uint256 number) internal pure returns (uint8) {
-		uint8 digits = 0;
-		while(number != 0) {
-			number = number.div(10);
-			digits++;
-		}
-		return digits;
 	}
 }

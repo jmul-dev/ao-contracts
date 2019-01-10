@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
+import './AOLibrary.sol';
 import './AOTokenInterface.sol';
 import './tokenRecipient.sol';
-import './AOLibrary.sol';
 import './AOSetting.sol';
 import './AOETH.sol';
 
@@ -15,6 +15,8 @@ contract AOToken is AOTokenInterface {
 
 	address public settingTAOId;
 	address public aoSettingAddress;
+	address public aoethAddress;
+
 	// AO Dev Team addresses to receive Primordial/Network Tokens
 	address public aoDevTeam1 = 0x5C63644D01Ba385eBAc5bcf2DDc1e6dBC1182b52;
 	address public aoDevTeam2 = 0x156C79bf4347D1891da834Ea30662A14177CbF28;
@@ -121,11 +123,10 @@ contract AOToken is AOTokenInterface {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _settingTAOId, address _aoSettingAddress)
-		AOTokenInterface(initialSupply, tokenName, tokenSymbol) public {
-		settingTAOId = _settingTAOId;
-		aoSettingAddress = _aoSettingAddress;
-		_aoSetting = AOSetting(_aoSettingAddress);
+	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _settingTAOId, address _aoSettingAddress, address _nameTAOPositionAddress)
+		AOTokenInterface(initialSupply, tokenName, tokenSymbol, _nameTAOPositionAddress) public {
+		setSettingTAOId(_settingTAOId);
+		setAOSettingAddress(_aoSettingAddress);
 
 		powerOfTen = 0;
 		decimals = 0;
@@ -150,6 +151,25 @@ contract AOToken is AOTokenInterface {
 
 	/***** The AO ONLY METHODS *****/
 	/**
+	 * @dev The AO sets setting TAO ID
+	 * @param _settingTAOId The new setting TAO ID to set
+	 */
+	function setSettingTAOId(address _settingTAOId) public onlyTheAO {
+		require (AOLibrary.isTAO(_settingTAOId));
+		settingTAOId = _settingTAOId;
+	}
+
+	/**
+	 * @dev The AO sets AO Setting address
+	 * @param _aoSettingAddress The address of AOSetting
+	 */
+	function setAOSettingAddress(address _aoSettingAddress) public onlyTheAO {
+		require (_aoSettingAddress != address(0));
+		aoSettingAddress = _aoSettingAddress;
+		_aoSetting = AOSetting(_aoSettingAddress);
+	}
+
+	/**
 	 * @dev Set AO Dev team addresses to receive Primordial/Network tokens during network exchange
 	 * @param _aoDevTeam1 The first AO dev team address
 	 * @param _aoDevTeam2 The second AO dev team address
@@ -165,6 +185,7 @@ contract AOToken is AOTokenInterface {
 	 */
 	function setAOEthAddress(address _aoethAddress) public onlyTheAO {
 		require (_aoethAddress != address(0));
+		aoethAddress = _aoethAddress;
 		_aoeth = AOETH(_aoethAddress);
 	}
 

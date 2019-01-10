@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
-import './TheAO.sol';
 import './SafeMath.sol';
 import './AOLibrary.sol';
+import './TheAO.sol';
 import './Name.sol';
 import './Position.sol';
 import './NameTAOLookup.sol';
@@ -41,10 +41,8 @@ contract NameFactory is TheAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _positionAddress, address _nameTAOVaultAddress) public {
-		positionAddress = _positionAddress;
-		nameTAOVaultAddress = _nameTAOVaultAddress;
-		_position = Position(positionAddress);
+	constructor(address _positionAddress) public {
+		setPositionAddress(_positionAddress);
 	}
 
 	/**
@@ -83,6 +81,25 @@ contract NameFactory is TheAO {
 	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
 		require (_account != address(0));
 		whitelist[_account] = _whitelist;
+	}
+
+	/**
+	 * @dev The AO set the Position Address
+	 * @param _positionAddress The address of Position
+	 */
+	function setPositionAddress(address _positionAddress) public onlyTheAO {
+		require (_positionAddress != address(0));
+		positionAddress = _positionAddress;
+		_position = Position(positionAddress);
+	}
+
+	/**
+	 * @dev The AO set the NameTAOVault Address
+	 * @param _nameTAOVaultAddress The address of NameTAOVault
+	 */
+	function setNameTAOVaultAddress(address _nameTAOVaultAddress) public onlyTheAO {
+		require (_nameTAOVaultAddress != address(0));
+		nameTAOVaultAddress = _nameTAOVaultAddress;
 	}
 
 	/**
@@ -242,7 +259,7 @@ contract NameFactory is TheAO {
 	) public view returns (bool) {
 		require (_nameTAOLookup.isExist(_name));
 		address _nameId = _nameTAOLookup.getAddressByName(_name);
-		address _signatureAddress = AOLibrary.getValidateSignatureAddress(address(this), _data, _nonce, _signatureV, _signatureR, _signatureS);
+		address _signatureAddress = _getValidateSignatureAddress(_data, _nonce, _signatureV, _signatureR, _signatureS);
 		if (_validateAddress != address(0)) {
 			return (
 				_nonce == nonces[_nameId].add(1) &&
@@ -255,5 +272,20 @@ contract NameFactory is TheAO {
 				_signatureAddress == _namePublicKey.getDefaultKey(_nameId)
 			);
 		}
+	}
+
+	/***** INTERNAL METHODS *****/
+	/**
+	 * @dev Return the address that signed the data and nonce when validating signature
+	 * @param _data the data that was signed
+	 * @param _nonce The signed uint256 nonce
+	 * @param _v part of the signature
+	 * @param _r part of the signature
+	 * @param _s part of the signature
+	 * @return the address that signed the message
+	 */
+	function _getValidateSignatureAddress(string _data, uint256 _nonce, uint8 _v, bytes32 _r, bytes32 _s) internal view returns (address) {
+		bytes32 _hash = keccak256(abi.encodePacked(address(this), _data, _nonce));
+		return ecrecover(_hash, _v, _r, _s);
 	}
 }

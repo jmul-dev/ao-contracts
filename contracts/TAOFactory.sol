@@ -1,7 +1,6 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './TheAO.sol';
 import './TAOController.sol';
 import './Name.sol';
 import './NameTAOLookup.sol';		// Store the name lookup for a Name/TAO
@@ -14,18 +13,22 @@ import './Logos.sol';
  *
  * The purpose of this contract is to allow node to create TAO
  */
-contract TAOFactory is TheAO, TAOController {
+contract TAOFactory is TAOController {
 	using SafeMath for uint256;
+
 	address[] internal taos;
 
-	address public taoFamilyAddress;
+	address public nameTAOLookupAddress;
+	address public aoSettingAddress;
+	address public logosAddress;
 	address public nameTAOVaultAddress;
+	address public taoFamilyAddress;
 	address public settingTAOId;
 
 	NameTAOLookup internal _nameTAOLookup;
-	TAOFamily internal _taoFamily;
 	AOSetting internal _aoSetting;
 	Logos internal _logos;
+	TAOFamily internal _taoFamily;
 
 	// Mapping from TAO ID to its nonce
 	mapping (address => uint256) public nonces;
@@ -36,26 +39,8 @@ contract TAOFactory is TheAO, TAOController {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _nameTAOLookupAddress, address _nameTAOPositionAddress, address _aoSettingAddress, address _logosAddress, address _nameTAOVaultAddress)
-		TAOController(_nameFactoryAddress, _nameTAOPositionAddress) public {
-		nameTAOPositionAddress = _nameTAOPositionAddress;
-		nameTAOVaultAddress = _nameTAOVaultAddress;
-
-		_nameTAOLookup = NameTAOLookup(_nameTAOLookupAddress);
-		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
-		_aoSetting = AOSetting(_aoSettingAddress);
-		_logos = Logos(_logosAddress);
-	}
-
-	/**
-	 * @dev Checks if the calling contract address is The AO
-	 *		OR
-	 *		If The AO is set to a Name/TAO, then check if calling address is the Advocate
-	 */
-	modifier onlyTheAO {
-		require (AOLibrary.isTheAO(msg.sender, theAO, nameTAOPositionAddress));
-		_;
-	}
+	constructor(address _nameFactoryAddress)
+		TAOController(_nameFactoryAddress) public {}
 
 	/**
 	 * @dev Checks if calling address can update TAO's nonce
@@ -67,22 +52,42 @@ contract TAOFactory is TheAO, TAOController {
 
 	/***** The AO ONLY METHODS *****/
 	/**
-	 * @dev Transfer ownership of The AO to new address
-	 * @param _theAO The new address to be transferred
+	 * @dev The AO set the NameTAOLookup Address
+	 * @param _nameTAOLookupAddress The address of NameTAOLookup
 	 */
-	function transferOwnership(address _theAO) public onlyTheAO {
-		require (_theAO != address(0));
-		theAO = _theAO;
+	function setNameTAOLookupAddress(address _nameTAOLookupAddress) public onlyTheAO {
+		require (_nameTAOLookupAddress != address(0));
+		nameTAOLookupAddress = _nameTAOLookupAddress;
+		_nameTAOLookup = NameTAOLookup(_nameTAOLookupAddress);
 	}
 
 	/**
-	 * @dev Whitelist `_account` address to transact on behalf of others
-	 * @param _account The address to whitelist
-	 * @param _whitelist Either to whitelist or not
+	 * @dev The AO set the AOSetting Address
+	 * @param _aoSettingAddress The address of AOSetting
 	 */
-	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
-		require (_account != address(0));
-		whitelist[_account] = _whitelist;
+	function setAOSettingAddress(address _aoSettingAddress) public onlyTheAO {
+		require (_aoSettingAddress != address(0));
+		aoSettingAddress = _aoSettingAddress;
+		_aoSetting = AOSetting(_aoSettingAddress);
+	}
+
+	/**
+	 * @dev The AO set the Logos Address
+	 * @param _logosAddress The address of Logos
+	 */
+	function setLogosAddress(address _logosAddress) public onlyTheAO {
+		require (_logosAddress != address(0));
+		logosAddress = _logosAddress;
+		_logos = Logos(_logosAddress);
+	}
+
+	/**
+	 * @dev The AO set the NameTAOVault Address
+	 * @param _nameTAOVaultAddress The address of NameTAOVault
+	 */
+	function setNameTAOVaultAddress(address _nameTAOVaultAddress) public onlyTheAO {
+		require (_nameTAOVaultAddress != address(0));
+		nameTAOVaultAddress = _nameTAOVaultAddress;
 	}
 
 	/**
@@ -246,7 +251,7 @@ contract TAOFactory is TheAO, TAOController {
 		bytes32 _signatureR,
 		bytes32 _signatureS
 	) public isTAO(_getTAOIdByName(_name)) view returns (bool, string, uint256) {
-		address _signatureAddress = AOLibrary.getValidateSignatureAddress(address(this), _data, _nonce, _signatureV, _signatureR, _signatureS);
+		address _signatureAddress = _getValidateSignatureAddress(_data, _nonce, _signatureV, _signatureR, _signatureS);
 		if (_isTAOSignatureAddressValid(_validateAddress, _signatureAddress, _getTAOIdByName(_name), _nonce)) {
 			return (true, Name(_nameFactory.ethAddressToNameId(_signatureAddress)).name(), _nameTAOPosition.determinePosition(_signatureAddress, _getTAOIdByName(_name)));
 		} else {
@@ -298,5 +303,19 @@ contract TAOFactory is TheAO, TAOController {
 	function _getSettingVariables() internal view returns (uint256) {
 		(uint256 createChildTAOMinLogos,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'createChildTAOMinLogos');
 		return createChildTAOMinLogos;
+	}
+
+	/**
+	 * @dev Return the address that signed the data and nonce when validating signature
+	 * @param _data the data that was signed
+	 * @param _nonce The signed uint256 nonce
+	 * @param _v part of the signature
+	 * @param _r part of the signature
+	 * @param _s part of the signature
+	 * @return the address that signed the message
+	 */
+	function _getValidateSignatureAddress(string _data, uint256 _nonce, uint8 _v, bytes32 _r, bytes32 _s) internal view returns (address) {
+		bytes32 _hash = keccak256(abi.encodePacked(address(this), _data, _nonce));
+		return ecrecover(_hash, _v, _r, _s);
 	}
 }

@@ -13,7 +13,9 @@ import './AOToken.sol';
 contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	using SafeMath for uint256;
 
-	AOToken internal _ao;
+	address public aoTokenAddress;
+
+	AOToken internal _aoToken;
 
 	uint256 public totalERC20Tokens;
 	uint256 public totalTokenExchanges;
@@ -63,9 +65,10 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _aoTokenAddress)
+	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _aoTokenAddress, address _nameTAOPositionAddress)
 		TokenERC20(initialSupply, tokenName, tokenSymbol) public {
-		_ao = AOToken(_aoTokenAddress);
+		setAOTokenAddress(_aoTokenAddress);
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
 	/**
@@ -79,15 +82,6 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	}
 
 	/***** The AO ONLY METHODS *****/
-	/**
-	 * @dev The AO set the NameTAOPosition Address
-	 * @param _nameTAOPositionAddress The address of NameTAOPosition
-	 */
-	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
-		require (_nameTAOPositionAddress != address(0));
-		nameTAOPositionAddress = _nameTAOPositionAddress;
-	}
-
 	/**
 	 * @dev Transfer ownership of The AO to new address
 	 * @param _theAO The new address to be transferred
@@ -105,6 +99,25 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
 		require (_account != address(0));
 		whitelist[_account] = _whitelist;
+	}
+
+	/**
+	 * @dev The AO set the AOToken Address
+	 * @param _aoTokenAddress The address of AOToken
+	 */
+	function setAOTokenAddress(address _aoTokenAddress) public onlyTheAO {
+		require (_aoTokenAddress != address(0));
+		aoTokenAddress = _aoTokenAddress;
+		_aoToken = AOToken(_aoTokenAddress);
+	}
+
+	/**
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
 	}
 
 	/**
@@ -262,7 +275,7 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 
 		uint256 amountToTransfer = _value.div(_erc20Token.price);
 		require (_erc20Token.maxQuantity.sub(_erc20Token.exchangedQuantity) >= amountToTransfer);
-		require (_ao.availableETH() >= amountToTransfer);
+		require (_aoToken.availableETH() >= amountToTransfer);
 
 		// Burn the ERC20 Token from the `_from` address
 		require (TokenERC20(_token).burnFrom(_from, _value));

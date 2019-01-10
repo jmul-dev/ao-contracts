@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './TheAO.sol';
 import './AOLibrary.sol';
+import './TheAO.sol';
 
 /**
  * @title Position
@@ -60,15 +60,6 @@ contract Position is TheAO {
 
 	/***** The AO ONLY METHODS *****/
 	/**
-	 * @dev The AO set the NameTAOPosition Address
-	 * @param _nameTAOPositionAddress The address of NameTAOPosition
-	 */
-	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
-		require (_nameTAOPositionAddress != address(0));
-		nameTAOPositionAddress = _nameTAOPositionAddress;
-	}
-
-	/**
 	 * @dev Transfer ownership of The AO to new address
 	 * @param _theAO The new address to be transferred
 	 */
@@ -85,6 +76,15 @@ contract Position is TheAO {
 	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
 		require (_account != address(0));
 		whitelist[_account] = _whitelist;
+	}
+
+	/**
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
 	}
 
 	/***** PUBLIC METHODS *****/

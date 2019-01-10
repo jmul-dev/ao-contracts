@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import './TheAO.sol';
 import './AOLibrary.sol';
+import './TheAO.sol';
 
 /**
  * @title AOUintSetting
@@ -18,7 +18,9 @@ contract AOUintSetting is TheAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor() public {}
+	constructor(address _nameTAOPositionAddress) public {
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
+	}
 
 	/**
 	 * @dev Checks if the calling contract address is The AO
@@ -31,15 +33,6 @@ contract AOUintSetting is TheAO {
 	}
 
 	/***** The AO ONLY METHODS *****/
-	/**
-	 * @dev The AO set the NameTAOPosition Address
-	 * @param _nameTAOPositionAddress The address of NameTAOPosition
-	 */
-	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
-		require (_nameTAOPositionAddress != address(0));
-		nameTAOPositionAddress = _nameTAOPositionAddress;
-	}
-
 	/**
 	 * @dev Transfer ownership of The AO to new address
 	 * @param _theAO The new address to be transferred
@@ -57,6 +50,15 @@ contract AOUintSetting is TheAO {
 	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
 		require (_account != address(0));
 		whitelist[_account] = _whitelist;
+	}
+
+	/**
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
 	}
 
 	/***** PUBLIC METHODS *****/

@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './TheAO.sol';
 import './AOLibrary.sol';
+import './TheAO.sol';
 
 /**
  * @title TAOCurrency
@@ -37,7 +37,7 @@ contract TAOCurrency is TheAO {
 	 *
 	 * Initializes contract with initial supply tokens to the creator of the contract
 	 */
-	constructor (uint256 initialSupply, string tokenName, string tokenSymbol) public {
+	constructor (uint256 initialSupply, string tokenName, string tokenSymbol, address _nameTAOPositionAddress) public {
 		totalSupply = initialSupply;			// Update total supply
 		balanceOf[msg.sender] = totalSupply;	// Give the creator all initial tokens
 		name = tokenName;						// Set the name for display purposes
@@ -45,6 +45,8 @@ contract TAOCurrency is TheAO {
 
 		powerOfTen = 0;
 		decimals = 0;
+
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
 	/**
@@ -67,15 +69,6 @@ contract TAOCurrency is TheAO {
 
 	/***** The AO ONLY METHODS *****/
 	/**
-	 * @dev The AO set the NameTAOPosition Address
-	 * @param _nameTAOPositionAddress The address of NameTAOPosition
-	 */
-	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
-		require (_nameTAOPositionAddress != address(0));
-		nameTAOPositionAddress = _nameTAOPositionAddress;
-	}
-
-	/**
 	 * @dev Transfer ownership of The AO to new address
 	 * @param _theAO The new address to be transferred
 	 */
@@ -92,6 +85,15 @@ contract TAOCurrency is TheAO {
 	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
 		require (_account != address(0));
 		whitelist[_account] = _whitelist;
+	}
+
+	/**
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
 	}
 
 	/***** PUBLIC METHODS *****/

@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import './TheAO.sol';
 import './AOLibrary.sol';
+import './TheAO.sol';
 import './NameFactory.sol';
 import './TAOFactory.sol';
 
@@ -36,9 +36,10 @@ contract NameTAOPosition is TheAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress) public {
-		nameFactoryAddress = _nameFactoryAddress;
-		_nameFactory = NameFactory(_nameFactoryAddress);
+	constructor(address _nameFactoryAddress, address _taoFactoryAddress) public {
+		setNameFactoryAddress(_nameFactoryAddress);
+		setTAOFactoryAddress(_taoFactoryAddress);
+
 		nameTAOPositionAddress = address(this);
 	}
 
@@ -118,6 +119,16 @@ contract NameTAOPosition is TheAO {
 	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
 		require (_account != address(0));
 		whitelist[_account] = _whitelist;
+	}
+
+	/**
+	 * @dev The AO set the nameFactoryAddress Address
+	 * @param _nameFactoryAddress The address of NameFactory
+	 */
+	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
+		require (_nameFactoryAddress != address(0));
+		nameFactoryAddress = _nameFactoryAddress;
+		_nameFactory = NameFactory(_nameFactoryAddress);
 	}
 
 	/**

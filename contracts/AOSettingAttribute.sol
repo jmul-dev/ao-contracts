@@ -131,8 +131,7 @@ contract AOSettingAttribute is TheAO {
 	 * @dev Constructor function
 	 */
 	constructor(address _nameTAOPositionAddress) public {
-		nameTAOPositionAddress = _nameTAOPositionAddress;
-		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
 	/**
@@ -165,6 +164,17 @@ contract AOSettingAttribute is TheAO {
 		whitelist[_account] = _whitelist;
 	}
 
+	/**
+	 * @dev The AO sets NameTAOPosition address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
+		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+	}
+
+	/***** PUBLIC METHODS *****/
 	/**
 	 * @dev Add setting data/state
 	 * @param _settingId The ID of the setting

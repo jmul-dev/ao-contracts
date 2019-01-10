@@ -28,8 +28,9 @@ contract NameTAOLookup is TheAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress) public {
-		nameFactoryAddress = _nameFactoryAddress;
+	constructor(address _nameFactoryAddress, address _taoFactoryAddress) public {
+		setNameFactoryAddress(_nameFactoryAddress);
+		setTAOFactoryAddress(_taoFactoryAddress);
 	}
 
 	/**
@@ -52,15 +53,6 @@ contract NameTAOLookup is TheAO {
 
 	/***** The AO ONLY METHODS *****/
 	/**
-	 * @dev The AO set the NameTAOPosition Address
-	 * @param _nameTAOPositionAddress The address of NameTAOPosition
-	 */
-	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
-		require (_nameTAOPositionAddress != address(0));
-		nameTAOPositionAddress = _nameTAOPositionAddress;
-	}
-
-	/**
 	 * @dev Transfer ownership of The AO to new address
 	 * @param _theAO The new address to be transferred
 	 */
@@ -80,12 +72,30 @@ contract NameTAOLookup is TheAO {
 	}
 
 	/**
+	 * @dev The AO set the nameFactoryAddress Address
+	 * @param _nameFactoryAddress The address of NameFactory
+	 */
+	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
+		require (_nameFactoryAddress != address(0));
+		nameFactoryAddress = _nameFactoryAddress;
+	}
+
+	/**
 	 * @dev The AO set the taoFactoryAddress Address
 	 * @param _taoFactoryAddress The address of TAOFactory
 	 */
 	function setTAOFactoryAddress(address _taoFactoryAddress) public onlyTheAO {
 		require (_taoFactoryAddress != address(0));
 		taoFactoryAddress = _taoFactoryAddress;
+	}
+
+	/**
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
 	}
 
 	/***** PUBLIC METHODS *****/

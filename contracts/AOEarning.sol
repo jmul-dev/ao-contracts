@@ -1,14 +1,13 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
+import './AOLibrary.sol';
 import './TheAO.sol';
+import './AOSetting.sol';
 import './AOToken.sol';
-import './AOTreasury.sol';
+import './NameFactory.sol';
 import './Pathos.sol';
 import './Ethos.sol';
-import './AOSetting.sol';
-import './AOLibrary.sol';
-import './NameFactory.sol';
 
 /**
  * @title AOEarning
@@ -20,21 +19,16 @@ contract AOEarning is TheAO {
 
 	address public settingTAOId;
 	address public aoSettingAddress;
-	address public baseDenominationAddress;
-	address public treasuryAddress;
+	address public aoTokenAddress;
 	address public nameFactoryAddress;
 	address public pathosAddress;
 	address public ethosAddress;
 
-	bool public paused;
-	bool public killed;
-
-	AOToken internal _baseAO;
-	AOTreasury internal _treasury;
+	AOSetting internal _aoSetting;
+	AOToken internal _aoToken;
 	NameFactory internal _nameFactory;
 	Pathos internal _pathos;
 	Ethos internal _ethos;
-	AOSetting internal _aoSetting;
 
 	// Total earning from staking content from all nodes
 	uint256 public totalStakeContentEarning;
@@ -118,33 +112,30 @@ contract AOEarning is TheAO {
 	// Event to be broadcasted to public when host's Name earns Ethos when a node buys a content
 	event EthosEarned(address indexed nameId, bytes32 indexed purchaseId, uint256 amount);
 
-	// Event to be broadcasted to public when emergency mode is triggered
-	event EscapeHatch();
-
 	/**
 	 * @dev Constructor function
 	 * @param _settingTAOId The TAO ID that controls the setting
 	 * @param _aoSettingAddress The address of AOSetting
-	 * @param _baseDenominationAddress The address of AO base token
-	 * @param _treasuryAddress The address of AOTreasury
+	 * @param _aoTokenAddress The address of AOToken
 	 * @param _nameFactoryAddress The address of NameFactory
 	 * @param _pathosAddress The address of Pathos
 	 * @param _ethosAddress The address of Ethos
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
-	constructor(address _settingTAOId, address _aoSettingAddress, address _baseDenominationAddress, address _treasuryAddress, address _nameFactoryAddress, address _pathosAddress, address _ethosAddress) public {
-		settingTAOId = _settingTAOId;
-		aoSettingAddress = _aoSettingAddress;
-		baseDenominationAddress = _baseDenominationAddress;
-		treasuryAddress = _treasuryAddress;
-		pathosAddress = _pathosAddress;
-		ethosAddress = _ethosAddress;
-
-		_aoSetting = AOSetting(_aoSettingAddress);
-		_baseAO = AOToken(_baseDenominationAddress);
-		_treasury = AOTreasury(_treasuryAddress);
-		_nameFactory = NameFactory(_nameFactoryAddress);
-		_pathos = Pathos(_pathosAddress);
-		_ethos = Ethos(_ethosAddress);
+	constructor(address _settingTAOId,
+		address _aoSettingAddress,
+		address _aoTokenAddress,
+		address _nameFactoryAddress,
+		address _pathosAddress,
+		address _ethosAddress,
+		address _nameTAOPositionAddress) public {
+		setSettingTAOId(_settingTAOId);
+		setAOSettingAddress(_aoSettingAddress);
+		setAOTokenAddress(_aoTokenAddress);
+		setNameFactoryAddress(_nameFactoryAddress);
+		setPathosAddress(_pathosAddress);
+		setEthosAddress(_ethosAddress);
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
 	/**
@@ -157,24 +148,7 @@ contract AOEarning is TheAO {
 		_;
 	}
 
-	/**
-	 * @dev Checks if contract is currently active
-	 */
-	modifier isContractActive {
-		require (paused == false && killed == false);
-		_;
-	}
-
 	/***** The AO ONLY METHODS *****/
-	/**
-	 * @dev The AO set the NameTAOPosition Address
-	 * @param _nameTAOPositionAddress The address of NameTAOPosition
-	 */
-	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
-		require (_nameTAOPositionAddress != address(0));
-		nameTAOPositionAddress = _nameTAOPositionAddress;
-	}
-
 	/**
 	 * @dev Transfer ownership of The AO to new address
 	 * @param _theAO The new address to be transferred
@@ -195,31 +169,71 @@ contract AOEarning is TheAO {
 	}
 
 	/**
-	 * @dev The AO pauses/unpauses contract
-	 * @param _paused Either to pause contract or not
+	 * @dev The AO sets setting TAO ID
+	 * @param _settingTAOId The new setting TAO ID to set
 	 */
-	function setPaused(bool _paused) public onlyTheAO {
-		paused = _paused;
+	function setSettingTAOId(address _settingTAOId) public onlyTheAO {
+		require (AOLibrary.isTAO(_settingTAOId));
+		settingTAOId = _settingTAOId;
 	}
 
 	/**
-	 * @dev The AO triggers emergency mode.
-	 *
+	 * @dev The AO sets AO Setting address
+	 * @param _aoSettingAddress The address of AOSetting
 	 */
-	function escapeHatch() public onlyTheAO {
-		require (killed == false);
-		killed = true;
-		emit EscapeHatch();
+	function setAOSettingAddress(address _aoSettingAddress) public onlyTheAO {
+		require (_aoSettingAddress != address(0));
+		aoSettingAddress = _aoSettingAddress;
+		_aoSetting = AOSetting(_aoSettingAddress);
 	}
 
 	/**
-	 * @dev The AO updates base denomination address
-	 * @param _newBaseDenominationAddress The new address
+	 * @dev The AO sets AO Token address
+	 * @param _aoTokenAddress The address of AOToken
 	 */
-	function setBaseDenominationAddress(address _newBaseDenominationAddress) public onlyTheAO {
-		require (AOToken(_newBaseDenominationAddress).powerOfTen() == 0);
-		baseDenominationAddress = _newBaseDenominationAddress;
-		_baseAO = AOToken(baseDenominationAddress);
+	function setAOTokenAddress(address _aoTokenAddress) public onlyTheAO {
+		require (_aoTokenAddress != address(0));
+		aoTokenAddress = _aoTokenAddress;
+		_aoToken = AOToken(_aoTokenAddress);
+	}
+
+	/**
+	 * @dev The AO sets NameFactory address
+	 * @param _nameFactoryAddress The address of NameFactory
+	 */
+	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
+		require (_nameFactoryAddress != address(0));
+		nameFactoryAddress = _nameFactoryAddress;
+		_nameFactory = NameFactory(_nameFactoryAddress);
+	}
+
+	/**
+	 * @dev The AO sets Pathos address
+	 * @param _pathosAddress The address of Pathos
+	 */
+	function setPathosAddress(address _pathosAddress) public onlyTheAO {
+		require (_pathosAddress != address(0));
+		pathosAddress = _pathosAddress;
+		_pathos = Pathos(_pathosAddress);
+	}
+
+	/**
+	 * @dev The AO sets Ethos address
+	 * @param _ethosAddress The address of Ethos
+	 */
+	function setEthosAddress(address _ethosAddress) public onlyTheAO {
+		require (_ethosAddress != address(0));
+		ethosAddress = _ethosAddress;
+		_ethos = Ethos(_ethosAddress);
+	}
+
+	/**
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
 	}
 
 	/***** PUBLIC METHODS *****/
@@ -246,7 +260,7 @@ contract AOEarning is TheAO {
 		address _stakeOwner,
 		address _host,
 		bool _isAOContentUsageType
-	) public isContractActive inWhitelist returns (bool) {
+	) public inWhitelist returns (bool) {
 		// Split the payment earning between content creator and host and store them in escrow
 		_escrowPaymentEarning(_buyer, _purchaseId, _networkAmountStaked.add(_primordialAmountStaked), _profitPercentage, _stakeOwner, _host, _isAOContentUsageType);
 
@@ -266,7 +280,7 @@ contract AOEarning is TheAO {
 	 * @param _host The address of the node that host the file
 	 * @return true on success
 	 */
-	function releaseEarning(bytes32 _stakeId, bytes32 _contentHostId, bytes32 _purchaseId, bool _buyerPaidMoreThanFileSize, address _stakeOwner, address _host) public isContractActive inWhitelist returns (bool) {
+	function releaseEarning(bytes32 _stakeId, bytes32 _contentHostId, bytes32 _purchaseId, bool _buyerPaidMoreThanFileSize, address _stakeOwner, address _host) public inWhitelist returns (bool) {
 		// Release the earning in escrow for stake owner
 		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidMoreThanFileSize, _stakeOwner, 0);
 
@@ -336,19 +350,19 @@ contract AOEarning is TheAO {
 			uint256 _stakeOwnerInflationBonus = _isAOContentUsageType ? (_inflationBonusAmount.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR()) : 0;
 			Earning storage _stakeEarning = stakeEarnings[_stakeOwner][_purchaseId];
 			_stakeEarning.inflationBonus = _stakeOwnerInflationBonus;
-			require (_baseAO.mintTokenEscrow(_stakeOwner, _stakeEarning.inflationBonus));
+			require (_aoToken.mintTokenEscrow(_stakeOwner, _stakeEarning.inflationBonus));
 			emit InflationBonusEscrowed(_stakeOwner, _purchaseId, _inflationBonusAmount, _profitPercentage, _stakeEarning.inflationBonus, 0);
 
 			// Store how much the host earns in escrow
 			Earning storage _hostEarning = hostEarnings[_host][_purchaseId];
 			_hostEarning.inflationBonus = _inflationBonusAmount.sub(_stakeOwnerInflationBonus);
-			require (_baseAO.mintTokenEscrow(_host, _hostEarning.inflationBonus));
+			require (_aoToken.mintTokenEscrow(_host, _hostEarning.inflationBonus));
 			emit InflationBonusEscrowed(_host, _purchaseId, _inflationBonusAmount, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), _hostEarning.inflationBonus, 1);
 
 			// Store how much the The AO earns in escrow
 			Earning storage _theAOEarning = theAOEarnings[_purchaseId];
 			_theAOEarning.inflationBonus = (_inflationBonusAmount.mul(theAOCut)).div(AOLibrary.PERCENTAGE_DIVISOR());
-			require (_baseAO.mintTokenEscrow(theAO, _theAOEarning.inflationBonus));
+			require (_aoToken.mintTokenEscrow(theAO, _theAOEarning.inflationBonus));
 			emit InflationBonusEscrowed(theAO, _purchaseId, _inflationBonusAmount, theAOCut, _theAOEarning.inflationBonus, 2);
 		} else {
 			emit InflationBonusEscrowed(_stakeOwner, _purchaseId, 0, _profitPercentage, 0, 0);
@@ -441,7 +455,7 @@ contract AOEarning is TheAO {
 			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_inflationBonus);
 			totalStakedContentTheAOEarning[_stakeId] = totalStakedContentTheAOEarning[_stakeId].add(_totalEarning);
 		}
-		require (_baseAO.unescrowFrom(_account, _totalEarning));
+		require (_aoToken.unescrowFrom(_account, _totalEarning));
 		emit EarningUnescrowed(_account, _purchaseId, _paymentEarning, _inflationBonus, _recipientType);
 	}
 
@@ -481,7 +495,7 @@ contract AOEarning is TheAO {
 		_stakeEarning.paymentEarning = _isAOContentUsageType ? (_totalStaked.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR()) : 0;
 		// Pathos = Price X Node Share X Inflation Rate
 		_stakeEarning.pathosAmount = _totalStaked.mul(AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage)).mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR()).div(AOLibrary.PERCENTAGE_DIVISOR());
-		require (_baseAO.escrowFrom(_buyer, _stakeOwner, _stakeEarning.paymentEarning));
+		require (_aoToken.escrowFrom(_buyer, _stakeOwner, _stakeEarning.paymentEarning));
 		emit PaymentEarningEscrowed(_stakeOwner, _purchaseId, _totalStaked, _profitPercentage, _stakeEarning.paymentEarning, 0);
 		return (_stakeEarning.paymentEarning, _stakeEarning.pathosAmount);
 	}
@@ -508,10 +522,10 @@ contract AOEarning is TheAO {
 		_hostEarning.ethosAmount = _totalStaked.mul(_profitPercentage).mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR()).div(AOLibrary.PERCENTAGE_DIVISOR());
 
 		if (_isAOContentUsageType) {
-			require (_baseAO.escrowFrom(_buyer, _host, _hostEarning.paymentEarning));
+			require (_aoToken.escrowFrom(_buyer, _host, _hostEarning.paymentEarning));
 		} else {
 			// If not AO Content usage type, we want to mint to the host
-			require (_baseAO.mintTokenEscrow(_host, _hostEarning.paymentEarning));
+			require (_aoToken.mintTokenEscrow(_host, _hostEarning.paymentEarning));
 		}
 		emit PaymentEarningEscrowed(_host, _purchaseId, _totalStaked, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), _hostEarning.paymentEarning, 1);
 		return _hostEarning.ethosAmount;
@@ -532,7 +546,7 @@ contract AOEarning is TheAO {
 		_theAOEarning.purchaseId = _purchaseId;
 		// Pathos + X% of Ethos
 		_theAOEarning.paymentEarning = _pathosAmount.add(_ethosAmount.mul(theAOEthosEarnedRate).div(AOLibrary.PERCENTAGE_DIVISOR()));
-		require (_baseAO.mintTokenEscrow(theAO, _theAOEarning.paymentEarning));
+		require (_aoToken.mintTokenEscrow(theAO, _theAOEarning.paymentEarning));
 		emit PaymentEarningEscrowed(theAO, _purchaseId, _totalStaked, 0, _theAOEarning.paymentEarning, 2);
 	}
 }

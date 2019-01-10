@@ -11,5 +11,6 @@ contract EthosTreasury is TAOCurrencyTreasury {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress) TAOCurrencyTreasury(_nameFactoryAddress) public {}
+	constructor(address _nameFactoryAddress, address _nameTAOPositionAddress)
+		TAOCurrencyTreasury(_nameFactoryAddress, _nameTAOPositionAddress) public {}
 }

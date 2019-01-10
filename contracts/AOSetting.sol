@@ -1,5 +1,7 @@
 pragma solidity ^0.4.24;
 
+import './AOLibrary.sol';
+import './TheAO.sol';
 import './NameFactory.sol';
 import './AOSettingAttribute.sol';
 import './AOUintSetting.sol';
@@ -7,7 +9,6 @@ import './AOBoolSetting.sol';
 import './AOAddressSetting.sol';
 import './AOBytesSetting.sol';
 import './AOStringSetting.sol';
-import './AOLibrary.sol';
 import './NameTAOPosition.sol';
 
 /**
@@ -15,7 +16,8 @@ import './NameTAOPosition.sol';
  *
  * This contract stores all AO setting variables
  */
-contract AOSetting {
+contract AOSetting is TheAO {
+	address public nameFactoryAddress;
 	address public aoSettingAttributeAddress;
 	address public aoUintSettingAddress;
 	address public aoBoolSettingAddress;
@@ -84,21 +86,24 @@ contract AOSetting {
 		address _aoAddressSettingAddress,
 		address _aoBytesSettingAddress,
 		address _aoStringSettingAddress) public {
-		aoSettingAttributeAddress = _aoSettingAttributeAddress;
-		aoUintSettingAddress = _aoUintSettingAddress;
-		aoBoolSettingAddress = _aoBoolSettingAddress;
-		aoAddressSettingAddress = _aoAddressSettingAddress;
-		aoBytesSettingAddress = _aoBytesSettingAddress;
-		aoStringSettingAddress = _aoStringSettingAddress;
+		setNameFactoryAddress(_nameFactoryAddress);
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
+		setAOSettingAttributeAddress(_aoSettingAttributeAddress);
+		setAOUintSettingAddress(_aoUintSettingAddress);
+		setAOBoolSettingAddress(_aoBoolSettingAddress);
+		setAOAddressSettingAddress(_aoAddressSettingAddress);
+		setAOBytesSettingAddress(_aoBytesSettingAddress);
+		setAOStringSettingAddress(_aoStringSettingAddress);
+	}
 
-		_nameFactory = NameFactory(_nameFactoryAddress);
-		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
-		_aoSettingAttribute = AOSettingAttribute(_aoSettingAttributeAddress);
-		_aoUintSetting = AOUintSetting(_aoUintSettingAddress);
-		_aoBoolSetting = AOBoolSetting(_aoBoolSettingAddress);
-		_aoAddressSetting = AOAddressSetting(_aoAddressSettingAddress);
-		_aoBytesSetting = AOBytesSetting(_aoBytesSettingAddress);
-		_aoStringSetting = AOStringSetting(_aoStringSettingAddress);
+	/**
+	 * @dev Checks if the calling contract address is The AO
+	 *		OR
+	 *		If The AO is set to a Name/TAO, then check if calling address is the Advocate
+	 */
+	modifier onlyTheAO {
+		require (AOLibrary.isTheAO(msg.sender, theAO, nameTAOPositionAddress));
+		_;
 	}
 
 	/**
@@ -125,7 +130,107 @@ contract AOSetting {
 		_;
 	}
 
-	/***** Public Methods *****/
+	/***** The AO ONLY METHODS *****/
+	/**
+	 * @dev Transfer ownership of The AO to new address
+	 * @param _theAO The new address to be transferred
+	 */
+	function transferOwnership(address _theAO) public onlyTheAO {
+		require (_theAO != address(0));
+		theAO = _theAO;
+	}
+
+	/**
+	 * @dev Whitelist `_account` address to transact on behalf of others
+	 * @param _account The address to whitelist
+	 * @param _whitelist Either to whitelist or not
+	 */
+	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
+		require (_account != address(0));
+		whitelist[_account] = _whitelist;
+	}
+
+	/**
+	 * @dev The AO sets NameFactory address
+	 * @param _nameFactoryAddress The address of NameFactory
+	 */
+	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
+		require (_nameFactoryAddress != address(0));
+		nameFactoryAddress = _nameFactoryAddress;
+		_nameFactory = NameFactory(_nameFactoryAddress);
+	}
+
+	/**
+	 * @dev The AO sets NameTAOPosition address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
+		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+	}
+
+	/**
+	 * @dev The AO sets AOSettingAttribute address
+	 * @param _aoSettingAttributeAddress The address of AOSettingAttribute
+	 */
+	function setAOSettingAttributeAddress(address _aoSettingAttributeAddress) public onlyTheAO {
+		require (_aoSettingAttributeAddress != address(0));
+		aoSettingAttributeAddress = _aoSettingAttributeAddress;
+		_aoSettingAttribute = AOSettingAttribute(_aoSettingAttributeAddress);
+	}
+
+	/**
+	 * @dev The AO sets AOUintSetting address
+	 * @param _aoUintSettingAddress The address of AOUintSetting
+	 */
+	function setAOUintSettingAddress(address _aoUintSettingAddress) public onlyTheAO {
+		require (_aoUintSettingAddress != address(0));
+		aoUintSettingAddress = _aoUintSettingAddress;
+		_aoUintSetting = AOUintSetting(_aoUintSettingAddress);
+	}
+
+	/**
+	 * @dev The AO sets AOBoolSetting address
+	 * @param _aoBoolSettingAddress The address of AOBoolSetting
+	 */
+	function setAOBoolSettingAddress(address _aoBoolSettingAddress) public onlyTheAO {
+		require (_aoBoolSettingAddress != address(0));
+		aoBoolSettingAddress = _aoBoolSettingAddress;
+		_aoBoolSetting = AOBoolSetting(_aoBoolSettingAddress);
+	}
+
+	/**
+	 * @dev The AO sets AOAddressSetting address
+	 * @param _aoAddressSettingAddress The address of AOAddressSetting
+	 */
+	function setAOAddressSettingAddress(address _aoAddressSettingAddress) public onlyTheAO {
+		require (_aoAddressSettingAddress != address(0));
+		aoAddressSettingAddress = _aoAddressSettingAddress;
+		_aoAddressSetting = AOAddressSetting(_aoAddressSettingAddress);
+	}
+
+	/**
+	 * @dev The AO sets AOBytesSetting address
+	 * @param _aoBytesSettingAddress The address of AOBytesSetting
+	 */
+	function setAOBytesSettingAddress(address _aoBytesSettingAddress) public onlyTheAO {
+		require (_aoBytesSettingAddress != address(0));
+		aoBytesSettingAddress = _aoBytesSettingAddress;
+		_aoBytesSetting = AOBytesSetting(_aoBytesSettingAddress);
+	}
+
+	/**
+	 * @dev The AO sets AOStringSetting address
+	 * @param _aoStringSettingAddress The address of AOStringSetting
+	 */
+	function setAOStringSettingAddress(address _aoStringSettingAddress) public onlyTheAO {
+		require (_aoStringSettingAddress != address(0));
+		aoStringSettingAddress = _aoStringSettingAddress;
+		_aoStringSetting = AOStringSetting(_aoStringSettingAddress);
+	}
+
+	/***** PUBLIC METHODS *****/
 	/**
 	 * @dev Check whether or not a setting name of an associatedTAOId exist
 	 * @param _settingName The human-readable name of the setting

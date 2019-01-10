@@ -48,10 +48,9 @@ contract TAOFamily is TAOController {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _nameTAOPositionAddress, address _taoFactoryAddress)
-		TAOController(_nameFactoryAddress, _nameTAOPositionAddress) public {
-		taoFactoryAddress = _taoFactoryAddress;
-		_taoFactory = TAOFactory(_taoFactoryAddress);
+	constructor(address _nameFactoryAddress, address _taoFactoryAddress)
+		TAOController(_nameFactoryAddress) public {
+		setTAOFactoryAddress(_taoFactoryAddress);
 	}
 
 	/**
@@ -60,6 +59,17 @@ contract TAOFamily is TAOController {
 	modifier onlyFactory {
 		require (msg.sender == taoFactoryAddress);
 		_;
+	}
+
+	/***** The AO ONLY METHODS *****/
+	/**
+	 * @dev The AO set the TAOFactory Address
+	 * @param _taoFactoryAddress The address of TAOFactory
+	 */
+	function setTAOFactoryAddress(address _taoFactoryAddress) public onlyTheAO {
+		require (_taoFactoryAddress != address(0));
+		taoFactoryAddress = _taoFactoryAddress;
+		_taoFactory = TAOFactory(_taoFactoryAddress);
 	}
 
 	/***** PUBLIC METHODS *****/

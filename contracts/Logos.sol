@@ -38,9 +38,8 @@ contract Logos is TAOCurrency {
 	 * @dev Constructor function
 	 */
 	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _nameTAOPositionAddress)
-		TAOCurrency(initialSupply, tokenName, tokenSymbol) public {
-		nameTAOPositionAddress = _nameTAOPositionAddress;
-		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+		TAOCurrency(initialSupply, tokenName, tokenSymbol, _nameTAOPositionAddress) public {
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
 	/**
@@ -65,6 +64,17 @@ contract Logos is TAOCurrency {
 	modifier onlyAdvocate(address _id) {
 		require (_nameTAOPosition.senderIsAdvocate(msg.sender, _id));
 		_;
+	}
+
+	/***** THE AO ONLY METHODS *****/
+	/**
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
+		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
 	}
 
 	/***** PUBLIC METHODS *****/

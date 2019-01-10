@@ -1,10 +1,10 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
+import './AOLibrary.sol';
 import './TheAO.sol';
 import './TAOCurrency.sol';
 import './NameFactory.sol';
-import './AOLibrary.sol';
 
 /**
  * @title TAOCurrency
@@ -14,11 +14,10 @@ import './AOLibrary.sol';
 contract TAOCurrencyTreasury is TheAO {
 	using SafeMath for uint256;
 
-	bool public paused;
-	bool public killed;
-
 	uint256 public totalDenominations;
 	uint256 public totalDenominationExchanges;
+
+	address public nameFactoryAddress;
 
 	NameFactory internal _nameFactory;
 
@@ -50,14 +49,12 @@ contract TAOCurrencyTreasury is TheAO {
 	// Event to be broadcasted to public when a exchange between denominations happens
 	event ExchangeDenomination(address indexed nameId, bytes32 indexed exchangeId, uint256 amount, address fromDenominationAddress, string fromDenominationSymbol, address toDenominationAddress, string toDenominationSymbol);
 
-	// Event to be broadcasted to public when emergency mode is triggered
-	event EscapeHatch();
-
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress) public {
-		_nameFactory = NameFactory(_nameFactoryAddress);
+	constructor(address _nameFactoryAddress, address _nameTAOPositionAddress) public {
+		setNameFactoryAddress(_nameFactoryAddress);
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
 	/**
@@ -71,14 +68,6 @@ contract TAOCurrencyTreasury is TheAO {
 	}
 
 	/**
-	 * @dev Checks if contract is currently active
-	 */
-	modifier isContractActive {
-		require (paused == false && killed == false);
-		_;
-	}
-
-	/**
 	 * @dev Checks if denomination is valid
 	 */
 	modifier isValidDenomination(bytes8 denominationName) {
@@ -87,15 +76,6 @@ contract TAOCurrencyTreasury is TheAO {
 	}
 
 	/***** The AO ONLY METHODS *****/
-	/**
-	 * @dev The AO set the NameTAOPosition Address
-	 * @param _nameTAOPositionAddress The address of NameTAOPosition
-	 */
-	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
-		require (_nameTAOPositionAddress != address(0));
-		nameTAOPositionAddress = _nameTAOPositionAddress;
-	}
-
 	/**
 	 * @dev Transfer ownership of The AO to new address
 	 * @param _theAO The new address to be transferred
@@ -116,21 +96,22 @@ contract TAOCurrencyTreasury is TheAO {
 	}
 
 	/**
-	 * @dev The AO pauses/unpauses contract
-	 * @param _paused Either to pause contract or not
+	 * @dev The AO set the NameTAOPosition Address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
-	function setPaused(bool _paused) public onlyTheAO {
-		paused = _paused;
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
 	}
 
 	/**
-	 * @dev The AO triggers emergency mode.
-	 *
+	 * @dev The AO set the NameFactory Address
+	 * @param _nameFactoryAddress The address of NameFactory
 	 */
-	function escapeHatch() public onlyTheAO {
-		require (killed == false);
-		killed = true;
-		emit EscapeHatch();
+	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
+		require (_nameFactoryAddress != address(0));
+		nameFactoryAddress = _nameFactoryAddress;
+		_nameFactory = NameFactory(_nameFactoryAddress);
 	}
 
 	/**
@@ -266,7 +247,7 @@ contract TAOCurrencyTreasury is TheAO {
 
 			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
 			TAOCurrency _denominationToken = TAOCurrency(_denomination.denominationAddress);
-			uint8 fractionNumDigits = _numDigits(fractionAmount);
+			uint8 fractionNumDigits = AOLibrary.numDigits(fractionAmount);
 			require (fractionNumDigits <= _denominationToken.decimals());
 			uint256 baseInteger = integerAmount.mul(10 ** _denominationToken.powerOfTen());
 			if (_denominationToken.decimals() == 0) {
@@ -300,7 +281,7 @@ contract TAOCurrencyTreasury is TheAO {
 	 * @param fromDenominationName The origin denomination
 	 * @param toDenominationName The target denomination
 	 */
-	function exchangeDenomination(uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName) public isContractActive isValidDenomination(fromDenominationName) isValidDenomination(toDenominationName) {
+	function exchangeDenomination(uint256 amount, bytes8 fromDenominationName, bytes8 toDenominationName) public isValidDenomination(fromDenominationName) isValidDenomination(toDenominationName) {
 		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
 		require (_nameId != address(0));
 		require (amount > 0);
@@ -387,20 +368,5 @@ contract TAOCurrencyTreasury is TheAO {
 			_tc.decimals(),
 			_tc.powerOfTen()
 		);
-	}
-
-	/***** INTERNAL METHODS *****/
-	/**
-	 * @dev count num of digits
-	 * @param number uint256 of the nuumber to be checked
-	 * @return uint8 num of digits
-	 */
-	function _numDigits(uint256 number) internal pure returns (uint8) {
-		uint8 digits = 0;
-		while(number != 0) {
-			number = number.div(10);
-			digits++;
-		}
-		return digits;
 	}
 }

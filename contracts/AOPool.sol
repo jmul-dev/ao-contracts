@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './TheAO.sol';
 import './AOLibrary.sol';
+import './TheAO.sol';
 import './TokenERC20.sol';
 import './AOToken.sol';
 
@@ -14,8 +14,8 @@ import './AOToken.sol';
 contract AOPool is TheAO {
 	using SafeMath for uint256;
 
-	address public baseDenominationAddress;
-	AOToken internal _baseAO;
+	address public aoTokenAddress;
+	AOToken internal _aoToken;
 
 	struct Pool {
 		uint256 price;	// Flat price of AO
@@ -193,9 +193,9 @@ contract AOPool is TheAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _baseDenominationAddress) public {
-		baseDenominationAddress = _baseDenominationAddress;
-		_baseAO = AOToken(_baseDenominationAddress);
+	constructor(address _aoTokenAddress, address _nameTAOPositionAddress) public {
+		setAOTokenAddress(_aoTokenAddress);
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
 	/**
@@ -209,15 +209,6 @@ contract AOPool is TheAO {
 	}
 
 	/***** THE AO ONLY METHODS *****/
-	/**
-	 * @dev The AO set the NameTAOPosition Address
-	 * @param _nameTAOPositionAddress The address of NameTAOPosition
-	 */
-	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
-		require (_nameTAOPositionAddress != address(0));
-		nameTAOPositionAddress = _nameTAOPositionAddress;
-	}
-
 	/**
 	 * @dev Transfer ownership of The AO to new address
 	 * @param _theAO The new address to be transferred
@@ -235,6 +226,25 @@ contract AOPool is TheAO {
 	function setWhitelist(address _account, bool _whitelist) public onlyTheAO {
 		require (_account != address(0));
 		whitelist[_account] = _whitelist;
+	}
+
+	/**
+	 * @dev The AO set the AOTokenAddress Address
+	 * @param _aoTokenAddress The address of AOTokenAddress
+	 */
+	function setAOTokenAddress(address _aoTokenAddress) public onlyTheAO {
+		require (_aoTokenAddress != address(0));
+		aoTokenAddress = _aoTokenAddress;
+		_aoToken = AOToken(_aoTokenAddress);
+	}
+
+	/**
+	 * @dev The AO sets NameTAOPosition address
+	 * @param _nameTAOPositionAddress The address of NameTAOPosition
+	 */
+	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
+		require (_nameTAOPositionAddress != address(0));
+		nameTAOPositionAddress = _nameTAOPositionAddress;
 	}
 
 	/**
@@ -358,7 +368,7 @@ contract AOPool is TheAO {
 	 */
 	function sell(uint256 _poolId, uint256 _quantity, uint256 _price) public {
 		Pool memory _pool = pools[_poolId];
-		require (_pool.status == true && _pool.price == _price && _quantity > 0 && _baseAO.balanceOf(msg.sender) >= _quantity);
+		require (_pool.status == true && _pool.price == _price && _quantity > 0 && _aoToken.balanceOf(msg.sender) >= _quantity);
 
 		// If there is a sell cap
 		if (_pool.sellCapStatus == true) {
@@ -396,7 +406,7 @@ contract AOPool is TheAO {
 		contractTotalQuantity = contractTotalQuantity.add(_quantity);
 		contractTotalSell = contractTotalSell.add(_quantity);
 
-		require (_baseAO.whitelistTransferFrom(msg.sender, this, _quantity));
+		require (_aoToken.whitelistTransferFrom(msg.sender, this, _quantity));
 
 		emit LotCreation(_lot.poolId, _lot.lotId, _lot.seller, _lot.lotQuantity, _pool.price, _lot.poolPreSellSnapshot, _lot.poolSellLotSnapshot, _lot.lotValueInCounterAsset, _pool.erc20CounterAsset, _lot.timestamp);
 	}
@@ -449,7 +459,7 @@ contract AOPool is TheAO {
 
 		totalBought[msg.sender] = totalBought[msg.sender].add(_quantity);
 
-		require (_baseAO.whitelistTransferFrom(this, msg.sender, _quantity));
+		require (_aoToken.whitelistTransferFrom(this, msg.sender, _quantity));
 
 		emit BuyWithEth(_poolId, msg.sender, _quantity, _price, poolTotalBuy[_poolId]);
 	}
@@ -584,7 +594,7 @@ contract AOPool is TheAO {
 
 		assert (_lot.tokenWithdrawn.add(_lot.lotValueInCounterAsset.div(_pool.price)).add(_lot.counterAssetWithdrawn.div(_pool.price)) == _lot.lotQuantity);
 
-		require (_baseAO.whitelistTransferFrom(this, msg.sender, _quantity));
+		require (_aoToken.whitelistTransferFrom(this, msg.sender, _quantity));
 
 		emit WithdrawToken(_lot.seller, _lot.lotId, _lot.poolId, _quantity, _lot.lotValueInCounterAsset, _lot.tokenWithdrawn);
 	}

@@ -14,7 +14,10 @@ import './TAO.sol';
 contract TAOPool is TAOController {
 	using SafeMath for uint256;
 
-	address public TAOFactoryAddress;
+	address public taoFactoryAddress;
+	address public pathosAddress;
+	address public ethosAddress;
+	address public logosAddress;
 
 	TAOCurrency internal _pathos;
 	TAOCurrency internal _ethos;
@@ -91,20 +94,19 @@ contract TAOPool is TAOController {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _nameTAOPositionAddress, address _TAOFactoryAddress, address _pathosAddress, address _ethosAddress, address _logosAddress)
-		TAOController(_nameFactoryAddress, _nameTAOPositionAddress) public {
-		TAOFactoryAddress = _TAOFactoryAddress;
-
-		_pathos = TAOCurrency(_pathosAddress);
-		_ethos = TAOCurrency(_ethosAddress);
-		_logos = Logos(_logosAddress);
+	constructor(address _nameFactoryAddress, address _taoFactoryAddress, address _pathosAddress, address _ethosAddress, address _logosAddress)
+		TAOController(_nameFactoryAddress) public {
+		setTAOFactoryAddress(_taoFactoryAddress);
+		setPathosAddress(_pathosAddress);
+		setEthosAddress(_ethosAddress);
+		setLogosAddress(_logosAddress);
 	}
 
 	/**
 	 * @dev Check if calling address is TAO Factory address
 	 */
 	modifier onlyTAOFactory {
-		require (msg.sender == TAOFactoryAddress);
+		require (msg.sender == taoFactoryAddress);
 		_;
 	}
 
@@ -116,6 +118,47 @@ contract TAOPool is TAOController {
 		_;
 	}
 
+	/***** The AO ONLY METHODS *****/
+	/**
+	 * @dev The AO set the TAOFactory Address
+	 * @param _taoFactoryAddress The address of TAOFactory
+	 */
+	function setTAOFactoryAddress(address _taoFactoryAddress) public onlyTheAO {
+		require (_taoFactoryAddress != address(0));
+		taoFactoryAddress = _taoFactoryAddress;
+	}
+
+	/**
+	 * @dev The AO set the Pathos Address
+	 * @param _pathosAddress The address of Pathos
+	 */
+	function setPathosAddress(address _pathosAddress) public onlyTheAO {
+		require (_pathosAddress != address(0));
+		pathosAddress = _pathosAddress;
+		_pathos = TAOCurrency(_pathosAddress);
+	}
+
+	/**
+	 * @dev The AO set the Ethos Address
+	 * @param _ethosAddress The address of Ethos
+	 */
+	function setEthosAddress(address _ethosAddress) public onlyTheAO {
+		require (_ethosAddress != address(0));
+		ethosAddress = _ethosAddress;
+		_ethos = TAOCurrency(_ethosAddress);
+	}
+
+	/**
+	 * @dev The AO set the Logos Address
+	 * @param _logosAddress The address of Logos
+	 */
+	function setLogosAddress(address _logosAddress) public onlyTheAO {
+		require (_logosAddress != address(0));
+		logosAddress = _logosAddress;
+		_logos = Logos(_logosAddress);
+	}
+
+	/***** PUBLIC METHODS *****/
 	/**
 	 * @dev Create a pool for a TAO
 	 */
