@@ -28,9 +28,10 @@ contract NameTAOLookup is TheAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _taoFactoryAddress) public {
+	constructor(address _nameFactoryAddress, address _taoFactoryAddress, address _nameTAOPositionAddress) public {
 		setNameFactoryAddress(_nameFactoryAddress);
 		setTAOFactoryAddress(_taoFactoryAddress);
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
 	/**

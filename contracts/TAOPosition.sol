@@ -16,9 +16,10 @@ contract TAOPosition is TAOController {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _positionAddress)
+	constructor(address _nameFactoryAddress, address _positionAddress, address _nameTAOPositionAddress)
 		TAOController(_nameFactoryAddress) public {
 		setPositionAddress(_positionAddress);
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
 	/***** The AO ONLY METHODS *****/

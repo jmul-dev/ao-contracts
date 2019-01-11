@@ -2,14 +2,10 @@ pragma solidity ^0.4.24;
 
 import './AOLibrary.sol';
 import './TheAO.sol';
-import './NameFactory.sol';
-import './AOSettingAttribute.sol';
-import './AOUintSetting.sol';
-import './AOBoolSetting.sol';
-import './AOAddressSetting.sol';
-import './AOBytesSetting.sol';
-import './AOStringSetting.sol';
-import './NameTAOPosition.sol';
+import './INameFactory.sol';
+import './IAOSettingAttribute.sol';
+import './IAOSettingValue.sol';
+import './INameTAOPosition.sol';
 
 /**
  * @title AOSetting
@@ -19,20 +15,12 @@ import './NameTAOPosition.sol';
 contract AOSetting is TheAO {
 	address public nameFactoryAddress;
 	address public aoSettingAttributeAddress;
-	address public aoUintSettingAddress;
-	address public aoBoolSettingAddress;
-	address public aoAddressSettingAddress;
-	address public aoBytesSettingAddress;
-	address public aoStringSettingAddress;
+	address public aoSettingValueAddress;
 
-	NameFactory internal _nameFactory;
-	NameTAOPosition internal _nameTAOPosition;
-	AOSettingAttribute internal _aoSettingAttribute;
-	AOUintSetting internal _aoUintSetting;
-	AOBoolSetting internal _aoBoolSetting;
-	AOAddressSetting internal _aoAddressSetting;
-	AOBytesSetting internal _aoBytesSetting;
-	AOStringSetting internal _aoStringSetting;
+	INameFactory internal _nameFactory;
+	INameTAOPosition internal _nameTAOPosition;
+	IAOSettingAttribute internal _aoSettingAttribute;
+	IAOSettingValue internal _aoSettingValue;
 
 	uint256 public totalSetting;
 
@@ -48,6 +36,10 @@ contract AOSetting is TheAO {
 
 	// Mapping from updateHashKey to it's settingId
 	mapping (bytes32 => uint256) public updateHashLookup;
+
+	// Mapping from setting ID to it's type
+	// setting type 1 => uint256, 2 => bool, 3 => address, 4 => bytes32, 5 => string
+	mapping (uint256 => uint8) public settingTypeLookup;
 
 	// Event to be broadcasted to public when a setting is created and waiting for approval
 	event SettingCreation(uint256 indexed settingId, address indexed creatorNameId, address creatorTAOId, address associatedTAOId, string settingName, uint8 settingType, bytes32 associatedTAOSettingId, bytes32 creatorTAOSettingId);
@@ -81,19 +73,12 @@ contract AOSetting is TheAO {
 	constructor(address _nameFactoryAddress,
 		address _nameTAOPositionAddress,
 		address _aoSettingAttributeAddress,
-		address _aoUintSettingAddress,
-		address _aoBoolSettingAddress,
-		address _aoAddressSettingAddress,
-		address _aoBytesSettingAddress,
-		address _aoStringSettingAddress) public {
+		address _aoSettingValueAddress
+		) public {
 		setNameFactoryAddress(_nameFactoryAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
 		setAOSettingAttributeAddress(_aoSettingAttributeAddress);
-		setAOUintSettingAddress(_aoUintSettingAddress);
-		setAOBoolSettingAddress(_aoBoolSettingAddress);
-		setAOAddressSettingAddress(_aoAddressSettingAddress);
-		setAOBytesSettingAddress(_aoBytesSettingAddress);
-		setAOStringSettingAddress(_aoStringSettingAddress);
+		setAOSettingValueAddress(_aoSettingValueAddress);
 	}
 
 	/**
@@ -157,7 +142,7 @@ contract AOSetting is TheAO {
 	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
 		require (_nameFactoryAddress != address(0));
 		nameFactoryAddress = _nameFactoryAddress;
-		_nameFactory = NameFactory(_nameFactoryAddress);
+		_nameFactory = INameFactory(_nameFactoryAddress);
 	}
 
 	/**
@@ -167,7 +152,7 @@ contract AOSetting is TheAO {
 	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
 		require (_nameTAOPositionAddress != address(0));
 		nameTAOPositionAddress = _nameTAOPositionAddress;
-		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+		_nameTAOPosition = INameTAOPosition(_nameTAOPositionAddress);
 	}
 
 	/**
@@ -177,57 +162,17 @@ contract AOSetting is TheAO {
 	function setAOSettingAttributeAddress(address _aoSettingAttributeAddress) public onlyTheAO {
 		require (_aoSettingAttributeAddress != address(0));
 		aoSettingAttributeAddress = _aoSettingAttributeAddress;
-		_aoSettingAttribute = AOSettingAttribute(_aoSettingAttributeAddress);
+		_aoSettingAttribute = IAOSettingAttribute(_aoSettingAttributeAddress);
 	}
 
 	/**
-	 * @dev The AO sets AOUintSetting address
-	 * @param _aoUintSettingAddress The address of AOUintSetting
+	 * @dev The AO sets AOSettingValue address
+	 * @param _aoSettingValueAddress The address of AOSettingValue
 	 */
-	function setAOUintSettingAddress(address _aoUintSettingAddress) public onlyTheAO {
-		require (_aoUintSettingAddress != address(0));
-		aoUintSettingAddress = _aoUintSettingAddress;
-		_aoUintSetting = AOUintSetting(_aoUintSettingAddress);
-	}
-
-	/**
-	 * @dev The AO sets AOBoolSetting address
-	 * @param _aoBoolSettingAddress The address of AOBoolSetting
-	 */
-	function setAOBoolSettingAddress(address _aoBoolSettingAddress) public onlyTheAO {
-		require (_aoBoolSettingAddress != address(0));
-		aoBoolSettingAddress = _aoBoolSettingAddress;
-		_aoBoolSetting = AOBoolSetting(_aoBoolSettingAddress);
-	}
-
-	/**
-	 * @dev The AO sets AOAddressSetting address
-	 * @param _aoAddressSettingAddress The address of AOAddressSetting
-	 */
-	function setAOAddressSettingAddress(address _aoAddressSettingAddress) public onlyTheAO {
-		require (_aoAddressSettingAddress != address(0));
-		aoAddressSettingAddress = _aoAddressSettingAddress;
-		_aoAddressSetting = AOAddressSetting(_aoAddressSettingAddress);
-	}
-
-	/**
-	 * @dev The AO sets AOBytesSetting address
-	 * @param _aoBytesSettingAddress The address of AOBytesSetting
-	 */
-	function setAOBytesSettingAddress(address _aoBytesSettingAddress) public onlyTheAO {
-		require (_aoBytesSettingAddress != address(0));
-		aoBytesSettingAddress = _aoBytesSettingAddress;
-		_aoBytesSetting = AOBytesSetting(_aoBytesSettingAddress);
-	}
-
-	/**
-	 * @dev The AO sets AOStringSetting address
-	 * @param _aoStringSettingAddress The address of AOStringSetting
-	 */
-	function setAOStringSettingAddress(address _aoStringSettingAddress) public onlyTheAO {
-		require (_aoStringSettingAddress != address(0));
-		aoStringSettingAddress = _aoStringSettingAddress;
-		_aoStringSetting = AOStringSetting(_aoStringSettingAddress);
+	function setAOSettingValueAddress(address _aoSettingValueAddress) public onlyTheAO {
+		require (_aoSettingValueAddress != address(0));
+		aoSettingValueAddress = _aoSettingValueAddress;
+		_aoSettingValue = IAOSettingValue(_aoSettingValueAddress);
 	}
 
 	/***** PUBLIC METHODS *****/
@@ -253,8 +198,10 @@ contract AOSetting is TheAO {
 		// Update global variables
 		totalSetting++;
 
+		settingTypeLookup[totalSetting] = 1;
+
 		// Store the value as pending value
-		_aoUintSetting.setPendingValue(totalSetting, _value);
+		_aoSettingValue.setPendingValue(totalSetting, address(0), false, '', '', _value);
 
 		// Store setting creation data
 		_storeSettingCreation(_nameFactory.ethAddressToNameId(msg.sender), 1, _settingName, _creatorTAOId, _associatedTAOId, _extraData);
@@ -272,8 +219,10 @@ contract AOSetting is TheAO {
 		// Update global variables
 		totalSetting++;
 
+		settingTypeLookup[totalSetting] = 2;
+
 		// Store the value as pending value
-		_aoBoolSetting.setPendingValue(totalSetting, _value);
+		_aoSettingValue.setPendingValue(totalSetting, address(0), _value, '', '', 0);
 
 		// Store setting creation data
 		_storeSettingCreation(_nameFactory.ethAddressToNameId(msg.sender), 2, _settingName, _creatorTAOId, _associatedTAOId, _extraData);
@@ -291,8 +240,10 @@ contract AOSetting is TheAO {
 		// Update global variables
 		totalSetting++;
 
+		settingTypeLookup[totalSetting] = 3;
+
 		// Store the value as pending value
-		_aoAddressSetting.setPendingValue(totalSetting, _value);
+		_aoSettingValue.setPendingValue(totalSetting, _value, false, '', '', 0);
 
 		// Store setting creation data
 		_storeSettingCreation(_nameFactory.ethAddressToNameId(msg.sender), 3, _settingName, _creatorTAOId, _associatedTAOId, _extraData);
@@ -310,8 +261,10 @@ contract AOSetting is TheAO {
 		// Update global variables
 		totalSetting++;
 
+		settingTypeLookup[totalSetting] = 4;
+
 		// Store the value as pending value
-		_aoBytesSetting.setPendingValue(totalSetting, _value);
+		_aoSettingValue.setPendingValue(totalSetting, address(0), false, _value, '', 0);
 
 		// Store setting creation data
 		_storeSettingCreation(_nameFactory.ethAddressToNameId(msg.sender), 4, _settingName, _creatorTAOId, _associatedTAOId, _extraData);
@@ -329,8 +282,10 @@ contract AOSetting is TheAO {
 		// Update global variables
 		totalSetting++;
 
+		settingTypeLookup[totalSetting] = 5;
+
 		// Store the value as pending value
-		_aoStringSetting.setPendingValue(totalSetting, _value);
+		_aoSettingValue.setPendingValue(totalSetting, address(0), false, '', _value, 0);
 
 		// Store setting creation data
 		_storeSettingCreation(_nameFactory.ethAddressToNameId(msg.sender), 5, _settingName, _creatorTAOId, _associatedTAOId, _extraData);
@@ -349,6 +304,7 @@ contract AOSetting is TheAO {
 		if (!_approved) {
 			// Clear the settingName from nameSettingLookup so it can be added again in the future
 			delete nameSettingLookup[_associatedTAOId][keccak256(abi.encodePacked(this, _settingName))];
+			delete settingTypeLookup[_settingId];
 		}
 		emit ApproveSettingCreation(_settingId, _associatedTAOId, _associatedTAOAdvocate, _approved);
 	}
@@ -361,9 +317,9 @@ contract AOSetting is TheAO {
 		address _creatorTAOAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
 		require (_aoSettingAttribute.finalizeAdd(_settingId, _creatorTAOAdvocate));
 
-		(,,address _creatorTAOId,,, uint8 _settingType,,,,) = _aoSettingAttribute.getSettingData(_settingId);
+		(,,address _creatorTAOId,,,,,,,) = _aoSettingAttribute.getSettingData(_settingId);
 
-		_movePendingToSetting(_settingId, _settingType);
+		require (_aoSettingValue.movePendingToSetting(_settingId));
 
 		emit FinalizeSettingCreation(_settingId, _creatorTAOId, _creatorTAOAdvocate);
 	}
@@ -377,14 +333,18 @@ contract AOSetting is TheAO {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function updateUintSetting(uint256 _settingId, uint256 _newValue, address _proposalTAOId, string _updateSignature, string _extraData) public isTAO(_proposalTAOId) {
+		// Make sure the setting type is uint256
+		require (settingTypeLookup[_settingId] == 1);
+
 		// Store the setting state data
 		require (_aoSettingAttribute.update(_settingId, 1, _nameFactory.ethAddressToNameId(msg.sender), _proposalTAOId, _updateSignature, _extraData));
 
 		// Store the value as pending value
-		_aoUintSetting.setPendingValue(_settingId, _newValue);
+		_aoSettingValue.setPendingValue(_settingId, address(0), false, '', '', _newValue);
 
 		// Store the update hash key lookup
-		updateHashLookup[keccak256(abi.encodePacked(this, _proposalTAOId, _aoUintSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
+		(,,,, uint256 _uintValue) = _aoSettingValue.settingValue(_settingId);
+		updateHashLookup[keccak256(abi.encodePacked(this, _proposalTAOId, _uintValue, _newValue, _extraData, _settingId))] = _settingId;
 
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalTAOId);
 	}
@@ -398,14 +358,18 @@ contract AOSetting is TheAO {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function updateBoolSetting(uint256 _settingId, bool _newValue, address _proposalTAOId, string _updateSignature, string _extraData) public isTAO(_proposalTAOId) {
+		// Make sure the setting type is bool
+		require (settingTypeLookup[_settingId] == 2);
+
 		// Store the setting state data
 		require (_aoSettingAttribute.update(_settingId, 2, _nameFactory.ethAddressToNameId(msg.sender), _proposalTAOId, _updateSignature, _extraData));
 
 		// Store the value as pending value
-		_aoBoolSetting.setPendingValue(_settingId, _newValue);
+		_aoSettingValue.setPendingValue(_settingId, address(0), _newValue, '', '', 0);
 
 		// Store the update hash key lookup
-		updateHashLookup[keccak256(abi.encodePacked(this, _proposalTAOId, _aoBoolSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
+		(, bool _boolValue,,,) = _aoSettingValue.settingValue(_settingId);
+		updateHashLookup[keccak256(abi.encodePacked(this, _proposalTAOId, _boolValue, _newValue, _extraData, _settingId))] = _settingId;
 
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalTAOId);
 	}
@@ -419,14 +383,18 @@ contract AOSetting is TheAO {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function updateAddressSetting(uint256 _settingId, address _newValue, address _proposalTAOId, string _updateSignature, string _extraData) public isTAO(_proposalTAOId) {
+		// Make sure the setting type is address
+		require (settingTypeLookup[_settingId] == 3);
+
 		// Store the setting state data
 		require (_aoSettingAttribute.update(_settingId, 3, _nameFactory.ethAddressToNameId(msg.sender), _proposalTAOId, _updateSignature, _extraData));
 
 		// Store the value as pending value
-		_aoAddressSetting.setPendingValue(_settingId, _newValue);
+		_aoSettingValue.setPendingValue(_settingId, _newValue, false, '', '', 0);
 
 		// Store the update hash key lookup
-		updateHashLookup[keccak256(abi.encodePacked(this, _proposalTAOId, _aoAddressSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
+		(address _addressValue,,,,) = _aoSettingValue.settingValue(_settingId);
+		updateHashLookup[keccak256(abi.encodePacked(this, _proposalTAOId, _addressValue, _newValue, _extraData, _settingId))] = _settingId;
 
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalTAOId);
 	}
@@ -440,14 +408,18 @@ contract AOSetting is TheAO {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function updateBytesSetting(uint256 _settingId, bytes32 _newValue, address _proposalTAOId, string _updateSignature, string _extraData) public isTAO(_proposalTAOId) {
+		// Make sure the setting type is bytes32
+		require (settingTypeLookup[_settingId] == 4);
+
 		// Store the setting state data
 		require (_aoSettingAttribute.update(_settingId, 4, _nameFactory.ethAddressToNameId(msg.sender), _proposalTAOId, _updateSignature, _extraData));
 
 		// Store the value as pending value
-		_aoBytesSetting.setPendingValue(_settingId, _newValue);
+		_aoSettingValue.setPendingValue(_settingId, address(0), false, _newValue, '', 0);
 
 		// Store the update hash key lookup
-		updateHashLookup[keccak256(abi.encodePacked(this, _proposalTAOId, _aoBytesSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
+		(,, bytes32 _bytesValue,,) = _aoSettingValue.settingValue(_settingId);
+		updateHashLookup[keccak256(abi.encodePacked(this, _proposalTAOId, _bytesValue, _newValue, _extraData, _settingId))] = _settingId;
 
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalTAOId);
 	}
@@ -461,14 +433,18 @@ contract AOSetting is TheAO {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function updateStringSetting(uint256 _settingId, string _newValue, address _proposalTAOId, string _updateSignature, string _extraData) public isTAO(_proposalTAOId) {
+		// Make sure the setting type is string
+		require (settingTypeLookup[_settingId] == 5);
+
 		// Store the setting state data
 		require (_aoSettingAttribute.update(_settingId, 5, _nameFactory.ethAddressToNameId(msg.sender), _proposalTAOId, _updateSignature, _extraData));
 
 		// Store the value as pending value
-		_aoStringSetting.setPendingValue(_settingId, _newValue);
+		_aoSettingValue.setPendingValue(_settingId, address(0), false, '', _newValue, 0);
 
 		// Store the update hash key lookup
-		updateHashLookup[keccak256(abi.encodePacked(this, _proposalTAOId, _aoStringSetting.settingValue(_settingId), _newValue, _extraData, _settingId))] = _settingId;
+		(,,, string memory _stringValue,) = _aoSettingValue.settingValue(_settingId);
+		updateHashLookup[keccak256(abi.encodePacked(this, _proposalTAOId, _stringValue, _newValue, _extraData, _settingId))] = _settingId;
 
 		emit SettingUpdate(_settingId, _nameFactory.ethAddressToNameId(msg.sender), _proposalTAOId);
 	}
@@ -495,9 +471,9 @@ contract AOSetting is TheAO {
 		address _associatedTAOAdvocate = _nameFactory.ethAddressToNameId(msg.sender);
 		require (_aoSettingAttribute.finalizeUpdate(_settingId, _associatedTAOAdvocate));
 
-		(,,, address _associatedTAOId,, uint8 _settingType,,,,) = _aoSettingAttribute.getSettingData(_settingId);
+		(,,, address _associatedTAOId,,,,,,) = _aoSettingAttribute.getSettingData(_settingId);
 
-		_movePendingToSetting(_settingId, _settingType);
+		require (_aoSettingValue.movePendingToSetting(_settingId));
 
 		emit FinalizeSettingUpdate(_settingId, _associatedTAOId, _associatedTAOAdvocate);
 	}
@@ -564,13 +540,8 @@ contract AOSetting is TheAO {
 	function getSettingValuesById(uint256 _settingId) public view returns (uint256, bool, address, bytes32, string) {
 		require (_aoSettingAttribute.settingExist(_settingId));
 		_settingId = _aoSettingAttribute.getLatestSettingId(_settingId);
-		return (
-			_aoUintSetting.settingValue(_settingId),
-			_aoBoolSetting.settingValue(_settingId),
-			_aoAddressSetting.settingValue(_settingId),
-			_aoBytesSetting.settingValue(_settingId),
-			_aoStringSetting.settingValue(_settingId)
-		);
+		(address _addressValue, bool _boolValue, bytes32 _bytesValue, string memory _stringValue, uint256 _uintValue) = _aoSettingValue.settingValue(_settingId);
+		return (_uintValue, _boolValue, _addressValue, _bytesValue, _stringValue);
 	}
 
 	/**
@@ -609,29 +580,5 @@ contract AOSetting is TheAO {
 		(bytes32 _associatedTAOSettingId, bytes32 _creatorTAOSettingId) = _aoSettingAttribute.add(totalSetting, _creatorNameId, _settingType, _settingName, _creatorTAOId, _associatedTAOId, _extraData);
 
 		emit SettingCreation(totalSetting, _creatorNameId, _creatorTAOId, _associatedTAOId, _settingName, _settingType, _associatedTAOSettingId, _creatorTAOSettingId);
-	}
-
-	/**
-	 * @dev Move value of _settingId from pending variable to setting variable
-	 * @param _settingId The ID of the setting
-	 * @param _settingType The type of the setting
-	 */
-	function _movePendingToSetting(uint256 _settingId, uint8 _settingType) internal {
-		// If settingType == uint256
-		if (_settingType == 1) {
-			_aoUintSetting.movePendingToSetting(_settingId);
-		} else if (_settingType == 2) {
-			// Else if settingType == bool
-			_aoBoolSetting.movePendingToSetting(_settingId);
-		} else if (_settingType == 3) {
-			// Else if settingType == address
-			_aoAddressSetting.movePendingToSetting(_settingId);
-		} else if (_settingType == 4) {
-			// Else if settingType == bytes32
-			_aoBytesSetting.movePendingToSetting(_settingId);
-		} else {
-			// Else if settingType == string
-			_aoStringSetting.movePendingToSetting(_settingId);
-		}
 	}
 }

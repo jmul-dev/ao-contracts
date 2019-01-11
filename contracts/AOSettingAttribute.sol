@@ -2,15 +2,16 @@ pragma solidity ^0.4.24;
 
 import './AOLibrary.sol';
 import "./TheAO.sol";
-import './NameTAOPosition.sol';
+import './IAOSettingAttribute.sol';
+import './INameTAOPosition.sol';
 
 /**
  * @title AOSettingAttribute
  *
  * This contract stores all AO setting data/state
  */
-contract AOSettingAttribute is TheAO {
-	NameTAOPosition internal _nameTAOPosition;
+contract AOSettingAttribute is TheAO, IAOSettingAttribute {
+	INameTAOPosition internal _nameTAOPosition;
 
 	struct SettingData {
 		uint256 settingId;				// Identifier of this setting
@@ -171,7 +172,7 @@ contract AOSettingAttribute is TheAO {
 	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
 		require (_nameTAOPositionAddress != address(0));
 		nameTAOPositionAddress = _nameTAOPositionAddress;
-		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+		_nameTAOPosition = INameTAOPosition(_nameTAOPositionAddress);
 	}
 
 	/***** PUBLIC METHODS *****/
@@ -187,32 +188,22 @@ contract AOSettingAttribute is TheAO {
 	 * @return The ID of the "Associated" setting
 	 * @return The ID of the "Creator" setting
 	 */
-	function add(uint256 _settingId, address _creatorNameId, uint8 _settingType, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) public inWhitelist returns (bytes32, bytes32) {
+	function add(uint256 _settingId, address _creatorNameId, uint8 _settingType, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) external inWhitelist returns (bytes32, bytes32) {
 		// Store setting data/state
 		require (_storeSettingDataState(_settingId, _creatorNameId, _settingType, _settingName, _creatorTAOId, _associatedTAOId, _extraData));
 
-		// Store the associatedTAOSetting info
-		bytes32 _associatedTAOSettingId = keccak256(abi.encodePacked(this, _associatedTAOId, _settingId));
-		AssociatedTAOSetting storage _associatedTAOSetting = associatedTAOSettings[_associatedTAOSettingId];
-		_associatedTAOSetting.associatedTAOSettingId = _associatedTAOSettingId;
-		_associatedTAOSetting.associatedTAOId = _associatedTAOId;
-		_associatedTAOSetting.settingId = _settingId;
-
-		// Store the creatorTAOSetting info
-		bytes32 _creatorTAOSettingId = keccak256(abi.encodePacked(this, _creatorTAOId, _settingId));
-		CreatorTAOSetting storage _creatorTAOSetting = creatorTAOSettings[_creatorTAOSettingId];
-		_creatorTAOSetting.creatorTAOSettingId = _creatorTAOSettingId;
-		_creatorTAOSetting.creatorTAOId = _creatorTAOId;
-		_creatorTAOSetting.settingId = _settingId;
-
-		return (_associatedTAOSettingId, _creatorTAOSettingId);
+		// Store the associatedTAOSetting/creatorTAOSetting info
+		return (
+			_storeAssociatedTAOSetting(_associatedTAOId, _settingId),
+			_storeCreatorTAOSetting(_creatorTAOId, _settingId)
+		);
 	}
 
 	/**
 	 * @dev Get Setting Data of a setting ID
 	 * @param _settingId The ID of the setting
 	 */
-	function getSettingData(uint256 _settingId) public view returns (uint256, address, address, address, string, uint8, bool, bool, bool, string) {
+	function getSettingData(uint256 _settingId) external view returns (uint256, address, address, address, string, uint8, bool, bool, bool, string) {
 		SettingData memory _settingData = settingDatas[_settingId];
 		return (
 			_settingData.settingId,
@@ -261,7 +252,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _approved Whether to approve or reject
 	 * @return true on success
 	 */
-	function approveAdd(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) public inWhitelist returns (bool) {
+	function approveAdd(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) external inWhitelist returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingData storage _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId &&
@@ -290,7 +281,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _creatorTAOAdvocate The advocate of the creator TAO
 	 * @return true on success
 	 */
-	function finalizeAdd(uint256 _settingId, address _creatorTAOAdvocate) public inWhitelist returns (bool) {
+	function finalizeAdd(uint256 _settingId, address _creatorTAOAdvocate) external inWhitelist returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingData storage _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId &&
@@ -318,7 +309,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 * @return true on success
 	 */
-	function update(uint256 _settingId, uint8 _settingType, address _associatedTAOAdvocate, address _proposalTAOId, string _updateSignature, string _extraData) public inWhitelist returns (bool) {
+	function update(uint256 _settingId, uint8 _settingType, address _associatedTAOAdvocate, address _proposalTAOId, string _updateSignature, string _extraData) external inWhitelist returns (bool) {
 		// Make sure setting is created
 		SettingData memory _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId &&
@@ -355,7 +346,7 @@ contract AOSettingAttribute is TheAO {
 	 * @dev Get setting state
 	 * @param _settingId The ID of the setting
 	 */
-	function getSettingState(uint256 _settingId) public view returns (uint256, bool, address, address, string, address, string) {
+	function getSettingState(uint256 _settingId) external view returns (uint256, bool, address, address, string, address, string) {
 		SettingState memory _settingState = settingStates[_settingId];
 		return (
 			_settingState.settingId,
@@ -375,7 +366,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _approved Whether to approve or reject
 	 * @return true on success
 	 */
-	function approveUpdate(uint256 _settingId, address _proposalTAOAdvocate, bool _approved) public inWhitelist returns (bool) {
+	function approveUpdate(uint256 _settingId, address _proposalTAOAdvocate, bool _approved) external inWhitelist returns (bool) {
 		// Make sure setting is created
 		SettingData storage _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId && _settingData.pendingCreate == false && _settingData.locked == true && _settingData.rejected == false);
@@ -405,7 +396,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _associatedTAOAdvocate The advocate of the associated TAO
 	 * @return true on success
 	 */
-	function finalizeUpdate(uint256 _settingId, address _associatedTAOAdvocate) public inWhitelist returns (bool) {
+	function finalizeUpdate(uint256 _settingId, address _associatedTAOAdvocate) external inWhitelist returns (bool) {
 		// Make sure setting is created
 		SettingData storage _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId &&
@@ -444,7 +435,7 @@ contract AOSettingAttribute is TheAO {
 	 * @return The ID of the "Associated" setting deprecation
 	 * @return The ID of the "Creator" setting deprecation
 	 */
-	function addDeprecation(uint256 _settingId, address _creatorNameId, address _creatorTAOId, address _associatedTAOId, uint256 _newSettingId, address _newSettingContractAddress) public inWhitelist returns (bytes32, bytes32) {
+	function addDeprecation(uint256 _settingId, address _creatorNameId, address _creatorTAOId, address _associatedTAOId, uint256 _newSettingId, address _newSettingContractAddress) external inWhitelist returns (bytes32, bytes32) {
 		require (_storeSettingDeprecation(_settingId, _creatorNameId, _creatorTAOId, _associatedTAOId, _newSettingId, _newSettingContractAddress));
 
 		// Store the associatedTAOSettingDeprecation info
@@ -468,7 +459,7 @@ contract AOSettingAttribute is TheAO {
 	 * @dev Get Setting Deprecation info of a setting ID
 	 * @param _settingId The ID of the setting
 	 */
-	function getSettingDeprecation(uint256 _settingId) public view returns (uint256, address, address, address, bool, bool, bool, bool, uint256, uint256, address, address) {
+	function getSettingDeprecation(uint256 _settingId) external view returns (uint256, address, address, address, bool, bool, bool, bool, uint256, uint256, address, address) {
 		SettingDeprecation memory _settingDeprecation = settingDeprecations[_settingId];
 		return (
 			_settingDeprecation.settingId,
@@ -490,7 +481,7 @@ contract AOSettingAttribute is TheAO {
 	 * @dev Get Associated TAO Setting Deprecation info
 	 * @param _associatedTAOSettingDeprecationId The ID of the associated tao setting deprecation
 	 */
-	function getAssociatedTAOSettingDeprecation(bytes32 _associatedTAOSettingDeprecationId) public view returns (bytes32, address, uint256) {
+	function getAssociatedTAOSettingDeprecation(bytes32 _associatedTAOSettingDeprecationId) external view returns (bytes32, address, uint256) {
 		AssociatedTAOSettingDeprecation memory _associatedTAOSettingDeprecation = associatedTAOSettingDeprecations[_associatedTAOSettingDeprecationId];
 		return (
 			_associatedTAOSettingDeprecation.associatedTAOSettingDeprecationId,
@@ -519,7 +510,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _approved Whether to approve or reject
 	 * @return true on success
 	 */
-	function approveDeprecation(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) public inWhitelist returns (bool) {
+	function approveDeprecation(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) external inWhitelist returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingDeprecation storage _settingDeprecation = settingDeprecations[_settingId];
 		require (_settingDeprecation.settingId == _settingId &&
@@ -548,7 +539,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _creatorTAOAdvocate The advocate of the creator TAO
 	 * @return true on success
 	 */
-	function finalizeDeprecation(uint256 _settingId, address _creatorTAOAdvocate) public inWhitelist returns (bool) {
+	function finalizeDeprecation(uint256 _settingId, address _creatorTAOAdvocate) external inWhitelist returns (bool) {
 		// Make sure setting exists and needs approval
 		SettingDeprecation storage _settingDeprecation = settingDeprecations[_settingId];
 		require (_settingDeprecation.settingId == _settingId &&
@@ -579,7 +570,7 @@ contract AOSettingAttribute is TheAO {
 	 * @param _settingId The ID of the setting
 	 * @return true if exist. false otherwise
 	 */
-	function settingExist(uint256 _settingId) public view returns (bool) {
+	function settingExist(uint256 _settingId) external view returns (bool) {
 		SettingData memory _settingData = settingDatas[_settingId];
 		return (_settingData.settingId == _settingId && _settingData.rejected == false);
 	}
@@ -589,13 +580,14 @@ contract AOSettingAttribute is TheAO {
 	 * @param _settingId The ID of the setting
 	 * @return The latest setting ID
 	 */
-	function getLatestSettingId(uint256 _settingId) public view returns (uint256) {
-		(,,,,,,, bool _migrated,, uint256 _newSettingId,,) = getSettingDeprecation(_settingId);
+	function getLatestSettingId(uint256 _settingId) external view returns (uint256) {
+		uint256 _latestSettingId = _settingId;
+		(,,,,,,, bool _migrated,, uint256 _newSettingId,,) = this.getSettingDeprecation(_latestSettingId);
 		while (_migrated && _newSettingId > 0) {
-			_settingId = _newSettingId;
-			(,,,,,,, _migrated,, _newSettingId,,) = getSettingDeprecation(_settingId);
+			_latestSettingId = _newSettingId;
+			(,,,,,,, _migrated,, _newSettingId,,) = this.getSettingDeprecation(_latestSettingId);
 		}
-		return _settingId;
+		return _latestSettingId;
 	}
 
 	/***** Internal Method *****/
@@ -663,5 +655,37 @@ contract AOSettingAttribute is TheAO {
 		_settingDeprecation.pendingNewSettingId = _newSettingId;
 		_settingDeprecation.pendingNewSettingContractAddress = _newSettingContractAddress;
 		return true;
+	}
+
+	/**
+	 * @dev Store the associated TAO Setting info
+	 * @param _associatedTAOId The Associated TAO ID
+	 * @param _settingId The setting ID
+	 * @return The newly created associated TAO setting ID
+	 */
+	function _storeAssociatedTAOSetting(address _associatedTAOId, uint256 _settingId) internal returns (bytes32) {
+		// Store the associatedTAOSetting info
+		bytes32 _associatedTAOSettingId = keccak256(abi.encodePacked(this, _associatedTAOId, _settingId));
+		AssociatedTAOSetting storage _associatedTAOSetting = associatedTAOSettings[_associatedTAOSettingId];
+		_associatedTAOSetting.associatedTAOSettingId = _associatedTAOSettingId;
+		_associatedTAOSetting.associatedTAOId = _associatedTAOId;
+		_associatedTAOSetting.settingId = _settingId;
+		return _associatedTAOSettingId;
+	}
+
+	/**
+	 * @dev Store the creator TAO Setting info
+	 * @param _creatorTAOId The Creator TAO ID
+	 * @param _settingId The setting ID
+	 * @return The newly created creator TAO setting ID
+	 */
+	function _storeCreatorTAOSetting(address _creatorTAOId, uint256 _settingId) internal returns (bytes32) {
+		// Store the creatorTAOSetting info
+		bytes32 _creatorTAOSettingId = keccak256(abi.encodePacked(this, _creatorTAOId, _settingId));
+		CreatorTAOSetting storage _creatorTAOSetting = creatorTAOSettings[_creatorTAOSettingId];
+		_creatorTAOSetting.creatorTAOSettingId = _creatorTAOSettingId;
+		_creatorTAOSetting.creatorTAOId = _creatorTAOId;
+		_creatorTAOSetting.settingId = _settingId;
+		return _creatorTAOSettingId;
 	}
 }

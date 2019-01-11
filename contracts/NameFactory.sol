@@ -3,10 +3,11 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
+import './INameFactory.sol';
 import './Name.sol';
 import './Position.sol';
 import './NameTAOLookup.sol';
-import './NameTAOPosition.sol';
+import './INameTAOPosition.sol';
 import './NamePublicKey.sol';
 
 /**
@@ -14,7 +15,7 @@ import './NamePublicKey.sol';
  *
  * The purpose of this contract is to allow node to create Name
  */
-contract NameFactory is TheAO {
+contract NameFactory is TheAO, INameFactory {
 	using SafeMath for uint256;
 
 	address public positionAddress;
@@ -24,13 +25,13 @@ contract NameFactory is TheAO {
 
 	Position internal _position;
 	NameTAOLookup internal _nameTAOLookup;
-	NameTAOPosition internal _nameTAOPosition;
+	INameTAOPosition internal _nameTAOPosition;
 	NamePublicKey internal _namePublicKey;
 
 	address[] internal names;
 
 	// Mapping from eth address to Name ID
-	mapping (address => address) public ethAddressToNameId;
+	mapping (address => address) internal _ethAddressToNameId;
 
 	// Mapping from Name ID to its nonce
 	mapping (address => uint256) public nonces;
@@ -119,7 +120,7 @@ contract NameFactory is TheAO {
 	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
 		require (_nameTAOPositionAddress != address(0));
 		nameTAOPositionAddress = _nameTAOPositionAddress;
-		_nameTAOPosition = NameTAOPosition(nameTAOPositionAddress);
+		_nameTAOPosition = INameTAOPosition(nameTAOPositionAddress);
 	}
 
 	/**
@@ -138,7 +139,7 @@ contract NameFactory is TheAO {
 	 * @param _nameId The ID of the Name
 	 * @return current nonce
 	 */
-	function incrementNonce(address _nameId) public canUpdateNonce returns (uint256) {
+	function incrementNonce(address _nameId) external canUpdateNonce returns (uint256) {
 		// Check if _nameId exist
 		require (nonces[_nameId] > 0);
 		nonces[_nameId]++;
@@ -158,7 +159,7 @@ contract NameFactory is TheAO {
 		require (!_nameTAOLookup.isExist(_name));
 
 		// Only one Name per ETH address
-		require (ethAddressToNameId[msg.sender] == address(0));
+		require (_ethAddressToNameId[msg.sender] == address(0));
 
 		// The address is the Name ID (which is also a TAO ID)
 		address nameId = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
@@ -166,7 +167,7 @@ contract NameFactory is TheAO {
 		// Increment the nonce
 		nonces[nameId]++;
 
-		ethAddressToNameId[msg.sender] = nameId;
+		_ethAddressToNameId[msg.sender] = nameId;
 
 		// Store the name lookup information
 		require (_nameTAOLookup.add(_name, nameId, 'human', 1));
@@ -183,6 +184,15 @@ contract NameFactory is TheAO {
 		require (_position.mintToken(nameId));
 
 		emit CreateName(msg.sender, nameId, names.length.sub(1), _name);
+	}
+
+	/**
+	 * @dev Get the Name ID given an ETH address
+	 * @param _ethAddress The ETH address to check
+	 * @return The Name ID
+	 */
+	function ethAddressToNameId(address _ethAddress) external view returns (address) {
+		return _ethAddressToNameId[_ethAddress];
 	}
 
 	/**

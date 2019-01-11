@@ -2,8 +2,8 @@ pragma solidity ^0.4.24;
 
 import './TheAO.sol';
 import './AOLibrary.sol';
-import './NameFactory.sol';
-import './NameTAOPosition.sol';
+import './INameFactory.sol';
+import './INameTAOPosition.sol';
 
 /**
  * @title TAOController
@@ -11,8 +11,8 @@ import './NameTAOPosition.sol';
 contract TAOController is TheAO {
 	address public nameFactoryAddress;
 
-	NameFactory internal _nameFactory;
-	NameTAOPosition internal _nameTAOPosition;
+	INameFactory internal _nameFactory;
+	INameTAOPosition internal _nameTAOPosition;
 
 	/**
 	 * @dev Constructor function
@@ -98,7 +98,7 @@ contract TAOController is TheAO {
 	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
 		require (_nameFactoryAddress != address(0));
 		nameFactoryAddress = _nameFactoryAddress;
-		_nameFactory = NameFactory(_nameFactoryAddress);
+		_nameFactory = INameFactory(_nameFactoryAddress);
 	}
 
 	/**
@@ -108,6 +108,6 @@ contract TAOController is TheAO {
 	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
 		require (_nameTAOPositionAddress != address(0));
 		nameTAOPositionAddress = _nameTAOPositionAddress;
-		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+		_nameTAOPosition = INameTAOPosition(_nameTAOPositionAddress);
 	}
 }

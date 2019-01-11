@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './TheAO.sol';
 import './AOLibrary.sol';
+import './TheAO.sol';
 import './AOToken.sol';
 import './AOTreasury.sol';
 import './AOContent.sol';

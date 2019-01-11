@@ -3,8 +3,8 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
-import './NameFactory.sol';
-import './NameTAOPosition.sol';
+import './INameFactory.sol';
+import './INameTAOPosition.sol';
 import './TokenERC20.sol';
 import './AOToken.sol';
 
@@ -17,8 +17,8 @@ contract NameTAOVault is TheAO {
 	address public nameFactoryAddress;
 	address public aoTokenAddress;
 
-	NameFactory internal _nameFactory;
-	NameTAOPosition internal _nameTAOPosition;
+	INameFactory internal _nameFactory;
+	INameTAOPosition internal _nameTAOPosition;
 	AOToken internal _aoToken;
 
 	// Event to be broadcasted to public when Advocate of `from` Name/TAO transfer ETH
@@ -40,10 +40,9 @@ contract NameTAOVault is TheAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _nameTAOPositionAddress, address _aoTokenAddress) public {
+	constructor(address _nameFactoryAddress, address _nameTAOPositionAddress) public {
 		setNameFactoryAddress(_nameFactoryAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
-		setAOTokenAddress(_aoTokenAddress);
 	}
 
 	/**
@@ -99,7 +98,7 @@ contract NameTAOVault is TheAO {
 	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
 		require (_nameFactoryAddress != address(0));
 		nameFactoryAddress = _nameFactoryAddress;
-		_nameFactory = NameFactory(_nameFactoryAddress);
+		_nameFactory = INameFactory(_nameFactoryAddress);
 	}
 
 	/**
@@ -109,7 +108,7 @@ contract NameTAOVault is TheAO {
 	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
 		require (_nameTAOPositionAddress != address(0));
 		nameTAOPositionAddress = _nameTAOPositionAddress;
-		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+		_nameTAOPosition = INameTAOPosition(_nameTAOPositionAddress);
 	}
 
 	/**

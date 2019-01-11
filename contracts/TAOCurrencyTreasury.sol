@@ -4,7 +4,7 @@ import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
 import './TAOCurrency.sol';
-import './NameFactory.sol';
+import './INameFactory.sol';
 
 /**
  * @title TAOCurrency
@@ -19,7 +19,7 @@ contract TAOCurrencyTreasury is TheAO {
 
 	address public nameFactoryAddress;
 
-	NameFactory internal _nameFactory;
+	INameFactory internal _nameFactory;
 
 	struct Denomination {
 		bytes8 name;
@@ -111,7 +111,7 @@ contract TAOCurrencyTreasury is TheAO {
 	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
 		require (_nameFactoryAddress != address(0));
 		nameFactoryAddress = _nameFactoryAddress;
-		_nameFactory = NameFactory(_nameFactoryAddress);
+		_nameFactory = INameFactory(_nameFactoryAddress);
 	}
 
 	/**

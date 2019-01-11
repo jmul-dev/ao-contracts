@@ -2,17 +2,18 @@ pragma solidity ^0.4.24;
 
 import './AOLibrary.sol';
 import './TheAO.sol';
-import './NameFactory.sol';
+import './INameTAOPosition.sol';
+import './INameFactory.sol';
 import './TAOFactory.sol';
 
 /**
  * @title NameTAOPosition
  */
-contract NameTAOPosition is TheAO {
+contract NameTAOPosition is TheAO, INameTAOPosition {
 	address public nameFactoryAddress;
 	address public taoFactoryAddress;
 
-	NameFactory internal _nameFactory;
+	INameFactory internal _nameFactory;
 	TAOFactory internal _taoFactory;
 
 	struct PositionDetail {
@@ -97,7 +98,7 @@ contract NameTAOPosition is TheAO {
 	 * @dev Check if msg.sender is the current advocate of a Name/TAO ID
 	 */
 	modifier onlyAdvocate(address _id) {
-		require (senderIsAdvocate(msg.sender, _id));
+		require (this.senderIsAdvocate(msg.sender, _id));
 		_;
 	}
 
@@ -128,7 +129,7 @@ contract NameTAOPosition is TheAO {
 	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
 		require (_nameFactoryAddress != address(0));
 		nameFactoryAddress = _nameFactoryAddress;
-		_nameFactory = NameFactory(_nameFactoryAddress);
+		_nameFactory = INameFactory(_nameFactoryAddress);
 	}
 
 	/**
@@ -157,7 +158,7 @@ contract NameTAOPosition is TheAO {
 	 * @param _id The ID to be checked
 	 * @return true if yes, false otherwise
 	 */
-	function senderIsAdvocate(address _sender, address _id) public view returns (bool) {
+	function senderIsAdvocate(address _sender, address _id) external view returns (bool) {
 		return (positionDetails[_id].created && positionDetails[_id].advocateId == _nameFactory.ethAddressToNameId(_sender));
 	}
 
@@ -167,7 +168,7 @@ contract NameTAOPosition is TheAO {
 	 * @param _id The ID to be checked
 	 * @return true if yes, false otherwise
 	 */
-	function senderIsPosition(address _sender, address _id) public view returns (bool) {
+	function senderIsPosition(address _sender, address _id) external view returns (bool) {
 		address _nameId = _nameFactory.ethAddressToNameId(_sender);
 		if (_nameId == address(0)) {
 			return false;
@@ -187,7 +188,7 @@ contract NameTAOPosition is TheAO {
 	 * @param _id The ID to be checked
 	 * @return true if yes, false otherwise
 	 */
-	function nameIsAdvocate(address _nameId, address _id) public view returns (bool) {
+	function nameIsAdvocate(address _nameId, address _id) external view returns (bool) {
 		return (positionDetails[_id].created && positionDetails[_id].advocateId == _nameId);
 	}
 
@@ -197,8 +198,8 @@ contract NameTAOPosition is TheAO {
 	 * @param _id The ID of the Name/TAO
 	 * @return 1 if Advocate. 2 if Listener. 3 if Speaker
 	 */
-	function determinePosition(address _sender, address _id) public view returns (uint256) {
-		require (senderIsPosition(_sender, _id));
+	function determinePosition(address _sender, address _id) external view returns (uint256) {
+		require (this.senderIsPosition(_sender, _id));
 		PositionDetail memory _positionDetail = positionDetails[_id];
 		address _nameId = _nameFactory.ethAddressToNameId(_sender);
 		if (_nameId == _positionDetail.advocateId) {
@@ -219,7 +220,7 @@ contract NameTAOPosition is TheAO {
 	 * @return true on success
 	 */
 	function add(address _id, address _advocateId, address _listenerId, address _speakerId)
-		public
+		external
 		isNameOrTAO(_id)
 		isName(_advocateId)
 		isNameOrTAO(_listenerId)
@@ -257,7 +258,7 @@ contract NameTAOPosition is TheAO {
 	 * @param _id The ID of the Name/TAO
 	 * @return the Advocate ID of Name/TAO
 	 */
-	function getAdvocate(address _id) public view returns (address) {
+	function getAdvocate(address _id) external view returns (address) {
 		require (isExist(_id));
 		PositionDetail memory _positionDetail = positionDetails[_id];
 		return _positionDetail.advocateId;

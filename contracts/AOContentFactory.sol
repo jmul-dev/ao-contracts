@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
-import './AOSetting.sol';
+import './IAOSetting.sol';
 import './AOTreasury.sol';
 import './AOContent.sol';
 import './AOStakedContent.sol';
@@ -28,13 +28,13 @@ contract AOContentFactory is TheAO {
 	address public aoContentHostAddress;
 	address public aoEarningAddress;
 
-	AOSetting internal _aoSetting;
+	IAOSetting internal _aoSetting;
 	AOTreasury internal _aoTreasury;
 	AOContent internal _aoContent;
 	AOStakedContent internal _aoStakedContent;
 	AOContentHost internal _aoContentHost;
 	AOEarning internal _aoEarning;
-	NameTAOPosition internal _nameTAOPosition;
+	INameTAOPosition internal _nameTAOPosition;
 
 	/**
 	 * @dev Constructor function
@@ -112,7 +112,7 @@ contract AOContentFactory is TheAO {
 	function setAOSettingAddress(address _aoSettingAddress) public onlyTheAO {
 		require (_aoSettingAddress != address(0));
 		aoSettingAddress = _aoSettingAddress;
-		_aoSetting = AOSetting(_aoSettingAddress);
+		_aoSetting = IAOSetting(_aoSettingAddress);
 	}
 
 	/**
@@ -172,7 +172,7 @@ contract AOContentFactory is TheAO {
 	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
 		require (_nameTAOPositionAddress != address(0));
 		nameTAOPositionAddress = _nameTAOPositionAddress;
-		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+		_nameTAOPosition = INameTAOPosition(_nameTAOPositionAddress);
 	}
 
 	/***** PUBLIC METHODS *****/

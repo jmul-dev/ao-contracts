@@ -5,7 +5,7 @@ import './TAOController.sol';
 import './Name.sol';
 import './NameTAOLookup.sol';		// Store the name lookup for a Name/TAO
 import './TAOFamily.sol';			// Store TAO's child information
-import './AOSetting.sol';
+import './IAOSetting.sol';
 import './Logos.sol';
 
 /**
@@ -26,7 +26,7 @@ contract TAOFactory is TAOController {
 	address public settingTAOId;
 
 	NameTAOLookup internal _nameTAOLookup;
-	AOSetting internal _aoSetting;
+	IAOSetting internal _aoSetting;
 	Logos internal _logos;
 	TAOFamily internal _taoFamily;
 
@@ -68,7 +68,7 @@ contract TAOFactory is TAOController {
 	function setAOSettingAddress(address _aoSettingAddress) public onlyTheAO {
 		require (_aoSettingAddress != address(0));
 		aoSettingAddress = _aoSettingAddress;
-		_aoSetting = AOSetting(_aoSettingAddress);
+		_aoSetting = IAOSetting(_aoSettingAddress);
 	}
 
 	/**

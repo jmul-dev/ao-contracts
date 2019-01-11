@@ -3,9 +3,9 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
-import './AOSetting.sol';
+import './IAOSetting.sol';
 import './AOToken.sol';
-import './NameFactory.sol';
+import './INameFactory.sol';
 import './Pathos.sol';
 import './Ethos.sol';
 
@@ -24,9 +24,9 @@ contract AOEarning is TheAO {
 	address public pathosAddress;
 	address public ethosAddress;
 
-	AOSetting internal _aoSetting;
+	IAOSetting internal _aoSetting;
 	AOToken internal _aoToken;
-	NameFactory internal _nameFactory;
+	INameFactory internal _nameFactory;
 	Pathos internal _pathos;
 	Ethos internal _ethos;
 
@@ -184,7 +184,7 @@ contract AOEarning is TheAO {
 	function setAOSettingAddress(address _aoSettingAddress) public onlyTheAO {
 		require (_aoSettingAddress != address(0));
 		aoSettingAddress = _aoSettingAddress;
-		_aoSetting = AOSetting(_aoSettingAddress);
+		_aoSetting = IAOSetting(_aoSettingAddress);
 	}
 
 	/**
@@ -204,7 +204,7 @@ contract AOEarning is TheAO {
 	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
 		require (_nameFactoryAddress != address(0));
 		nameFactoryAddress = _nameFactoryAddress;
-		_nameFactory = NameFactory(_nameFactoryAddress);
+		_nameFactory = INameFactory(_nameFactoryAddress);
 	}
 
 	/**

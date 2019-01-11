@@ -3,8 +3,8 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
-import './NameFactory.sol';
-import './NameTAOPosition.sol';
+import './INameFactory.sol';
+import './INameTAOPosition.sol';
 
 /**
  * @title NamePublicKey
@@ -14,8 +14,8 @@ contract NamePublicKey is TheAO {
 
 	address public nameFactoryAddress;
 
-	NameFactory internal _nameFactory;
-	NameTAOPosition internal _nameTAOPosition;
+	INameFactory internal _nameFactory;
+	INameTAOPosition internal _nameTAOPosition;
 
 	struct PublicKey {
 		bool created;
@@ -104,7 +104,7 @@ contract NamePublicKey is TheAO {
 	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
 		require (_nameFactoryAddress != address(0));
 		nameFactoryAddress = _nameFactoryAddress;
-		_nameFactory = NameFactory(_nameFactoryAddress);
+		_nameFactory = INameFactory(_nameFactoryAddress);
 	}
 
 	/**
@@ -114,7 +114,7 @@ contract NamePublicKey is TheAO {
 	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
 		require (_nameTAOPositionAddress != address(0));
 		nameTAOPositionAddress = _nameTAOPositionAddress;
-		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+		_nameTAOPosition = INameTAOPosition(_nameTAOPositionAddress);
 	}
 
 	/***** PUBLIC METHODS *****/

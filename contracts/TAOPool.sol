@@ -94,9 +94,10 @@ contract TAOPool is TAOController {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _taoFactoryAddress, address _pathosAddress, address _ethosAddress, address _logosAddress)
+	constructor(address _nameFactoryAddress, address _taoFactoryAddress, address _nameTAOPositionAddress, address _pathosAddress, address _ethosAddress, address _logosAddress)
 		TAOController(_nameFactoryAddress) public {
 		setTAOFactoryAddress(_taoFactoryAddress);
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
 		setPathosAddress(_pathosAddress);
 		setEthosAddress(_ethosAddress);
 		setLogosAddress(_logosAddress);

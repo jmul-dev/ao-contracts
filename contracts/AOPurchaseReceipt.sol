@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
-import './TheAO.sol';
 import './AOLibrary.sol';
+import './TheAO.sol';
 import './AOContent.sol';
 import './AOStakedContent.sol';
 import './AOContentHost.sol';
@@ -71,21 +71,18 @@ contract AOPurchaseReceipt is TheAO {
 	 * @dev Constructor function
 	 * @param _aoContentAddress The address of AOContent
 	 * @param _aoStakedContentAddress The address of AOStakedContent
-	 * @param _aoContentHostAddress The address of AOContentHost
 	 * @param _aoTreasuryAddress The address of AOTreasury
 	 * @param _aoEarningAddress The address of AOEarning
 	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
 	constructor(address _aoContentAddress,
 		address _aoStakedContentAddress,
-		address _aoContentHostAddress,
 		address _aoTreasuryAddress,
 		address _aoEarningAddress,
 		address _nameTAOPositionAddress
 		) public {
 		setAOContentAddress(_aoContentAddress);
 		setAOStakedContentAddress(_aoStakedContentAddress);
-		setAOContentHostAddress(_aoContentHostAddress);
 		setAOTreasuryAddress(_aoTreasuryAddress);
 		setAOEarningAddress(_aoEarningAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);

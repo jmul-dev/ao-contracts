@@ -4,7 +4,7 @@ import './SafeMath.sol';
 import './AOLibrary.sol';
 import './AOTokenInterface.sol';
 import './tokenRecipient.sol';
-import './AOSetting.sol';
+import './IAOSetting.sol';
 import './AOETH.sol';
 
 /**
@@ -21,7 +21,7 @@ contract AOToken is AOTokenInterface {
 	address public aoDevTeam1 = 0x5C63644D01Ba385eBAc5bcf2DDc1e6dBC1182b52;
 	address public aoDevTeam2 = 0x156C79bf4347D1891da834Ea30662A14177CbF28;
 
-	AOSetting internal _aoSetting;
+	IAOSetting internal _aoSetting;
 	AOETH internal _aoeth;
 
 	/***** PRIMORDIAL TOKEN VARIABLES *****/
@@ -166,7 +166,7 @@ contract AOToken is AOTokenInterface {
 	function setAOSettingAddress(address _aoSettingAddress) public onlyTheAO {
 		require (_aoSettingAddress != address(0));
 		aoSettingAddress = _aoSettingAddress;
-		_aoSetting = AOSetting(_aoSettingAddress);
+		_aoSetting = IAOSetting(_aoSettingAddress);
 	}
 
 	/**
@@ -183,7 +183,7 @@ contract AOToken is AOTokenInterface {
 	 * @dev Set AOETH address
 	 * @param _aoethAddress The address of AOETH
 	 */
-	function setAOEthAddress(address _aoethAddress) public onlyTheAO {
+	function setAOETHAddress(address _aoethAddress) public onlyTheAO {
 		require (_aoethAddress != address(0));
 		aoethAddress = _aoethAddress;
 		_aoeth = AOETH(_aoethAddress);

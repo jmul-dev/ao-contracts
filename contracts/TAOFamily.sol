@@ -48,9 +48,10 @@ contract TAOFamily is TAOController {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _nameFactoryAddress, address _taoFactoryAddress)
+	constructor(address _nameFactoryAddress, address _taoFactoryAddress, address _nameTAOPositionAddress)
 		TAOController(_nameFactoryAddress) public {
 		setTAOFactoryAddress(_taoFactoryAddress);
+		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
 	/**

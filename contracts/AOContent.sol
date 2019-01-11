@@ -2,8 +2,8 @@ pragma solidity ^0.4.24;
 
 import './AOLibrary.sol';
 import './TheAO.sol';
-import './AOSetting.sol';
-import './NameTAOPosition.sol';
+import './IAOSetting.sol';
+import './INameTAOPosition.sol';
 
 /**
  * @title AOContent
@@ -13,8 +13,8 @@ contract AOContent is TheAO {
 	address public settingTAOId;
 	address public aoSettingAddress;
 
-	AOSetting internal _aoSetting;
-	NameTAOPosition internal _nameTAOPosition;
+	IAOSetting internal _aoSetting;
+	INameTAOPosition internal _nameTAOPosition;
 
 	struct Content {
 		bytes32 contentId;
@@ -118,7 +118,7 @@ contract AOContent is TheAO {
 	function setAOSettingAddress(address _aoSettingAddress) public onlyTheAO {
 		require (_aoSettingAddress != address(0));
 		aoSettingAddress = _aoSettingAddress;
-		_aoSetting = AOSetting(_aoSettingAddress);
+		_aoSetting = IAOSetting(_aoSettingAddress);
 	}
 
 	/**
@@ -128,7 +128,7 @@ contract AOContent is TheAO {
 	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
 		require (_nameTAOPositionAddress != address(0));
 		nameTAOPositionAddress = _nameTAOPositionAddress;
-		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+		_nameTAOPosition = INameTAOPosition(_nameTAOPositionAddress);
 	}
 
 	/***** PUBLIC METHODS *****/

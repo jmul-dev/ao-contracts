@@ -1,10 +1,10 @@
 pragma solidity ^0.4.24;
 
 import "./TAOCurrency.sol";
-import "./NameTAOPosition.sol";
+import "./INameTAOPosition.sol";
 
 contract Logos is TAOCurrency {
-	NameTAOPosition internal _nameTAOPosition;
+	INameTAOPosition internal _nameTAOPosition;
 
 	// Mapping of a Name ID to the amount of Logos positioned by others to itself
 	// address is the address of nameId, not the eth public address
@@ -74,7 +74,7 @@ contract Logos is TAOCurrency {
 	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
 		require (_nameTAOPositionAddress != address(0));
 		nameTAOPositionAddress = _nameTAOPositionAddress;
-		_nameTAOPosition = NameTAOPosition(_nameTAOPositionAddress);
+		_nameTAOPosition = INameTAOPosition(_nameTAOPositionAddress);
 	}
 
 	/***** PUBLIC METHODS *****/
