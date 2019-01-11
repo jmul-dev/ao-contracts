@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
+import './IAOEarning.sol';
 import './IAOSetting.sol';
 import './AOToken.sol';
 import './INameFactory.sol';
@@ -14,7 +15,7 @@ import './Ethos.sol';
  *
  * This contract stores the earning from staking/hosting content on AO
  */
-contract AOEarning is TheAO {
+contract AOEarning is TheAO, IAOEarning {
 	using SafeMath for uint256;
 
 	address public settingTAOId;
@@ -260,7 +261,7 @@ contract AOEarning is TheAO {
 		address _stakeOwner,
 		address _host,
 		bool _isAOContentUsageType
-	) public inWhitelist returns (bool) {
+	) external inWhitelist returns (bool) {
 		// Split the payment earning between content creator and host and store them in escrow
 		_escrowPaymentEarning(_buyer, _purchaseId, _networkAmountStaked.add(_primordialAmountStaked), _profitPercentage, _stakeOwner, _host, _isAOContentUsageType);
 
@@ -280,7 +281,7 @@ contract AOEarning is TheAO {
 	 * @param _host The address of the node that host the file
 	 * @return true on success
 	 */
-	function releaseEarning(bytes32 _stakeId, bytes32 _contentHostId, bytes32 _purchaseId, bool _buyerPaidMoreThanFileSize, address _stakeOwner, address _host) public inWhitelist returns (bool) {
+	function releaseEarning(bytes32 _stakeId, bytes32 _contentHostId, bytes32 _purchaseId, bool _buyerPaidMoreThanFileSize, address _stakeOwner, address _host) external inWhitelist returns (bool) {
 		// Release the earning in escrow for stake owner
 		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidMoreThanFileSize, _stakeOwner, 0);
 
@@ -291,6 +292,21 @@ contract AOEarning is TheAO {
 		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidMoreThanFileSize, theAO, 2);
 
 		return true;
+	}
+
+	/**
+	 * @dev Return the earning information of a stake ID
+	 * @param _stakeId The ID of the staked content
+	 * @return the total earning from staking this content
+	 * @return the total earning from hosting this content
+	 * @return the total The AO earning of this content
+	 */
+	function getTotalStakedContentEarning(bytes32 _stakeId) external view returns (uint256, uint256, uint256) {
+		return (
+			totalStakedContentStakeEarning[_stakeId],
+			totalStakedContentHostEarning[_stakeId],
+			totalStakedContentTheAOEarning[_stakeId]
+		);
 	}
 
 	/***** INTERNAL METHODS *****/

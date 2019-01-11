@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './TAO.sol';
 import './Name.sol';
-import './NameTAOPosition.sol';
+import './INameTAOPosition.sol';
 import './TokenERC20.sol';
 
 /**
@@ -59,7 +59,7 @@ library AOLibrary {
 			(
 				(isTAO(_theAO) || isName(_theAO)) &&
 				_nameTAOPositionAddress != address(0) &&
-				NameTAOPosition(_nameTAOPositionAddress).senderIsAdvocate(_sender, _theAO)
+				INameTAOPosition(_nameTAOPositionAddress).senderIsAdvocate(_sender, _theAO)
 			)
 		);
 	}
@@ -80,6 +80,48 @@ library AOLibrary {
 	 */
 	function MULTIPLIER_DIVISOR() public pure returns (uint256) {
 		return _MULTIPLIER_DIVISOR;
+	}
+
+	/**
+	 * @dev deploy a TAO
+	 * @param _name The name of the TAO
+	 * @param _originId The Name ID the creates the TAO
+	 * @param _datHash The datHash of this TAO
+	 * @param _database The database for this TAO
+	 * @param _keyValue The key/value pair to be checked on the database
+	 * @param _contentId The contentId related to this TAO
+	 * @param _nameTAOVaultAddress The address of NameTAOVault
+	 */
+	function deployTAO(string _name,
+		address _originId,
+		string _datHash,
+		string _database,
+		string _keyValue,
+		bytes32 _contentId,
+		address _nameTAOVaultAddress
+		) public returns (TAO _tao) {
+		_tao = new TAO(_name, _originId, _datHash, _database, _keyValue, _contentId, _nameTAOVaultAddress);
+	}
+
+	/**
+	 * @dev deploy a Name
+	 * @param _name The name of the Name
+	 * @param _originId The eth address the creates the Name
+	 * @param _datHash The datHash of this Name
+	 * @param _database The database for this Name
+	 * @param _keyValue The key/value pair to be checked on the database
+	 * @param _contentId The contentId related to this Name
+	 * @param _nameTAOVaultAddress The address of NameTAOVault
+	 */
+	function deployName(string _name,
+		address _originId,
+		string _datHash,
+		string _database,
+		string _keyValue,
+		bytes32 _contentId,
+		address _nameTAOVaultAddress
+		) public returns (Name _myName) {
+		_myName = new Name(_name, _originId, _datHash, _database, _keyValue, _contentId, _nameTAOVaultAddress);
 	}
 
 	/**

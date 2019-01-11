@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import './AOLibrary.sol';
 import './TheAO.sol';
+import './IAOSetting.sol';
 import './INameFactory.sol';
 import './IAOSettingAttribute.sol';
 import './IAOSettingValue.sol';
@@ -12,7 +13,7 @@ import './INameTAOPosition.sol';
  *
  * This contract stores all AO setting variables
  */
-contract AOSetting is TheAO {
+contract AOSetting is TheAO, IAOSetting {
 	address public nameFactoryAddress;
 	address public aoSettingAttributeAddress;
 	address public aoSettingValueAddress;
@@ -555,7 +556,7 @@ contract AOSetting is TheAO {
 	 * @return the bytes32 value of this setting ID
 	 * @return the string value of this setting ID
 	 */
-	function getSettingValuesByTAOName(address _taoId, string _settingName) public view returns (uint256, bool, address, bytes32, string) {
+	function getSettingValuesByTAOName(address _taoId, string _settingName) external view returns (uint256, bool, address, bytes32, string) {
 		return getSettingValuesById(getSettingIdByTAOName(_taoId, _settingName));
 	}
 

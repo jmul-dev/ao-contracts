@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
+import './IAOTreasury.sol';
 import './AOTokenInterface.sol';
 
 /**
@@ -10,7 +11,7 @@ import './AOTokenInterface.sol';
  *
  * The purpose of this contract is to list all of the valid denominations of AO Token and do the conversion between denominations
  */
-contract AOTreasury is TheAO {
+contract AOTreasury is TheAO, IAOTreasury {
 	using SafeMath for uint256;
 
 	uint256 public totalDenominations;
@@ -223,21 +224,22 @@ contract AOTreasury is TheAO {
 	 * @param denominationName bytes8 name of the token denomination
 	 * @return uint256 converted amount in base denomination from target denomination
 	 */
-	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) public view returns (uint256) {
+	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) external view returns (uint256) {
+		uint256 _fractionAmount = fractionAmount;
 		if (denominationName.length > 0 &&
 			denominationIndex[denominationName] > 0 &&
 			denominations[denominationIndex[denominationName]].denominationAddress != address(0) &&
-			(integerAmount > 0 || fractionAmount > 0)) {
+			(integerAmount > 0 || _fractionAmount > 0)) {
 
 			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
 			AOTokenInterface _denominationToken = AOTokenInterface(_denomination.denominationAddress);
-			uint8 fractionNumDigits = AOLibrary.numDigits(fractionAmount);
+			uint8 fractionNumDigits = AOLibrary.numDigits(_fractionAmount);
 			require (fractionNumDigits <= _denominationToken.decimals());
 			uint256 baseInteger = integerAmount.mul(10 ** _denominationToken.powerOfTen());
 			if (_denominationToken.decimals() == 0) {
-				fractionAmount = 0;
+				_fractionAmount = 0;
 			}
-			return baseInteger.add(fractionAmount);
+			return baseInteger.add(_fractionAmount);
 		} else {
 			return 0;
 		}

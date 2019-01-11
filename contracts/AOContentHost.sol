@@ -3,15 +3,16 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
-import './AOContent.sol';
-import './AOStakedContent.sol';
-import './AOPurchaseReceipt.sol';
-import './AOEarning.sol';
+import './IAOContentHost.sol';
+import './IAOContent.sol';
+import './IAOStakedContent.sol';
+import './IAOPurchaseReceipt.sol';
+import './IAOEarning.sol';
 
 /**
  * @title AOContentHost
  */
-contract AOContentHost is TheAO {
+contract AOContentHost is TheAO, IAOContentHost {
 	using SafeMath for uint256;
 
 	uint256 public totalContentHosts;
@@ -20,10 +21,10 @@ contract AOContentHost is TheAO {
 	address public aoPurchaseReceiptAddress;
 	address public aoEarningAddress;
 
-	AOContent internal _aoContent;
-	AOStakedContent internal _aoStakedContent;
-	AOPurchaseReceipt internal _aoPurchaseReceipt;
-	AOEarning internal _aoEarning;
+	IAOContent internal _aoContent;
+	IAOStakedContent internal _aoStakedContent;
+	IAOPurchaseReceipt internal _aoPurchaseReceipt;
+	IAOEarning internal _aoEarning;
 
 	struct ContentHost {
 		bytes32 contentHostId;
@@ -100,7 +101,7 @@ contract AOContentHost is TheAO {
 	function setAOContentAddress(address _aoContentAddress) public onlyTheAO {
 		require (_aoContentAddress != address(0));
 		aoContentAddress = _aoContentAddress;
-		_aoContent = AOContent(_aoContentAddress);
+		_aoContent = IAOContent(_aoContentAddress);
 	}
 
 	/**
@@ -110,7 +111,7 @@ contract AOContentHost is TheAO {
 	function setAOStakedContentAddress(address _aoStakedContentAddress) public onlyTheAO {
 		require (_aoStakedContentAddress != address(0));
 		aoStakedContentAddress = _aoStakedContentAddress;
-		_aoStakedContent = AOStakedContent(_aoStakedContentAddress);
+		_aoStakedContent = IAOStakedContent(_aoStakedContentAddress);
 	}
 
 	/**
@@ -120,7 +121,7 @@ contract AOContentHost is TheAO {
 	function setAOPurchaseReceiptAddress(address _aoPurchaseReceiptAddress) public onlyTheAO {
 		require (_aoPurchaseReceiptAddress != address(0));
 		aoPurchaseReceiptAddress = _aoPurchaseReceiptAddress;
-		_aoPurchaseReceipt = AOPurchaseReceipt(_aoPurchaseReceiptAddress);
+		_aoPurchaseReceipt = IAOPurchaseReceipt(_aoPurchaseReceiptAddress);
 	}
 
 	/**
@@ -130,7 +131,7 @@ contract AOContentHost is TheAO {
 	function setAOEarningAddress(address _aoEarningAddress) public onlyTheAO {
 		require (_aoEarningAddress != address(0));
 		aoEarningAddress = _aoEarningAddress;
-		_aoEarning = AOEarning(_aoEarningAddress);
+		_aoEarning = IAOEarning(_aoEarningAddress);
 	}
 
 	/**
@@ -152,7 +153,7 @@ contract AOContentHost is TheAO {
 	 * @param _metadataDatKey The dat key of the content's metadata
 	 * @return true on success
 	 */
-	function create(address _host, bytes32 _stakeId, string _encChallenge, string _contentDatKey, string _metadataDatKey) public inWhitelist returns (bool) {
+	function create(address _host, bytes32 _stakeId, string _encChallenge, string _contentDatKey, string _metadataDatKey) external inWhitelist returns (bool) {
 		require (_create(_host, _stakeId, _encChallenge, _contentDatKey, _metadataDatKey));
 		return true;
 	}
@@ -166,7 +167,7 @@ contract AOContentHost is TheAO {
 	 * @return the dat key of the content
 	 * @return the dat key of the content's metadata
 	 */
-	function getById(bytes32 _contentHostId) public view returns (bytes32, bytes32, address, string, string) {
+	function getById(bytes32 _contentHostId) external view returns (bytes32, bytes32, address, string, string) {
 		// Make sure the content host exist
 		require (contentHostIndex[_contentHostId] > 0);
 		ContentHost memory _contentHost = contentHosts[contentHostIndex[_contentHostId]];
@@ -184,7 +185,7 @@ contract AOContentHost is TheAO {
 	 * @param _contentHostId The content host ID to be checked
 	 * @return the price of the content
 	 */
-	function contentHostPrice(bytes32 _contentHostId) public view returns (uint256) {
+	function contentHostPrice(bytes32 _contentHostId) external view returns (uint256) {
 		// Make sure content host exist
 		require (contentHostIndex[_contentHostId] > 0);
 
@@ -200,12 +201,12 @@ contract AOContentHost is TheAO {
 	 * @param _contentHostId The content host ID to be checked
 	 * @return the amount paid by AO
 	 */
-	function contentHostPaidByAO(bytes32 _contentHostId) public view returns (uint256) {
+	function contentHostPaidByAO(bytes32 _contentHostId) external view returns (uint256) {
 		bytes32 _contentId = contentHosts[contentHostIndex[_contentHostId]].contentId;
 		if (_aoContent.isAOContentUsageType(_contentId)) {
 			return 0;
 		} else {
-			return contentHostPrice(_contentHostId);
+			return this.contentHostPrice(_contentHostId);
 		}
 	}
 
@@ -214,7 +215,7 @@ contract AOContentHost is TheAO {
 	 * @param _contentHostId The content host ID to be checked
 	 * @return true if yes, false otherwise
 	 */
-	function isExist(bytes32 _contentHostId) public view returns (bool) {
+	function isExist(bytes32 _contentHostId) external view returns (bool) {
 		return (contentHostIndex[_contentHostId] > 0);
 	}
 

@@ -6,9 +6,9 @@ import './TheAO.sol';
 import './INameFactory.sol';
 import './Name.sol';
 import './Position.sol';
-import './NameTAOLookup.sol';
+import './INameTAOLookup.sol';
 import './INameTAOPosition.sol';
-import './NamePublicKey.sol';
+import './INamePublicKey.sol';
 
 /**
  * @title NameFactory
@@ -24,9 +24,9 @@ contract NameFactory is TheAO, INameFactory {
 	address public namePublicKeyAddress;
 
 	Position internal _position;
-	NameTAOLookup internal _nameTAOLookup;
+	INameTAOLookup internal _nameTAOLookup;
 	INameTAOPosition internal _nameTAOPosition;
-	NamePublicKey internal _namePublicKey;
+	INamePublicKey internal _namePublicKey;
 
 	address[] internal names;
 
@@ -110,7 +110,7 @@ contract NameFactory is TheAO, INameFactory {
 	function setNameTAOLookupAddress(address _nameTAOLookupAddress) public onlyTheAO {
 		require (_nameTAOLookupAddress != address(0));
 		nameTAOLookupAddress = _nameTAOLookupAddress;
-		_nameTAOLookup = NameTAOLookup(nameTAOLookupAddress);
+		_nameTAOLookup = INameTAOLookup(nameTAOLookupAddress);
 	}
 
 	/**
@@ -130,7 +130,7 @@ contract NameFactory is TheAO, INameFactory {
 	function setNamePublicKeyAddress(address _namePublicKeyAddress) public onlyTheAO {
 		require (_namePublicKeyAddress != address(0));
 		namePublicKeyAddress = _namePublicKeyAddress;
-		_namePublicKey = NamePublicKey(namePublicKeyAddress);
+		_namePublicKey = INamePublicKey(namePublicKeyAddress);
 	}
 
 	/***** PUBLIC METHODS *****/
@@ -162,7 +162,7 @@ contract NameFactory is TheAO, INameFactory {
 		require (_ethAddressToNameId[msg.sender] == address(0));
 
 		// The address is the Name ID (which is also a TAO ID)
-		address nameId = new Name(_name, msg.sender, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
+		address nameId = AOLibrary.deployName(_name, msg.sender, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
 
 		// Increment the nonce
 		nonces[nameId]++;

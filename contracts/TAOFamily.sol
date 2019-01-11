@@ -3,17 +3,18 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TAOController.sol';
-import './TAOFactory.sol';
+import './ITAOFamily.sol';
+import './ITAOFactory.sol';
 
 /**
  * @title TAOFamily
  */
-contract TAOFamily is TAOController {
+contract TAOFamily is TAOController, ITAOFamily {
 	using SafeMath for uint256;
 
 	address public taoFactoryAddress;
 
-	TAOFactory internal _taoFactory;
+	ITAOFactory internal _taoFactory;
 
 	struct Child {
 		address taoId;
@@ -70,7 +71,7 @@ contract TAOFamily is TAOController {
 	function setTAOFactoryAddress(address _taoFactoryAddress) public onlyTheAO {
 		require (_taoFactoryAddress != address(0));
 		taoFactoryAddress = _taoFactoryAddress;
-		_taoFactory = TAOFactory(_taoFactoryAddress);
+		_taoFactory = ITAOFactory(_taoFactoryAddress);
 	}
 
 	/***** PUBLIC METHODS *****/
@@ -91,7 +92,7 @@ contract TAOFamily is TAOController {
 	 * @return true on success
 	 */
 	function add(address _id, address _parentId, uint256 _childMinLogos)
-		public
+		external
 		isTAO(_id)
 		isNameOrTAO(_parentId)
 		onlyFactory returns (bool) {
@@ -111,7 +112,7 @@ contract TAOFamily is TAOController {
 	 * @return the min required Logos to create a child TAO
 	 * @return the total child TAOs count
 	 */
-	function getFamilyById(address _id) public view returns (address, uint256, uint256) {
+	function getFamilyById(address _id) external view returns (address, uint256, uint256) {
 		require (isExist(_id));
 		Family memory _family = families[_id];
 		return (
@@ -166,7 +167,7 @@ contract TAOFamily is TAOController {
 	 * @param _childId The ID to be added to as child TAO
 	 */
 	function addChild(address _taoId, address _childId)
-		public
+		external
 		isTAO(_taoId)
 		isTAO(_childId)
 		onlyFactory returns (bool) {

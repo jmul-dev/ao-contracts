@@ -4,12 +4,12 @@ import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
 import './IAOSetting.sol';
-import './AOTreasury.sol';
-import './AOContent.sol';
-import './AOStakedContent.sol';
-import './AOContentHost.sol';
-import './AOEarning.sol';
-import './NameTAOPosition.sol';
+import './IAOTreasury.sol';
+import './IAOContent.sol';
+import './IAOStakedContent.sol';
+import './IAOContentHost.sol';
+import './IAOEarning.sol';
+import './INameTAOPosition.sol';
 
 /**
  * @title AOContentFactory
@@ -29,11 +29,11 @@ contract AOContentFactory is TheAO {
 	address public aoEarningAddress;
 
 	IAOSetting internal _aoSetting;
-	AOTreasury internal _aoTreasury;
-	AOContent internal _aoContent;
-	AOStakedContent internal _aoStakedContent;
-	AOContentHost internal _aoContentHost;
-	AOEarning internal _aoEarning;
+	IAOTreasury internal _aoTreasury;
+	IAOContent internal _aoContent;
+	IAOStakedContent internal _aoStakedContent;
+	IAOContentHost internal _aoContentHost;
+	IAOEarning internal _aoEarning;
 	INameTAOPosition internal _nameTAOPosition;
 
 	/**
@@ -122,7 +122,7 @@ contract AOContentFactory is TheAO {
 	function setAOTreasuryAddress(address _aoTreasuryAddress) public onlyTheAO {
 		require (_aoTreasuryAddress != address(0));
 		aoTreasuryAddress = _aoTreasuryAddress;
-		_aoTreasury = AOTreasury(_aoTreasuryAddress);
+		_aoTreasury = IAOTreasury(_aoTreasuryAddress);
 	}
 
 	/**
@@ -132,7 +132,7 @@ contract AOContentFactory is TheAO {
 	function setAOContentAddress(address _aoContentAddress) public onlyTheAO {
 		require (_aoContentAddress != address(0));
 		aoContentAddress = _aoContentAddress;
-		_aoContent = AOContent(_aoContentAddress);
+		_aoContent = IAOContent(_aoContentAddress);
 	}
 
 	/**
@@ -142,7 +142,7 @@ contract AOContentFactory is TheAO {
 	function setAOStakedContentAddress(address _aoStakedContentAddress) public onlyTheAO {
 		require (_aoStakedContentAddress != address(0));
 		aoStakedContentAddress = _aoStakedContentAddress;
-		_aoStakedContent = AOStakedContent(_aoStakedContentAddress);
+		_aoStakedContent = IAOStakedContent(_aoStakedContentAddress);
 	}
 
 	/**
@@ -152,7 +152,7 @@ contract AOContentFactory is TheAO {
 	function setAOContentHostAddress(address _aoContentHostAddress) public onlyTheAO {
 		require (_aoContentHostAddress != address(0));
 		aoContentHostAddress = _aoContentHostAddress;
-		_aoContentHost = AOContentHost(_aoContentHostAddress);
+		_aoContentHost = IAOContentHost(_aoContentHostAddress);
 	}
 
 	/**
@@ -162,7 +162,7 @@ contract AOContentFactory is TheAO {
 	function setAOEarningAddress(address _aoEarningAddress) public onlyTheAO {
 		require (_aoEarningAddress != address(0));
 		aoEarningAddress = _aoEarningAddress;
-		_aoEarning = AOEarning(_aoEarningAddress);
+		_aoEarning = IAOEarning(_aoEarningAddress);
 	}
 
 	/**
@@ -372,11 +372,7 @@ contract AOContentFactory is TheAO {
 	 * @return the total The AO earning of this content
 	 */
 	function getEarningMetrics(bytes32 _stakeId) public view returns (uint256, uint256, uint256) {
-		return (
-			_aoEarning.totalStakedContentStakeEarning(_stakeId),
-			_aoEarning.totalStakedContentHostEarning(_stakeId),
-			_aoEarning.totalStakedContentTheAOEarning(_stakeId)
-		);
+		return _aoEarning.getTotalStakedContentEarning(_stakeId);
 	}
 
 	/**

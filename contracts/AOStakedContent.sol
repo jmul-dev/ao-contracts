@@ -3,14 +3,15 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
+import './IAOStakedContent.sol';
 import './AOToken.sol';
-import './AOTreasury.sol';
-import './AOContent.sol';
+import './IAOTreasury.sol';
+import './IAOContent.sol';
 
 /**
  * @title AOStakedContent
  */
-contract AOStakedContent is TheAO {
+contract AOStakedContent is TheAO, IAOStakedContent {
 	using SafeMath for uint256;
 
 	uint256 public totalStakedContents;
@@ -19,8 +20,8 @@ contract AOStakedContent is TheAO {
 	address public aoContentAddress;
 
 	AOToken internal _aoToken;
-	AOTreasury internal _aoTreasury;
-	AOContent internal _aoContent;
+	IAOTreasury internal _aoTreasury;
+	IAOContent internal _aoContent;
 
 	struct StakedContent {
 		bytes32 stakeId;
@@ -139,7 +140,7 @@ contract AOStakedContent is TheAO {
 	function setAOTreasuryAddress(address _aoTreasuryAddress) public onlyTheAO {
 		require (_aoTreasuryAddress != address(0));
 		aoTreasuryAddress = _aoTreasuryAddress;
-		_aoTreasury = AOTreasury(_aoTreasuryAddress);
+		_aoTreasury = IAOTreasury(_aoTreasuryAddress);
 	}
 
 	/**
@@ -149,7 +150,7 @@ contract AOStakedContent is TheAO {
 	function setAOContentAddress(address _aoContentAddress) public onlyTheAO {
 		require (_aoContentAddress != address(0));
 		aoContentAddress = _aoContentAddress;
-		_aoContent = AOContent(_aoContentAddress);
+		_aoContent = IAOContent(_aoContentAddress);
 	}
 
 	/**
@@ -180,7 +181,7 @@ contract AOStakedContent is TheAO {
 		bytes8 _denomination,
 		uint256 _primordialAmount,
 		uint256 _profitPercentage
-		) public inWhitelist returns (bytes32) {
+		) external inWhitelist returns (bytes32) {
 
 		// Increment totalStakedContents
 		totalStakedContents++;
@@ -254,7 +255,7 @@ contract AOStakedContent is TheAO {
 	 * @return status of the staked content
 	 * @return the timestamp when the staked content was created
 	 */
-	function getById(bytes32 _stakeId) public view returns (bytes32, address, uint256, uint256, uint256, uint256, bool, uint256) {
+	function getById(bytes32 _stakeId) external view returns (bytes32, address, uint256, uint256, uint256, uint256, bool, uint256) {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakeId] > 0);
 
@@ -297,7 +298,7 @@ contract AOStakedContent is TheAO {
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 		// Make sure the staked content is currently active (staked) with some amounts
-		require (isActive(_stakeId));
+		require (this.isActive(_stakeId));
 		// Make sure the staked content has enough balance to unstake
 		require (_canUnstakePartial(_networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _stakedContent.networkAmount, _stakedContent.primordialAmount, _fileSize));
 
@@ -325,7 +326,7 @@ contract AOStakedContent is TheAO {
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 		// Make sure the staked content is currently active (staked) with some amounts
-		require (isActive(_stakeId));
+		require (this.isActive(_stakeId));
 		_stakedContent.active = false;
 
 		if (_stakedContent.networkAmount > 0) {
@@ -398,7 +399,7 @@ contract AOStakedContent is TheAO {
 	 * @param _stakeId The ID of the staked content
 	 * @return true if yes, false otherwise.
 	 */
-	function isActive(bytes32 _stakeId) public view returns (bool) {
+	function isActive(bytes32 _stakeId) external view returns (bool) {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakeId] > 0);
 

@@ -240,20 +240,21 @@ contract TAOCurrencyTreasury is TheAO {
 	 * @return uint256 converted amount in base denomination from target denomination
 	 */
 	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) public view returns (uint256) {
+		uint256 _fractionAmount = fractionAmount;
 		if (denominationName.length > 0 &&
 			denominationIndex[denominationName] > 0 &&
 			denominations[denominationIndex[denominationName]].denominationAddress != address(0) &&
-			(integerAmount > 0 || fractionAmount > 0)) {
+			(integerAmount > 0 || _fractionAmount > 0)) {
 
 			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
 			TAOCurrency _denominationToken = TAOCurrency(_denomination.denominationAddress);
-			uint8 fractionNumDigits = AOLibrary.numDigits(fractionAmount);
+			uint8 fractionNumDigits = AOLibrary.numDigits(_fractionAmount);
 			require (fractionNumDigits <= _denominationToken.decimals());
 			uint256 baseInteger = integerAmount.mul(10 ** _denominationToken.powerOfTen());
 			if (_denominationToken.decimals() == 0) {
-				fractionAmount = 0;
+				_fractionAmount = 0;
 			}
-			return baseInteger.add(fractionAmount);
+			return baseInteger.add(_fractionAmount);
 		} else {
 			return 0;
 		}

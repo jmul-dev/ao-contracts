@@ -2,9 +2,10 @@ pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
 import './TAOController.sol';
+import './ITAOFactory.sol';
 import './Name.sol';
-import './NameTAOLookup.sol';		// Store the name lookup for a Name/TAO
-import './TAOFamily.sol';			// Store TAO's child information
+import './INameTAOLookup.sol';		// Store the name lookup for a Name/TAO
+import './ITAOFamily.sol';			// Store TAO's child information
 import './IAOSetting.sol';
 import './Logos.sol';
 
@@ -13,7 +14,7 @@ import './Logos.sol';
  *
  * The purpose of this contract is to allow node to create TAO
  */
-contract TAOFactory is TAOController {
+contract TAOFactory is TAOController, ITAOFactory {
 	using SafeMath for uint256;
 
 	address[] internal taos;
@@ -25,10 +26,10 @@ contract TAOFactory is TAOController {
 	address public taoFamilyAddress;
 	address public settingTAOId;
 
-	NameTAOLookup internal _nameTAOLookup;
+	INameTAOLookup internal _nameTAOLookup;
 	IAOSetting internal _aoSetting;
 	Logos internal _logos;
-	TAOFamily internal _taoFamily;
+	ITAOFamily internal _taoFamily;
 
 	// Mapping from TAO ID to its nonce
 	mapping (address => uint256) public nonces;
@@ -58,7 +59,7 @@ contract TAOFactory is TAOController {
 	function setNameTAOLookupAddress(address _nameTAOLookupAddress) public onlyTheAO {
 		require (_nameTAOLookupAddress != address(0));
 		nameTAOLookupAddress = _nameTAOLookupAddress;
-		_nameTAOLookup = NameTAOLookup(_nameTAOLookupAddress);
+		_nameTAOLookup = INameTAOLookup(_nameTAOLookupAddress);
 	}
 
 	/**
@@ -97,7 +98,7 @@ contract TAOFactory is TAOController {
 	function setTAOFamilyAddress(address _taoFamilyAddress) public onlyTheAO {
 		require (_taoFamilyAddress != address(0));
 		taoFamilyAddress = _taoFamilyAddress;
-		_taoFamily = TAOFamily(taoFamilyAddress);
+		_taoFamily = ITAOFamily(taoFamilyAddress);
 	}
 
 	/**
@@ -114,7 +115,7 @@ contract TAOFactory is TAOController {
 	 * @param _taoId The ID of the TAO
 	 * @return current nonce
 	 */
-	function incrementNonce(address _taoId) public canUpdateNonce returns (uint256) {
+	function incrementNonce(address _taoId) external canUpdateNonce returns (uint256) {
 		// Check if _taoId exist
 		require (nonces[_taoId] > 0);
 		nonces[_taoId]++;
@@ -157,7 +158,7 @@ contract TAOFactory is TAOController {
 		}
 
 		// Create the TAO
-		address taoId = new TAO(_name, _nameId, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
+		address taoId = AOLibrary.deployTAO(_name, _nameId, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
 
 		// Increment the nonce
 		nonces[taoId]++;

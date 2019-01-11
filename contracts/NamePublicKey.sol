@@ -3,13 +3,14 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
+import './INamePublicKey.sol';
 import './INameFactory.sol';
 import './INameTAOPosition.sol';
 
 /**
  * @title NamePublicKey
  */
-contract NamePublicKey is TheAO {
+contract NamePublicKey is TheAO, INamePublicKey {
 	using SafeMath for uint256;
 
 	address public nameFactoryAddress;
@@ -134,7 +135,7 @@ contract NamePublicKey is TheAO {
 	 * @return true on success
 	 */
 	function add(address _id, address _defaultKey)
-		public
+		external
 		isName(_id)
 		onlyFactory returns (bool) {
 		require (!isExist(_id));
@@ -163,7 +164,7 @@ contract NamePublicKey is TheAO {
 	 * @param _key The publicKey to check
 	 * @return true if yes. false otherwise
 	 */
-	function isKeyExist(address _id, address _key) isName(_id) public view returns (bool) {
+	function isKeyExist(address _id, address _key) isName(_id) external view returns (bool) {
 		require (isExist(_id));
 		require (_key != address(0));
 
@@ -182,7 +183,7 @@ contract NamePublicKey is TheAO {
 	 * @param _key The publicKey to be added
 	 */
 	function addKey(address _id, address _key) public isName(_id) onlyAdvocate(_id) {
-		require (!isKeyExist(_id, _key));
+		require (!this.isKeyExist(_id, _key));
 
 		PublicKey storage _publicKey = publicKeys[_id];
 		_publicKey.keys.push(_key);
@@ -198,7 +199,7 @@ contract NamePublicKey is TheAO {
 	 * @param _id The ID of the Name
 	 * @return the default public key
 	 */
-	function getDefaultKey(address _id) public isName(_id) view returns (address) {
+	function getDefaultKey(address _id) external isName(_id) view returns (address) {
 		require (isExist(_id));
 		return publicKeys[_id].defaultKey;
 	}
@@ -234,7 +235,7 @@ contract NamePublicKey is TheAO {
 	 */
 	function removeKey(address _id, address _key) public isName(_id) onlyAdvocate(_id) {
 		require (isExist(_id));
-		require (isKeyExist(_id, _key));
+		require (this.isKeyExist(_id, _key));
 
 		PublicKey storage _publicKey = publicKeys[_id];
 
@@ -266,7 +267,7 @@ contract NamePublicKey is TheAO {
 	 */
 	function setDefaultKey(address _id, address _defaultKey, uint8 _signatureV, bytes32 _signatureR, bytes32 _signatureS) public isName(_id) onlyAdvocate(_id) {
 		require (isExist(_id));
-		require (isKeyExist(_id, _defaultKey));
+		require (this.isKeyExist(_id, _defaultKey));
 
 		bytes32 _hash = keccak256(abi.encodePacked(address(this), _id, _defaultKey));
 		require (ecrecover(_hash, _signatureV, _signatureR, _signatureS) == msg.sender);

@@ -4,7 +4,7 @@ import './AOLibrary.sol';
 import './TheAO.sol';
 import './INameTAOPosition.sol';
 import './INameFactory.sol';
-import './TAOFactory.sol';
+import './ITAOFactory.sol';
 
 /**
  * @title NameTAOPosition
@@ -14,7 +14,7 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	address public taoFactoryAddress;
 
 	INameFactory internal _nameFactory;
-	TAOFactory internal _taoFactory;
+	ITAOFactory internal _taoFactory;
 
 	struct PositionDetail {
 		address advocateId;
@@ -139,7 +139,7 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	function setTAOFactoryAddress(address _taoFactoryAddress) public onlyTheAO {
 		require (_taoFactoryAddress != address(0));
 		taoFactoryAddress = _taoFactoryAddress;
-		_taoFactory = TAOFactory(_taoFactoryAddress);
+		_taoFactory = ITAOFactory(_taoFactoryAddress);
 	}
 
 	/***** PUBLIC METHODS *****/

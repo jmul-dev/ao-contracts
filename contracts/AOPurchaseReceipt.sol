@@ -3,16 +3,17 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
-import './AOContent.sol';
-import './AOStakedContent.sol';
-import './AOContentHost.sol';
-import './AOTreasury.sol';
-import './AOEarning.sol';
+import './IAOPurchaseReceipt.sol';
+import './IAOContent.sol';
+import './IAOStakedContent.sol';
+import './IAOContentHost.sol';
+import './IAOTreasury.sol';
+import './IAOEarning.sol';
 
 /**
  * @title AOPurchaseReceipt
  */
-contract AOPurchaseReceipt is TheAO {
+contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	using SafeMath for uint256;
 
 	uint256 public totalPurchaseReceipts;
@@ -22,11 +23,11 @@ contract AOPurchaseReceipt is TheAO {
 	address public aoTreasuryAddress;
 	address public aoEarningAddress;
 
-	AOContent internal _aoContent;
-	AOStakedContent internal _aoStakedContent;
-	AOContentHost internal _aoContentHost;
-	AOTreasury internal _aoTreasury;
-	AOEarning internal _aoEarning;
+	IAOContent internal _aoContent;
+	IAOStakedContent internal _aoStakedContent;
+	IAOContentHost internal _aoContentHost;
+	IAOTreasury internal _aoTreasury;
+	IAOEarning internal _aoEarning;
 
 	struct PurchaseReceipt {
 		bytes32 purchaseReceiptId;
@@ -125,7 +126,7 @@ contract AOPurchaseReceipt is TheAO {
 	function setAOContentAddress(address _aoContentAddress) public onlyTheAO {
 		require (_aoContentAddress != address(0));
 		aoContentAddress = _aoContentAddress;
-		_aoContent = AOContent(_aoContentAddress);
+		_aoContent = IAOContent(_aoContentAddress);
 	}
 
 	/**
@@ -135,7 +136,7 @@ contract AOPurchaseReceipt is TheAO {
 	function setAOStakedContentAddress(address _aoStakedContentAddress) public onlyTheAO {
 		require (_aoStakedContentAddress != address(0));
 		aoStakedContentAddress = _aoStakedContentAddress;
-		_aoStakedContent = AOStakedContent(_aoStakedContentAddress);
+		_aoStakedContent = IAOStakedContent(_aoStakedContentAddress);
 	}
 
 	/**
@@ -145,7 +146,7 @@ contract AOPurchaseReceipt is TheAO {
 	function setAOContentHostAddress(address _aoContentHostAddress) public onlyTheAO {
 		require (_aoContentHostAddress != address(0));
 		aoContentHostAddress = _aoContentHostAddress;
-		_aoContentHost = AOContentHost(_aoContentHostAddress);
+		_aoContentHost = IAOContentHost(_aoContentHostAddress);
 	}
 
 	/**
@@ -155,7 +156,7 @@ contract AOPurchaseReceipt is TheAO {
 	function setAOTreasuryAddress(address _aoTreasuryAddress) public onlyTheAO {
 		require (_aoTreasuryAddress != address(0));
 		aoTreasuryAddress = _aoTreasuryAddress;
-		_aoTreasury = AOTreasury(_aoTreasuryAddress);
+		_aoTreasury = IAOTreasury(_aoTreasuryAddress);
 	}
 
 	/**
@@ -165,7 +166,7 @@ contract AOPurchaseReceipt is TheAO {
 	function setAOEarningAddress(address _aoEarningAddress) public onlyTheAO {
 		require (_aoEarningAddress != address(0));
 		aoEarningAddress = _aoEarningAddress;
-		_aoEarning = AOEarning(_aoEarningAddress);
+		_aoEarning = IAOEarning(_aoEarningAddress);
 	}
 
 	/**
@@ -261,7 +262,7 @@ contract AOPurchaseReceipt is TheAO {
 	 * @return request node's public address
 	 * @return created on timestamp
 	 */
-	function getById(bytes32 _purchaseReceiptId) public view returns (bytes32, bytes32, bytes32, address, uint256, uint256, uint256, string, address, uint256) {
+	function getById(bytes32 _purchaseReceiptId) external view returns (bytes32, bytes32, bytes32, address, uint256, uint256, uint256, string, address, uint256) {
 		// Make sure the purchase receipt exist
 		require (purchaseReceiptIndex[_purchaseReceiptId] > 0);
 		PurchaseReceipt memory _purchaseReceipt = purchaseReceipts[purchaseReceiptIndex[_purchaseReceiptId]];
@@ -285,7 +286,7 @@ contract AOPurchaseReceipt is TheAO {
 	 * @param _sender The sender address
 	 * @return true if yes, false otherwise
 	 */
-	function senderIsBuyer(bytes32 _purchaseReceiptId, address _sender) public view returns (bool) {
+	function senderIsBuyer(bytes32 _purchaseReceiptId, address _sender) external view returns (bool) {
 		require (purchaseReceiptIndex[_purchaseReceiptId] > 0);
 		require (_sender != address(0));
 		PurchaseReceipt memory _purchaseReceipt = purchaseReceipts[purchaseReceiptIndex[_purchaseReceiptId]];

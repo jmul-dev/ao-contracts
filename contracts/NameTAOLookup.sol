@@ -2,12 +2,13 @@ pragma solidity ^0.4.24;
 
 import './TheAO.sol';
 import './AOLibrary.sol';
+import './INameTAOLookup.sol';
 
 /**
  * @title NameTAOLookup
  *
  */
-contract NameTAOLookup is TheAO {
+contract NameTAOLookup is TheAO, INameTAOLookup {
 	address public nameFactoryAddress;
 	address public taoFactoryAddress;
 
@@ -105,7 +106,7 @@ contract NameTAOLookup is TheAO {
 	 * @param _name The name to be checked
 	 * @return true if yes, false otherwise
 	 */
-	function isExist(string _name) public view returns (bool) {
+	function isExist(string _name) external view returns (bool) {
 		bytes32 _nameKey = keccak256(abi.encodePacked(_name));
 		return (internalIdLookup[_nameKey] > 0);
 	}
@@ -118,12 +119,12 @@ contract NameTAOLookup is TheAO {
 	 * @param _typeId If TAO = 0. Name = 1
 	 * @return true on success
 	 */
-	function add(string _name, address _nameTAOAddress, string _parentName, uint256 _typeId) public onlyFactory returns (bool) {
+	function add(string _name, address _nameTAOAddress, string _parentName, uint256 _typeId) external onlyFactory returns (bool) {
 		require (bytes(_name).length > 0);
 		require (_nameTAOAddress != address(0));
 		require (bytes(_parentName).length > 0);
 		require (_typeId == 0 || _typeId == 1);
-		require (!isExist(_name));
+		require (!this.isExist(_name));
 
 		internalId++;
 		bytes32 _nameKey = keccak256(abi.encodePacked(_name));
@@ -151,7 +152,7 @@ contract NameTAOLookup is TheAO {
 	 * @return type ID. 0 = TAO. 1 = Name
 	 */
 	function getByName(string _name) public view returns (string, address, string, uint256) {
-		require (isExist(_name));
+		require (this.isExist(_name));
 		bytes32 _nameKey = keccak256(abi.encodePacked(_name));
 		NameTAOInfo memory _nameTAOInfo = nameTAOInfos[internalIdLookup[_nameKey]];
 		return (
@@ -186,8 +187,8 @@ contract NameTAOLookup is TheAO {
 	 * @param _name The name to be queried
 	 * @return the nameTAOAddress of the name
 	 */
-	function getAddressByName(string _name) public view returns (address) {
-		require (isExist(_name));
+	function getAddressByName(string _name) external view returns (address) {
+		require (this.isExist(_name));
 		bytes32 _nameKey = keccak256(abi.encodePacked(_name));
 		NameTAOInfo memory _nameTAOInfo = nameTAOInfos[internalIdLookup[_nameKey]];
 		return _nameTAOInfo.nameTAOAddress;

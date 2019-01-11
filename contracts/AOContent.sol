@@ -2,13 +2,14 @@ pragma solidity ^0.4.24;
 
 import './AOLibrary.sol';
 import './TheAO.sol';
+import './IAOContent.sol';
 import './IAOSetting.sol';
 import './INameTAOPosition.sol';
 
 /**
  * @title AOContent
  */
-contract AOContent is TheAO {
+contract AOContent is TheAO, IAOContent {
 	uint256 public totalContents;
 	address public settingTAOId;
 	address public aoSettingAddress;
@@ -146,7 +147,7 @@ contract AOContent is TheAO {
 		uint256 _fileSize,
 		bytes32 _contentUsageType,
 		address _taoId
-		) public inWhitelist validContentUsageType(_contentUsageType) returns (bytes32) {
+		) external inWhitelist validContentUsageType(_contentUsageType) returns (bytes32) {
 
 		// Increment totalContents
 		totalContents++;
@@ -191,7 +192,7 @@ contract AOContent is TheAO {
 	 * @return The S part of signature that is used to update the TAO Content State
 	 * @return the extra information sent to the contract when creating a content
 	 */
-	function getById(bytes32 _contentId) public view returns (address, uint256, bytes32, address, bytes32, uint8, bytes32, bytes32, string) {
+	function getById(bytes32 _contentId) external view returns (address, uint256, bytes32, address, bytes32, uint8, bytes32, bytes32, string) {
 		// Make sure the content exist
 		require (contentIndex[_contentId] > 0);
 		Content memory _content = contents[contentIndex[_contentId]];
@@ -213,7 +214,7 @@ contract AOContent is TheAO {
 	 * @param _contentId The ID of the content
 	 * @return the base challenge
 	 */
-	function getBaseChallenge(bytes32 _contentId) public inWhitelist view returns (string) {
+	function getBaseChallenge(bytes32 _contentId) external inWhitelist view returns (string) {
 		// Make sure the content exist
 		require (contentIndex[_contentId] > 0);
 		Content memory _content = contents[contentIndex[_contentId]];
@@ -263,7 +264,7 @@ contract AOContent is TheAO {
 	 * @param _contentId The ID of the content
 	 * @return true if yes. false otherwise
 	 */
-	function isAOContentUsageType(bytes32 _contentId) public view returns (bool) {
+	function isAOContentUsageType(bytes32 _contentId) external view returns (bool) {
 		require (contentIndex[_contentId] > 0);
 		(bytes32 _contentUsageType_aoContent,,,,,) = _getSettingVariables();
 		return contents[contentIndex[_contentId]].contentUsageType == _contentUsageType_aoContent;
