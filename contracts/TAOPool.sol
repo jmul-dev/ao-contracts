@@ -2,6 +2,8 @@ pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
 import './TAOController.sol';
+import './ITAOPool.sol';
+import './ITAOFactory.sol';
 import './TAOCurrency.sol';
 import './Logos.sol';
 import './TAO.sol';
@@ -11,7 +13,7 @@ import './TAO.sol';
  *
  * This contract acts as the bookkeeper of TAO Currencies that are staked on TAO
  */
-contract TAOPool is TAOController {
+contract TAOPool is TAOController, ITAOPool {
 	using SafeMath for uint256;
 
 	address public taoFactoryAddress;
@@ -19,6 +21,7 @@ contract TAOPool is TAOController {
 	address public ethosAddress;
 	address public logosAddress;
 
+	ITAOFactory internal _taoFactory;
 	TAOCurrency internal _pathos;
 	TAOCurrency internal _ethos;
 	Logos internal _logos;
@@ -78,7 +81,10 @@ contract TAOPool is TAOController {
 	// Event to be broadcasted to public when Pool's status is updated
 	// If status == true, start Pool
 	// Otherwise, stop Pool
-	event UpdatePoolStatus(address indexed taoId, bool status);
+	event UpdatePoolStatus(address indexed taoId, bool status, uint256 nonce);
+
+	// Event to be broadcasted to public when Pool's Ethos cap is updated
+	event UpdatePoolEthosCap(address indexed taoId, bool ethosCapStatus, uint256 ethosCapAmount, uint256 nonce);
 
 	/**
 	 * Event to be broadcasted to public when nameId stakes Ethos
@@ -111,14 +117,6 @@ contract TAOPool is TAOController {
 		_;
 	}
 
-	/**
-	 * @dev Check if msg.sender is the current advocate of Name/TAO ID
-	 */
-	modifier onlyAdvocate(address _id) {
-		require (_nameTAOPosition.senderIsAdvocate(msg.sender, _id));
-		_;
-	}
-
 	/***** The AO ONLY METHODS *****/
 	/**
 	 * @dev The AO set the TAOFactory Address
@@ -127,6 +125,7 @@ contract TAOPool is TAOController {
 	function setTAOFactoryAddress(address _taoFactoryAddress) public onlyTheAO {
 		require (_taoFactoryAddress != address(0));
 		taoFactoryAddress = _taoFactoryAddress;
+		_taoFactory = ITAOFactory(_taoFactoryAddress);
 	}
 
 	/**
@@ -167,9 +166,9 @@ contract TAOPool is TAOController {
 		address _taoId,
 		bool _ethosCapStatus,
 		uint256 _ethosCapAmount
-	) public isTAO(_taoId) onlyTAOFactory returns (bool) {
+	) external isTAO(_taoId) onlyTAOFactory returns (bool) {
 		// Make sure ethos cap amount is provided if ethos cap is enabled
-		if (_ethosCapStatus == true) {
+		if (_ethosCapStatus) {
 			require (_ethosCapAmount > 0);
 		}
 		// Make sure the pool is not yet created
@@ -195,10 +194,37 @@ contract TAOPool is TAOController {
 	function updatePoolStatus(address _taoId, bool _status) public isTAO(_taoId) onlyAdvocate(_taoId) {
 		require (pools[_taoId].taoId != address(0));
 		pools[_taoId].status = _status;
-		emit UpdatePoolStatus(_taoId, _status);
+
+		uint256 _nonce = _taoFactory.incrementNonce(_taoId);
+		require (_nonce > 0);
+
+		emit UpdatePoolStatus(_taoId, _status, _nonce);
 	}
 
-	/***** Public Methods *****/
+	/**
+	 * @dev Update Ethos cap of a Pool
+	 * @param _taoId The TAO ID of the Pool
+	 * @param _ethosCapStatus The ethos cap status to set
+	 * @param _ethosCapAmount The ethos cap amount to set
+	 */
+	function updatePoolEthosCap(address _taoId, bool _ethosCapStatus, uint256 _ethosCapAmount) public isTAO(_taoId) onlyAdvocate(_taoId) {
+		require (pools[_taoId].taoId != address(0));
+		// If there is an ethos cap
+		if (_ethosCapStatus) {
+			require (_ethosCapAmount >= _pathos.balanceOf(_taoId));
+		}
+
+		pools[_taoId].ethosCapStatus = _ethosCapStatus;
+		if (_ethosCapStatus) {
+			pools[_taoId].ethosCapAmount = _ethosCapAmount;
+		}
+
+		uint256 _nonce = _taoFactory.incrementNonce(_taoId);
+		require (_nonce > 0);
+
+		emit UpdatePoolEthosCap(_taoId, _ethosCapStatus, _ethosCapAmount, _nonce);
+	}
+
 	/**
 	 * @dev A Name stakes Ethos in Pool `_taoId`
 	 * @param _taoId The TAO ID of the Pool
@@ -210,7 +236,7 @@ contract TAOPool is TAOController {
 		require (_pool.status == true && _quantity > 0 && _ethos.balanceOf(_nameId) >= _quantity);
 
 		// If there is an ethos cap
-		if (_pool.ethosCapStatus == true) {
+		if (_pool.ethosCapStatus) {
 			require (_ethos.balanceOf(_taoId).add(_quantity) <= _pool.ethosCapAmount);
 		}
 

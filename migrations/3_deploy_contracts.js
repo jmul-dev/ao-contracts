@@ -464,6 +464,9 @@ module.exports = function(deployer, network, accounts) {
 			// Link AOSetting to TAOFactory
 			await taofactory.setAOSettingAddress(aosetting.address, { from: primordialAccount });
 
+			// Link TAOPool to TAOFactory
+			await taofactory.setTAOPoolAddress(taopool.address, { from: primordialAccount });
+
 			// Other type of settings grant access to AOSetting
 			await aosettingattribute.setWhitelist(aosetting.address, true, { from: primordialAccount });
 			await aosettingvalue.setWhitelist(aosetting.address, true, { from: primordialAccount });
@@ -500,7 +503,7 @@ module.exports = function(deployer, network, accounts) {
 			 * Create Primordial TAO and Associated TAO that proposes Content Usage Setting creation
 			 */
 			try {
-				var result = await taofactory.createTAO("Primordial Thought of AO", "", "", "", "", primordialNameId, 0, {
+				var result = await taofactory.createTAO("Primordial Thought of AO", "", "", "", "", primordialNameId, 0, false, 0, {
 					from: primordialAccount
 				});
 				var createTAOEvent = result.logs[0];
@@ -511,7 +514,7 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			try {
-				var result = await taofactory.createTAO("Settings of AO", "", "", "", "", primordialTAOId, 0, {
+				var result = await taofactory.createTAO("Settings of AO", "", "", "", "", primordialTAOId, 0, false, 0, {
 					from: settingAccount
 				});
 				var createTAOEvent = result.logs[0];
@@ -863,6 +866,94 @@ module.exports = function(deployer, network, accounts) {
 				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
 			} catch (e) {
 				console.log("Unable to add createChildTAOMinLogos setting", e);
+			}
+
+			/**
+			 * defaultEthereumProvider_1 = wss://mainnet.infura.io/ws
+			 */
+			try {
+				var result = await aosetting.addStringSetting(
+					"defaultEthereumProvider_1",
+					"wss://mainnet.infura.io/ws",
+					primordialTAOId,
+					settingTAOId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add Default Ethereum Provider for Mainnet setting", e);
+			}
+
+			/**
+			 * defaultEthereumProvider_3 = wss://ropsten.infura.io/ws
+			 */
+			try {
+				var result = await aosetting.addStringSetting(
+					"defaultEthereumProvider_3",
+					"wss://ropsten.infura.io/ws",
+					primordialTAOId,
+					settingTAOId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add Default Ethereum Provider for Ropsten setting", e);
+			}
+
+			/**
+			 * defaultEthereumProvider_4 = wss://rinkeby.infura.io/ws
+			 */
+			try {
+				var result = await aosetting.addStringSetting(
+					"defaultEthereumProvider_4",
+					"wss://rinkeby.infura.io/ws",
+					primordialTAOId,
+					settingTAOId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add Default Ethereum Provider for Rinkeby setting", e);
+			}
+
+			/**
+			 * defaultEthereumProvider_42 = wss://kovan.infura.io/ws
+			 */
+			try {
+				var result = await aosetting.addStringSetting(
+					"defaultEthereumProvider_42",
+					"wss://kovan.infura.io/ws",
+					primordialTAOId,
+					settingTAOId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add Default Ethereum Provider for Kovan setting", e);
 			}
 
 			return deployer.deploy([

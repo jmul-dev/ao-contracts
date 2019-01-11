@@ -8,6 +8,7 @@ import './INameTAOLookup.sol';		// Store the name lookup for a Name/TAO
 import './ITAOFamily.sol';			// Store TAO's child information
 import './IAOSetting.sol';
 import './Logos.sol';
+import './ITAOPool.sol';
 
 /**
  * @title TAOFactory
@@ -25,11 +26,13 @@ contract TAOFactory is TAOController, ITAOFactory {
 	address public nameTAOVaultAddress;
 	address public taoFamilyAddress;
 	address public settingTAOId;
+	address public taoPoolAddress;
 
 	INameTAOLookup internal _nameTAOLookup;
 	IAOSetting internal _aoSetting;
 	Logos internal _logos;
 	ITAOFamily internal _taoFamily;
+	ITAOPool internal _taoPool;
 
 	// Mapping from TAO ID to its nonce
 	mapping (address => uint256) public nonces;
@@ -47,7 +50,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 	 * @dev Checks if calling address can update TAO's nonce
 	 */
 	modifier canUpdateNonce {
-		require (msg.sender == nameTAOPositionAddress || msg.sender == taoFamilyAddress);
+		require (msg.sender == nameTAOPositionAddress || msg.sender == taoFamilyAddress || msg.sender == taoPoolAddress);
 		_;
 	}
 
@@ -109,6 +112,16 @@ contract TAOFactory is TAOController, ITAOFactory {
 		settingTAOId = _settingTAOId;
 	}
 
+	/**
+	 * @dev The AO set the TAOPool Address
+	 * @param _taoPoolAddress The address of TAOPool
+	 */
+	function setTAOPoolAddress(address _taoPoolAddress) public onlyTheAO {
+		require (_taoPoolAddress != address(0));
+		taoPoolAddress = _taoPoolAddress;
+		_taoPool = ITAOPool(taoPoolAddress);
+	}
+
 	/***** PUBLIC METHODS *****/
 	/**
 	 * @dev Increment the nonce of a TAO
@@ -139,12 +152,12 @@ contract TAOFactory is TAOController, ITAOFactory {
 		string _keyValue,
 		bytes32 _contentId,
 		address _parentId,
-		uint256 _childMinLogos
+		uint256 _childMinLogos,
+		bool _ethosCapStatus,
+		uint256 _ethosCapAmount
 	) public senderIsName() isNameOrTAO(_parentId) {
 		require (bytes(_name).length > 0);
 		require (!_nameTAOLookup.isExist(_name));
-
-		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
 
 		uint256 _parentCreateChildTAOMinLogos;
 		uint256 _createChildTAOMinLogos = _getSettingVariables();
@@ -152,31 +165,13 @@ contract TAOFactory is TAOController, ITAOFactory {
 			(, _parentCreateChildTAOMinLogos,) = _taoFamily.getFamilyById(_parentId);
 		}
 		if (_parentCreateChildTAOMinLogos > 0) {
-			require (_logos.sumBalanceOf(_nameId) >= _parentCreateChildTAOMinLogos);
+			require (_logos.sumBalanceOf(_nameFactory.ethAddressToNameId(msg.sender)) >= _parentCreateChildTAOMinLogos);
 		} else if (_createChildTAOMinLogos > 0) {
-			require (_logos.sumBalanceOf(_nameId) >= _createChildTAOMinLogos);
+			require (_logos.sumBalanceOf(_nameFactory.ethAddressToNameId(msg.sender)) >= _createChildTAOMinLogos);
 		}
 
 		// Create the TAO
-		address taoId = AOLibrary.deployTAO(_name, _nameId, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
-
-		// Increment the nonce
-		nonces[taoId]++;
-
-		// Store the name lookup information
-		require (_nameTAOLookup.add(_name, taoId, TAO(_parentId).name(), 0));
-
-		// Store the Advocate/Listener/Speaker information
-		require (_nameTAOPosition.add(taoId, _nameId, _nameId, _nameId));
-
-		require (_taoFamily.add(taoId, _parentId, _childMinLogos));
-		taos.push(taoId);
-
-		emit CreateTAO(msg.sender, _nameId, taoId, taos.length.sub(1), _parentId, TAO(_parentId).typeId());
-
-		if (AOLibrary.isTAO(_parentId)) {
-			require (_taoFamily.addChild(_parentId, taoId));
-		}
+		require (_createTAO(_name, _nameFactory.ethAddressToNameId(msg.sender), _datHash, _database, _keyValue, _contentId, _parentId, _childMinLogos, _ethosCapStatus, _ethosCapAmount));
 	}
 
 	/**
@@ -261,6 +256,58 @@ contract TAOFactory is TAOController, ITAOFactory {
 	}
 
 	/***** INTERNAL METHOD *****/
+	/**
+	 * @dev Actual creating the TAO
+	 * @param _name The name of the TAO
+	 * @param _nameId The ID of the Name that creates this TAO
+	 * @param _datHash The datHash of this TAO
+	 * @param _database The database for this TAO
+	 * @param _keyValue The key/value pair to be checked on the database
+	 * @param _contentId The contentId related to this TAO
+	 * @param _parentId The parent of this TAO (has to be a Name or TAO)
+	 * @param _childMinLogos The min required Logos to create a child from this TAO
+	 * @return true on success
+	 */
+	function _createTAO(
+		string _name,
+		address _nameId,
+		string _datHash,
+		string _database,
+		string _keyValue,
+		bytes32 _contentId,
+		address _parentId,
+		uint256 _childMinLogos,
+		bool _ethosCapStatus,
+		uint256 _ethosCapAmount
+	) internal returns (bool) {
+		// Create the TAO
+		address taoId = AOLibrary.deployTAO(_name, _nameId, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
+
+		// Increment the nonce
+		nonces[taoId]++;
+
+		// Store the name lookup information
+		require (_nameTAOLookup.add(_name, taoId, TAO(_parentId).name(), 0));
+
+		// Store the Advocate/Listener/Speaker information
+		require (_nameTAOPosition.add(taoId, _nameId, _nameId, _nameId));
+
+		// Store the "Family" info of this TAO
+		require (_taoFamily.add(taoId, _parentId, _childMinLogos));
+
+		// Creat a Pool so that public can stake Ethos/Pathos on it
+		require (_taoPool.createPool(taoId, _ethosCapStatus, _ethosCapAmount));
+
+		taos.push(taoId);
+
+		emit CreateTAO(msg.sender, _nameId, taoId, taos.length.sub(1), _parentId, TAO(_parentId).typeId());
+
+		if (AOLibrary.isTAO(_parentId)) {
+			require (_taoFamily.addChild(_parentId, taoId));
+		}
+		return true;
+	}
+
 	/**
 	 * @dev Check whether or not the address recovered from the signature is valid
 	 * @param _validateAddress The ETH address to be validated (optional)
