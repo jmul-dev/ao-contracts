@@ -11,10 +11,10 @@ contract Logos is TAOCurrency {
 	mapping (address => uint256) public positionFromOthers;
 
 	// Mapping of Name ID to other Name ID and the amount of Logos positioned by itself
-	mapping (address => mapping(address => uint256)) public positionToOthers;
+	mapping (address => mapping(address => uint256)) public positionOnOthers;
 
-	// Mapping of a Name ID to the total amount of Logos positioned by itself to others
-	mapping (address => uint256) public totalPositionToOthers;
+	// Mapping of a Name ID to the total amount of Logos positioned by itself on others
+	mapping (address => uint256) public totalPositionOnOthers;
 
 	// Mapping of Name ID to it's advocated TAO ID and the amount of Logos earned
 	mapping (address => mapping(address => uint256)) public advocatedTAOLogos;
@@ -88,6 +88,15 @@ contract Logos is TAOCurrency {
 	}
 
 	/**
+	 * @dev Return the amount of Logos that are available to be positioned on other
+	 * @param _sender The sender address to check
+	 * @return The amount of Logos that are available to be positioned on other
+	 */
+	function availableToPositionAmount(address _sender) public view returns (uint256) {
+		return balanceOf[_sender].sub(totalPositionOnOthers[_sender]);
+	}
+
+	/**
 	 * @dev `_from` Name position `_value` Logos onto `_to` Name
 	 *
 	 * @param _from The address of the sender
@@ -97,21 +106,21 @@ contract Logos is TAOCurrency {
 	 */
 	function positionFrom(address _from, address _to, uint256 _value) public isName(_from) isName(_to) onlyAdvocate(_from) returns (bool) {
 		require (_from != _to);	// Can't position Logos to itself
-		require (balanceOf[_from].sub(totalPositionToOthers[_from]) >= _value); // should have enough balance to position
+		require (availableToPositionAmount(_from) >= _value); // should have enough balance to position
 		require (positionFromOthers[_to].add(_value) >= positionFromOthers[_to]); // check for overflows
 
-		uint256 previousPositionToOthers = totalPositionToOthers[_from];
+		uint256 previousPositionToOthers = totalPositionOnOthers[_from];
 		uint256 previousPositionFromOthers = positionFromOthers[_to];
-		uint256 previousAvailPositionBalance = balanceOf[_from].sub(totalPositionToOthers[_from]);
+		uint256 previousAvailPositionBalance = balanceOf[_from].sub(totalPositionOnOthers[_from]);
 
-		positionToOthers[_from][_to] = positionToOthers[_from][_to].add(_value);
-		totalPositionToOthers[_from] = totalPositionToOthers[_from].add(_value);
+		positionOnOthers[_from][_to] = positionOnOthers[_from][_to].add(_value);
+		totalPositionOnOthers[_from] = totalPositionOnOthers[_from].add(_value);
 		positionFromOthers[_to] = positionFromOthers[_to].add(_value);
 
 		emit PositionFrom(_from, _to, _value);
-		assert(totalPositionToOthers[_from].sub(_value) == previousPositionToOthers);
+		assert(totalPositionOnOthers[_from].sub(_value) == previousPositionToOthers);
 		assert(positionFromOthers[_to].sub(_value) == previousPositionFromOthers);
-		assert(balanceOf[_from].sub(totalPositionToOthers[_from]) <= previousAvailPositionBalance);
+		assert(balanceOf[_from].sub(totalPositionOnOthers[_from]) <= previousAvailPositionBalance);
 		return true;
 	}
 
@@ -125,20 +134,20 @@ contract Logos is TAOCurrency {
 	 */
 	function unpositionFrom(address _from, address _to, uint256 _value) public isName(_from) isName(_to) onlyAdvocate(_from) returns (bool) {
 		require (_from != _to);	// Can't unposition Logos to itself
-		require (positionToOthers[_from][_to] >= _value);
+		require (positionOnOthers[_from][_to] >= _value);
 
-		uint256 previousPositionToOthers = totalPositionToOthers[_from];
+		uint256 previousPositionToOthers = totalPositionOnOthers[_from];
 		uint256 previousPositionFromOthers = positionFromOthers[_to];
-		uint256 previousAvailPositionBalance = balanceOf[_from].sub(totalPositionToOthers[_from]);
+		uint256 previousAvailPositionBalance = balanceOf[_from].sub(totalPositionOnOthers[_from]);
 
-		positionToOthers[_from][_to] = positionToOthers[_from][_to].sub(_value);
-		totalPositionToOthers[_from] = totalPositionToOthers[_from].sub(_value);
+		positionOnOthers[_from][_to] = positionOnOthers[_from][_to].sub(_value);
+		totalPositionOnOthers[_from] = totalPositionOnOthers[_from].sub(_value);
 		positionFromOthers[_to] = positionFromOthers[_to].sub(_value);
 
 		emit UnpositionFrom(_from, _to, _value);
-		assert(totalPositionToOthers[_from].add(_value) == previousPositionToOthers);
+		assert(totalPositionOnOthers[_from].add(_value) == previousPositionToOthers);
 		assert(positionFromOthers[_to].add(_value) == previousPositionFromOthers);
-		assert(balanceOf[_from].sub(totalPositionToOthers[_from]) >= previousAvailPositionBalance);
+		assert(balanceOf[_from].sub(totalPositionOnOthers[_from]) >= previousAvailPositionBalance);
 		return true;
 	}
 
@@ -160,19 +169,18 @@ contract Logos is TAOCurrency {
 	}
 
 	/**
-	 * @dev Transfer logos earned from advocating a TAO `_taoId` from `_fromNameId` to `_toNameId`
+	 * @dev Transfer logos earned from advocating a TAO `_taoId` from `_fromNameId` to the Advocate of `_taoId`
 	 * @param _fromNameId The ID of the Name that sends the Logos
-	 * @param _toNameId The ID of the Name that receives the Logos
 	 * @param _taoId The ID of the advocated TAO
 	 * @return true on success
 	 */
-	function transferAdvocatedTAOLogos(address _fromNameId, address _toNameId, address _taoId) public inWhitelist isName(_fromNameId) isName(_toNameId) isTAO(_taoId) returns (bool) {
-		require (_nameTAOPosition.nameIsAdvocate(_toNameId, _taoId));
-		require (advocatedTAOLogos[_fromNameId][_taoId] > 0);
+	function transferAdvocatedTAOLogos(address _fromNameId, address _taoId) public inWhitelist isName(_fromNameId) isTAO(_taoId) returns (bool) {
+		address _toNameId = _nameTAOPosition.getAdvocate(_taoId);
+		require (_fromNameId != _toNameId);
 		require (totalAdvocatedTAOLogos[_fromNameId] >= advocatedTAOLogos[_fromNameId][_taoId]);
 
 		uint256 _amount = advocatedTAOLogos[_fromNameId][_taoId];
-		advocatedTAOLogos[_fromNameId][_taoId] = advocatedTAOLogos[_fromNameId][_taoId].sub(_amount);
+		advocatedTAOLogos[_fromNameId][_taoId] = 0;
 		totalAdvocatedTAOLogos[_fromNameId] = totalAdvocatedTAOLogos[_fromNameId].sub(_amount);
 		advocatedTAOLogos[_toNameId][_taoId] = advocatedTAOLogos[_toNameId][_taoId].add(_amount);
 		totalAdvocatedTAOLogos[_toNameId] = totalAdvocatedTAOLogos[_toNameId].add(_amount);
