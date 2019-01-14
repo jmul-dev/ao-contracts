@@ -203,7 +203,7 @@ contract("Pathos Giga", function(accounts) {
 		}
 		assert.equal(canMintToken, true, "Whitelisted address can't mint token to TAO");
 
-		var taoBalance = await pathosgiga.balanceOf(nameId1);
+		var taoBalance = await pathosgiga.balanceOf(taoId1);
 		assert.equal(taoBalance.toNumber(), 1000, "TAO has incorrect pathosgiga balance");
 	});
 
@@ -331,7 +331,7 @@ contract("Pathos Giga", function(accounts) {
 		}
 		assert.equal(canWhitelistBurnFrom, true, "Whitelisted address can't burn token from TAO");
 
-		var taoBalance = await pathosgiga.balanceOf(nameId1);
+		var taoBalance = await pathosgiga.balanceOf(taoId1);
 		assert.equal(taoBalance.toNumber(), 930, "TAO has incorrect pathosgiga balance");
 	});
 });
