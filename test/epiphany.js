@@ -25,7 +25,7 @@ contract("Epiphany", function(accounts) {
 		await logos.setWhitelist(theAO, true, { from: theAO });
 		await logos.mintToken(nameId, 10 ** 12, { from: theAO });
 
-		result = await taofactory.createTAO("newTAO", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId, 0, {
+		result = await taofactory.createTAO("newTAO", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId, 0, false, 0, {
 			from: account1
 		});
 		var createTAOEvent = result.logs[0];
