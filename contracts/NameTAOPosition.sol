@@ -5,6 +5,7 @@ import './TheAO.sol';
 import './INameTAOPosition.sol';
 import './INameFactory.sol';
 import './ITAOFactory.sol';
+import './Logos.sol';
 
 /**
  * @title NameTAOPosition
@@ -12,9 +13,11 @@ import './ITAOFactory.sol';
 contract NameTAOPosition is TheAO, INameTAOPosition {
 	address public nameFactoryAddress;
 	address public taoFactoryAddress;
+	address public logosAddress;
 
 	INameFactory internal _nameFactory;
 	ITAOFactory internal _taoFactory;
+	Logos internal _logos;
 
 	struct PositionDetail {
 		address advocateId;
@@ -140,6 +143,16 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		require (_taoFactoryAddress != address(0));
 		taoFactoryAddress = _taoFactoryAddress;
 		_taoFactory = ITAOFactory(_taoFactoryAddress);
+	}
+
+	/**
+	 * @dev The AO set the logosAddress Address
+	 * @param _logosAddress The address of Logos
+	 */
+	function setLogosAddress(address _logosAddress) public onlyTheAO {
+		require (_logosAddress != address(0));
+		logosAddress = _logosAddress;
+		_logos = Logos(_logosAddress);
 	}
 
 	/***** PUBLIC METHODS *****/
@@ -305,6 +318,10 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		uint256 _nonce = _taoFactory.incrementNonce(_taoId);
 		require (_nonce > 0);
 		emit SetAdvocate(_taoId, _currentAdvocateId, _positionDetail.advocateId, _nonce);
+
+		if (AOLibrary.isTAO(_taoId)) {
+			require (_logos.transferAdvocatedTAOLogos(_currentAdvocateId, _taoId));
+		}
 	}
 
 	/**
