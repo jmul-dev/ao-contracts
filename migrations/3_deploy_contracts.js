@@ -380,6 +380,12 @@ module.exports = function(deployer, network, accounts) {
 			// Link Logos to TAOFactory
 			await taofactory.setLogosAddress(logos.address, { from: primordialAccount });
 
+			// Link Logos to NameTAOPosition
+			await nametaoposition.setLogosAddress(logos.address, { from: primordialAccount });
+
+			// Logos grant access to NameTAOPosition
+			await logos.setWhitelist(nametaoposition.address, true, { from: primordialAccount });
+
 			// Store Logos denominations in LogosTreasury
 			await logostreasury.addDenomination("logos", logos.address, { from: primordialAccount });
 			await logostreasury.addDenomination("kilo", logoskilo.address, { from: primordialAccount });
