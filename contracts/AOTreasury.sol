@@ -66,7 +66,7 @@ contract AOTreasury is TheAO, IAOTreasury {
 	 * @dev Checks if denomination is valid
 	 */
 	modifier isValidDenomination(bytes8 denominationName) {
-		require (denominationIndex[denominationName] > 0 && denominations[denominationIndex[denominationName]].denominationAddress != address(0));
+		require (this.isDenominationExist(denominationName));
 		_;
 	}
 
@@ -128,9 +128,7 @@ contract AOTreasury is TheAO, IAOTreasury {
 	 * @param denominationAddress The address of the denomination token
 	 * @return true on success
 	 */
-	function updateDenomination(bytes8 denominationName, address denominationAddress) public onlyTheAO returns (bool) {
-		require (denominationName.length != 0);
-		require (denominationIndex[denominationName] > 0);
+	function updateDenomination(bytes8 denominationName, address denominationAddress) public onlyTheAO isValidDenomination(denominationName) returns (bool) {
 		require (denominationAddress != address(0));
 		uint256 _denominationNameIndex = denominationIndex[denominationName];
 		AOTokenInterface _newDenominationToken = AOTokenInterface(denominationAddress);
@@ -148,6 +146,18 @@ contract AOTreasury is TheAO, IAOTreasury {
 
 	/***** PUBLIC METHODS *****/
 	/**
+	 * @dev Check if denomination exist given a name
+	 * @param denominationName The denomination name to check
+	 * @return true if yes. false otherwise
+	 */
+	function isDenominationExist(bytes8 denominationName) external view returns (bool) {
+		return (denominationName.length > 0 &&
+			denominationIndex[denominationName] > 0 &&
+			denominations[denominationIndex[denominationName]].denominationAddress != address(0)
+	   );
+	}
+
+	/**
 	 * @dev Get denomination info based on name
 	 * @param denominationName The name to be queried
 	 * @return the denomination short name
@@ -157,10 +167,7 @@ contract AOTreasury is TheAO, IAOTreasury {
 	 * @return the denomination num of decimals
 	 * @return the denomination multiplier (power of ten)
 	 */
-	function getDenominationByName(bytes8 denominationName) public view returns (bytes8, address, string, string, uint8, uint256) {
-		require (denominationName.length != 0);
-		require (denominationIndex[denominationName] > 0);
-		require (denominations[denominationIndex[denominationName]].denominationAddress != address(0));
+	function getDenominationByName(bytes8 denominationName) public isValidDenomination(denominationName) view returns (bytes8, address, string, string, uint8, uint256) {
 		AOTokenInterface _ao = AOTokenInterface(denominations[denominationIndex[denominationName]].denominationAddress);
 		return (
 			denominations[denominationIndex[denominationName]].name,
@@ -224,13 +231,9 @@ contract AOTreasury is TheAO, IAOTreasury {
 	 * @param denominationName bytes8 name of the token denomination
 	 * @return uint256 converted amount in base denomination from target denomination
 	 */
-	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) external view returns (uint256) {
+	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) external isValidDenomination(denominationName) view returns (uint256) {
 		uint256 _fractionAmount = fractionAmount;
-		if (denominationName.length > 0 &&
-			denominationIndex[denominationName] > 0 &&
-			denominations[denominationIndex[denominationName]].denominationAddress != address(0) &&
-			(integerAmount > 0 || _fractionAmount > 0)) {
-
+		if (integerAmount > 0 || _fractionAmount > 0){
 			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
 			AOTokenInterface _denominationToken = AOTokenInterface(_denomination.denominationAddress);
 			uint8 fractionNumDigits = AOLibrary.numDigits(_fractionAmount);

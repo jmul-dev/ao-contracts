@@ -122,46 +122,6 @@ contract("AOTreasury", function(accounts) {
 		assert.equal(baseToXona[1].toNumber(), "123456789123456789", "fromBase xona return wrong fraction");
 	});
 	contract("The AO only function tests", function() {
-		it("only The AO can pause/unpause contract", async function() {
-			var canPause;
-			try {
-				await aotreasury.setPaused(true, { from: account1 });
-				canPause = true;
-			} catch (e) {
-				canPause = false;
-			}
-			assert.notEqual(canPause, true, "Non-The AO can pause contract");
-			try {
-				await aotreasury.setPaused(true, { from: theAO });
-				canPause = true;
-			} catch (e) {
-				canPause = false;
-			}
-			assert.equal(canPause, true, "The AO can't pause contract");
-			var paused = await aotreasury.paused();
-			assert.equal(paused, true, "Contract has incorrect paused value after The AO set paused");
-		});
-
-		it("only The AO can call escape hatch", async function() {
-			var canEscapeHatch;
-			try {
-				await aotreasury.escapeHatch({ from: account1 });
-				canEscapeHatch = true;
-			} catch (e) {
-				canEscapeHatch = false;
-			}
-			assert.notEqual(canEscapeHatch, true, "Non-The AO can call escape hatch");
-			try {
-				await aotreasury.escapeHatch({ from: theAO });
-				canEscapeHatch = true;
-			} catch (e) {
-				canEscapeHatch = false;
-			}
-			assert.equal(canEscapeHatch, true, "The AO can't call escape hatch");
-			var killed = await aotreasury.killed();
-			assert.equal(killed, true, "Contract has incorrect killed value after The AO call escape hatch");
-		});
-
 		it("only The AO can add denomination", async function() {
 			var canAdd;
 			try {
@@ -251,6 +211,17 @@ contract("AOTreasury", function(accounts) {
 			var aoyottadecimals = await aoyotta.decimals();
 			var aoxonadecimals = await aoxona.decimals();
 
+			await aotoken.setWhitelist(theAO, true, { from: theAO });
+			await aokilo.setWhitelist(theAO, true, { from: theAO });
+			await aomega.setWhitelist(theAO, true, { from: theAO });
+			await aogiga.setWhitelist(theAO, true, { from: theAO });
+			await aotera.setWhitelist(theAO, true, { from: theAO });
+			await aopeta.setWhitelist(theAO, true, { from: theAO });
+			await aoexa.setWhitelist(theAO, true, { from: theAO });
+			await aozetta.setWhitelist(theAO, true, { from: theAO });
+			await aoyotta.setWhitelist(theAO, true, { from: theAO });
+			await aoxona.setWhitelist(theAO, true, { from: theAO });
+
 			await aotoken.mintToken(account1, 100, { from: theAO });
 			await aokilo.mintToken(account1, 100 * 10 ** aokilodecimals.toNumber(), { from: theAO });
 			await aomega.mintToken(account1, 100 * 10 ** aomegadecimals.toNumber(), { from: theAO });
@@ -265,7 +236,7 @@ contract("AOTreasury", function(accounts) {
 		it("should exchange token from `fromDenominationName` to `toDenominationName` correctly", async function() {
 			var canExchange;
 			try {
-				await aotreasury.exchange(50, "deca", "ao", { from: account1 });
+				await aotreasury.exchangeDenomination(50, "deca", "ao", { from: account1 });
 				canExchange = true;
 			} catch (e) {
 				canExchange = false;
@@ -273,7 +244,7 @@ contract("AOTreasury", function(accounts) {
 			assert.notEqual(canExchange, true, "Contract can exchange token from invalid origin denomination");
 
 			try {
-				await aotreasury.exchange(50, "ao", "deca", { from: account1 });
+				await aotreasury.exchangeDenomination(50, "ao", "deca", { from: account1 });
 				canExchange = true;
 			} catch (e) {
 				canExchange = false;
@@ -281,7 +252,7 @@ contract("AOTreasury", function(accounts) {
 			assert.notEqual(canExchange, true, "Contract can exchange token to invalid target denomination");
 
 			try {
-				await aotreasury.exchange(1000, "ao", "kilo", { from: account1 });
+				await aotreasury.exchangeDenomination(1000, "ao", "kilo", { from: account1 });
 				canExchange = true;
 			} catch (e) {
 				canExchange = false;
@@ -292,7 +263,7 @@ contract("AOTreasury", function(accounts) {
 			var account1KiloBalanceBefore = await aokilo.balanceOf(account1);
 
 			try {
-				await aotreasury.exchange(50, "ao", "kilo", { from: account1 });
+				await aotreasury.exchangeDenomination(50, "ao", "kilo", { from: account1 });
 				canExchange = true;
 			} catch (e) {
 				canExchange = false;
@@ -316,7 +287,7 @@ contract("AOTreasury", function(accounts) {
 			var account1GigaBalanceBefore = await aogiga.balanceOf(account1);
 
 			try {
-				await aotreasury.exchange(50, "tera", "giga", { from: account1 });
+				await aotreasury.exchangeDenomination(50, "tera", "giga", { from: account1 });
 				canExchange = true;
 			} catch (e) {
 				canExchange = false;
