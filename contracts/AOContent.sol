@@ -74,23 +74,6 @@ contract AOContent is TheAO, IAOContent {
 		_;
 	}
 
-	/**
-	 * @dev Checks if create params are valid
-	 */
-	modifier canCreate(address _creator, string _baseChallenge, uint256 _fileSize, bytes32 _contentUsageType, address _taoId) {
-		(bytes32 aoContent, bytes32 creativeCommons, bytes32 taoContent,,,) = _getSettingVariables();
-		require (_creator != address(0) &&
-			bytes(_baseChallenge).length > 0 &&
-			_fileSize > 0 &&
-			(_contentUsageType == aoContent || _contentUsageType == creativeCommons || _contentUsageType == taoContent) &&
-			(
-				_contentUsageType != taoContent ||
-				(_contentUsageType == taoContent && _taoId != address(0) && AOLibrary.isTAO(_taoId) && _nameTAOPosition.senderIsPosition(_creator, _taoId))
-			)
-		);
-		_;
-	}
-
 	/***** The AO ONLY METHODS *****/
 	/**
 	 * @dev Transfer ownership of The AO to new address
@@ -155,8 +138,37 @@ contract AOContent is TheAO, IAOContent {
 		uint256 _fileSize,
 		bytes32 _contentUsageType,
 		address _taoId
-		) external inWhitelist canCreate(_creator, _baseChallenge, _fileSize, _contentUsageType, _taoId) returns (bytes32) {
-		return _create(_creator, _baseChallenge, _fileSize, _contentUsageType, _taoId);
+		) external inWhitelist returns (bytes32) {
+		require (_canCreate(_creator, _baseChallenge, _fileSize, _contentUsageType, _taoId));
+
+		// Increment totalContents
+		totalContents++;
+
+		// Generate contentId
+		bytes32 _contentId = keccak256(abi.encodePacked(this, _creator, totalContents));
+		Content storage _content = contents[totalContents];
+
+		// Make sure the node does't store the same content twice
+		require (_content.creator == address(0));
+
+		(,,bytes32 contentUsageType_taoContent, bytes32 taoContentState_submitted,,) = _getSettingVariables();
+
+		_content.contentId = _contentId;
+		_content.creator = _creator;
+		_content.baseChallenge = _baseChallenge;
+		_content.fileSize = _fileSize;
+		_content.contentUsageType = _contentUsageType;
+
+		// If this is a TAO Content
+		if (_contentUsageType == contentUsageType_taoContent) {
+			_content.taoContentState = taoContentState_submitted;
+			_content.taoId = _taoId;
+		}
+
+		contentIndex[_contentId] = totalContents;
+
+		emit StoreContent(_content.creator, _content.contentId, _content.fileSize, _content.contentUsageType);
+		return _content.contentId;
 	}
 
 	/**
@@ -271,48 +283,25 @@ contract AOContent is TheAO, IAOContent {
 
 	/***** INTERNAL METHODS *****/
 	/**
-	 * @dev Actual storing the content
+	 * @dev Checks if create params are valid
 	 * @param _creator the address of the content creator
 	 * @param _baseChallenge The base challenge string (PUBLIC KEY) of the content
 	 * @param _fileSize The size of the file
 	 * @param _contentUsageType The content usage type, i.e AO Content, Creative Commons, or T(AO) Content
 	 * @param _taoId The TAO (TAO) ID for this content (if this is a T(AO) Content)
-	 * @return the ID of the content
+	 * @return true if yes. false otherwise
 	 */
-	function _create(address _creator,
-		string _baseChallenge,
-		uint256 _fileSize,
-		bytes32 _contentUsageType,
-		address _taoId
-		) internal returns (bytes32) {
-		// Increment totalContents
-		totalContents++;
-
-		// Generate contentId
-		bytes32 _contentId = keccak256(abi.encodePacked(this, _creator, totalContents));
-		Content storage _content = contents[totalContents];
-
-		// Make sure the node does't store the same content twice
-		require (_content.creator == address(0));
-
-		(,,bytes32 contentUsageType_taoContent, bytes32 taoContentState_submitted,,) = _getSettingVariables();
-
-		_content.contentId = _contentId;
-		_content.creator = _creator;
-		_content.baseChallenge = _baseChallenge;
-		_content.fileSize = _fileSize;
-		_content.contentUsageType = _contentUsageType;
-
-		// If this is a TAO Content
-		if (_contentUsageType == contentUsageType_taoContent) {
-			_content.taoContentState = taoContentState_submitted;
-			_content.taoId = _taoId;
-		}
-
-		contentIndex[_contentId] = totalContents;
-
-		emit StoreContent(_content.creator, _content.contentId, _content.fileSize, _content.contentUsageType);
-		return _content.contentId;
+	function _canCreate(address _creator, string _baseChallenge, uint256 _fileSize, bytes32 _contentUsageType, address _taoId) internal view returns (bool) {
+		(bytes32 aoContent, bytes32 creativeCommons, bytes32 taoContent,,,) = _getSettingVariables();
+		return (_creator != address(0) &&
+			bytes(_baseChallenge).length > 0 &&
+			_fileSize > 0 &&
+			(_contentUsageType == aoContent || _contentUsageType == creativeCommons || _contentUsageType == taoContent) &&
+			(
+				_contentUsageType != taoContent ||
+				(_contentUsageType == taoContent && _taoId != address(0) && AOLibrary.isTAO(_taoId) && _nameTAOPosition.senderIsPosition(_creator, _taoId))
+			)
+		);
 	}
 
 	/**

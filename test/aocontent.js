@@ -1,4 +1,3 @@
-var AOLibrary = artifacts.require("./AOLibrary.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
@@ -9,8 +8,7 @@ var Logos = artifacts.require("./Logos.sol");
 var EthCrypto = require("eth-crypto");
 
 contract("AOContent", function(accounts) {
-	var library,
-		namefactory,
+	var namefactory,
 		taofactory,
 		nametaoposition,
 		aosetting,
@@ -61,7 +59,6 @@ contract("AOContent", function(accounts) {
 	var nullBytesValue = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 	before(async function() {
-		library = await AOLibrary.deployed();
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
 		nametaoposition = await NameTAOPosition.deployed();
