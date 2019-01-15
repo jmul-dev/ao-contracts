@@ -201,7 +201,7 @@ contract AOContentFactory is TheAO {
 		uint256 _fileSize,
 		uint256 _profitPercentage
 		) public {
-		require (_canStake(_networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _baseChallenge, _encChallenge, _contentDatKey, _metadataDatKey, _fileSize, _profitPercentage));
+		require (_canStake(_networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _encChallenge, _contentDatKey, _metadataDatKey, _fileSize, _profitPercentage));
 
 		/**
 		 * 1. Store this content
@@ -256,7 +256,7 @@ contract AOContentFactory is TheAO {
 		string _metadataDatKey,
 		uint256 _fileSize
 		) public {
-		require (_canStake(_networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _baseChallenge, _encChallenge, _contentDatKey, _metadataDatKey, _fileSize, 0));
+		require (_canStake(_networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _encChallenge, _contentDatKey, _metadataDatKey, _fileSize, 0));
 		require (_aoTreasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) == _fileSize);
 
 		/**
@@ -314,7 +314,7 @@ contract AOContentFactory is TheAO {
 		uint256 _fileSize,
 		address _taoId
 		) public {
-		require (_canStake(_networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _baseChallenge, _encChallenge, _contentDatKey, _metadataDatKey, _fileSize, 0));
+		require (_canStake(_networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _encChallenge, _contentDatKey, _metadataDatKey, _fileSize, 0));
 		require (AOLibrary.isTAO(_taoId) && _nameTAOPosition.senderIsPosition(msg.sender, _taoId));
 		require (_aoTreasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) == _fileSize);
 
@@ -405,7 +405,6 @@ contract AOContentFactory is TheAO {
 	 * @param _networkFractionAmount The fraction amount of network token to stake
 	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
 	 * @param _primordialAmount The amount of primordial Token to stake
-	 * @param _baseChallenge The base challenge string (PUBLIC KEY) of the content
 	 * @param _encChallenge The encrypted challenge string (PUBLIC KEY) of the content unique to the host
 	 * @param _contentDatKey The dat key of the content
 	 * @param _metadataDatKey The dat key of the content's metadata
@@ -417,7 +416,6 @@ contract AOContentFactory is TheAO {
 		uint256 _networkFractionAmount,
 		bytes8 _denomination,
 		uint256 _primordialAmount,
-		string _baseChallenge,
 		string _encChallenge,
 		string _contentDatKey,
 		string _metadataDatKey,
@@ -425,7 +423,6 @@ contract AOContentFactory is TheAO {
 		uint256 _profitPercentage
 		) internal view returns (bool) {
 		return (
-			bytes(_baseChallenge).length > 0 &&
 			bytes(_encChallenge).length > 0 &&
 			bytes(_contentDatKey).length > 0 &&
 			bytes(_metadataDatKey).length > 0 &&

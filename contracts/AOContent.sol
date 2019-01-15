@@ -75,11 +75,19 @@ contract AOContent is TheAO, IAOContent {
 	}
 
 	/**
-	 * @dev Checks if the content usage type is valid
+	 * @dev Checks if create params are valid
 	 */
-	modifier validContentUsageType(bytes32 _type) {
+	modifier canCreate(address _creator, string _baseChallenge, uint256 _fileSize, bytes32 _contentUsageType, address _taoId) {
 		(bytes32 aoContent, bytes32 creativeCommons, bytes32 taoContent,,,) = _getSettingVariables();
-		require (_type == aoContent || _type == creativeCommons || _type == taoContent);
+		require (_creator != address(0) &&
+			bytes(_baseChallenge).length > 0 &&
+			_fileSize > 0 &&
+			(_contentUsageType == aoContent || _contentUsageType == creativeCommons || _contentUsageType == taoContent) &&
+			(
+				_contentUsageType != taoContent ||
+				(_contentUsageType == taoContent && _taoId != address(0) && AOLibrary.isTAO(_taoId) && _nameTAOPosition.senderIsPosition(_creator, _taoId))
+			)
+		);
 		_;
 	}
 
@@ -147,36 +155,8 @@ contract AOContent is TheAO, IAOContent {
 		uint256 _fileSize,
 		bytes32 _contentUsageType,
 		address _taoId
-		) external inWhitelist validContentUsageType(_contentUsageType) returns (bytes32) {
-
-		// Increment totalContents
-		totalContents++;
-
-		// Generate contentId
-		bytes32 _contentId = keccak256(abi.encodePacked(this, _creator, totalContents));
-		Content storage _content = contents[totalContents];
-
-		// Make sure the node does't store the same content twice
-		require (_content.creator == address(0));
-
-		(,,bytes32 contentUsageType_taoContent, bytes32 taoContentState_submitted,,) = _getSettingVariables();
-
-		_content.contentId = _contentId;
-		_content.creator = _creator;
-		_content.baseChallenge = _baseChallenge;
-		_content.fileSize = _fileSize;
-		_content.contentUsageType = _contentUsageType;
-
-		// If this is a TAO Content
-		if (_contentUsageType == contentUsageType_taoContent) {
-			_content.taoContentState = taoContentState_submitted;
-			_content.taoId = _taoId;
-		}
-
-		contentIndex[_contentId] = totalContents;
-
-		emit StoreContent(_content.creator, _content.contentId, _content.fileSize, _content.contentUsageType);
-		return _content.contentId;
+		) external inWhitelist canCreate(_creator, _baseChallenge, _fileSize, _contentUsageType, _taoId) returns (bytes32) {
+		return _create(_creator, _baseChallenge, _fileSize, _contentUsageType, _taoId);
 	}
 
 	/**
@@ -214,10 +194,11 @@ contract AOContent is TheAO, IAOContent {
 	 * @param _contentId The ID of the content
 	 * @return the base challenge
 	 */
-	function getBaseChallenge(bytes32 _contentId) external inWhitelist view returns (string) {
+	function getBaseChallenge(bytes32 _contentId) external view returns (string) {
 		// Make sure the content exist
 		require (contentIndex[_contentId] > 0);
 		Content memory _content = contents[contentIndex[_contentId]];
+		require (whitelist[msg.sender] == true || _content.creator == msg.sender);
 		return _content.baseChallenge;
 	}
 
@@ -289,6 +270,51 @@ contract AOContent is TheAO, IAOContent {
 	}
 
 	/***** INTERNAL METHODS *****/
+	/**
+	 * @dev Actual storing the content
+	 * @param _creator the address of the content creator
+	 * @param _baseChallenge The base challenge string (PUBLIC KEY) of the content
+	 * @param _fileSize The size of the file
+	 * @param _contentUsageType The content usage type, i.e AO Content, Creative Commons, or T(AO) Content
+	 * @param _taoId The TAO (TAO) ID for this content (if this is a T(AO) Content)
+	 * @return the ID of the content
+	 */
+	function _create(address _creator,
+		string _baseChallenge,
+		uint256 _fileSize,
+		bytes32 _contentUsageType,
+		address _taoId
+		) internal returns (bytes32) {
+		// Increment totalContents
+		totalContents++;
+
+		// Generate contentId
+		bytes32 _contentId = keccak256(abi.encodePacked(this, _creator, totalContents));
+		Content storage _content = contents[totalContents];
+
+		// Make sure the node does't store the same content twice
+		require (_content.creator == address(0));
+
+		(,,bytes32 contentUsageType_taoContent, bytes32 taoContentState_submitted,,) = _getSettingVariables();
+
+		_content.contentId = _contentId;
+		_content.creator = _creator;
+		_content.baseChallenge = _baseChallenge;
+		_content.fileSize = _fileSize;
+		_content.contentUsageType = _contentUsageType;
+
+		// If this is a TAO Content
+		if (_contentUsageType == contentUsageType_taoContent) {
+			_content.taoContentState = taoContentState_submitted;
+			_content.taoId = _taoId;
+		}
+
+		contentIndex[_contentId] = totalContents;
+
+		emit StoreContent(_content.creator, _content.contentId, _content.fileSize, _content.contentUsageType);
+		return _content.contentId;
+	}
+
 	/**
 	 * @dev Get setting variables
 	 * @return contentUsageType_aoContent Content Usage Type = AO Content
