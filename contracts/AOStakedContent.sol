@@ -164,7 +164,7 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 
 	/***** PUBLIC METHODS *****/
 	/**
-	 * @dev Actual staking the content
+	 * @dev Stake the content
 	 * @param _stakeOwner the address that stake the content
 	 * @param _contentId The ID of the content
 	 * @param _networkIntegerAmount The integer amount of network token to stake
@@ -182,7 +182,7 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		uint256 _primordialAmount,
 		uint256 _profitPercentage
 		) external inWhitelist returns (bytes32) {
-
+		require (_canCreate(_stakeOwner, _contentId, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _profitPercentage));
 		// Increment totalStakedContents
 		totalStakedContents++;
 
@@ -200,7 +200,7 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		_stakedContent.active = true;
 		_stakedContent.createdOnTimestamp = now;
 
-		if (_denomination[0] != 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
+		if (_aoTreasury.isDenominationExist(_denomination) && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			_stakedContent.networkAmount = _aoTreasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
 			require (_aoToken.stakeFrom(_stakeOwner, _stakedContent.networkAmount));
 		}
@@ -302,7 +302,7 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		// Make sure the staked content has enough balance to unstake
 		require (_canUnstakePartial(_networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _stakedContent.networkAmount, _stakedContent.primordialAmount, _fileSize));
 
-		if (_denomination[0] != 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
+		if (_aoTreasury.isDenominationExist(_denomination) && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			uint256 _unstakeNetworkAmount = _aoTreasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
 			_stakedContent.networkAmount = _stakedContent.networkAmount.sub(_unstakeNetworkAmount);
 			require (_aoToken.unstakeFrom(msg.sender, _unstakeNetworkAmount));
@@ -378,7 +378,7 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		}
 
 		_stakedContent.active = true;
-		if (_denomination[0] != 0 && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
+		if (_aoTreasury.isDenominationExist(_denomination) && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			uint256 _stakeNetworkAmount = _aoTreasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
 			_stakedContent.networkAmount = _stakedContent.networkAmount.add(_stakeNetworkAmount);
 			require (_aoToken.stakeFrom(_stakedContent.stakeOwner, _stakeNetworkAmount));
@@ -408,6 +408,36 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 	}
 
 	/***** INTERNAL METHODS *****/
+	/**
+	 * @dev Checks if create params are valid
+	 * @param _stakeOwner the address that stake the content
+	 * @param _contentId The ID of the content
+	 * @param _networkIntegerAmount The integer amount of network token to stake
+	 * @param _networkFractionAmount The fraction amount of network token to stake
+	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
+	 * @param _primordialAmount The amount of primordial Token to stake
+	 * @param _profitPercentage The percentage of profit the stake owner's media will charge
+	 * @return true if yes. false otherwise
+	 */
+	function _canCreate(address _stakeOwner,
+		bytes32 _contentId,
+		uint256 _networkIntegerAmount,
+		uint256 _networkFractionAmount,
+		bytes8 _denomination,
+		uint256 _primordialAmount,
+		uint256 _profitPercentage) internal view returns (bool) {
+		(address _contentCreator, uint256 _fileSize,,,,,,,) = _aoContent.getById(_contentId);
+		return (_stakeOwner != address(0) &&
+			_stakeOwner == _contentCreator &&
+			(_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0) &&
+			(_aoContent.isAOContentUsageType(_contentId) ?
+				_aoTreasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) >= _fileSize :
+				_aoTreasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination).add(_primordialAmount) == _fileSize
+			) &&
+			_profitPercentage <= AOLibrary.PERCENTAGE_DIVISOR()
+		);
+	}
+
 	/**
 	 * @dev Check whether or the requested unstake amount is valid
 	 * @param _networkIntegerAmount The integer amount of the network token
