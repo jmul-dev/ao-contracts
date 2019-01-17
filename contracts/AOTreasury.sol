@@ -231,9 +231,9 @@ contract AOTreasury is TheAO, IAOTreasury {
 	 * @param denominationName bytes8 name of the token denomination
 	 * @return uint256 converted amount in base denomination from target denomination
 	 */
-	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) external isValidDenomination(denominationName) view returns (uint256) {
+	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) external view returns (uint256) {
 		uint256 _fractionAmount = fractionAmount;
-		if (integerAmount > 0 || _fractionAmount > 0){
+		if (this.isDenominationExist(denominationName) && (integerAmount > 0 || _fractionAmount > 0)) {
 			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
 			AOTokenInterface _denominationToken = AOTokenInterface(_denomination.denominationAddress);
 			uint8 fractionNumDigits = AOLibrary.numDigits(_fractionAmount);
@@ -256,12 +256,16 @@ contract AOTreasury is TheAO, IAOTreasury {
 	 * @return uint256 of the converted integer amount in target denomination
 	 * @return uint256 of the converted fraction amount in target denomination
 	 */
-	function fromBase(uint256 integerAmount, bytes8 denominationName) public isValidDenomination(denominationName) view returns (uint256, uint256) {
-		Denomination memory _denomination = denominations[denominationIndex[denominationName]];
-		AOTokenInterface _denominationToken = AOTokenInterface(_denomination.denominationAddress);
-		uint256 denominationInteger = integerAmount.div(10 ** _denominationToken.powerOfTen());
-		uint256 denominationFraction = integerAmount.sub(denominationInteger.mul(10 ** _denominationToken.powerOfTen()));
-		return (denominationInteger, denominationFraction);
+	function fromBase(uint256 integerAmount, bytes8 denominationName) public view returns (uint256, uint256) {
+		if (this.isDenominationExist(denominationName)) {
+			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
+			AOTokenInterface _denominationToken = AOTokenInterface(_denomination.denominationAddress);
+			uint256 denominationInteger = integerAmount.div(10 ** _denominationToken.powerOfTen());
+			uint256 denominationFraction = integerAmount.sub(denominationInteger.mul(10 ** _denominationToken.powerOfTen()));
+			return (denominationInteger, denominationFraction);
+		} else {
+			return (0, 0);
+		}
 	}
 
 	/**
