@@ -202,6 +202,12 @@ contract AOContentHost is TheAO, IAOContentHost {
 	 * @return the amount paid by AO
 	 */
 	function contentHostPaidByAO(bytes32 _contentHostId) external view returns (uint256) {
+		// Make sure content host exist
+		require (contentHostIndex[_contentHostId] > 0);
+
+		bytes32 _stakeId = contentHosts[contentHostIndex[_contentHostId]].stakeId;
+		require (_aoStakedContent.isActive(_stakeId));
+
 		bytes32 _contentId = contentHosts[contentHostIndex[_contentHostId]].contentId;
 		if (_aoContent.isAOContentUsageType(_contentId)) {
 			return 0;
@@ -270,6 +276,7 @@ contract AOContentHost is TheAO, IAOContentHost {
 	 * @return true on success
 	 */
 	function _create(address _host, bytes32 _stakeId, string _encChallenge, string _contentDatKey, string _metadataDatKey) internal returns (bool) {
+		require (_host != address(0));
 		require (bytes(_encChallenge).length > 0);
 		require (bytes(_contentDatKey).length > 0);
 		require (bytes(_metadataDatKey).length > 0);

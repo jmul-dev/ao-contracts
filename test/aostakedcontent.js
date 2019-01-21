@@ -290,7 +290,7 @@ contract("AOStakedContent", function(accounts) {
 		} catch (e) {
 			canUnstakePartial = false;
 		}
-		assert.equal(canUnstakePartial, true, "Stake owner was unable to partially unstake network tokens from existing staked content.");
+		assert.equal(canUnstakePartial, true, "Stake owner was unable to partially unstake tokens from existing staked content.");
 
 		var stakedContentAfter = await aostakedcontent.getById(stakeId);
 		var accountBalanceAfter = await aotoken.balanceOf(account);

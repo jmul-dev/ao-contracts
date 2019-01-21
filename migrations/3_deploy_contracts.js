@@ -1141,6 +1141,9 @@ module.exports = function(deployer, network, accounts) {
 		.then(async function() {
 			aocontenthost = await AOContentHost.deployed();
 
+			// AOContent grant access to AOContentHost
+			await aocontent.setWhitelist(aocontenthost.address, true, { from: primordialAccount });
+
 			// Link AOContentHost to AOPurchaseReceipt
 			await aopurchasereceipt.setAOContentHostAddress(aocontenthost.address, { from: primordialAccount });
 

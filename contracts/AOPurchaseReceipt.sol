@@ -307,10 +307,12 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 		string _publicKey,
 		address _publicAddress
 	) internal view returns (bool) {
-		(bytes32 _stakeId,,,,) = _aoContentHost.getById(_contentHostId);
+		(bytes32 _stakeId,,address _host,,) = _aoContentHost.getById(_contentHostId);
 
 		// Make sure the content host exist
 		return (_aoContentHost.isExist(_contentHostId) &&
+			_buyer != address(0) &&
+			_buyer != _host &&
 			bytes(_publicKey).length > 0 &&
 			_publicAddress != address(0) &&
 			_aoStakedContent.isActive(_stakeId) &&

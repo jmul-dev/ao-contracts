@@ -106,7 +106,8 @@ contract AOTreasury is TheAO, IAOTreasury {
 	 * @return true on success
 	 */
 	function addDenomination(bytes8 denominationName, address denominationAddress) public onlyTheAO returns (bool) {
-		require (denominationName.length != 0);
+		require (denominationName.length > 0);
+		require (denominationName[0] != 0);
 		require (denominationAddress != address(0));
 		require (denominationIndex[denominationName] == 0);
 		totalDenominations++;
@@ -152,6 +153,7 @@ contract AOTreasury is TheAO, IAOTreasury {
 	 */
 	function isDenominationExist(bytes8 denominationName) external view returns (bool) {
 		return (denominationName.length > 0 &&
+			denominationName[0] != 0 &&
 			denominationIndex[denominationName] > 0 &&
 			denominations[denominationIndex[denominationName]].denominationAddress != address(0)
 	   );

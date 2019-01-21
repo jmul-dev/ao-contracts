@@ -459,17 +459,17 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		uint256 _stakedFileSize
 		) internal view returns (bool) {
 		if (
-			(_denomination.length > 0 &&
+			(_denomination.length > 0 && _denomination[0] != 0 &&
 				(_networkIntegerAmount > 0 || _networkFractionAmount > 0) &&
 				_stakedNetworkAmount < _aoTreasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination)
 			) ||
 			_stakedPrimordialAmount < _primordialAmount ||
 			(
-				_denomination.length > 0
+				_denomination.length > 0 && _denomination[0] != 0
 					&& (_networkIntegerAmount > 0 || _networkFractionAmount > 0)
 					&& (_stakedNetworkAmount.sub(_aoTreasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination)).add(_stakedPrimordialAmount.sub(_primordialAmount)) < _stakedFileSize)
 			) ||
-			( _denomination.length == 0 && _networkIntegerAmount == 0 && _networkFractionAmount == 0 && _primordialAmount > 0 && _stakedPrimordialAmount.sub(_primordialAmount) < _stakedFileSize)
+			( _denomination.length == 0 && _denomination[0] == 0 && _networkIntegerAmount == 0 && _networkFractionAmount == 0 && _primordialAmount > 0 && _stakedPrimordialAmount.sub(_primordialAmount) < _stakedFileSize)
 		) {
 			return false;
 		} else {
