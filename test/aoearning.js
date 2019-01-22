@@ -1073,6 +1073,29 @@ contract("AOEarning", function(accounts) {
 		return newContentHostId;
 	};
 
+	var getTotalStakedContentEarning = async function(stakedContentId) {
+		var getTotalStakedContentEarning = await aoearning.getTotalStakedContentEarning(stakedContentId);
+		var stakedContentStakeEarning = await aoearning.stakedContentStakeEarning(stakedContentId);
+		var stakedContentHostEarning = await aoearning.stakedContentHostEarning(stakedContentId);
+		var stakedContentTheAOEarning = await aoearning.stakedContentTheAOEarning(stakedContentId);
+
+		assert.equal(
+			getTotalStakedContentEarning[0].toNumber(),
+			stakedContentStakeEarning.toNumber(),
+			"getTotalStakedContentEarning() returns incorrect value for total earning from staking the content"
+		);
+		assert.equal(
+			getTotalStakedContentEarning[1].toNumber(),
+			stakedContentHostEarning.toNumber(),
+			"getTotalStakedContentEarning() returns incorrect value for total earning from hosting the content"
+		);
+		assert.equal(
+			getTotalStakedContentEarning[2].toNumber(),
+			stakedContentTheAOEarning.toNumber(),
+			"getTotalStakedContentEarning() returns incorrect value for total The AO earning of the content"
+		);
+	};
+
 	it("The AO - should be able to transfer ownership to a TAO", async function() {
 		var canTransferOwnership;
 		try {
@@ -1574,5 +1597,11 @@ contract("AOEarning", function(accounts) {
 			account4ContentDatKey,
 			account4MetadataDatKey
 		);
+	});
+
+	it("getTotalStakedContentEarning() - should return earning information of a StakedContent ID", async function() {
+		await getTotalStakedContentEarning(stakedContentId1);
+		await getTotalStakedContentEarning(stakedContentId2);
+		await getTotalStakedContentEarning(stakedContentId3);
 	});
 });
