@@ -231,7 +231,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 		buyerPurchaseReceipts[msg.sender][_contentHostId] = _purchaseReceiptId;
 
 		// Calculate content creator/host/The AO earning from this purchase and store them in escrow
-		require (_calculateEarning(msg.sender, totalPurchaseReceipts, _aoContent.isAOContentUsageType(_contentId)));
+		require (_aoEarning.calculateEarning(_purchaseReceiptId));
 
 		emit BuyContent(
 			_purchaseReceipt.buyer,
@@ -264,7 +264,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	 */
 	function getById(bytes32 _purchaseReceiptId) external view returns (bytes32, bytes32, bytes32, address, uint256, uint256, uint256, string, address, uint256) {
 		// Make sure the purchase receipt exist
-		require (purchaseReceiptIndex[_purchaseReceiptId] > 0);
+		require (this.isExist(_purchaseReceiptId));
 		PurchaseReceipt memory _purchaseReceipt = purchaseReceipts[purchaseReceiptIndex[_purchaseReceiptId]];
 		return (
 			_purchaseReceipt.contentHostId,
@@ -287,10 +287,19 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	 * @return true if yes, false otherwise
 	 */
 	function senderIsBuyer(bytes32 _purchaseReceiptId, address _sender) external view returns (bool) {
-		require (purchaseReceiptIndex[_purchaseReceiptId] > 0);
+		require (this.isExist(_purchaseReceiptId));
 		require (_sender != address(0));
 		PurchaseReceipt memory _purchaseReceipt = purchaseReceipts[purchaseReceiptIndex[_purchaseReceiptId]];
 		return (_purchaseReceipt.buyer == _sender);
+	}
+
+	/**
+	 * @dev Check whether or not a purchaseReceiptId exist
+	 * @param _purchaseReceiptId The PurchaseReceipt ID to be checked
+	 * @return true if yes, false otherwise
+	 */
+	function isExist(bytes32 _purchaseReceiptId) external view returns (bool) {
+		return (purchaseReceiptIndex[_purchaseReceiptId] > 0);
 	}
 
 	/***** INTERNAL METHODS *****/
@@ -330,51 +339,5 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	 */
 	function _canBuyAOContent(uint256 _price, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination) internal view returns (bool) {
 		return _aoTreasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination) >= _price;
-	}
-
-	/**
-	 * @dev Calculate the content creator/host/The AO earning when request node buys the content.
-	 *		Also at this stage, all of the earnings are stored in escrow
-	 * @param _buyer The address of the buyer
-	 * @param _internalPurchaseReceiptId The internal ID of the purchase receipt
-	 * @param _isAOContentUsageType Whether or not the content is of AO Content Usage Type
-	 * @return true on success
-	 */
-	function _calculateEarning(address _buyer, uint256 _internalPurchaseReceiptId, bool _isAOContentUsageType) internal returns (bool) {
-		(address _stakeOwner, uint256[] memory _stakedContentUintValues) = _getStakedContentInfo(purchaseReceipts[_internalPurchaseReceiptId].stakedContentId);
-		(,, address _host,,) = _aoContentHost.getById(purchaseReceipts[_internalPurchaseReceiptId].contentHostId);
-
-		require (_aoEarning.calculateEarning(
-			_buyer,
-			purchaseReceipts[_internalPurchaseReceiptId].purchaseReceiptId,
-			_stakedContentUintValues[0],
-			_stakedContentUintValues[1],
-			_stakedContentUintValues[2],
-			_stakedContentUintValues[3],
-			_stakeOwner,
-			_host,
-			_isAOContentUsageType
-		));
-		return true;
-	}
-
-	/**
-	 * @dev Internal helper function to get staked content info for _calculateEarning()
-	 * @param _stakedContentId The ID of the Staked Content
-	 * @return The stake owner address
-	 * @return array of uint256
-	 *			[0] = networkAmount
-	 *			[1] = primordialAmount
-	 *			[2] = primordialWeightedMultiplier
-	 *			[3] = profitPercentage
-	 */
-	function _getStakedContentInfo(bytes32 _stakedContentId) internal view returns (address, uint256[]) {
-		(, address _stakeOwner, uint256 _networkAmount, uint256 _primordialAmount, uint256 _primordialWeightedMultiplier, uint256 _profitPercentage,,) = _aoStakedContent.getById(_stakedContentId);
-		uint256[] memory _uintValues = new uint256[](4);
-		_uintValues[0] = _networkAmount;
-		_uintValues[1] = _primordialAmount;
-		_uintValues[2] = _primordialWeightedMultiplier;
-		_uintValues[3] = _profitPercentage;
-		return (_stakeOwner, _uintValues);
 	}
 }

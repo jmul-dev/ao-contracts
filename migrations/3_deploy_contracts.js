@@ -1022,24 +1022,13 @@ module.exports = function(deployer, network, accounts) {
 			return deployer.deploy([
 				[AOPool, aotoken.address, nametaoposition.address],
 				[AOETH, 0, "AO ETH", "AOETH", aotoken.address, nametaoposition.address],
-				[AOContent, settingTAOId, aosetting.address, nametaoposition.address],
-				[
-					AOEarning,
-					settingTAOId,
-					aosetting.address,
-					aotoken.address,
-					namefactory.address,
-					pathos.address,
-					ethos.address,
-					nametaoposition.address
-				]
+				[AOContent, settingTAOId, aosetting.address, nametaoposition.address]
 			]);
 		})
 		.then(async function() {
 			aopool = await AOPool.deployed();
 			aoeth = await AOETH.deployed();
 			aocontent = await AOContent.deployed();
-			aoearning = await AOEarning.deployed();
 
 			// Grant access to aopool to transact on behalf of others on base denomination
 			await aotoken.setWhitelist(aopool.address, true, { from: primordialAccount });
@@ -1097,6 +1086,28 @@ module.exports = function(deployer, network, accounts) {
 			// AOETH grant access to AOToken
 			await aoeth.setWhitelist(aotoken.address, true, { from: primordialAccount });
 
+			return deployer.deploy([
+				[AOStakedContent, aotoken.address, aotreasury.address, aocontent.address, nametaoposition.address],
+				[
+					AOEarning,
+					settingTAOId,
+					aosetting.address,
+					aotoken.address,
+					namefactory.address,
+					pathos.address,
+					ethos.address,
+					aocontent.address,
+					nametaoposition.address
+				]
+			]);
+		})
+		.then(async function() {
+			aostakedcontent = await AOStakedContent.deployed();
+			aoearning = await AOEarning.deployed();
+
+			// AOToken grant access to AOStakedContent
+			await aotoken.setWhitelist(aostakedcontent.address, true, { from: primordialAccount });
+
 			// AOToken grant access to AOEarning
 			await aotoken.setWhitelist(aoearning.address, true, { from: primordialAccount });
 
@@ -1106,13 +1117,8 @@ module.exports = function(deployer, network, accounts) {
 			// Ethos grant access to AOEarning
 			await ethos.setWhitelist(aoearning.address, true, { from: primordialAccount });
 
-			return deployer.deploy(AOStakedContent, aotoken.address, aotreasury.address, aocontent.address, nametaoposition.address);
-		})
-		.then(async function() {
-			aostakedcontent = await AOStakedContent.deployed();
-
-			// AOToken grant access to AOStakedContent
-			await aotoken.setWhitelist(aostakedcontent.address, true, { from: primordialAccount });
+			// Link AOStakedContent to AOEarning
+			await aoearning.setAOStakedContentAddress(aostakedcontent.address, { from: primordialAccount });
 
 			return deployer.deploy(
 				AOPurchaseReceipt,
@@ -1125,6 +1131,9 @@ module.exports = function(deployer, network, accounts) {
 		})
 		.then(async function() {
 			aopurchasereceipt = await AOPurchaseReceipt.deployed();
+
+			// Link AOPurchaseReceipt to AOEarning
+			await aoearning.setAOPurchaseReceiptAddress(aopurchasereceipt.address, { from: primordialAccount });
 
 			// AOEarning grant access to AOPurchaseReceipt
 			await aoearning.setWhitelist(aopurchasereceipt.address, true, { from: primordialAccount });
@@ -1146,6 +1155,9 @@ module.exports = function(deployer, network, accounts) {
 
 			// Link AOContentHost to AOPurchaseReceipt
 			await aopurchasereceipt.setAOContentHostAddress(aocontenthost.address, { from: primordialAccount });
+
+			// Link AOContentHost to AOEarning
+			await aoearning.setAOContentHostAddress(aocontenthost.address, { from: primordialAccount });
 
 			// AOEarning grant access to AOContentHost
 			await aoearning.setWhitelist(aocontenthost.address, true, { from: primordialAccount });

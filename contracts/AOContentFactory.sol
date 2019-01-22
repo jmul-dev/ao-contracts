@@ -340,14 +340,14 @@ contract AOContentFactory is TheAO {
 	}
 
 	/**
-	 * @dev Return the staking information of a stake ID
-	 * @param _stakeId The ID of the staked content
+	 * @dev Return the staking information of a StakedContent ID
+	 * @param _stakedContentId The ID of the staked content
 	 * @return the network base token amount staked for this content
 	 * @return the primordial token amount staked for this content
 	 * @return the primordial weighted multiplier of the staked content
 	 */
-	function getStakingMetrics(bytes32 _stakeId) public view returns (uint256, uint256, uint256) {
-		(,, uint256 networkAmount, uint256 primordialAmount, uint256 primordialWeightedMultiplier,,,) = _aoStakedContent.getById(_stakeId);
+	function getStakingMetrics(bytes32 _stakedContentId) public view returns (uint256, uint256, uint256) {
+		(,, uint256 networkAmount, uint256 primordialAmount, uint256 primordialWeightedMultiplier,,,) = _aoStakedContent.getById(_stakedContentId);
 		return (
 			networkAmount,
 			primordialAmount,
@@ -356,19 +356,19 @@ contract AOContentFactory is TheAO {
 	}
 
 	/**
-	 * @dev Return the earning information of a stake ID
-	 * @param _stakeId The ID of the staked content
+	 * @dev Return the earning information of a StakedContent ID
+	 * @param _stakedContentId The ID of the staked content
 	 * @return the total earning from staking this content
 	 * @return the total earning from hosting this content
 	 * @return the total The AO earning of this content
 	 */
-	function getEarningMetrics(bytes32 _stakeId) public view returns (uint256, uint256, uint256) {
-		return _aoEarning.getTotalStakedContentEarning(_stakeId);
+	function getEarningMetrics(bytes32 _stakedContentId) public view returns (uint256, uint256, uint256) {
+		return _aoEarning.getTotalStakedContentEarning(_stakedContentId);
 	}
 
 	/**
-	 * @dev Return the staking and earning information of a stake ID
-	 * @param _stakeId The ID of the staked content
+	 * @dev Return the staking and earning information of a StakedContent ID
+	 * @param _stakedContentId The ID of the staked content
 	 * @return the network base token amount staked for this content
 	 * @return the primordial token amount staked for this content
 	 * @return the primordial weighted multiplier of the staked content
@@ -376,9 +376,9 @@ contract AOContentFactory is TheAO {
 	 * @return the total earning from hosting this content
 	 * @return the total The AO earning of this content
 	 */
-	function getContentMetrics(bytes32 _stakeId) public view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
-		(uint256 networkAmount, uint256 primordialAmount, uint256 primordialWeightedMultiplier) = getStakingMetrics(_stakeId);
-		(uint256 totalStakeEarning, uint256 totalHostEarning, uint256 totalTheAOEarning) = getEarningMetrics(_stakeId);
+	function getContentMetrics(bytes32 _stakedContentId) public view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
+		(uint256 networkAmount, uint256 primordialAmount, uint256 primordialWeightedMultiplier) = getStakingMetrics(_stakedContentId);
+		(uint256 totalStakeEarning, uint256 totalHostEarning, uint256 totalTheAOEarning) = getEarningMetrics(_stakedContentId);
 		return (
 			networkAmount,
 			primordialAmount,
@@ -460,13 +460,13 @@ contract AOContentFactory is TheAO {
 	/**
 	 * @dev Add the distribution node info that hosts the content
 	 * @param _host the address of the host
-	 * @param _stakeId The ID of the staked content
+	 * @param _stakedContentId The ID of the staked content
 	 * @param _encChallenge The encrypted challenge string (PUBLIC KEY) of the content unique to the host
 	 * @param _contentDatKey The dat key of the content
 	 * @param _metadataDatKey The dat key of the content's metadata
 	 * @return true on success
 	 */
-	function _hostContent(address _host, bytes32 _stakeId, string _encChallenge, string _contentDatKey, string _metadataDatKey) internal returns (bool) {
-		return _aoContentHost.create(_host, _stakeId, _encChallenge, _contentDatKey, _metadataDatKey);
+	function _hostContent(address _host, bytes32 _stakedContentId, string _encChallenge, string _contentDatKey, string _metadataDatKey) internal returns (bool) {
+		return _aoContentHost.create(_host, _stakedContentId, _encChallenge, _contentDatKey, _metadataDatKey);
 	}
 }

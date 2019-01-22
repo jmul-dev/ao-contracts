@@ -9,6 +9,10 @@ import './AOToken.sol';
 import './INameFactory.sol';
 import './Pathos.sol';
 import './Ethos.sol';
+import './IAOContent.sol';
+import './IAOStakedContent.sol';
+import './IAOContentHost.sol';
+import './IAOPurchaseReceipt.sol';
 
 /**
  * @title AOEarning
@@ -24,94 +28,108 @@ contract AOEarning is TheAO, IAOEarning {
 	address public nameFactoryAddress;
 	address public pathosAddress;
 	address public ethosAddress;
+	address public aoContentAddress;
+	address public aoStakedContentAddress;
+	address public aoContentHostAddress;
+	address public aoPurchaseReceiptAddress;
 
 	IAOSetting internal _aoSetting;
 	AOToken internal _aoToken;
 	INameFactory internal _nameFactory;
 	Pathos internal _pathos;
 	Ethos internal _ethos;
+	IAOContent internal _aoContent;
+	IAOStakedContent internal _aoStakedContent;
+	IAOContentHost internal _aoContentHost;
+	IAOPurchaseReceipt internal _aoPurchaseReceipt;
 
 	// Total earning from staking content from all nodes
-	uint256 public totalStakeContentEarning;
+	uint256 public totalStakedContentEarning;
 
 	// Total earning from hosting content from all nodes
-	uint256 public totalHostContentEarning;
+	uint256 public totalContentHostEarning;
 
 	// Total The AO earning
 	uint256 public totalTheAOEarning;
 
+	// Mapping from PurchaseReceipt ID to its escrowed earning status
+	mapping (bytes32 => bool) internal purchaseReceiptEarningEscrowed;
+
+	// Mapping from PurchaseReceipt ID to its unescrowed earning status
+	mapping (bytes32 => bool) internal purchaseReceiptEarningUnescrowed;
+
 	// Mapping from address to his/her earning from content that he/she staked
-	mapping (address => uint256) public stakeContentEarning;
+	mapping (address => uint256) public ownerStakedContentEarning;
 
 	// Mapping from address to his/her earning from content that he/she hosted
-	mapping (address => uint256) public hostContentEarning;
+	mapping (address => uint256) public ownerContentHostEarning;
 
 	// Mapping from address to his/her network price earning
 	// i.e, when staked amount = filesize
-	mapping (address => uint256) public networkPriceEarning;
+	mapping (address => uint256) public ownerNetworkPriceEarning;
 
 	// Mapping from address to his/her content price earning
 	// i.e, when staked amount > filesize
-	mapping (address => uint256) public contentPriceEarning;
+	mapping (address => uint256) public ownerContentPriceEarning;
 
 	// Mapping from address to his/her inflation bonus
-	mapping (address => uint256) public inflationBonusAccrued;
+	mapping (address => uint256) public ownerInflationBonusAccrued;
 
 	struct Earning {
-		bytes32 purchaseId;
+		bytes32 purchaseReceiptId;
 		uint256 paymentEarning;
 		uint256 inflationBonus;
 		uint256 pathosAmount;
 		uint256 ethosAmount;
 	}
 
-	// Mapping from address to earning from staking content of a purchase ID
-	mapping (address => mapping(bytes32 => Earning)) public stakeEarnings;
+	// Mapping from address to earning from staking content of a PurchaseReceipt ID
+	mapping (address => mapping(bytes32 => Earning)) public ownerPurchaseReceiptStakeEarnings;
 
-	// Mapping from address to earning from hosting content of a purchase ID
-	mapping (address => mapping(bytes32 => Earning)) public hostEarnings;
+	// Mapping from address to earning from hosting content of a PurchaseReceipt ID
+	mapping (address => mapping(bytes32 => Earning)) public ownerPurchaseReceiptHostEarnings;
 
-	// Mapping from purchase ID to earning for The AO
-	mapping (bytes32 => Earning) public theAOEarnings;
+	// Mapping from PurchaaseReceipt ID to earning for The AO
+	mapping (bytes32 => Earning) public theAOPurchaseReceiptEarnings;
 
-	// Mapping from stake ID to it's total earning from staking
-	mapping (bytes32 => uint256) public totalStakedContentStakeEarning;
+	// Mapping from StakedContent ID to it's total earning from staking
+	mapping (bytes32 => uint256) public stakedContentStakeEarning;
 
-	// Mapping from stake ID to it's total earning from hosting
-	mapping (bytes32 => uint256) public totalStakedContentHostEarning;
+	// Mapping from StakedContent ID to it's total earning from hosting
+	mapping (bytes32 => uint256) public stakedContentHostEarning;
 
-	// Mapping from stake ID to it's total earning earned by The AO
-	mapping (bytes32 => uint256) public totalStakedContentTheAOEarning;
+	// Mapping from StakedContent ID to it's total earning earned by The AO
+	mapping (bytes32 => uint256) public stakedContentTheAOEarning;
 
 	// Mapping from content host ID to it's total earning
-	mapping (bytes32 => uint256) public totalHostContentEarningById;
+	mapping (bytes32 => uint256) public contentHostEarning;
 
 	// Event to be broadcasted to public when content creator/host earns the payment split in escrow when request node buys the content
 	// recipientType:
 	// 0 => Content Creator (Stake Owner)
 	// 1 => Node Host
 	// 2 => The AO
-	event PaymentEarningEscrowed(address indexed recipient, bytes32 indexed purchaseId, uint256 totalPaymentAmount, uint256 recipientProfitPercentage, uint256 recipientPaymentEarning, uint8 recipientType);
+	event PaymentEarningEscrowed(address indexed recipient, bytes32 indexed purchaseReceiptId, uint256 price, uint256 recipientProfitPercentage, uint256 recipientPaymentEarning, uint8 recipientType);
 
 	// Event to be broadcasted to public when content creator/host/The AO earns inflation bonus in escrow when request node buys the content
 	// recipientType:
 	// 0 => Content Creator (Stake Owner)
 	// 1 => Node Host
 	// 2 => The AO
-	event InflationBonusEscrowed(address indexed recipient, bytes32 indexed purchaseId, uint256 totalInflationBonusAmount, uint256 recipientProfitPercentage, uint256 recipientInflationBonus, uint8 recipientType);
+	event InflationBonusEscrowed(address indexed recipient, bytes32 indexed purchaseReceiptId, uint256 totalInflationBonusAmount, uint256 recipientProfitPercentage, uint256 recipientInflationBonus, uint8 recipientType);
 
 	// Event to be broadcasted to public when content creator/host/The AO earning is released from escrow
 	// recipientType:
 	// 0 => Content Creator (Stake Owner)
 	// 1 => Node Host
 	// 2 => The AO
-	event EarningUnescrowed(address indexed recipient, bytes32 indexed purchaseId, uint256 paymentEarning, uint256 inflationBonus, uint8 recipientType);
+	event EarningUnescrowed(address indexed recipient, bytes32 indexed purchaseReceiptId, uint256 paymentEarning, uint256 inflationBonus, uint8 recipientType);
 
 	// Event to be broadcasted to public when content creator's Name earns Pathos when a node buys a content
-	event PathosEarned(address indexed nameId, bytes32 indexed purchaseId, uint256 amount);
+	event PathosEarned(address indexed nameId, bytes32 indexed purchaseReceiptId, uint256 amount);
 
 	// Event to be broadcasted to public when host's Name earns Ethos when a node buys a content
-	event EthosEarned(address indexed nameId, bytes32 indexed purchaseId, uint256 amount);
+	event EthosEarned(address indexed nameId, bytes32 indexed purchaseReceiptId, uint256 amount);
 
 	/**
 	 * @dev Constructor function
@@ -129,6 +147,7 @@ contract AOEarning is TheAO, IAOEarning {
 		address _nameFactoryAddress,
 		address _pathosAddress,
 		address _ethosAddress,
+		address _aoContentAddress,
 		address _nameTAOPositionAddress) public {
 		setSettingTAOId(_settingTAOId);
 		setAOSettingAddress(_aoSettingAddress);
@@ -136,6 +155,7 @@ contract AOEarning is TheAO, IAOEarning {
 		setNameFactoryAddress(_nameFactoryAddress);
 		setPathosAddress(_pathosAddress);
 		setEthosAddress(_ethosAddress);
+		setAOContentAddress(_aoContentAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
@@ -229,6 +249,46 @@ contract AOEarning is TheAO, IAOEarning {
 	}
 
 	/**
+	 * @dev The AO sets AOContent address
+	 * @param _aoContentAddress The address of AOContent
+	 */
+	function setAOContentAddress(address _aoContentAddress) public onlyTheAO {
+		require (_aoContentAddress != address(0));
+		aoContentAddress = _aoContentAddress;
+		_aoContent = IAOContent(_aoContentAddress);
+	}
+
+	/**
+	 * @dev The AO sets AOStakedContent address
+	 * @param _aoStakedContentAddress The address of AOStakedContent
+	 */
+	function setAOStakedContentAddress(address _aoStakedContentAddress) public onlyTheAO {
+		require (_aoStakedContentAddress != address(0));
+		aoStakedContentAddress = _aoStakedContentAddress;
+		_aoStakedContent = IAOStakedContent(_aoStakedContentAddress);
+	}
+
+	/**
+	 * @dev The AO sets AOContentHost address
+	 * @param _aoContentHostAddress The address of AOContentHost
+	 */
+	function setAOContentHostAddress(address _aoContentHostAddress) public onlyTheAO {
+		require (_aoContentHostAddress != address(0));
+		aoContentHostAddress = _aoContentHostAddress;
+		_aoContentHost = IAOContentHost(_aoContentHostAddress);
+	}
+
+	/**
+	 * @dev The AO sets AOPurchaseReceipt address
+	 * @param _aoPurchaseReceiptAddress The address of AOPurchaseReceipt
+	 */
+	function setAOPurchaseReceiptAddress(address _aoPurchaseReceiptAddress) public onlyTheAO {
+		require (_aoPurchaseReceiptAddress != address(0));
+		aoPurchaseReceiptAddress = _aoPurchaseReceiptAddress;
+		_aoPurchaseReceipt = IAOPurchaseReceipt(_aoPurchaseReceiptAddress);
+	}
+
+	/**
 	 * @dev The AO set the NameTAOPosition Address
 	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
@@ -241,162 +301,211 @@ contract AOEarning is TheAO, IAOEarning {
 	/**
 	 * @dev Calculate the content creator/host/The AO earning when request node buys the content.
 	 *		Also at this stage, all of the earnings are stored in escrow
-	 * @param _buyer The request node address that buys the content
-	 * @param _purchaseId The ID of the purchase receipt object
-	 * @param _networkAmountStaked The amount of network tokens at stake
-	 * @param _primordialAmountStaked The amount of primordial tokens at stake
-	 * @param _primordialWeightedMultiplierStaked The weighted multiplier of primordial tokens at stake
-	 * @param _profitPercentage The content creator's profit percentage
-	 * @param _stakeOwner The address of the stake owner
-	 * @param _host The address of the host
-	 * @param _isAOContentUsageType whether or not the content is of AO Content Usage Type
-	 */
-	function calculateEarning(
-		address _buyer,
-		bytes32 _purchaseId,
-		uint256 _networkAmountStaked,
-		uint256 _primordialAmountStaked,
-		uint256 _primordialWeightedMultiplierStaked,
-		uint256 _profitPercentage,
-		address _stakeOwner,
-		address _host,
-		bool _isAOContentUsageType
-	) external inWhitelist returns (bool) {
-		// Split the payment earning between content creator and host and store them in escrow
-		_escrowPaymentEarning(_buyer, _purchaseId, _networkAmountStaked.add(_primordialAmountStaked), _profitPercentage, _stakeOwner, _host, _isAOContentUsageType);
-
-		// Calculate the inflation bonus earning for content creator/node/The AO in escrow
-		_escrowInflationBonus(_purchaseId, _calculateInflationBonus(_networkAmountStaked, _primordialAmountStaked, _primordialWeightedMultiplierStaked), _profitPercentage, _stakeOwner, _host, _isAOContentUsageType);
-
-		return true;
-	}
-
-	/**
-	 * @dev Release the payment earning and inflation bonus that is in escrow for specific purchase ID
-	 * @param _stakeId The ID of the staked content
-	 * @param _contentHostId The ID of the hosted content
-	 * @param _purchaseId The purchase receipt ID to check
-	 * @param _buyerPaidMoreThanFileSize Whether or not the request node paid more than filesize when buying the content
-	 * @param _stakeOwner The address of the stake owner
-	 * @param _host The address of the node that host the file
+	 * @param _purchaseReceiptId The ID of the purchase receipt object
 	 * @return true on success
 	 */
-	function releaseEarning(bytes32 _stakeId, bytes32 _contentHostId, bytes32 _purchaseId, bool _buyerPaidMoreThanFileSize, address _stakeOwner, address _host) external inWhitelist returns (bool) {
-		// Release the earning in escrow for stake owner
-		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidMoreThanFileSize, _stakeOwner, 0);
+	function calculateEarning(bytes32 _purchaseReceiptId) external inWhitelist returns (bool) {
+		require (_aoPurchaseReceipt.isExist(_purchaseReceiptId));
+		require (!purchaseReceiptEarningEscrowed[_purchaseReceiptId]);
+		purchaseReceiptEarningEscrowed[_purchaseReceiptId] = true;
 
-		// Release the earning in escrow for host
-		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidMoreThanFileSize, _host, 1);
+		// Split the payment earning between content creator and host and store them in escrow
+		_escrowPaymentEarning(_purchaseReceiptId);
 
-		// Release the earning in escrow for The AO
-		_releaseEarning(_stakeId, _contentHostId, _purchaseId, _buyerPaidMoreThanFileSize, theAO, 2);
-
+		// Calculate the inflation bonus earning for content creator/node/The AO in escrow
+		_escrowInflationBonus(_purchaseReceiptId);
 		return true;
 	}
 
 	/**
-	 * @dev Return the earning information of a stake ID
-	 * @param _stakeId The ID of the staked content
+	 * @dev Release the payment earning and inflation bonus that is in escrow for specific PurchaseReceipt ID
+	 * @param _purchaseReceiptId The purchase receipt ID to check
+	 * @return true on success
+	 */
+	function releaseEarning(bytes32 _purchaseReceiptId) external inWhitelist returns (bool) {
+		require (_aoPurchaseReceipt.isExist(_purchaseReceiptId));
+		require (purchaseReceiptEarningEscrowed[_purchaseReceiptId] && !purchaseReceiptEarningUnescrowed[_purchaseReceiptId]);
+		purchaseReceiptEarningUnescrowed[_purchaseReceiptId] = true;
+
+		(bytes32 _contentHostId, bytes32 _stakedContentId, bytes32 _contentId,,, uint256 _amountPaidByBuyer,,,,) = _aoPurchaseReceipt.getById(_purchaseReceiptId);
+		(, address _stakeOwner,,,,,,) = _aoStakedContent.getById(_stakedContentId);
+		(,, address _host,,) = _aoContentHost.getById(_contentHostId);
+		(, uint256 _fileSize,,,,,,,) = _aoContent.getById(_contentId);
+
+		// Release the earning in escrow for stake owner
+		_releaseEarning(_stakedContentId, _contentHostId, _purchaseReceiptId, _amountPaidByBuyer > _fileSize, _stakeOwner, 0);
+
+		// Release the earning in escrow for host
+		_releaseEarning(_stakedContentId, _contentHostId, _purchaseReceiptId, _amountPaidByBuyer > _fileSize, _host, 1);
+
+		// Release the earning in escrow for The AO
+		_releaseEarning(_stakedContentId, _contentHostId, _purchaseReceiptId, _amountPaidByBuyer > _fileSize, theAO, 2);
+		return true;
+	}
+
+	/**
+	 * @dev Return the earning information of a StakedContent ID
+	 * @param _stakedContentId The ID of the staked content
 	 * @return the total earning from staking this content
 	 * @return the total earning from hosting this content
 	 * @return the total The AO earning of this content
 	 */
-	function getTotalStakedContentEarning(bytes32 _stakeId) external view returns (uint256, uint256, uint256) {
+	function getTotalStakedContentEarning(bytes32 _stakedContentId) external view returns (uint256, uint256, uint256) {
 		return (
-			totalStakedContentStakeEarning[_stakeId],
-			totalStakedContentHostEarning[_stakeId],
-			totalStakedContentTheAOEarning[_stakeId]
+			stakedContentStakeEarning[_stakedContentId],
+			stakedContentHostEarning[_stakedContentId],
+			stakedContentTheAOEarning[_stakedContentId]
 		);
 	}
 
 	/***** INTERNAL METHODS *****/
 	/**
 	 * @dev Calculate the payment split for content creator/host and store them in escrow
-	 * @param _buyer the request node address that buys the content
-	 * @param _purchaseId The ID of the purchase receipt object
-	 * @param _totalStaked The total staked amount of the content
-	 * @param _profitPercentage The content creator's profit percentage
-	 * @param _stakeOwner The address of the stake owner
-	 * @param _host The address of the host
-	 * @param _isAOContentUsageType whether or not the content is of AO Content Usage Type
+	 * @param _purchaseReceiptId The ID of the purchase receipt object
 	 */
-	function _escrowPaymentEarning(address _buyer, bytes32 _purchaseId, uint256 _totalStaked, uint256 _profitPercentage, address _stakeOwner, address _host, bool _isAOContentUsageType) internal {
-		(uint256 _stakeOwnerEarning, uint256 _pathosAmount) = _escrowStakeOwnerPaymentEarning(_buyer, _purchaseId, _totalStaked, _profitPercentage, _stakeOwner, _isAOContentUsageType);
-		(uint256 _ethosAmount) = _escrowHostPaymentEarning(_buyer, _purchaseId, _totalStaked, _profitPercentage, _host, _isAOContentUsageType, _stakeOwnerEarning);
-
-		_escrowTheAOPaymentEarning(_purchaseId, _totalStaked, _pathosAmount, _ethosAmount);
+	function _escrowPaymentEarning(bytes32 _purchaseReceiptId) internal {
+		(uint256 _stakeOwnerEarning, uint256 _pathosAmount) = _escrowStakeOwnerPaymentEarning(_purchaseReceiptId);
+		(uint256 _ethosAmount) = _escrowHostPaymentEarning(_purchaseReceiptId, _stakeOwnerEarning);
+		_escrowTheAOPaymentEarning(_purchaseReceiptId, _pathosAmount, _ethosAmount);
 	}
 
 	/**
-	 * @dev Calculate the inflation bonus amount
-	 * @param _networkAmountStaked The amount of network tokens at stake
-	 * @param _primordialAmountStaked The amount of primordial tokens at stake
-	 * @param _primordialWeightedMultiplierStaked The weighted multiplier of primordial tokens at stake
-	 * @return the bonus network amount
+	 * @dev Calculate the payment split for content creator and store them in escrow
+	 * @param _purchaseReceiptId The ID of the purchase receipt object
+	 * @return The stake owner's earning amount
+	 * @return The pathos earned from this transaction
 	 */
-	function _calculateInflationBonus(uint256 _networkAmountStaked, uint256 _primordialAmountStaked, uint256 _primordialWeightedMultiplierStaked) internal view returns (uint256) {
+	function _escrowStakeOwnerPaymentEarning(bytes32 _purchaseReceiptId) internal returns (uint256, uint256) {
 		(uint256 inflationRate,,) = _getSettingVariables();
+		(, bytes32 _stakedContentId, bytes32 _contentId, address _buyer, uint256 _price,,,,,) = _aoPurchaseReceipt.getById(_purchaseReceiptId);
+		(, address _stakeOwner,,,, uint256 _profitPercentage,,) = _aoStakedContent.getById(_stakedContentId);
 
-		uint256 _networkBonus = _networkAmountStaked.mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR());
-		uint256 _primordialBonus = _primordialAmountStaked.mul(_primordialWeightedMultiplierStaked).div(AOLibrary.MULTIPLIER_DIVISOR()).mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR());
-		return _networkBonus.add(_primordialBonus);
+		Earning storage _ownerPurchaseReceiptStakeEarning = ownerPurchaseReceiptStakeEarnings[_stakeOwner][_purchaseReceiptId];
+		_ownerPurchaseReceiptStakeEarning.purchaseReceiptId = _purchaseReceiptId;
+
+		// Store how much the content creator (stake owner) earns in escrow
+		// If content is AO Content Usage Type, stake owner earns 0%
+		// and all profit goes to the serving host node
+		_ownerPurchaseReceiptStakeEarning.paymentEarning = _aoContent.isAOContentUsageType(_contentId) ? (_price.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR()) : 0;
+		// Pathos = Price X Node Share X Inflation Rate
+		_ownerPurchaseReceiptStakeEarning.pathosAmount = _price.mul(AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage)).mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR()).div(AOLibrary.PERCENTAGE_DIVISOR());
+		require (_aoToken.escrowFrom(_buyer, _stakeOwner, _ownerPurchaseReceiptStakeEarning.paymentEarning));
+		emit PaymentEarningEscrowed(_stakeOwner, _purchaseReceiptId, _price, _profitPercentage, _ownerPurchaseReceiptStakeEarning.paymentEarning, 0);
+		return (_ownerPurchaseReceiptStakeEarning.paymentEarning, _ownerPurchaseReceiptStakeEarning.pathosAmount);
+	}
+
+	/**
+	 * @dev Calculate the payment split for host node and store them in escrow
+	 * @param _purchaseReceiptId The ID of the purchase receipt object
+	 * @param _stakeOwnerEarning The stake owner's earning amount
+	 * @return The ethos earned from this transaction
+	 */
+	function _escrowHostPaymentEarning(bytes32 _purchaseReceiptId, uint256 _stakeOwnerEarning) internal returns (uint256) {
+		(uint256 inflationRate,,) = _getSettingVariables();
+		(bytes32 _contentHostId, bytes32 _stakedContentId, bytes32 _contentId, address _buyer, uint256 _price,,,,,) = _aoPurchaseReceipt.getById(_purchaseReceiptId);
+		(,,,,, uint256 _profitPercentage,,) = _aoStakedContent.getById(_stakedContentId);
+		(,, address _host,,) = _aoContentHost.getById(_contentHostId);
+
+		// Store how much the node host earns in escrow
+		Earning storage _ownerPurchaseReceiptHostEarning = ownerPurchaseReceiptHostEarnings[_host][_purchaseReceiptId];
+		_ownerPurchaseReceiptHostEarning.purchaseReceiptId = _purchaseReceiptId;
+		_ownerPurchaseReceiptHostEarning.paymentEarning = _price.sub(_stakeOwnerEarning);
+		// Ethos = Price X Creator Share X Inflation Rate
+		_ownerPurchaseReceiptHostEarning.ethosAmount = _price.mul(_profitPercentage).mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR()).div(AOLibrary.PERCENTAGE_DIVISOR());
+
+		if (_aoContent.isAOContentUsageType(_contentId)) {
+			require (_aoToken.escrowFrom(_buyer, _host, _ownerPurchaseReceiptHostEarning.paymentEarning));
+		} else {
+			// If not AO Content usage type, we want to mint to the host
+			require (_aoToken.mintTokenEscrow(_host, _ownerPurchaseReceiptHostEarning.paymentEarning));
+		}
+		emit PaymentEarningEscrowed(_host, _purchaseReceiptId, _price, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), _ownerPurchaseReceiptHostEarning.paymentEarning, 1);
+		return _ownerPurchaseReceiptHostEarning.ethosAmount;
+	}
+
+	/**
+	 * @dev Calculate the earning for The AO and store them in escrow
+	 * @param _purchaseReceiptId The ID of the purchase receipt object
+	 * @param _pathosAmount The amount of pathos earned by stake owner
+	 * @param _ethosAmount The amount of ethos earned by host node
+	 */
+	function _escrowTheAOPaymentEarning(bytes32 _purchaseReceiptId, uint256 _pathosAmount, uint256 _ethosAmount) internal {
+		(,,uint256 theAOEthosEarnedRate) = _getSettingVariables();
+		(,,,, uint256 _price,,,,,) = _aoPurchaseReceipt.getById(_purchaseReceiptId);
+
+		// Store how much The AO earns in escrow
+		Earning storage _theAOPurchaseReceiptEarning = theAOPurchaseReceiptEarnings[_purchaseReceiptId];
+		_theAOPurchaseReceiptEarning.purchaseReceiptId = _purchaseReceiptId;
+		// Pathos + X% of Ethos
+		_theAOPurchaseReceiptEarning.paymentEarning = _pathosAmount.add(_ethosAmount.mul(theAOEthosEarnedRate).div(AOLibrary.PERCENTAGE_DIVISOR()));
+		require (_aoToken.mintTokenEscrow(theAO, _theAOPurchaseReceiptEarning.paymentEarning));
+		emit PaymentEarningEscrowed(theAO, _purchaseReceiptId, _price, 0, _theAOPurchaseReceiptEarning.paymentEarning, 2);
 	}
 
 	/**
 	 * @dev Mint the inflation bonus for content creator/host/The AO and store them in escrow
-	 * @param _purchaseId The ID of the purchase receipt object
-	 * @param _inflationBonusAmount The amount of inflation bonus earning
-	 * @param _profitPercentage The content creator's profit percentage
-	 * @param _stakeOwner The address of the stake owner
-	 * @param _host The address of the host
-	 * @param _isAOContentUsageType whether or not the content is of AO Content Usage Type
+	 * @param _purchaseReceiptId The ID of the purchase receipt object
 	 */
 	function _escrowInflationBonus(
-		bytes32 _purchaseId,
-		uint256 _inflationBonusAmount,
-		uint256 _profitPercentage,
-		address _stakeOwner,
-		address _host,
-		bool _isAOContentUsageType
+		bytes32 _purchaseReceiptId
 	) internal {
 		(, uint256 theAOCut,) = _getSettingVariables();
+		uint256 _inflationBonusAmount = _calculateInflationBonus(_purchaseReceiptId);
+		(bytes32 _contentHostId, bytes32 _stakedContentId, bytes32 _contentId,,,,,,,) = _aoPurchaseReceipt.getById(_purchaseReceiptId);
+		(, address _stakeOwner,,,, uint256 _profitPercentage,,) = _aoStakedContent.getById(_stakedContentId);
+		(,, address _host,,) = _aoContentHost.getById(_contentHostId);
 
 		if (_inflationBonusAmount > 0) {
 			// Store how much the content creator earns in escrow
-			uint256 _stakeOwnerInflationBonus = _isAOContentUsageType ? (_inflationBonusAmount.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR()) : 0;
-			Earning storage _stakeEarning = stakeEarnings[_stakeOwner][_purchaseId];
-			_stakeEarning.inflationBonus = _stakeOwnerInflationBonus;
-			require (_aoToken.mintTokenEscrow(_stakeOwner, _stakeEarning.inflationBonus));
-			emit InflationBonusEscrowed(_stakeOwner, _purchaseId, _inflationBonusAmount, _profitPercentage, _stakeEarning.inflationBonus, 0);
+			uint256 _stakeOwnerInflationBonus = _aoContent.isAOContentUsageType(_contentId) ? (_inflationBonusAmount.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR()) : 0;
+			Earning storage _ownerPurchaseReceiptStakeEarning = ownerPurchaseReceiptStakeEarnings[_stakeOwner][_purchaseReceiptId];
+			_ownerPurchaseReceiptStakeEarning.inflationBonus = _stakeOwnerInflationBonus;
+			require (_aoToken.mintTokenEscrow(_stakeOwner, _ownerPurchaseReceiptStakeEarning.inflationBonus));
+			emit InflationBonusEscrowed(_stakeOwner, _purchaseReceiptId, _inflationBonusAmount, _profitPercentage, _ownerPurchaseReceiptStakeEarning.inflationBonus, 0);
 
 			// Store how much the host earns in escrow
-			Earning storage _hostEarning = hostEarnings[_host][_purchaseId];
-			_hostEarning.inflationBonus = _inflationBonusAmount.sub(_stakeOwnerInflationBonus);
-			require (_aoToken.mintTokenEscrow(_host, _hostEarning.inflationBonus));
-			emit InflationBonusEscrowed(_host, _purchaseId, _inflationBonusAmount, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), _hostEarning.inflationBonus, 1);
+			Earning storage _ownerPurchaseReceiptHostEarning = ownerPurchaseReceiptHostEarnings[_host][_purchaseReceiptId];
+			_ownerPurchaseReceiptHostEarning.inflationBonus = _inflationBonusAmount.sub(_stakeOwnerInflationBonus);
+			require (_aoToken.mintTokenEscrow(_host, _ownerPurchaseReceiptHostEarning.inflationBonus));
+			emit InflationBonusEscrowed(_host, _purchaseReceiptId, _inflationBonusAmount, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), _ownerPurchaseReceiptHostEarning.inflationBonus, 1);
 
 			// Store how much the The AO earns in escrow
-			Earning storage _theAOEarning = theAOEarnings[_purchaseId];
-			_theAOEarning.inflationBonus = (_inflationBonusAmount.mul(theAOCut)).div(AOLibrary.PERCENTAGE_DIVISOR());
-			require (_aoToken.mintTokenEscrow(theAO, _theAOEarning.inflationBonus));
-			emit InflationBonusEscrowed(theAO, _purchaseId, _inflationBonusAmount, theAOCut, _theAOEarning.inflationBonus, 2);
+			Earning storage _theAOPurchaseReceiptEarning = theAOPurchaseReceiptEarnings[_purchaseReceiptId];
+			_theAOPurchaseReceiptEarning.inflationBonus = (_inflationBonusAmount.mul(theAOCut)).div(AOLibrary.PERCENTAGE_DIVISOR());
+			require (_aoToken.mintTokenEscrow(theAO, _theAOPurchaseReceiptEarning.inflationBonus));
+			emit InflationBonusEscrowed(theAO, _purchaseReceiptId, _inflationBonusAmount, theAOCut, _theAOPurchaseReceiptEarning.inflationBonus, 2);
 		} else {
-			emit InflationBonusEscrowed(_stakeOwner, _purchaseId, 0, _profitPercentage, 0, 0);
-			emit InflationBonusEscrowed(_host, _purchaseId, 0, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), 0, 1);
-			emit InflationBonusEscrowed(theAO, _purchaseId, 0, theAOCut, 0, 2);
+			emit InflationBonusEscrowed(_stakeOwner, _purchaseReceiptId, 0, _profitPercentage, 0, 0);
+			emit InflationBonusEscrowed(_host, _purchaseReceiptId, 0, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), 0, 1);
+			emit InflationBonusEscrowed(theAO, _purchaseReceiptId, 0, theAOCut, 0, 2);
 		}
 	}
 
 	/**
-	 * @dev Release the escrowed earning for a specific purchase ID for an account
-	 * @param _stakeId The ID of the staked content
+	 * @dev Calculate the inflation bonus amount
+	 * @param _purchaseReceiptId The ID of the PurchaseReceipt
+	 * @return the bonus network amount
+	 */
+	function _calculateInflationBonus(bytes32 _purchaseReceiptId) internal view returns (uint256) {
+		(uint256 inflationRate,,) = _getSettingVariables();
+		(, bytes32 _stakedContentId,,,,,,,,) = _aoPurchaseReceipt.getById(_purchaseReceiptId);
+		(,,uint256 _networkAmount, uint256 _primordialAmount, uint256 _primordialWeightedMultiplier,,,) = _aoStakedContent.getById(_stakedContentId);
+
+		uint256 _networkBonus = _networkAmount.mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR());
+		uint256 _primordialBonus = _primordialAmount.mul(_primordialWeightedMultiplier).div(AOLibrary.MULTIPLIER_DIVISOR()).mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR());
+		return _networkBonus.add(_primordialBonus);
+	}
+
+	/**
+	 * @dev Release the escrowed earning for a specific PurchaseReceipt ID for an account
+	 * @param _stakedContentId The ID of the staked content
 	 * @param _contentHostId The ID of the hosted content
-	 * @param _purchaseId The purchase receipt ID
+	 * @param _purchaseReceiptId The purchase receipt ID
 	 * @param _buyerPaidMoreThanFileSize Whether or not the request node paid more than filesize when buying the content
 	 * @param _account The address of account that made the earning (content creator/host)
 	 * @param _recipientType The type of the earning recipient (0 => content creator. 1 => host. 2 => theAO)
 	 */
-	function _releaseEarning(bytes32 _stakeId, bytes32 _contentHostId, bytes32 _purchaseId, bool _buyerPaidMoreThanFileSize, address _account, uint8 _recipientType) internal {
+	function _releaseEarning(bytes32 _stakedContentId, bytes32 _contentHostId, bytes32 _purchaseReceiptId, bool _buyerPaidMoreThanFileSize, address _account, uint8 _recipientType) internal {
 		// Make sure the recipient type is valid
 		require (_recipientType >= 0 && _recipientType <= 2);
 
@@ -406,7 +515,7 @@ contract AOEarning is TheAO, IAOEarning {
 		uint256 _pathosAmount;
 		uint256 _ethosAmount;
 		if (_recipientType == 0) {
-			Earning storage _earning = stakeEarnings[_account][_purchaseId];
+			Earning storage _earning = ownerPurchaseReceiptStakeEarnings[_account][_purchaseReceiptId];
 			_paymentEarning = _earning.paymentEarning;
 			_inflationBonus = _earning.inflationBonus;
 			_pathosAmount = _earning.pathosAmount;
@@ -417,21 +526,21 @@ contract AOEarning is TheAO, IAOEarning {
 			_totalEarning = _paymentEarning.add(_inflationBonus);
 
 			// Update the global var settings
-			totalStakeContentEarning = totalStakeContentEarning.add(_totalEarning);
-			stakeContentEarning[_account] = stakeContentEarning[_account].add(_totalEarning);
-			totalStakedContentStakeEarning[_stakeId] = totalStakedContentStakeEarning[_stakeId].add(_totalEarning);
+			totalStakedContentEarning = totalStakedContentEarning.add(_totalEarning);
+			ownerStakedContentEarning[_account] = ownerStakedContentEarning[_account].add(_totalEarning);
+			stakedContentStakeEarning[_stakedContentId] = stakedContentStakeEarning[_stakedContentId].add(_totalEarning);
 			if (_buyerPaidMoreThanFileSize) {
-				contentPriceEarning[_account] = contentPriceEarning[_account].add(_totalEarning);
+				ownerContentPriceEarning[_account] = ownerContentPriceEarning[_account].add(_totalEarning);
 			} else {
-				networkPriceEarning[_account] = networkPriceEarning[_account].add(_totalEarning);
+				ownerNetworkPriceEarning[_account] = ownerNetworkPriceEarning[_account].add(_totalEarning);
 			}
-			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_inflationBonus);
+			ownerInflationBonusAccrued[_account] = ownerInflationBonusAccrued[_account].add(_inflationBonus);
 
 			// Reward the content creator/stake owner with some Pathos
 			require (_pathos.mintToken(_nameFactory.ethAddressToNameId(_account), _pathosAmount));
-			emit PathosEarned(_nameFactory.ethAddressToNameId(_account), _purchaseId, _pathosAmount);
+			emit PathosEarned(_nameFactory.ethAddressToNameId(_account), _purchaseReceiptId, _pathosAmount);
 		} else if (_recipientType == 1) {
-			_earning = hostEarnings[_account][_purchaseId];
+			_earning = ownerPurchaseReceiptHostEarnings[_account][_purchaseReceiptId];
 			_paymentEarning = _earning.paymentEarning;
 			_inflationBonus = _earning.inflationBonus;
 			_ethosAmount = _earning.ethosAmount;
@@ -442,22 +551,22 @@ contract AOEarning is TheAO, IAOEarning {
 			_totalEarning = _paymentEarning.add(_inflationBonus);
 
 			// Update the global var settings
-			totalHostContentEarning = totalHostContentEarning.add(_totalEarning);
-			hostContentEarning[_account] = hostContentEarning[_account].add(_totalEarning);
-			totalStakedContentHostEarning[_stakeId] = totalStakedContentHostEarning[_stakeId].add(_totalEarning);
-			totalHostContentEarningById[_contentHostId] = totalHostContentEarningById[_contentHostId].add(_totalEarning);
+			totalContentHostEarning = totalContentHostEarning.add(_totalEarning);
+			ownerContentHostEarning[_account] = ownerContentHostEarning[_account].add(_totalEarning);
+			stakedContentHostEarning[_stakedContentId] = stakedContentHostEarning[_stakedContentId].add(_totalEarning);
+			contentHostEarning[_contentHostId] = contentHostEarning[_contentHostId].add(_totalEarning);
 			if (_buyerPaidMoreThanFileSize) {
-				contentPriceEarning[_account] = contentPriceEarning[_account].add(_totalEarning);
+				ownerContentPriceEarning[_account] = ownerContentPriceEarning[_account].add(_totalEarning);
 			} else {
-				networkPriceEarning[_account] = networkPriceEarning[_account].add(_totalEarning);
+				ownerNetworkPriceEarning[_account] = ownerNetworkPriceEarning[_account].add(_totalEarning);
 			}
-			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_inflationBonus);
+			ownerInflationBonusAccrued[_account] = ownerInflationBonusAccrued[_account].add(_inflationBonus);
 
 			// Reward the host node with some Ethos
 			require (_ethos.mintToken(_nameFactory.ethAddressToNameId(_account), _ethosAmount));
-			emit EthosEarned(_nameFactory.ethAddressToNameId(_account), _purchaseId, _ethosAmount);
+			emit EthosEarned(_nameFactory.ethAddressToNameId(_account), _purchaseReceiptId, _ethosAmount);
 		} else {
-			_earning = theAOEarnings[_purchaseId];
+			_earning = theAOPurchaseReceiptEarnings[_purchaseReceiptId];
 			_paymentEarning = _earning.paymentEarning;
 			_inflationBonus = _earning.inflationBonus;
 			_earning.paymentEarning = 0;
@@ -468,11 +577,11 @@ contract AOEarning is TheAO, IAOEarning {
 
 			// Update the global var settings
 			totalTheAOEarning = totalTheAOEarning.add(_totalEarning);
-			inflationBonusAccrued[_account] = inflationBonusAccrued[_account].add(_inflationBonus);
-			totalStakedContentTheAOEarning[_stakeId] = totalStakedContentTheAOEarning[_stakeId].add(_totalEarning);
+			ownerInflationBonusAccrued[_account] = ownerInflationBonusAccrued[_account].add(_inflationBonus);
+			stakedContentTheAOEarning[_stakedContentId] = stakedContentTheAOEarning[_stakedContentId].add(_totalEarning);
 		}
 		require (_aoToken.unescrowFrom(_account, _totalEarning));
-		emit EarningUnescrowed(_account, _purchaseId, _paymentEarning, _inflationBonus, _recipientType);
+		emit EarningUnescrowed(_account, _purchaseReceiptId, _paymentEarning, _inflationBonus, _recipientType);
 	}
 
 	/**
@@ -487,82 +596,5 @@ contract AOEarning is TheAO, IAOEarning {
 		(uint256 theAOEthosEarnedRate,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'theAOEthosEarnedRate');
 
 		return (inflationRate, theAOCut, theAOEthosEarnedRate);
-	}
-
-	/**
-	 * @dev Calculate the payment split for content creator and store them in escrow
-	 * @param _buyer the request node address that buys the content
-	 * @param _purchaseId The ID of the purchase receipt object
-	 * @param _totalStaked The total staked amount of the content
-	 * @param _profitPercentage The content creator's profit percentage
-	 * @param _stakeOwner The address of the stake owner
-	 * @param _isAOContentUsageType whether or not the content is of AO Content Usage Type
-	 * @return The stake owner's earning amount
-	 * @return The pathos earned from this transaction
-	 */
-	function _escrowStakeOwnerPaymentEarning(address _buyer, bytes32 _purchaseId, uint256 _totalStaked, uint256 _profitPercentage, address _stakeOwner, bool _isAOContentUsageType) internal returns (uint256, uint256) {
-		(uint256 inflationRate,,) = _getSettingVariables();
-
-		Earning storage _stakeEarning = stakeEarnings[_stakeOwner][_purchaseId];
-		_stakeEarning.purchaseId = _purchaseId;
-		// Store how much the content creator (stake owner) earns in escrow
-		// If content is AO Content Usage Type, stake owner earns 0%
-		// and all profit goes to the serving host node
-		_stakeEarning.paymentEarning = _isAOContentUsageType ? (_totalStaked.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR()) : 0;
-		// Pathos = Price X Node Share X Inflation Rate
-		_stakeEarning.pathosAmount = _totalStaked.mul(AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage)).mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR()).div(AOLibrary.PERCENTAGE_DIVISOR());
-		require (_aoToken.escrowFrom(_buyer, _stakeOwner, _stakeEarning.paymentEarning));
-		emit PaymentEarningEscrowed(_stakeOwner, _purchaseId, _totalStaked, _profitPercentage, _stakeEarning.paymentEarning, 0);
-		return (_stakeEarning.paymentEarning, _stakeEarning.pathosAmount);
-	}
-
-	/**
-	 * @dev Calculate the payment split for host node and store them in escrow
-	 * @param _buyer the request node address that buys the content
-	 * @param _purchaseId The ID of the purchase receipt object
-	 * @param _totalStaked The total staked amount of the content
-	 * @param _profitPercentage The content creator's profit percentage
-	 * @param _host The address of the host node
-	 * @param _isAOContentUsageType whether or not the content is of AO Content Usage Type
-	 * @param _stakeOwnerEarning The stake owner's earning amount
-	 * @return The ethos earned from this transaction
-	 */
-	function _escrowHostPaymentEarning(address _buyer, bytes32 _purchaseId, uint256 _totalStaked, uint256 _profitPercentage, address _host, bool _isAOContentUsageType, uint256 _stakeOwnerEarning) internal returns (uint256) {
-		(uint256 inflationRate,,) = _getSettingVariables();
-
-		// Store how much the node host earns in escrow
-		Earning storage _hostEarning = hostEarnings[_host][_purchaseId];
-		_hostEarning.purchaseId = _purchaseId;
-		_hostEarning.paymentEarning = _totalStaked.sub(_stakeOwnerEarning);
-		// Ethos = Price X Creator Share X Inflation Rate
-		_hostEarning.ethosAmount = _totalStaked.mul(_profitPercentage).mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR()).div(AOLibrary.PERCENTAGE_DIVISOR());
-
-		if (_isAOContentUsageType) {
-			require (_aoToken.escrowFrom(_buyer, _host, _hostEarning.paymentEarning));
-		} else {
-			// If not AO Content usage type, we want to mint to the host
-			require (_aoToken.mintTokenEscrow(_host, _hostEarning.paymentEarning));
-		}
-		emit PaymentEarningEscrowed(_host, _purchaseId, _totalStaked, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), _hostEarning.paymentEarning, 1);
-		return _hostEarning.ethosAmount;
-	}
-
-	/**
-	 * @dev Calculate the earning for The AO and store them in escrow
-	 * @param _purchaseId The ID of the purchase receipt object
-	 * @param _totalStaked The total staked amount of the content
-	 * @param _pathosAmount The amount of pathos earned by stake owner
-	 * @param _ethosAmount The amount of ethos earned by host node
-	 */
-	function _escrowTheAOPaymentEarning(bytes32 _purchaseId, uint256 _totalStaked, uint256 _pathosAmount, uint256 _ethosAmount) internal {
-		(,,uint256 theAOEthosEarnedRate) = _getSettingVariables();
-
-		// Store how much The AO earns in escrow
-		Earning storage _theAOEarning = theAOEarnings[_purchaseId];
-		_theAOEarning.purchaseId = _purchaseId;
-		// Pathos + X% of Ethos
-		_theAOEarning.paymentEarning = _pathosAmount.add(_ethosAmount.mul(theAOEthosEarnedRate).div(AOLibrary.PERCENTAGE_DIVISOR()));
-		require (_aoToken.mintTokenEscrow(theAO, _theAOEarning.paymentEarning));
-		emit PaymentEarningEscrowed(theAO, _purchaseId, _totalStaked, 0, _theAOEarning.paymentEarning, 2);
 	}
 }

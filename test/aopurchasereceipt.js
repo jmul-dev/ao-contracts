@@ -251,6 +251,9 @@ contract("AOPurchaseReceipt", function(accounts) {
 		}
 		assert.equal(canBuyContent, true, "Account can't buy content even though sent tokens >= price");
 
+		var isExist = await aopurchasereceipt.isExist(purchaseReceiptId);
+		assert.equal(isExist, true, "isExist() returns incorrect value");
+
 		var purchaseReceipt = await aopurchasereceipt.getById(purchaseReceiptId);
 		assert.equal(purchaseReceipt[0], contentHostId, "PurchaseReceipt has incorrect contentHostId");
 		assert.equal(purchaseReceipt[1], stakedContentId, "PurchaseReceipt has incorrect stakedContentId");

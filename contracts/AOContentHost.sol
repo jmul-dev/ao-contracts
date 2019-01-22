@@ -248,21 +248,12 @@ contract AOContentHost is TheAO, IAOContentHost {
 	) public {
 		require (_canBecomeHost(_purchaseReceiptId, msg.sender, _baseChallengeV, _baseChallengeR, _baseChallengeS));
 
-		(bytes32[] memory _bytesValues, uint256 _amountPaidByBuyer) = _getPurchaseReceiptInfo(_purchaseReceiptId);
-		(, address _stakeOwner,,,,,,) = _aoStakedContent.getById(_bytesValues[1]);
-		(, uint256 _fileSize,,,,,,,) = _aoContent.getById(_bytesValues[2]);
+		(, bytes32 _stakedContentId,,,,,,,,) = _aoPurchaseReceipt.getById(_purchaseReceiptId);
 
-		require (_create(msg.sender, _bytesValues[1], _encChallenge, _contentDatKey, _metadataDatKey));
+		require (_create(msg.sender, _stakedContentId, _encChallenge, _contentDatKey, _metadataDatKey));
 
 		// Release earning from escrow
-		require (_aoEarning.releaseEarning(
-			_bytesValues[1],
-			_bytesValues[0],
-			_purchaseReceiptId,
-			(_amountPaidByBuyer > _fileSize),
-			_stakeOwner,
-			contentHosts[contentHostIndex[_bytesValues[0]]].host)
-		);
+		require (_aoEarning.releaseEarning(_purchaseReceiptId));
 	}
 
 	/***** INTERNAL METHODS *****/
@@ -338,23 +329,5 @@ contract AOContentHost is TheAO, IAOContentHost {
 
 		bytes32 _hash = keccak256(abi.encodePacked(address(this), _aoContent.getBaseChallenge(_contentId)));
 		return (ecrecover(_hash, _v, _r, _s) == _publicAddress);
-	}
-
-	/**
-	 * @dev Helper function to get purchase receipt info
-	 * @param _purchaseReceiptId The ID of the purchase receipt
-	 * @return array of bytes32
-	 *			[0] = contentHostId
-	 *			[1] = stakedContentId
-	 *			[2] = contentId
-	 * @return amount paid by buyer
-	 */
-	function _getPurchaseReceiptInfo(bytes32 _purchaseReceiptId) internal view returns (bytes32[], uint256) {
-		(bytes32 _contentHostId, bytes32 _stakedContentId, bytes32 _contentId,,, uint256 _amountPaidByBuyer,,,,) = _aoPurchaseReceipt.getById(_purchaseReceiptId);
-		bytes32[] memory _bytesValues = new bytes32[](3);
-		_bytesValues[0] = _contentHostId;
-		_bytesValues[1] = _stakedContentId;
-		_bytesValues[2] = _contentId;
-		return (_bytesValues, _amountPaidByBuyer);
 	}
 }

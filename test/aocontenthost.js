@@ -35,6 +35,8 @@ contract("AOContentHost", function(accounts) {
 		contentUsageType_taoContent,
 		nameId1,
 		nameId2,
+		nameId3,
+		nameId4,
 		taoId1,
 		taoId2,
 		taoId3,
@@ -47,9 +49,15 @@ contract("AOContentHost", function(accounts) {
 		contentHostId1,
 		contentHostId2,
 		contentHostId3,
+		contentHostId4,
+		contentHostId5,
+		contentHostId6,
 		purchaseReceiptId1,
 		purchaseReceiptId2,
-		purchaseReceiptId3;
+		purchaseReceiptId3,
+		purchaseReceiptId4,
+		purchaseReceiptId5,
+		purchaseReceiptId6;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
@@ -76,10 +84,15 @@ contract("AOContentHost", function(accounts) {
 	var account3ContentDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 	var account3MetadataDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2ho2ie";
 
+	var account4EncChallenge = "account4encchallengestring";
+	var account4ContentDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2hoeee";
+	var account4MetadataDatKey = "90bde24fb38d6e316ec48874c937f4582f3a494df1ecf38eofu2ufgooi2hoeee";
+
 	// Retrieve private key from ganache
 	var account1PrivateKey = "0xfa372b56eac0e71de587267f0a59989719b2325aeb4579912379641cf93ccaab";
 	var account2PrivateKey = "0x6a35c58d0acad0ceca9c03d37aa2d2288d70afe0690f5e5f5e05aeab93b95dad";
 	var account3PrivateKey = "0xf4bab2d2f0c5119cc6aad0735bbf0a017d229cbf430c0041af382b93e713a1c3";
+	var account4PrivateKey = "0xfc164bb116857e2b7e5bafb6f515c61cc2cddae22a052c3988c8ff5de598ede0";
 	var account1LocalIdentity = {
 		publicKey: EthCrypto.publicKeyByPrivateKey(account1PrivateKey),
 		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account1PrivateKey))
@@ -91,6 +104,10 @@ contract("AOContentHost", function(accounts) {
 	var account3LocalIdentity = {
 		publicKey: EthCrypto.publicKeyByPrivateKey(account3PrivateKey),
 		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account3PrivateKey))
+	};
+	var account4LocalIdentity = {
+		publicKey: EthCrypto.publicKeyByPrivateKey(account4PrivateKey),
+		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account4PrivateKey))
 	};
 
 	before(async function() {
@@ -129,6 +146,16 @@ contract("AOContentHost", function(accounts) {
 			from: account2
 		});
 		nameId2 = await namefactory.ethAddressToNameId(account2);
+
+		var result = await namefactory.createName("echo", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+			from: account3
+		});
+		nameId3 = await namefactory.ethAddressToNameId(account3);
+
+		var result = await namefactory.createName("foxtrot", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+			from: account4
+		});
+		nameId4 = await namefactory.ethAddressToNameId(account4);
 
 		// Mint Logos to nameId1 and nameId2
 		await logos.setWhitelist(theAO, true, { from: theAO });
@@ -204,6 +231,7 @@ contract("AOContentHost", function(accounts) {
 		await aotoken.buyPrimordialToken({ from: account2, value: 500000000000 });
 
 		await aotoken.mintToken(account3, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
+		await aotoken.mintToken(account4, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
 	});
 
 	var create = async function(host, stakedContentId, encChallenge, contentDatKey, metadataDatKey) {
@@ -288,6 +316,7 @@ contract("AOContentHost", function(accounts) {
 		assert.equal(contentHost[2], account, "ContentHost has incorrect host");
 		assert.equal(contentHost[3], contentDatKey, "ContentHost has incorrect contentDatKey");
 		assert.equal(contentHost[4], metadataDatKey, "ContentHost has incorrect metadataDatKey");
+		return contentHostId;
 	};
 
 	it("The AO - should be able to transfer ownership to a TAO", async function() {
@@ -961,7 +990,7 @@ contract("AOContentHost", function(accounts) {
 
 	it("becomeHost() - should be able to become host", async function() {
 		var vrs = createBecomeHostSignature(account3PrivateKey, baseChallenge);
-		await becomeHost(
+		contentHostId4 = await becomeHost(
 			account3,
 			purchaseReceiptId1,
 			vrs.v,
@@ -971,7 +1000,7 @@ contract("AOContentHost", function(accounts) {
 			account3ContentDatKey,
 			account3MetadataDatKey
 		);
-		await becomeHost(
+		contentHostId5 = await becomeHost(
 			account3,
 			purchaseReceiptId2,
 			vrs.v,
@@ -981,7 +1010,7 @@ contract("AOContentHost", function(accounts) {
 			account3ContentDatKey,
 			account3MetadataDatKey
 		);
-		await becomeHost(
+		contentHostId6 = await becomeHost(
 			account3,
 			purchaseReceiptId3,
 			vrs.v,
@@ -990,6 +1019,79 @@ contract("AOContentHost", function(accounts) {
 			account3EncChallenge,
 			account3ContentDatKey,
 			account3MetadataDatKey
+		);
+	});
+
+	it("new node should be able to buy content and become host", async function() {
+		// Account4 buy the contents
+		var result = await aopurchasereceipt.buyContent(
+			contentHostId4,
+			5,
+			0,
+			"mega",
+			account4LocalIdentity.publicKey,
+			account4LocalIdentity.address,
+			{ from: account4 }
+		);
+		var buyContentEvent = result.logs[0];
+		purchaseReceiptId4 = buyContentEvent.args.purchaseReceiptId;
+
+		result = await aopurchasereceipt.buyContent(
+			contentHostId5,
+			0,
+			0,
+			"",
+			account4LocalIdentity.publicKey,
+			account4LocalIdentity.address,
+			{ from: account4 }
+		);
+		buyContentEvent = result.logs[0];
+		purchaseReceiptId5 = buyContentEvent.args.purchaseReceiptId;
+
+		result = await aopurchasereceipt.buyContent(
+			contentHostId6,
+			0,
+			0,
+			"",
+			account4LocalIdentity.publicKey,
+			account4LocalIdentity.address,
+			{ from: account4 }
+		);
+		buyContentEvent = result.logs[0];
+		purchaseReceiptId6 = buyContentEvent.args.purchaseReceiptId;
+
+		var vrs = createBecomeHostSignature(account4PrivateKey, baseChallenge);
+		contentHostId4 = await becomeHost(
+			account4,
+			purchaseReceiptId4,
+			vrs.v,
+			vrs.r,
+			vrs.s,
+			account4EncChallenge,
+			account4ContentDatKey,
+			account4MetadataDatKey
+		);
+
+		contentHostId5 = await becomeHost(
+			account4,
+			purchaseReceiptId5,
+			vrs.v,
+			vrs.r,
+			vrs.s,
+			account4EncChallenge,
+			account4ContentDatKey,
+			account4MetadataDatKey
+		);
+
+		contentHostId6 = await becomeHost(
+			account4,
+			purchaseReceiptId6,
+			vrs.v,
+			vrs.r,
+			vrs.s,
+			account4EncChallenge,
+			account4ContentDatKey,
+			account4MetadataDatKey
 		);
 	});
 });
