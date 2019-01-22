@@ -41,9 +41,9 @@ contract("AOContentHost", function(accounts) {
 		contentId1,
 		contentId2,
 		contentId3,
-		stakeId1,
-		stakeId2,
-		stakeId3,
+		stakedContentId1,
+		stakedContentId2,
+		stakedContentId3,
 		contentHostId1,
 		contentHostId2,
 		contentHostId3,
@@ -206,10 +206,10 @@ contract("AOContentHost", function(accounts) {
 		await aotoken.mintToken(account3, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
 	});
 
-	var create = async function(host, stakeId, encChallenge, contentDatKey, metadataDatKey) {
+	var create = async function(host, stakedContentId, encChallenge, contentDatKey, metadataDatKey) {
 		var canHostContent, hostContentEvent, contentHostId;
 		try {
-			var result = await aocontenthost.create(host, stakeId, encChallenge, contentDatKey, metadataDatKey, {
+			var result = await aocontenthost.create(host, stakedContentId, encChallenge, contentDatKey, metadataDatKey, {
 				from: whitelistedAddress
 			});
 			canHostContent = true;
@@ -222,9 +222,9 @@ contract("AOContentHost", function(accounts) {
 		}
 		assert.equal(canHostContent, true, "Whitelisted address can't host content");
 
-		var stakedContent = await aostakedcontent.getById(stakeId);
+		var stakedContent = await aostakedcontent.getById(stakedContentId);
 		var contentHost = await aocontenthost.getById(contentHostId);
-		assert.equal(contentHost[0], stakeId, "ContentHost has incorrect stakeId");
+		assert.equal(contentHost[0], stakedContentId, "ContentHost has incorrect stakedContentId");
 		assert.equal(contentHost[1], stakedContent[0], "ContentHost has incorrect contentId");
 		assert.equal(contentHost[2], host, "ContentHost has incorrect host");
 		assert.equal(contentHost[3], contentDatKey, "ContentHost has incorrect contentDatKey");
@@ -283,7 +283,7 @@ contract("AOContentHost", function(accounts) {
 
 		var purchaseReceipt = await aopurchasereceipt.getById(purchaseReceiptId);
 		var contentHost = await aocontenthost.getById(contentHostId);
-		assert.equal(contentHost[0], purchaseReceipt[1], "ContentHost has incorrect stakeId");
+		assert.equal(contentHost[0], purchaseReceipt[1], "ContentHost has incorrect stakedContentId");
 		assert.equal(contentHost[1], purchaseReceipt[2], "ContentHost has incorrect contentId");
 		assert.equal(contentHost[2], account, "ContentHost has incorrect host");
 		assert.equal(contentHost[3], contentDatKey, "ContentHost has incorrect contentDatKey");
@@ -354,15 +354,15 @@ contract("AOContentHost", function(accounts) {
 
 		result = await aostakedcontent.create(account1, contentId1, 4, 1000, "mega", 100000, 100000, { from: whitelistedAddress });
 		var stakeContentEvent = result.logs[0];
-		stakeId1 = stakeContentEvent.args.stakeId;
+		stakedContentId1 = stakeContentEvent.args.stakedContentId;
 
 		result = await aostakedcontent.create(account2, contentId2, 0, 0, "", 1000000, 100000, { from: whitelistedAddress });
 		stakeContentEvent = result.logs[0];
-		stakeId2 = stakeContentEvent.args.stakeId;
+		stakedContentId2 = stakeContentEvent.args.stakedContentId;
 
 		result = await aostakedcontent.create(account1, contentId3, 1000000, 0, "ao", 0, 100000, { from: whitelistedAddress });
 		stakeContentEvent = result.logs[0];
-		stakeId3 = stakeContentEvent.args.stakeId;
+		stakedContentId3 = stakeContentEvent.args.stakedContentId;
 	});
 
 	it("The AO - should be able to set AOContent address", async function() {
@@ -480,7 +480,7 @@ contract("AOContentHost", function(accounts) {
 		try {
 			var result = await aocontenthost.create(
 				account1,
-				stakeId1,
+				stakedContentId1,
 				account1EncChallenge,
 				account1ContentDatKey,
 				account1MetadataDatKey,
@@ -501,7 +501,7 @@ contract("AOContentHost", function(accounts) {
 		try {
 			var result = await aocontenthost.create(
 				emptyAddress,
-				stakeId1,
+				stakedContentId1,
 				account1EncChallenge,
 				account1ContentDatKey,
 				account1MetadataDatKey,
@@ -541,7 +541,7 @@ contract("AOContentHost", function(accounts) {
 		assert.equal(canHostContent, false, "Whitelisted address can host content with invalid Staked ID");
 
 		try {
-			var result = await aocontenthost.create(account1, stakeId1, "", account1ContentDatKey, account1MetadataDatKey, {
+			var result = await aocontenthost.create(account1, stakedContentId1, "", account1ContentDatKey, account1MetadataDatKey, {
 				from: whitelistedAddress
 			});
 			canHostContent = true;
@@ -555,7 +555,7 @@ contract("AOContentHost", function(accounts) {
 		assert.equal(canHostContent, false, "Whitelisted address can host content with invalid encChallenge");
 
 		try {
-			var result = await aocontenthost.create(account1, stakeId1, account1EncChallenge, "", account1MetadataDatKey, {
+			var result = await aocontenthost.create(account1, stakedContentId1, account1EncChallenge, "", account1MetadataDatKey, {
 				from: whitelistedAddress
 			});
 			canHostContent = true;
@@ -569,7 +569,7 @@ contract("AOContentHost", function(accounts) {
 		assert.equal(canHostContent, false, "Whitelisted address can host content with invalid contentDatKey");
 
 		try {
-			var result = await aocontenthost.create(account1, stakeId1, account1EncChallenge, account1ContentDatKey, "", {
+			var result = await aocontenthost.create(account1, stakedContentId1, account1EncChallenge, account1ContentDatKey, "", {
 				from: whitelistedAddress
 			});
 			canHostContent = true;
@@ -582,13 +582,13 @@ contract("AOContentHost", function(accounts) {
 		}
 		assert.equal(canHostContent, false, "Whitelisted address can host content with invalid metadataDatKey");
 
-		// Unstake stakeId1
-		await aostakedcontent.unstakeContent(stakeId1, { from: account1 });
+		// Unstake stakedContentId1
+		await aostakedcontent.unstakeContent(stakedContentId1, { from: account1 });
 
 		try {
 			var result = await aocontenthost.create(
 				account1,
-				stakeId1,
+				stakedContentId1,
 				account1EncChallenge,
 				account1ContentDatKey,
 				account1MetadataDatKey,
@@ -604,16 +604,16 @@ contract("AOContentHost", function(accounts) {
 			hostContentEvent = null;
 			contentHostId = null;
 		}
-		assert.equal(canHostContent, false, "Whitelisted address can host content with inactive stake ID");
+		assert.equal(canHostContent, false, "Whitelisted address can host content with inactive StakedContent ID");
 
-		// Add stake to stakeId1 again
-		await aostakedcontent.stakeExistingContent(stakeId1, 4, 1000, "mega", 100000, { from: account1 });
+		// Add stake to stakedContentId1 again
+		await aostakedcontent.stakeExistingContent(stakedContentId1, 4, 1000, "mega", 100000, { from: account1 });
 	});
 
 	it("Whitelisted Address - should be able to host content", async function() {
-		contentHostId1 = await create(account1, stakeId1, account1EncChallenge, account1ContentDatKey, account1MetadataDatKey);
-		contentHostId2 = await create(account2, stakeId2, account2EncChallenge, account2ContentDatKey, account2MetadataDatKey);
-		contentHostId3 = await create(account1, stakeId3, account1EncChallenge, account1ContentDatKey, account1MetadataDatKey);
+		contentHostId1 = await create(account1, stakedContentId1, account1EncChallenge, account1ContentDatKey, account1MetadataDatKey);
+		contentHostId2 = await create(account2, stakedContentId2, account2EncChallenge, account2ContentDatKey, account2MetadataDatKey);
+		contentHostId3 = await create(account1, stakedContentId3, account1EncChallenge, account1ContentDatKey, account1MetadataDatKey);
 	});
 
 	it("contentHostPrice() - should return the content price hosted by a host", async function() {
@@ -645,8 +645,8 @@ contract("AOContentHost", function(accounts) {
 		}
 		assert.equal(canGetContentHostPrice, false, "Contract can get content price of a non-exist hosted content");
 
-		// Unstake stakeId1
-		await aostakedcontent.unstakeContent(stakeId1, { from: account1 });
+		// Unstake stakedContentId1
+		await aostakedcontent.unstakeContent(stakedContentId1, { from: account1 });
 
 		try {
 			contentHostPrice = await aocontenthost.contentHostPrice(contentHostId1);
@@ -656,8 +656,8 @@ contract("AOContentHost", function(accounts) {
 		}
 		assert.equal(canGetContentHostPrice, false, "Contract can get content price of a hosted content with inactive stake");
 
-		// Add stake to stakeId1 again
-		await aostakedcontent.stakeExistingContent(stakeId1, 4, 1000, "mega", 100000, { from: account1 });
+		// Add stake to stakedContentId1 again
+		await aostakedcontent.stakeExistingContent(stakedContentId1, 4, 1000, "mega", 100000, { from: account1 });
 
 		await contentHostPrice(contentHostId1);
 		await contentHostPrice(contentHostId2);
@@ -665,7 +665,7 @@ contract("AOContentHost", function(accounts) {
 	});
 
 	it("contentHostPaidByAO() - should return the content price hosted by a host", async function() {
-		var contentHostPaidByAO = async function(contentHostId, stakeId) {
+		var contentHostPaidByAO = async function(contentHostId, stakedContentId) {
 			var canGetContentHostPaidByAO, contentHostPaidByAO;
 			try {
 				contentHostPaidByAO = await aocontenthost.contentHostPaidByAO(contentHostId);
@@ -694,8 +694,8 @@ contract("AOContentHost", function(accounts) {
 		}
 		assert.equal(canGetContentHostPaidByAO, false, "Contract can get content price of a non-exist hosted content");
 
-		// Unstake stakeId1
-		await aostakedcontent.unstakeContent(stakeId1, { from: account1 });
+		// Unstake stakedContentId1
+		await aostakedcontent.unstakeContent(stakedContentId1, { from: account1 });
 
 		try {
 			contentHostPaidByAO = await aocontenthost.contentHostPaidByAO(contentHostId1);
@@ -705,8 +705,8 @@ contract("AOContentHost", function(accounts) {
 		}
 		assert.equal(canGetContentHostPaidByAO, false, "Contract can get content price of a hosted content with inactive stake");
 
-		// Add stake to stakeId1 again
-		await aostakedcontent.stakeExistingContent(stakeId1, 4, 1000, "mega", 100000, { from: account1 });
+		// Add stake to stakedContentId1 again
+		await aostakedcontent.stakeExistingContent(stakedContentId1, 4, 1000, "mega", 100000, { from: account1 });
 
 		await contentHostPaidByAO(contentHostId1);
 		await contentHostPaidByAO(contentHostId2);

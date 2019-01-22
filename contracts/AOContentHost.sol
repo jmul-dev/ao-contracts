@@ -28,7 +28,7 @@ contract AOContentHost is TheAO, IAOContentHost {
 
 	struct ContentHost {
 		bytes32 contentHostId;
-		bytes32 stakeId;
+		bytes32 stakedContentId;
 		bytes32 contentId;
 		address host;
 		/**
@@ -46,7 +46,7 @@ contract AOContentHost is TheAO, IAOContentHost {
 	mapping (bytes32 => uint256) internal contentHostIndex;
 
 	// Event to be broadcasted to public when a node hosts a content
-	event HostContent(address indexed host, bytes32 indexed contentHostId, bytes32 stakeId, bytes32 contentId, string contentDatKey, string metadataDatKey);
+	event HostContent(address indexed host, bytes32 indexed contentHostId, bytes32 stakedContentId, bytes32 contentId, string contentDatKey, string metadataDatKey);
 
 	/**
 	 * @dev Constructor function
@@ -147,14 +147,14 @@ contract AOContentHost is TheAO, IAOContentHost {
 	/**
 	 * @dev Add the distribution node info that hosts the content
 	 * @param _host the address of the host
-	 * @param _stakeId The ID of the staked content
+	 * @param _stakedContentId The ID of the staked content
 	 * @param _encChallenge The encrypted challenge string (PUBLIC KEY) of the content unique to the host
 	 * @param _contentDatKey The dat key of the content
 	 * @param _metadataDatKey The dat key of the content's metadata
 	 * @return true on success
 	 */
-	function create(address _host, bytes32 _stakeId, string _encChallenge, string _contentDatKey, string _metadataDatKey) external inWhitelist returns (bool) {
-		require (_create(_host, _stakeId, _encChallenge, _contentDatKey, _metadataDatKey));
+	function create(address _host, bytes32 _stakedContentId, string _encChallenge, string _contentDatKey, string _metadataDatKey) external inWhitelist returns (bool) {
+		require (_create(_host, _stakedContentId, _encChallenge, _contentDatKey, _metadataDatKey));
 		return true;
 	}
 
@@ -172,7 +172,7 @@ contract AOContentHost is TheAO, IAOContentHost {
 		require (contentHostIndex[_contentHostId] > 0);
 		ContentHost memory _contentHost = contentHosts[contentHostIndex[_contentHostId]];
 		return (
-			_contentHost.stakeId,
+			_contentHost.stakedContentId,
 			_contentHost.contentId,
 			_contentHost.host,
 			_contentHost.contentDatKey,
@@ -189,10 +189,10 @@ contract AOContentHost is TheAO, IAOContentHost {
 		// Make sure content host exist
 		require (contentHostIndex[_contentHostId] > 0);
 
-		bytes32 _stakeId = contentHosts[contentHostIndex[_contentHostId]].stakeId;
-		require (_aoStakedContent.isActive(_stakeId));
+		bytes32 _stakedContentId = contentHosts[contentHostIndex[_contentHostId]].stakedContentId;
+		require (_aoStakedContent.isActive(_stakedContentId));
 
-		(,,uint256 _networkAmount, uint256 _primordialAmount,,,,) = _aoStakedContent.getById(_stakeId);
+		(,,uint256 _networkAmount, uint256 _primordialAmount,,,,) = _aoStakedContent.getById(_stakedContentId);
 		return _networkAmount.add(_primordialAmount);
 	}
 
@@ -205,8 +205,8 @@ contract AOContentHost is TheAO, IAOContentHost {
 		// Make sure content host exist
 		require (contentHostIndex[_contentHostId] > 0);
 
-		bytes32 _stakeId = contentHosts[contentHostIndex[_contentHostId]].stakeId;
-		require (_aoStakedContent.isActive(_stakeId));
+		bytes32 _stakedContentId = contentHosts[contentHostIndex[_contentHostId]].stakedContentId;
+		require (_aoStakedContent.isActive(_stakedContentId));
 
 		bytes32 _contentId = contentHosts[contentHostIndex[_contentHostId]].contentId;
 		if (_aoContent.isAOContentUsageType(_contentId)) {
@@ -269,34 +269,34 @@ contract AOContentHost is TheAO, IAOContentHost {
 	/**
 	 * @dev Actual add the distribution node info that hosts the content
 	 * @param _host the address of the host
-	 * @param _stakeId The ID of the staked content
+	 * @param _stakedContentId The ID of the staked content
 	 * @param _encChallenge The encrypted challenge string (PUBLIC KEY) of the content unique to the host
 	 * @param _contentDatKey The dat key of the content
 	 * @param _metadataDatKey The dat key of the content's metadata
 	 * @return true on success
 	 */
-	function _create(address _host, bytes32 _stakeId, string _encChallenge, string _contentDatKey, string _metadataDatKey) internal returns (bool) {
+	function _create(address _host, bytes32 _stakedContentId, string _encChallenge, string _contentDatKey, string _metadataDatKey) internal returns (bool) {
 		require (_host != address(0));
 		require (bytes(_encChallenge).length > 0);
 		require (bytes(_contentDatKey).length > 0);
 		require (bytes(_metadataDatKey).length > 0);
-		require (_aoStakedContent.isActive(_stakeId));
+		require (_aoStakedContent.isActive(_stakedContentId));
 
 		// Increment totalContentHosts
 		totalContentHosts++;
 
 		// Generate contentId
-		bytes32 _contentHostId = keccak256(abi.encodePacked(this, _host, _stakeId));
+		bytes32 _contentHostId = keccak256(abi.encodePacked(this, _host, _stakedContentId));
 
 		ContentHost storage _contentHost = contentHosts[totalContentHosts];
 
 		// Make sure the node doesn't host the same content twice
 		require (_contentHost.host == address(0));
 
-		(bytes32 _contentId,,,,,,,) = _aoStakedContent.getById(_stakeId);
+		(bytes32 _contentId,,,,,,,) = _aoStakedContent.getById(_stakedContentId);
 
 		_contentHost.contentHostId = _contentHostId;
-		_contentHost.stakeId = _stakeId;
+		_contentHost.stakedContentId = _stakedContentId;
 		_contentHost.contentId = _contentId;
 		_contentHost.host = _host;
 		_contentHost.encChallenge = _encChallenge;
@@ -305,7 +305,7 @@ contract AOContentHost is TheAO, IAOContentHost {
 
 		contentHostIndex[_contentHostId] = totalContentHosts;
 
-		emit HostContent(_contentHost.host, _contentHost.contentHostId, _contentHost.stakeId, _contentHost.contentId, _contentHost.contentDatKey, _contentHost.metadataDatKey);
+		emit HostContent(_contentHost.host, _contentHost.contentHostId, _contentHost.stakedContentId, _contentHost.contentId, _contentHost.contentDatKey, _contentHost.metadataDatKey);
 		return true;
 	}
 
@@ -345,15 +345,15 @@ contract AOContentHost is TheAO, IAOContentHost {
 	 * @param _purchaseReceiptId The ID of the purchase receipt
 	 * @return array of bytes32
 	 *			[0] = contentHostId
-	 *			[1] = stakeId
+	 *			[1] = stakedContentId
 	 *			[2] = contentId
 	 * @return amount paid by buyer
 	 */
 	function _getPurchaseReceiptInfo(bytes32 _purchaseReceiptId) internal view returns (bytes32[], uint256) {
-		(bytes32 _contentHostId, bytes32 _stakeId, bytes32 _contentId,,, uint256 _amountPaidByBuyer,,,,) = _aoPurchaseReceipt.getById(_purchaseReceiptId);
+		(bytes32 _contentHostId, bytes32 _stakedContentId, bytes32 _contentId,,, uint256 _amountPaidByBuyer,,,,) = _aoPurchaseReceipt.getById(_purchaseReceiptId);
 		bytes32[] memory _bytesValues = new bytes32[](3);
 		_bytesValues[0] = _contentHostId;
-		_bytesValues[1] = _stakeId;
+		_bytesValues[1] = _stakedContentId;
 		_bytesValues[2] = _contentId;
 		return (_bytesValues, _amountPaidByBuyer);
 	}

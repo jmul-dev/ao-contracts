@@ -34,9 +34,9 @@ contract("AOStakedContent", function(accounts) {
 		contentId1,
 		contentId2,
 		contentId3,
-		stakeId1,
-		stakeId2,
-		stakeId3;
+		stakedContentId1,
+		stakedContentId2,
+		stakedContentId3;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
@@ -172,7 +172,7 @@ contract("AOStakedContent", function(accounts) {
 			accountWeightedMultiplierBefore.toNumber()
 		);
 
-		var canCreate, stakeContentEvent, stakeId;
+		var canCreate, stakeContentEvent, stakedContentId;
 		try {
 			var result = await aostakedcontent.create(
 				stakeOwner,
@@ -188,11 +188,11 @@ contract("AOStakedContent", function(accounts) {
 			);
 			canStake = true;
 			stakeContentEvent = result.logs[0];
-			stakeId = stakeContentEvent.args.stakeId;
+			stakedContentId = stakeContentEvent.args.stakedContentId;
 		} catch (e) {
 			canStake = false;
 			stakeContentEvent = null;
-			stakeId = null;
+			stakedContentId = null;
 		}
 		assert.equal(canStake, true, "Whitelisted address can't stake content");
 
@@ -201,7 +201,7 @@ contract("AOStakedContent", function(accounts) {
 			networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
 		}
 
-		var stakedContent = await aostakedcontent.getById(stakeId);
+		var stakedContent = await aostakedcontent.getById(stakedContentId);
 		assert.equal(stakedContent[0], contentId, "StakedContent has incorrect contentId");
 		assert.equal(stakedContent[1], stakeOwner, "StakedContent has incorrect stakeOwner");
 		assert.equal(stakedContent[2].toNumber(), networkAmount.toNumber(), "StakedContent has incorrect networkAmount");
@@ -250,18 +250,18 @@ contract("AOStakedContent", function(accounts) {
 			"account has incorrect staked primordial balance after staking"
 		);
 
-		return stakeId;
+		return stakedContentId;
 	};
 
 	var unstakePartialContent = async function(
 		account,
-		stakeId,
+		stakedContentId,
 		networkIntegerAmount,
 		networkFractionAmount,
 		denomination,
 		primordialAmount
 	) {
-		var stakedContentBefore = await aostakedcontent.getById(stakeId);
+		var stakedContentBefore = await aostakedcontent.getById(stakedContentId);
 		var accountBalanceBefore = await aotoken.balanceOf(account);
 		var accountStakedBalanceBefore = await aotoken.stakedBalance(account);
 		var accountWeightedMultiplierBefore = await aotoken.weightedMultiplierByAddress(account);
@@ -276,7 +276,7 @@ contract("AOStakedContent", function(accounts) {
 		var canUnstakePartial;
 		try {
 			await aostakedcontent.unstakePartialContent(
-				stakeId,
+				stakedContentId,
 				networkIntegerAmount,
 				networkFractionAmount,
 				denomination,
@@ -292,7 +292,7 @@ contract("AOStakedContent", function(accounts) {
 		}
 		assert.equal(canUnstakePartial, true, "Stake owner was unable to partially unstake tokens from existing staked content.");
 
-		var stakedContentAfter = await aostakedcontent.getById(stakeId);
+		var stakedContentAfter = await aostakedcontent.getById(stakedContentId);
 		var accountBalanceAfter = await aotoken.balanceOf(account);
 		var accountStakedBalanceAfter = await aotoken.stakedBalance(account);
 		var accountWeightedMultiplierAfter = await aotoken.weightedMultiplierByAddress(account);
@@ -342,8 +342,8 @@ contract("AOStakedContent", function(accounts) {
 		);
 	};
 
-	var unstakeContent = async function(account, stakeId) {
-		var stakedContentBefore = await aostakedcontent.getById(stakeId);
+	var unstakeContent = async function(account, stakedContentId) {
+		var stakedContentBefore = await aostakedcontent.getById(stakedContentId);
 		var accountBalanceBefore = await aotoken.balanceOf(account);
 		var accountStakedBalanceBefore = await aotoken.stakedBalance(account);
 		var accountWeightedMultiplierBefore = await aotoken.weightedMultiplierByAddress(account);
@@ -355,14 +355,14 @@ contract("AOStakedContent", function(accounts) {
 
 		var canUnstake;
 		try {
-			await aostakedcontent.unstakeContent(stakeId, { from: account });
+			await aostakedcontent.unstakeContent(stakedContentId, { from: account });
 			canUnstake = true;
 		} catch (e) {
 			canUnstake = false;
 		}
 		assert.equal(canUnstake, true, "Stake owner address unable to unstake network and primordial token from existing staked content");
 
-		var stakedContentAfter = await aostakedcontent.getById(stakeId);
+		var stakedContentAfter = await aostakedcontent.getById(stakedContentId);
 		var accountBalanceAfter = await aotoken.balanceOf(account);
 		var accountStakedBalanceAfter = await aotoken.stakedBalance(account);
 		var accountWeightedMultiplierAfter = await aotoken.weightedMultiplierByAddress(account);
@@ -402,13 +402,13 @@ contract("AOStakedContent", function(accounts) {
 
 	var stakeExistingContent = async function(
 		account,
-		stakeId,
+		stakedContentId,
 		networkIntegerAmount,
 		networkFractionAmount,
 		denomination,
 		primordialAmount
 	) {
-		var stakedContentBefore = await aostakedcontent.getById(stakeId);
+		var stakedContentBefore = await aostakedcontent.getById(stakedContentId);
 		var accountBalanceBefore = await aotoken.balanceOf(account);
 		var accountStakedBalanceBefore = await aotoken.stakedBalance(account);
 		var accountWeightedMultiplierBefore = await aotoken.weightedMultiplierByAddress(account);
@@ -421,7 +421,7 @@ contract("AOStakedContent", function(accounts) {
 		var canStakeExisting;
 		try {
 			await aostakedcontent.stakeExistingContent(
-				stakeId,
+				stakedContentId,
 				networkIntegerAmount,
 				networkFractionAmount,
 				denomination,
@@ -441,7 +441,7 @@ contract("AOStakedContent", function(accounts) {
 				? await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination)
 				: 0;
 
-		var stakedContentAfter = await aostakedcontent.getById(stakeId);
+		var stakedContentAfter = await aostakedcontent.getById(stakedContentId);
 		var accountBalanceAfter = await aotoken.balanceOf(account);
 		var accountStakedBalanceAfter = await aotoken.stakedBalance(account);
 		var accountWeightedMultiplierAfter = await aotoken.weightedMultiplierByAddress(account);
@@ -644,18 +644,18 @@ contract("AOStakedContent", function(accounts) {
 	});
 
 	it("Whitelisted Address - should not be able to stake content with invalid params", async function() {
-		var canStake, stakeContentEvent, stakeId;
+		var canStake, stakeContentEvent, stakedContentId;
 		try {
 			var result = await aostakedcontent.create(account1, contentId1, 1000000, 0, "ao", 0, 80000, {
 				from: someAddress
 			});
 			canStake = true;
 			stakeContentEvent = result.logs[0];
-			stakeId = stakeContentEvent.args.stakeId;
+			stakedContentId = stakeContentEvent.args.stakedContentId;
 		} catch (e) {
 			canStake = false;
 			stakeContentEvent = null;
-			stakeId = null;
+			stakedContentId = null;
 		}
 		assert.equal(canStake, false, "Non-whitelisted address can stake content");
 
@@ -665,11 +665,11 @@ contract("AOStakedContent", function(accounts) {
 			});
 			canStake = true;
 			stakeContentEvent = result.logs[0];
-			stakeId = stakeContentEvent.args.stakeId;
+			stakedContentId = stakeContentEvent.args.stakedContentId;
 		} catch (e) {
 			canStake = false;
 			stakeContentEvent = null;
-			stakeId = null;
+			stakedContentId = null;
 		}
 		assert.equal(
 			canStake,
@@ -683,11 +683,11 @@ contract("AOStakedContent", function(accounts) {
 			});
 			canStake = true;
 			stakeContentEvent = result.logs[0];
-			stakeId = stakeContentEvent.args.stakeId;
+			stakedContentId = stakeContentEvent.args.stakedContentId;
 		} catch (e) {
 			canStake = false;
 			stakeContentEvent = null;
-			stakeId = null;
+			stakedContentId = null;
 		}
 		assert.equal(canStake, false, "Whitelisted address can stake content for non-existing content ID");
 
@@ -697,11 +697,11 @@ contract("AOStakedContent", function(accounts) {
 			});
 			canStake = true;
 			stakeContentEvent = result.logs[0];
-			stakeId = stakeContentEvent.args.stakeId;
+			stakedContentId = stakeContentEvent.args.stakedContentId;
 		} catch (e) {
 			canStake = false;
 			stakeContentEvent = null;
-			stakeId = null;
+			stakedContentId = null;
 		}
 		assert.equal(canStake, false, "Whitelisted address can stake content with price less than fileSize");
 
@@ -711,11 +711,11 @@ contract("AOStakedContent", function(accounts) {
 			});
 			canStake = true;
 			stakeContentEvent = result.logs[0];
-			stakeId = stakeContentEvent.args.stakeId;
+			stakedContentId = stakeContentEvent.args.stakedContentId;
 		} catch (e) {
 			canStake = false;
 			stakeContentEvent = null;
-			stakeId = null;
+			stakedContentId = null;
 		}
 		assert.equal(canStake, false, "Whitelisted address can stake content with invalid denomination");
 
@@ -725,11 +725,11 @@ contract("AOStakedContent", function(accounts) {
 			});
 			canStake = true;
 			stakeContentEvent = result.logs[0];
-			stakeId = stakeContentEvent.args.stakeId;
+			stakedContentId = stakeContentEvent.args.stakedContentId;
 		} catch (e) {
 			canStake = false;
 			stakeContentEvent = null;
-			stakeId = null;
+			stakedContentId = null;
 		}
 		assert.equal(canStake, false, "Whitelisted address can stake content with more than owned AO balance");
 
@@ -739,11 +739,11 @@ contract("AOStakedContent", function(accounts) {
 			});
 			canStake = true;
 			stakeContentEvent = result.logs[0];
-			stakeId = stakeContentEvent.args.stakeId;
+			stakedContentId = stakeContentEvent.args.stakedContentId;
 		} catch (e) {
 			canStake = false;
 			stakeContentEvent = null;
-			stakeId = null;
+			stakedContentId = null;
 		}
 		assert.equal(canStake, false, "Whitelisted address can stake content with more than owned AO+ balance");
 
@@ -753,11 +753,11 @@ contract("AOStakedContent", function(accounts) {
 			});
 			canStake = true;
 			stakeContentEvent = result.logs[0];
-			stakeId = stakeContentEvent.args.stakeId;
+			stakedContentId = stakeContentEvent.args.stakedContentId;
 		} catch (e) {
 			canStake = false;
 			stakeContentEvent = null;
-			stakeId = null;
+			stakedContentId = null;
 		}
 		assert.equal(canStake, false, "Whitelisted address can stake content with invalid profitPercentage");
 
@@ -767,11 +767,11 @@ contract("AOStakedContent", function(accounts) {
 			});
 			canStake = true;
 			stakeContentEvent = result.logs[0];
-			stakeId = stakeContentEvent.args.stakeId;
+			stakedContentId = stakeContentEvent.args.stakedContentId;
 		} catch (e) {
 			canStake = false;
 			stakeContentEvent = null;
-			stakeId = null;
+			stakedContentId = null;
 		}
 		assert.equal(
 			canStake,
@@ -785,19 +785,19 @@ contract("AOStakedContent", function(accounts) {
 			});
 			canStake = true;
 			stakeContentEvent = result.logs[0];
-			stakeId = stakeContentEvent.args.stakeId;
+			stakedContentId = stakeContentEvent.args.stakedContentId;
 		} catch (e) {
 			canStake = false;
 			stakeContentEvent = null;
-			stakeId = null;
+			stakedContentId = null;
 		}
 		assert.equal(canStake, false, "Whitelisted address can stake content with higher price than fileSize for a T(AO) content");
 	});
 
 	it("Whitelisted Address - should be able to stake content", async function() {
-		stakeId1 = await create(account1, contentId1, 4, 1000, "mega", 100000, 100000);
-		stakeId2 = await create(account2, contentId2, 0, 0, "", 1000000, 100000);
-		stakeId3 = await create(account1, contentId3, 1000000, 0, "ao", 0, 100000);
+		stakedContentId1 = await create(account1, contentId1, 4, 1000, "mega", 100000, 100000);
+		stakedContentId2 = await create(account2, contentId2, 0, 0, "", 1000000, 100000);
+		stakedContentId3 = await create(account1, contentId3, 1000000, 0, "ao", 0, 100000);
 	});
 
 	it("setProfitPercentage() - should NOT be able to set profit percentage on non-existing staked content", async function() {
@@ -814,7 +814,7 @@ contract("AOStakedContent", function(accounts) {
 	it("setProfitPercentage() - should NOT be able to set profit percentage if stake owner is not the same as sender", async function() {
 		var canSetProfitPercentage;
 		try {
-			await aostakedcontent.setProfitPercentage(stakeId1, 100, { from: someAddress });
+			await aostakedcontent.setProfitPercentage(stakedContentId1, 100, { from: someAddress });
 			canSetProfitPercentage = true;
 		} catch (e) {
 			canSetProfitPercentage = false;
@@ -825,7 +825,7 @@ contract("AOStakedContent", function(accounts) {
 	it("setProfitPercentage() - should NOT be able to set profit percentage if profit percentage is more than 100%", async function() {
 		var canSetProfitPercentage;
 		try {
-			await aostakedcontent.setProfitPercentage(stakeId1, 1100000, { from: account1 });
+			await aostakedcontent.setProfitPercentage(stakedContentId1, 1100000, { from: account1 });
 			canSetProfitPercentage = true;
 		} catch (e) {
 			canSetProfitPercentage = false;
@@ -836,22 +836,22 @@ contract("AOStakedContent", function(accounts) {
 	it("setProfitPercentage() - should be able to set profit percentage", async function() {
 		var canSetProfitPercentage;
 		try {
-			await aostakedcontent.setProfitPercentage(stakeId1, 800000, { from: account1 });
+			await aostakedcontent.setProfitPercentage(stakedContentId1, 800000, { from: account1 });
 			canSetProfitPercentage = true;
 		} catch (e) {
 			canSetProfitPercentage = false;
 		}
 		assert.equal(canSetProfitPercentage, true, "account1 is unable to set profit percentage");
 
-		var stakedContent = await aostakedcontent.getById(stakeId1);
+		var stakedContent = await aostakedcontent.getById(stakedContentId1);
 		assert.equal(stakedContent[5].toNumber(), 800000, "StakedContent has incorrect profitPercentage after update");
 	});
 
 	it("setProfitPercentage() - should not be able to set profit percentage for non-AO Content, i.e Creative Commons/T(AO) Content", async function() {
-		var setProfitPercentage = async function(stakeId, account) {
+		var setProfitPercentage = async function(stakedContentId, account) {
 			var canSetProfitPercentage;
 			try {
-				await aostakedcontent.setProfitPercentage(stakeId, 800000, { from: account });
+				await aostakedcontent.setProfitPercentage(stakedContentId, 800000, { from: account });
 				canSetProfitPercentage = true;
 			} catch (e) {
 				canSetProfitPercentage = false;
@@ -859,8 +859,8 @@ contract("AOStakedContent", function(accounts) {
 			assert.notEqual(canSetProfitPercentage, true, "Account is able to set profit percentage");
 		};
 
-		await setProfitPercentage(stakeId2, account2);
-		await setProfitPercentage(stakeId3, account1);
+		await setProfitPercentage(stakedContentId2, account2);
+		await setProfitPercentage(stakedContentId3, account1);
 	});
 
 	it("unstakePartialContent() - should NOT be able to partially unstake non-existing staked content", async function() {
@@ -877,7 +877,7 @@ contract("AOStakedContent", function(accounts) {
 	it("unstakePartialContent() - should NOT be able to partially unstake existing staked content if stake owner is not the same as the sender", async function() {
 		var canUnstakePartial;
 		try {
-			await aostakedcontent.unstakePartialContent(stakeId1, 10, 0, "kilo", 0, { from: account2 });
+			await aostakedcontent.unstakePartialContent(stakedContentId1, 10, 0, "kilo", 0, { from: account2 });
 
 			canUnstakePartial = true;
 		} catch (e) {
@@ -889,7 +889,7 @@ contract("AOStakedContent", function(accounts) {
 	it("unstakePartialContent() - should NOT be able to partially unstake existing staked content if the requested unstake amount is more than the balance of the staked amount", async function() {
 		var canUnstakePartial;
 		try {
-			await aostakedcontent.unstakePartialContent(stakeId1, 10, 0, "giga", 10000000, { from: account1 });
+			await aostakedcontent.unstakePartialContent(stakedContentId1, 10, 0, "giga", 10000000, { from: account1 });
 			canUnstakePartial = true;
 		} catch (e) {
 			canUnstakePartial = false;
@@ -898,21 +898,21 @@ contract("AOStakedContent", function(accounts) {
 	});
 
 	it("unstakePartialContent() - should be able to partially unstake only network token from existing staked content", async function() {
-		await unstakePartialContent(account1, stakeId1, 1, 10, "kilo", 0);
+		await unstakePartialContent(account1, stakedContentId1, 1, 10, "kilo", 0);
 	});
 
 	it("unstakePartialContent() - should be able to partially unstake only primordial token from existing staked content", async function() {
-		await unstakePartialContent(account1, stakeId1, 0, 0, "", 10);
+		await unstakePartialContent(account1, stakedContentId1, 0, 0, "", 10);
 	});
 
 	it("unstakePartialContent() - should be able to partially unstake both network and primordial token from existing staked content", async function() {
-		await unstakePartialContent(account1, stakeId1, 1, 10, "kilo", 10);
+		await unstakePartialContent(account1, stakedContentId1, 1, 10, "kilo", 10);
 	});
 
 	it("unstakePartialContent() - should NOT be able to partially unstake existing non-AO Content, i.e Creative Commons/T(AO) Content", async function() {
 		var unstakePartialContent = async function(
 			account,
-			stakeId,
+			stakedContentId,
 			networkIntegerAmount,
 			networkFractionAmount,
 			denomination,
@@ -921,7 +921,7 @@ contract("AOStakedContent", function(accounts) {
 			var canUnstakePartial;
 			try {
 				await aostakedcontent.unstakePartialContent(
-					stakeId,
+					stakedContentId,
 					networkIntegerAmount,
 					networkFractionAmount,
 					denomination,
@@ -936,8 +936,8 @@ contract("AOStakedContent", function(accounts) {
 			assert.notEqual(canUnstakePartial, true, "Stake owner can partially unstake non-AO Content.");
 		};
 
-		await unstakePartialContent(account2, stakeId2, 1, 0, "kilo", 10);
-		await unstakePartialContent(account1, stakeId3, 1, 0, "kilo", 10);
+		await unstakePartialContent(account2, stakedContentId2, 1, 0, "kilo", 10);
+		await unstakePartialContent(account1, stakedContentId3, 1, 0, "kilo", 10);
 	});
 
 	it("unstakeContent() - should NOT be able to unstake non-existing staked content", async function() {
@@ -952,10 +952,10 @@ contract("AOStakedContent", function(accounts) {
 	});
 
 	it("unstakeContent() - should NOT be able to unstake existing staked content if stake owner is not the same as the sender", async function() {
-		var unstakeContent = async function(stakeId) {
+		var unstakeContent = async function(stakedContentId) {
 			var canUnstake;
 			try {
-				await aostakedcontent.unstakeContent(stakeId, { from: someAddress });
+				await aostakedcontent.unstakeContent(stakedContentId, { from: someAddress });
 				canUnstake = true;
 			} catch (e) {
 				canUnstake = false;
@@ -963,15 +963,15 @@ contract("AOStakedContent", function(accounts) {
 			assert.notEqual(canUnstake, true, "Non-stake owner address can unstake existing staked content");
 		};
 
-		await unstakeContent(stakeId1);
-		await unstakeContent(stakeId2);
-		await unstakeContent(stakeId3);
+		await unstakeContent(stakedContentId1);
+		await unstakeContent(stakedContentId2);
+		await unstakeContent(stakedContentId3);
 	});
 
 	it("unstakeContent() - should be able to unstake existing staked content", async function() {
-		await unstakeContent(account1, stakeId1);
-		await unstakeContent(account2, stakeId2);
-		await unstakeContent(account1, stakeId3);
+		await unstakeContent(account1, stakedContentId1);
+		await unstakeContent(account2, stakedContentId2);
+		await unstakeContent(account1, stakedContentId3);
 	});
 
 	it("stakeExistingContent() - should NOT be able to stake non-existing staked content", async function() {
@@ -988,7 +988,7 @@ contract("AOStakedContent", function(accounts) {
 	it("stakeExistingContent() - should NOT be able to stake existing staked content if the stake owner is not the same as the sender", async function() {
 		var canStakeExisting;
 		try {
-			await aostakedcontent.stakeExistingContent(stakeId1, 1, 0, "mega", 0, { from: account2 });
+			await aostakedcontent.stakeExistingContent(stakedContentId1, 1, 0, "mega", 0, { from: account2 });
 			canStakeExisting = true;
 		} catch (e) {
 			canStakeExisting = false;
@@ -999,7 +999,7 @@ contract("AOStakedContent", function(accounts) {
 	it("stakeExistingContent() - should not be able to stake less than file size", async function() {
 		var stakeExistingContent = async function(
 			account,
-			stakeId,
+			stakedContentId,
 			networkIntegerAmount,
 			networkFractionAmount,
 			denomination,
@@ -1008,7 +1008,7 @@ contract("AOStakedContent", function(accounts) {
 			var canStakeExisting;
 			try {
 				await aostakedcontent.stakeExistingContent(
-					stakeId,
+					stakedContentId,
 					networkIntegerAmount,
 					networkFractionAmount,
 					denomination,
@@ -1022,23 +1022,23 @@ contract("AOStakedContent", function(accounts) {
 			assert.notEqual(canStakeExisting, true, "Stake owner can stake less than filesize");
 		};
 
-		await stakeExistingContent(account1, stakeId1, 30, 0, "ao", 0);
-		await stakeExistingContent(account1, stakeId1, 0, 0, "", 30);
-		await stakeExistingContent(account1, stakeId1, 30, 0, "ao", 30);
+		await stakeExistingContent(account1, stakedContentId1, 30, 0, "ao", 0);
+		await stakeExistingContent(account1, stakedContentId1, 0, 0, "", 30);
+		await stakeExistingContent(account1, stakedContentId1, 30, 0, "ao", 30);
 
-		await stakeExistingContent(account2, stakeId2, 30, 0, "ao", 0);
-		await stakeExistingContent(account2, stakeId2, 0, 0, "", 30);
-		await stakeExistingContent(account2, stakeId2, 30, 0, "ao", 30);
+		await stakeExistingContent(account2, stakedContentId2, 30, 0, "ao", 0);
+		await stakeExistingContent(account2, stakedContentId2, 0, 0, "", 30);
+		await stakeExistingContent(account2, stakedContentId2, 30, 0, "ao", 30);
 
-		await stakeExistingContent(account1, stakeId3, 30, 0, "ao", 0);
-		await stakeExistingContent(account1, stakeId3, 0, 0, "", 30);
-		await stakeExistingContent(account1, stakeId3, 30, 0, "ao", 30);
+		await stakeExistingContent(account1, stakedContentId3, 30, 0, "ao", 0);
+		await stakeExistingContent(account1, stakedContentId3, 0, 0, "", 30);
+		await stakeExistingContent(account1, stakedContentId3, 30, 0, "ao", 30);
 	});
 
 	it("stakeExistingContent() - should not be able to stake more than file size for non-AO Content", async function() {
 		var stakeExistingContent = async function(
 			account,
-			stakeId,
+			stakedContentId,
 			networkIntegerAmount,
 			networkFractionAmount,
 			denomination,
@@ -1047,7 +1047,7 @@ contract("AOStakedContent", function(accounts) {
 			var canStakeExisting;
 			try {
 				await aostakedcontent.stakeExistingContent(
-					stakeId,
+					stakedContentId,
 					networkIntegerAmount,
 					networkFractionAmount,
 					denomination,
@@ -1061,39 +1061,39 @@ contract("AOStakedContent", function(accounts) {
 			assert.notEqual(canStakeExisting, true, "Stake owner can stake more than filesize");
 		};
 
-		await stakeExistingContent(account2, stakeId2, 3, 0, "mega", 0);
-		await stakeExistingContent(account2, stakeId2, 0, 0, "", 3000000);
+		await stakeExistingContent(account2, stakedContentId2, 3, 0, "mega", 0);
+		await stakeExistingContent(account2, stakedContentId2, 0, 0, "", 3000000);
 
-		await stakeExistingContent(account1, stakeId3, 3, 0, "mega", 0);
-		await stakeExistingContent(account1, stakeId3, 0, 0, "", 3000000);
+		await stakeExistingContent(account1, stakedContentId3, 3, 0, "mega", 0);
+		await stakeExistingContent(account1, stakedContentId3, 0, 0, "", 3000000);
 	});
 
 	it("stakeExistingContent() - should be able to stake only network tokens on existing staked content", async function() {
-		await stakeExistingContent(account1, stakeId1, 1, 0, "mega", 0);
-		await stakeExistingContent(account2, stakeId2, 1, 0, "mega", 0);
-		await stakeExistingContent(account1, stakeId3, 1, 0, "mega", 0);
+		await stakeExistingContent(account1, stakedContentId1, 1, 0, "mega", 0);
+		await stakeExistingContent(account2, stakedContentId2, 1, 0, "mega", 0);
+		await stakeExistingContent(account1, stakedContentId3, 1, 0, "mega", 0);
 
 		// unstake them again for next test
-		await aostakedcontent.unstakeContent(stakeId1, { from: account1 });
-		await aostakedcontent.unstakeContent(stakeId2, { from: account2 });
-		await aostakedcontent.unstakeContent(stakeId3, { from: account1 });
+		await aostakedcontent.unstakeContent(stakedContentId1, { from: account1 });
+		await aostakedcontent.unstakeContent(stakedContentId2, { from: account2 });
+		await aostakedcontent.unstakeContent(stakedContentId3, { from: account1 });
 	});
 
 	it("stakeExistingContent() - should be able to stake only primordial tokens on existing staked content", async function() {
-		await stakeExistingContent(account1, stakeId1, 0, 0, "", 1000000);
-		await stakeExistingContent(account2, stakeId2, 0, 0, "", 1000000);
-		await stakeExistingContent(account1, stakeId3, 0, 0, "", 1000000);
+		await stakeExistingContent(account1, stakedContentId1, 0, 0, "", 1000000);
+		await stakeExistingContent(account2, stakedContentId2, 0, 0, "", 1000000);
+		await stakeExistingContent(account1, stakedContentId3, 0, 0, "", 1000000);
 
 		// unstake them again for next test
-		await aostakedcontent.unstakeContent(stakeId1, { from: account1 });
-		await aostakedcontent.unstakeContent(stakeId2, { from: account2 });
-		await aostakedcontent.unstakeContent(stakeId3, { from: account1 });
+		await aostakedcontent.unstakeContent(stakedContentId1, { from: account1 });
+		await aostakedcontent.unstakeContent(stakedContentId2, { from: account2 });
+		await aostakedcontent.unstakeContent(stakedContentId3, { from: account1 });
 	});
 
 	it("stakeExistingContent() - should be able to stake both network and primordial tokens on existing staked content", async function() {
-		await stakeExistingContent(account1, stakeId1, 2, 10, "kilo", 1000000);
-		await stakeExistingContent(account2, stakeId2, 500, 0, "kilo", 500000);
-		await stakeExistingContent(account1, stakeId3, 0, 300000, "mega", 700000);
+		await stakeExistingContent(account1, stakedContentId1, 2, 10, "kilo", 1000000);
+		await stakeExistingContent(account2, stakedContentId2, 500, 0, "kilo", 500000);
+		await stakeExistingContent(account1, stakedContentId3, 0, 300000, "mega", 700000);
 	});
 
 	it("isActive() - check whether or not a staked content is active", async function() {
@@ -1106,22 +1106,22 @@ contract("AOStakedContent", function(accounts) {
 		}
 		assert.equal(canCheckIsActive, false, "Contract can check activeness of non-existing staked content");
 
-		var isActive = await aostakedcontent.isActive(stakeId1);
+		var isActive = await aostakedcontent.isActive(stakedContentId1);
 		assert.equal(isActive, true, "Contract returns incorrect status of existing staked content");
-		isActive = await aostakedcontent.isActive(stakeId2);
+		isActive = await aostakedcontent.isActive(stakedContentId2);
 		assert.equal(isActive, true, "Contract returns incorrect status of existing staked content");
-		isActive = await aostakedcontent.isActive(stakeId3);
+		isActive = await aostakedcontent.isActive(stakedContentId3);
 		assert.equal(isActive, true, "Contract returns incorrect status of existing staked content");
 
-		await aostakedcontent.unstakeContent(stakeId1, { from: account1 });
-		await aostakedcontent.unstakeContent(stakeId2, { from: account2 });
-		await aostakedcontent.unstakeContent(stakeId3, { from: account1 });
+		await aostakedcontent.unstakeContent(stakedContentId1, { from: account1 });
+		await aostakedcontent.unstakeContent(stakedContentId2, { from: account2 });
+		await aostakedcontent.unstakeContent(stakedContentId3, { from: account1 });
 
-		var isActive = await aostakedcontent.isActive(stakeId1);
+		var isActive = await aostakedcontent.isActive(stakedContentId1);
 		assert.equal(isActive, false, "Contract returns incorrect status of existing staked content");
-		isActive = await aostakedcontent.isActive(stakeId2);
+		isActive = await aostakedcontent.isActive(stakedContentId2);
 		assert.equal(isActive, false, "Contract returns incorrect status of existing staked content");
-		isActive = await aostakedcontent.isActive(stakeId3);
+		isActive = await aostakedcontent.isActive(stakedContentId3);
 		assert.equal(isActive, false, "Contract returns incorrect status of existing staked content");
 	});
 });

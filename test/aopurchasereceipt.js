@@ -41,9 +41,9 @@ contract("AOPurchaseReceipt", function(accounts) {
 		contentId1,
 		contentId2,
 		contentId3,
-		stakeId1,
-		stakeId2,
-		stakeId3,
+		stakedContentId1,
+		stakedContentId2,
+		stakedContentId3,
 		contentHostId1,
 		contentHostId2,
 		contentHostId3,
@@ -219,10 +219,10 @@ contract("AOPurchaseReceipt", function(accounts) {
 	) {
 		var accountBalanceBefore = new BigNumber(await aotoken.balanceOf(account));
 		var contentHost = await aocontenthost.getById(contentHostId);
-		var stakeId = contentHost[0];
+		var stakedContentId = contentHost[0];
 		var contentId = contentHost[1];
 		var host = contentHost[2];
-		var stakedContent = await aostakedcontent.getById(stakeId);
+		var stakedContent = await aostakedcontent.getById(stakedContentId);
 		var stakeOwner = stakedContent[1];
 
 		var isAOContentUsageType = await aocontent.isAOContentUsageType(contentId);
@@ -253,7 +253,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 
 		var purchaseReceipt = await aopurchasereceipt.getById(purchaseReceiptId);
 		assert.equal(purchaseReceipt[0], contentHostId, "PurchaseReceipt has incorrect contentHostId");
-		assert.equal(purchaseReceipt[1], stakeId, "PurchaseReceipt has incorrect stakeId");
+		assert.equal(purchaseReceipt[1], stakedContentId, "PurchaseReceipt has incorrect stakedContentId");
 		assert.equal(purchaseReceipt[2], contentId, "PurchaseReceipt has incorrect contentId");
 		assert.equal(purchaseReceipt[3], account, "PurchaseReceipt has incorrect buyer");
 		assert.equal(purchaseReceipt[4].toNumber(), contentHostPrice.toNumber(), "PurchaseReceipt has incorrect price");
@@ -356,31 +356,52 @@ contract("AOPurchaseReceipt", function(accounts) {
 
 		result = await aostakedcontent.create(account1, contentId1, 4, 1000, "mega", 100000, 100000, { from: whitelistedAddress });
 		var stakeContentEvent = result.logs[0];
-		stakeId1 = stakeContentEvent.args.stakeId;
+		stakedContentId1 = stakeContentEvent.args.stakedContentId;
 
 		result = await aostakedcontent.create(account2, contentId2, 0, 0, "", 1000000, 100000, { from: whitelistedAddress });
 		stakeContentEvent = result.logs[0];
-		stakeId2 = stakeContentEvent.args.stakeId;
+		stakedContentId2 = stakeContentEvent.args.stakedContentId;
 
 		result = await aostakedcontent.create(account1, contentId3, 1000000, 0, "ao", 0, 100000, { from: whitelistedAddress });
 		stakeContentEvent = result.logs[0];
-		stakeId3 = stakeContentEvent.args.stakeId;
+		stakedContentId3 = stakeContentEvent.args.stakedContentId;
 
-		result = await aocontenthost.create(account1, stakeId1, account1EncChallenge, account1ContentDatKey, account1MetadataDatKey, {
-			from: whitelistedAddress
-		});
+		result = await aocontenthost.create(
+			account1,
+			stakedContentId1,
+			account1EncChallenge,
+			account1ContentDatKey,
+			account1MetadataDatKey,
+			{
+				from: whitelistedAddress
+			}
+		);
 		var hostContentEvent = result.logs[0];
 		contentHostId1 = hostContentEvent.args.contentHostId;
 
-		result = await aocontenthost.create(account2, stakeId2, account2EncChallenge, account2ContentDatKey, account2MetadataDatKey, {
-			from: whitelistedAddress
-		});
+		result = await aocontenthost.create(
+			account2,
+			stakedContentId2,
+			account2EncChallenge,
+			account2ContentDatKey,
+			account2MetadataDatKey,
+			{
+				from: whitelistedAddress
+			}
+		);
 		hostContentEvent = result.logs[0];
 		contentHostId2 = hostContentEvent.args.contentHostId;
 
-		result = await aocontenthost.create(account1, stakeId3, account1EncChallenge, account1ContentDatKey, account1MetadataDatKey, {
-			from: whitelistedAddress
-		});
+		result = await aocontenthost.create(
+			account1,
+			stakedContentId3,
+			account1EncChallenge,
+			account1ContentDatKey,
+			account1MetadataDatKey,
+			{
+				from: whitelistedAddress
+			}
+		);
 		hostContentEvent = result.logs[0];
 		contentHostId3 = hostContentEvent.args.contentHostId;
 	});

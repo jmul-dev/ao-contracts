@@ -32,7 +32,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	struct PurchaseReceipt {
 		bytes32 purchaseReceiptId;
 		bytes32 contentHostId;
-		bytes32 stakeId;
+		bytes32 stakedContentId;
 		bytes32 contentId;
 		address buyer;
 		uint256 price;
@@ -58,7 +58,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 		address indexed buyer,
 		bytes32 indexed purchaseReceiptId,
 		bytes32 indexed contentHostId,
-		bytes32 stakeId,
+		bytes32 stakedContentId,
 		bytes32 contentId,
 		uint256 price,
 		uint256 amountPaidByAO,
@@ -197,7 +197,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	) public {
 		require (_canBuy(msg.sender, _contentHostId, _publicKey, _publicAddress));
 
-		(bytes32 _stakeId, bytes32 _contentId,,,) = _aoContentHost.getById(_contentHostId);
+		(bytes32 _stakedContentId, bytes32 _contentId,,,) = _aoContentHost.getById(_contentHostId);
 
 		// Make sure the token amount can pay for the content price
 		if (_aoContent.isAOContentUsageType(_contentId)) {
@@ -216,7 +216,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 
 		_purchaseReceipt.purchaseReceiptId = _purchaseReceiptId;
 		_purchaseReceipt.contentHostId = _contentHostId;
-		_purchaseReceipt.stakeId = _stakeId;
+		_purchaseReceipt.stakedContentId = _stakedContentId;
 		_purchaseReceipt.contentId = _contentId;
 		_purchaseReceipt.buyer = msg.sender;
 		// Update the receipt with the correct network amount
@@ -237,7 +237,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 			_purchaseReceipt.buyer,
 			_purchaseReceipt.purchaseReceiptId,
 			_purchaseReceipt.contentHostId,
-			_purchaseReceipt.stakeId,
+			_purchaseReceipt.stakedContentId,
 			_purchaseReceipt.contentId,
 			_purchaseReceipt.price,
 			_purchaseReceipt.amountPaidByAO,
@@ -268,7 +268,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 		PurchaseReceipt memory _purchaseReceipt = purchaseReceipts[purchaseReceiptIndex[_purchaseReceiptId]];
 		return (
 			_purchaseReceipt.contentHostId,
-			_purchaseReceipt.stakeId,
+			_purchaseReceipt.stakedContentId,
 			_purchaseReceipt.contentId,
 			_purchaseReceipt.buyer,
 			_purchaseReceipt.price,
@@ -307,7 +307,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 		string _publicKey,
 		address _publicAddress
 	) internal view returns (bool) {
-		(bytes32 _stakeId,,address _host,,) = _aoContentHost.getById(_contentHostId);
+		(bytes32 _stakedContentId,,address _host,,) = _aoContentHost.getById(_contentHostId);
 
 		// Make sure the content host exist
 		return (_aoContentHost.isExist(_contentHostId) &&
@@ -315,7 +315,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 			_buyer != _host &&
 			bytes(_publicKey).length > 0 &&
 			_publicAddress != address(0) &&
-			_aoStakedContent.isActive(_stakeId) &&
+			_aoStakedContent.isActive(_stakedContentId) &&
 			buyerPurchaseReceipts[_buyer][_contentHostId][0] == 0
 		);
 	}
@@ -341,7 +341,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	 * @return true on success
 	 */
 	function _calculateEarning(address _buyer, uint256 _internalPurchaseReceiptId, bool _isAOContentUsageType) internal returns (bool) {
-		(address _stakeOwner, uint256[] memory _stakedContentUintValues) = _getStakedContentInfo(purchaseReceipts[_internalPurchaseReceiptId].stakeId);
+		(address _stakeOwner, uint256[] memory _stakedContentUintValues) = _getStakedContentInfo(purchaseReceipts[_internalPurchaseReceiptId].stakedContentId);
 		(,, address _host,,) = _aoContentHost.getById(purchaseReceipts[_internalPurchaseReceiptId].contentHostId);
 
 		require (_aoEarning.calculateEarning(
@@ -360,7 +360,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 
 	/**
 	 * @dev Internal helper function to get staked content info for _calculateEarning()
-	 * @param _stakeId The ID of the Staked Content
+	 * @param _stakedContentId The ID of the Staked Content
 	 * @return The stake owner address
 	 * @return array of uint256
 	 *			[0] = networkAmount
@@ -368,8 +368,8 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	 *			[2] = primordialWeightedMultiplier
 	 *			[3] = profitPercentage
 	 */
-	function _getStakedContentInfo(bytes32 _stakeId) internal view returns (address, uint256[]) {
-		(, address _stakeOwner, uint256 _networkAmount, uint256 _primordialAmount, uint256 _primordialWeightedMultiplier, uint256 _profitPercentage,,) = _aoStakedContent.getById(_stakeId);
+	function _getStakedContentInfo(bytes32 _stakedContentId) internal view returns (address, uint256[]) {
+		(, address _stakeOwner, uint256 _networkAmount, uint256 _primordialAmount, uint256 _primordialWeightedMultiplier, uint256 _profitPercentage,,) = _aoStakedContent.getById(_stakedContentId);
 		uint256[] memory _uintValues = new uint256[](4);
 		_uintValues[0] = _networkAmount;
 		_uintValues[1] = _primordialAmount;

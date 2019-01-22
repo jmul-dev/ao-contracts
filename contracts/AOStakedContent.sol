@@ -24,7 +24,7 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 	IAOContent internal _aoContent;
 
 	struct StakedContent {
-		bytes32 stakeId;
+		bytes32 stakedContentId;
 		bytes32 contentId;
 		address stakeOwner;
 		uint256 networkAmount;		// total network token staked in base denomination
@@ -38,13 +38,13 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 	// Mapping from StakedContent index to the StakedContent object
 	mapping (uint256 => StakedContent) internal stakedContents;
 
-	// Mapping from stake ID to index of the stakedContents list
+	// Mapping from StakedContent ID to index of the stakedContents list
 	mapping (bytes32 => uint256) internal stakedContentIndex;
 
 	// Event to be broadcasted to public when `stakeOwner` stakes a new content
 	event StakeContent(
 		address indexed stakeOwner,
-		bytes32 indexed stakeId,
+		bytes32 indexed stakedContentId,
 		bytes32 indexed contentId,
 		uint256 baseNetworkAmount,
 		uint256 primordialAmount,
@@ -54,12 +54,12 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 	);
 
 	// Event to be broadcasted to public when `stakeOwner` updates the staked content's profit percentage
-	event SetProfitPercentage(address indexed stakeOwner, bytes32 indexed stakeId, uint256 newProfitPercentage);
+	event SetProfitPercentage(address indexed stakeOwner, bytes32 indexed stakedContentId, uint256 newProfitPercentage);
 
 	// Event to be broadcasted to public when `stakeOwner` unstakes some network/primordial token from an existing content
 	event UnstakePartialContent(
 		address indexed stakeOwner,
-		bytes32 indexed stakeId,
+		bytes32 indexed stakedContentId,
 		bytes32 indexed contentId,
 		uint256 remainingNetworkAmount,
 		uint256 remainingPrimordialAmount,
@@ -67,12 +67,12 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 	);
 
 	// Event to be broadcasted to public when `stakeOwner` unstakes all token amount on an existing content
-	event UnstakeContent(address indexed stakeOwner, bytes32 indexed stakeId);
+	event UnstakeContent(address indexed stakeOwner, bytes32 indexed stakedContentId);
 
 	// Event to be broadcasted to public when `stakeOwner` re-stakes an existing content
 	event StakeExistingContent(
 		address indexed stakeOwner,
-		bytes32 indexed stakeId,
+		bytes32 indexed stakedContentId,
 		bytes32 indexed contentId,
 		uint256 currentNetworkAmount,
 		uint256 currentPrimordialAmount,
@@ -186,14 +186,14 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		// Increment totalStakedContents
 		totalStakedContents++;
 
-		// Generate stakeId
-		bytes32 _stakeId = keccak256(abi.encodePacked(this, _stakeOwner, _contentId));
+		// Generate stakedContentId
+		bytes32 _stakedContentId = keccak256(abi.encodePacked(this, _stakeOwner, _contentId));
 		StakedContent storage _stakedContent = stakedContents[totalStakedContents];
 
 		// Make sure the node doesn't stake the same content twice
 		require (_stakedContent.stakeOwner == address(0));
 
-		_stakedContent.stakeId = _stakeId;
+		_stakedContent.stakedContentId = _stakedContentId;
 		_stakedContent.contentId = _contentId;
 		_stakedContent.stakeOwner = _stakeOwner;
 		_stakedContent.profitPercentage = _profitPercentage;
@@ -212,25 +212,25 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 			require (_aoToken.stakePrimordialTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedMultiplier));
 		}
 
-		stakedContentIndex[_stakeId] = totalStakedContents;
+		stakedContentIndex[_stakedContentId] = totalStakedContents;
 
-		emit StakeContent(_stakedContent.stakeOwner, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedMultiplier, _stakedContent.profitPercentage, _stakedContent.createdOnTimestamp);
-		return _stakedContent.stakeId;
+		emit StakeContent(_stakedContent.stakeOwner, _stakedContent.stakedContentId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedMultiplier, _stakedContent.profitPercentage, _stakedContent.createdOnTimestamp);
+		return _stakedContent.stakedContentId;
 	}
 
 	/**
 	 * @dev Set profit percentage on existing staked content
 	 *		Will throw error if this is a Creative Commons/T(AO) Content
-	 * @param _stakeId The ID of the staked content
+	 * @param _stakedContentId The ID of the staked content
 	 * @param _profitPercentage The new value to be set
 	 */
-	function setProfitPercentage(bytes32 _stakeId, uint256 _profitPercentage) public {
+	function setProfitPercentage(bytes32 _stakedContentId, uint256 _profitPercentage) public {
 		require (_profitPercentage <= AOLibrary.PERCENTAGE_DIVISOR());
 
 		// Make sure the staked content exist
-		require (stakedContentIndex[_stakeId] > 0);
+		require (stakedContentIndex[_stakedContentId] > 0);
 
-		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakedContentId]];
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 
@@ -240,12 +240,12 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 
 		_stakedContent.profitPercentage = _profitPercentage;
 
-		emit SetProfitPercentage(msg.sender, _stakeId, _profitPercentage);
+		emit SetProfitPercentage(msg.sender, _stakedContentId, _profitPercentage);
 	}
 
 	/**
 	 * @dev Return staked content information at a given ID
-	 * @param _stakeId The ID of the staked content
+	 * @param _stakedContentId The ID of the staked content
 	 * @return The ID of the content being staked
 	 * @return address of the staked content's owner
 	 * @return the network base token amount staked for this content
@@ -255,11 +255,11 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 	 * @return status of the staked content
 	 * @return the timestamp when the staked content was created
 	 */
-	function getById(bytes32 _stakeId) external view returns (bytes32, address, uint256, uint256, uint256, uint256, bool, uint256) {
+	function getById(bytes32 _stakedContentId) external view returns (bytes32, address, uint256, uint256, uint256, uint256, bool, uint256) {
 		// Make sure the staked content exist
-		require (stakedContentIndex[_stakeId] > 0);
+		require (stakedContentIndex[_stakedContentId] > 0);
 
-		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_stakedContentId]];
 		return (
 			_stakedContent.contentId,
 			_stakedContent.stakeOwner,
@@ -276,29 +276,29 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 	 * @dev Unstake existing staked content and refund partial staked amount to the stake owner
 	 *		Use unstakeContent() to unstake all staked token amount. unstakePartialContent() can unstake only up to
 	 *		the mininum required to pay the fileSize
-	 * @param _stakeId The ID of the staked content
+	 * @param _stakedContentId The ID of the staked content
 	 * @param _networkIntegerAmount The integer amount of network token to unstake
 	 * @param _networkFractionAmount The fraction amount of network token to unstake
 	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
 	 * @param _primordialAmount The amount of primordial Token to unstake
 	 */
-	function unstakePartialContent(bytes32 _stakeId,
+	function unstakePartialContent(bytes32 _stakedContentId,
 		uint256 _networkIntegerAmount,
 		uint256 _networkFractionAmount,
 		bytes8 _denomination,
 		uint256 _primordialAmount
 		) public {
 		// Make sure the staked content exist
-		require (stakedContentIndex[_stakeId] > 0);
+		require (stakedContentIndex[_stakedContentId] > 0);
 		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
 
-		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakedContentId]];
 		(, uint256 _fileSize,,,,,,,) = _aoContent.getById(_stakedContent.contentId);
 
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 		// Make sure the staked content is currently active (staked) with some amounts
-		require (this.isActive(_stakeId));
+		require (this.isActive(_stakedContentId));
 		// Make sure the staked content has enough balance to unstake
 		require (_canUnstakePartial(_networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _stakedContent.networkAmount, _stakedContent.primordialAmount, _fileSize));
 
@@ -311,22 +311,22 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 			_stakedContent.primordialAmount = _stakedContent.primordialAmount.sub(_primordialAmount);
 			require (_aoToken.unstakePrimordialTokenFrom(msg.sender, _primordialAmount, _stakedContent.primordialWeightedMultiplier));
 		}
-		emit UnstakePartialContent(_stakedContent.stakeOwner, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedMultiplier);
+		emit UnstakePartialContent(_stakedContent.stakeOwner, _stakedContent.stakedContentId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedMultiplier);
 	}
 
 	/**
 	 * @dev Unstake existing staked content and refund the total staked amount to the stake owner
-	 * @param _stakeId The ID of the staked content
+	 * @param _stakedContentId The ID of the staked content
 	 */
-	function unstakeContent(bytes32 _stakeId) public {
+	function unstakeContent(bytes32 _stakedContentId) public {
 		// Make sure the staked content exist
-		require (stakedContentIndex[_stakeId] > 0);
+		require (stakedContentIndex[_stakedContentId] > 0);
 
-		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakedContentId]];
 		// Make sure the staked content owner is the same as the sender
 		require (_stakedContent.stakeOwner == msg.sender);
 		// Make sure the staked content is currently active (staked) with some amounts
-		require (this.isActive(_stakeId));
+		require (this.isActive(_stakedContentId));
 		_stakedContent.active = false;
 
 		if (_stakedContent.networkAmount > 0) {
@@ -341,28 +341,28 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 			_stakedContent.primordialWeightedMultiplier = 0;
 			require (_aoToken.unstakePrimordialTokenFrom(msg.sender, _primordialAmount, _primordialWeightedMultiplier));
 		}
-		emit UnstakeContent(_stakedContent.stakeOwner, _stakeId);
+		emit UnstakeContent(_stakedContent.stakeOwner, _stakedContentId);
 	}
 
 	/**
 	 * @dev Stake existing content with more tokens (this is to increase the price)
 	 *
-	 * @param _stakeId The ID of the staked content
+	 * @param _stakedContentId The ID of the staked content
 	 * @param _networkIntegerAmount The integer amount of network token to stake
 	 * @param _networkFractionAmount The fraction amount of network token to stake
 	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
 	 * @param _primordialAmount The amount of primordial Token to stake. (The primordial weighted multiplier has to match the current staked weighted multiplier)
 	 */
-	function stakeExistingContent(bytes32 _stakeId,
+	function stakeExistingContent(bytes32 _stakedContentId,
 		uint256 _networkIntegerAmount,
 		uint256 _networkFractionAmount,
 		bytes8 _denomination,
 		uint256 _primordialAmount
 		) public {
 		// Make sure the staked content exist
-		require (stakedContentIndex[_stakeId] > 0);
+		require (stakedContentIndex[_stakedContentId] > 0);
 
-		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakedContentId]];
 		(, uint256 _fileSize,,,,,,,) = _aoContent.getById(_stakedContent.contentId);
 
 		// Make sure the staked content owner is the same as the sender
@@ -391,19 +391,19 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 			require (_aoToken.stakePrimordialTokenFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedMultiplier));
 		}
 
-		emit StakeExistingContent(msg.sender, _stakedContent.stakeId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedMultiplier);
+		emit StakeExistingContent(msg.sender, _stakedContent.stakedContentId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedMultiplier);
 	}
 
 	/**
 	 * @dev Check whether or not a staked content is active
-	 * @param _stakeId The ID of the staked content
+	 * @param _stakedContentId The ID of the staked content
 	 * @return true if yes, false otherwise.
 	 */
-	function isActive(bytes32 _stakeId) external view returns (bool) {
+	function isActive(bytes32 _stakedContentId) external view returns (bool) {
 		// Make sure the staked content exist
-		require (stakedContentIndex[_stakeId] > 0);
+		require (stakedContentIndex[_stakedContentId] > 0);
 
-		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_stakeId]];
+		StakedContent memory _stakedContent = stakedContents[stakedContentIndex[_stakedContentId]];
 		return (_stakedContent.active == true && (_stakedContent.networkAmount > 0 || (_stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedMultiplier > 0)));
 	}
 
