@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
+import './ITAOCurrencyTreasury.sol';
 import './TAOCurrency.sol';
 import './INameFactory.sol';
 
@@ -11,7 +12,7 @@ import './INameFactory.sol';
  *
  * The purpose of this contract is to list all of the valid denominations of TAOCurrency and do the conversion between denominations
  */
-contract TAOCurrencyTreasury is TheAO {
+contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 	using SafeMath for uint256;
 
 	uint256 public totalDenominations;
@@ -71,7 +72,7 @@ contract TAOCurrencyTreasury is TheAO {
 	 * @dev Checks if denomination is valid
 	 */
 	modifier isValidDenomination(bytes8 denominationName) {
-		require (denominationIndex[denominationName] > 0 && denominations[denominationIndex[denominationName]].denominationAddress != address(0));
+		require (this.isDenominationExist(denominationName));
 		_;
 	}
 
@@ -121,7 +122,8 @@ contract TAOCurrencyTreasury is TheAO {
 	 * @return true on success
 	 */
 	function addDenomination(bytes8 denominationName, address denominationAddress) public onlyTheAO returns (bool) {
-		require (denominationName.length != 0);
+		require (denominationName.length > 0);
+		require (denominationName[0] != 0);
 		require (denominationAddress != address(0));
 		require (denominationIndex[denominationName] == 0);
 		totalDenominations++;
@@ -143,9 +145,7 @@ contract TAOCurrencyTreasury is TheAO {
 	 * @param denominationAddress The address of the denomination token
 	 * @return true on success
 	 */
-	function updateDenomination(bytes8 denominationName, address denominationAddress) public onlyTheAO returns (bool) {
-		require (denominationName.length != 0);
-		require (denominationIndex[denominationName] > 0);
+	function updateDenomination(bytes8 denominationName, address denominationAddress) public onlyTheAO isValidDenomination(denominationName) returns (bool) {
 		require (denominationAddress != address(0));
 		uint256 _denominationNameIndex = denominationIndex[denominationName];
 		TAOCurrency _newDenominationToken = TAOCurrency(denominationAddress);
@@ -163,6 +163,19 @@ contract TAOCurrencyTreasury is TheAO {
 
 	/***** PUBLIC METHODS *****/
 	/**
+	 * @dev Check if denomination exist given a name
+	 * @param denominationName The denomination name to check
+	 * @return true if yes. false otherwise
+	 */
+	function isDenominationExist(bytes8 denominationName) external view returns (bool) {
+		return (denominationName.length > 0 &&
+			denominationName[0] != 0 &&
+			denominationIndex[denominationName] > 0 &&
+			denominations[denominationIndex[denominationName]].denominationAddress != address(0)
+	   );
+	}
+
+	/**
 	 * @dev Get denomination info based on name
 	 * @param denominationName The name to be queried
 	 * @return the denomination short name
@@ -172,10 +185,7 @@ contract TAOCurrencyTreasury is TheAO {
 	 * @return the denomination num of decimals
 	 * @return the denomination multiplier (power of ten)
 	 */
-	function getDenominationByName(bytes8 denominationName) public view returns (bytes8, address, string, string, uint8, uint256) {
-		require (denominationName.length != 0);
-		require (denominationIndex[denominationName] > 0);
-		require (denominations[denominationIndex[denominationName]].denominationAddress != address(0));
+	function getDenominationByName(bytes8 denominationName) public isValidDenomination(denominationName) view returns (bytes8, address, string, string, uint8, uint256) {
 		TAOCurrency _tc = TAOCurrency(denominations[denominationIndex[denominationName]].denominationAddress);
 		return (
 			denominations[denominationIndex[denominationName]].name,
@@ -221,7 +231,7 @@ contract TAOCurrencyTreasury is TheAO {
 	 * @return the denomination multiplier (power of ten)
 	 */
 	function getBaseDenomination() public view returns (bytes8, address, string, string, uint8, uint256) {
-		require (totalDenominations > 1);
+		require (totalDenominations > 0);
 		return getDenominationByIndex(1);
 	}
 
@@ -239,13 +249,9 @@ contract TAOCurrencyTreasury is TheAO {
 	 * @param denominationName bytes8 name of the token denomination
 	 * @return uint256 converted amount in base denomination from target denomination
 	 */
-	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) public view returns (uint256) {
+	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) external view returns (uint256) {
 		uint256 _fractionAmount = fractionAmount;
-		if (denominationName.length > 0 &&
-			denominationIndex[denominationName] > 0 &&
-			denominations[denominationIndex[denominationName]].denominationAddress != address(0) &&
-			(integerAmount > 0 || _fractionAmount > 0)) {
-
+		if (this.isDenominationExist(denominationName) && (integerAmount > 0 || _fractionAmount > 0)) {
 			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
 			TAOCurrency _denominationToken = TAOCurrency(_denomination.denominationAddress);
 			uint8 fractionNumDigits = AOLibrary.numDigits(_fractionAmount);
@@ -268,12 +274,16 @@ contract TAOCurrencyTreasury is TheAO {
 	 * @return uint256 of the converted integer amount in target denomination
 	 * @return uint256 of the converted fraction amount in target denomination
 	 */
-	function fromBase(uint256 integerAmount, bytes8 denominationName) public isValidDenomination(denominationName) view returns (uint256, uint256) {
-		Denomination memory _denomination = denominations[denominationIndex[denominationName]];
-		TAOCurrency _denominationToken = TAOCurrency(_denomination.denominationAddress);
-		uint256 denominationInteger = integerAmount.div(10 ** _denominationToken.powerOfTen());
-		uint256 denominationFraction = integerAmount.sub(denominationInteger.mul(10 ** _denominationToken.powerOfTen()));
-		return (denominationInteger, denominationFraction);
+	function fromBase(uint256 integerAmount, bytes8 denominationName) public view returns (uint256, uint256) {
+		if (this.isDenominationExist(denominationName)) {
+			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
+			TAOCurrency _denominationToken = TAOCurrency(_denomination.denominationAddress);
+			uint256 denominationInteger = integerAmount.div(10 ** _denominationToken.powerOfTen());
+			uint256 denominationFraction = integerAmount.sub(denominationInteger.mul(10 ** _denominationToken.powerOfTen()));
+			return (denominationInteger, denominationFraction);
+		} else {
+			return (0, 0);
+		}
 	}
 
 	/**
