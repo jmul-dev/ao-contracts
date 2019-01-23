@@ -49,8 +49,6 @@ contract("AOEarning", function(accounts) {
 		nameId3,
 		nameId4,
 		taoId1,
-		taoId2,
-		taoId3,
 		contentId1,
 		contentId2,
 		contentId3,
@@ -211,40 +209,6 @@ contract("AOEarning", function(accounts) {
 		);
 		var createTAOEvent = result.logs[0];
 		taoId1 = createTAOEvent.args.taoId;
-
-		result = await taofactory.createTAO(
-			"Charlie's 2nd TAO",
-			"somedathash",
-			"somedatabase",
-			"somekeyvalue",
-			"somecontentid",
-			taoId1,
-			0,
-			false,
-			0,
-			{
-				from: account1
-			}
-		);
-		var createTAOEvent = result.logs[0];
-		taoId2 = createTAOEvent.args.taoId;
-
-		result = await taofactory.createTAO(
-			"Delta's TAO",
-			"somedathash",
-			"somedatabase",
-			"somekeyvalue",
-			"somecontentid",
-			nameId2,
-			0,
-			false,
-			0,
-			{
-				from: account2
-			}
-		);
-		var createTAOEvent = result.logs[0];
-		taoId3 = createTAOEvent.args.taoId;
 
 		// AOContent/AOStakedContent/AOContentHost/AOPurchaseReceipt grant access to whitelistedAddress
 		await aocontent.setWhitelist(whitelistedAddress, true, { from: theAO });
