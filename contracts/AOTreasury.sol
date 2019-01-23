@@ -215,7 +215,7 @@ contract AOTreasury is TheAO, IAOTreasury {
 	 * @return the denomination multiplier (power of ten)
 	 */
 	function getBaseDenomination() public view returns (bytes8, address, string, string, uint8, uint256) {
-		require (totalDenominations > 1);
+		require (totalDenominations > 0);
 		return getDenominationByIndex(1);
 	}
 
