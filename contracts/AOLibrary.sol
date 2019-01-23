@@ -42,7 +42,7 @@ library AOLibrary {
 			return false;
 		}
 		TokenERC20 _erc20 = TokenERC20(_tokenAddress);
-		return (_erc20.totalSupply() > 0 && bytes(_erc20.name()).length > 0 && bytes(_erc20.symbol()).length > 0);
+		return (_erc20.totalSupply() >= 0 && bytes(_erc20.name()).length > 0 && bytes(_erc20.symbol()).length > 0);
 	}
 
 	/**

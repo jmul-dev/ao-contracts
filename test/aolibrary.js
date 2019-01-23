@@ -1,15 +1,29 @@
 var AOLibrary = artifacts.require("./AOLibrary.sol");
+var AOToken = artifacts.require("./AOToken.sol");
+var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
 var Logos = artifacts.require("./Logos.sol");
-var Ethos = artifacts.require("./Ethos.sol");
-var Pathos = artifacts.require("./Pathos.sol");
+var AOContent = artifacts.require("./AOContent.sol");
+var TAO = artifacts.require("./TAO.sol");
 
 var BigNumber = require("bignumber.js");
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1 }); // no rounding
 
 contract("AOLibrary", function(accounts) {
-	var library, percentageDivisor, multiplierDivisor, namefactory, taofactory, logos, ethos, pathos, nameId1, nameId2, taoId;
+	var library,
+		aotoken,
+		nametaoposition,
+		namefactory,
+		taofactory,
+		logos,
+		aocontent,
+		percentageDivisor,
+		multiplierDivisor,
+		nameId1,
+		nameId2,
+		taoId1,
+		taoId2;
 	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
@@ -18,11 +32,12 @@ contract("AOLibrary", function(accounts) {
 
 	before(async function() {
 		library = await AOLibrary.deployed();
+		aotoken = await AOToken.deployed();
+		nametaoposition = await NameTAOPosition.deployed();
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
 		logos = await Logos.deployed();
-		ethos = await Ethos.deployed();
-		pathos = await Pathos.deployed();
+		aocontent = await AOContent.deployed();
 
 		// Create Name
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
@@ -30,33 +45,114 @@ contract("AOLibrary", function(accounts) {
 		});
 		nameId1 = await namefactory.ethAddressToNameId(account1);
 
-		result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account2
-		});
-		nameId2 = await namefactory.ethAddressToNameId(account2);
+		// Mint Logos to nameId1
+		await logos.setWhitelist(theAO, true, { from: theAO });
+		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
 
-		result = await taofactory.createTAO("taoId", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId1, {
-			from: account1
-		});
+		result = await taofactory.createTAO(
+			"Charlie's TAO",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId1,
+			0,
+			false,
+			0,
+			{
+				from: account1
+			}
+		);
 		var createTAOEvent = result.logs[0];
-		taoId = createTAOEvent.args.taoId;
-
-		await logos.setWhitelist(whitelistedAddress, true, { from: theAO });
-		await ethos.setWhitelist(whitelistedAddress, true, { from: theAO });
-		await pathos.setWhitelist(whitelistedAddress, true, { from: theAO });
-
-		// mint some TAOCurrencies to nameId
-		await logos.mintToken(nameId1, 10, { from: whitelistedAddress });
-		await ethos.mintToken(nameId1, 20, { from: whitelistedAddress });
-		await pathos.mintToken(nameId1, 30, { from: whitelistedAddress });
+		taoId1 = createTAOEvent.args.taoId;
 	});
 
-	it("should have the correct percentage divisor value", async function() {
+	it("isTAO() - should return true if TAO ID is a TAO", async function() {
+		var isTAO = await library.isTAO(taoId1);
+		assert.equal(isTAO, true, "isTAO() returns incorrect value");
+
+		try {
+			isTAO = await library.isTAO(someAddress);
+		} catch (e) {
+			isTAO = false;
+		}
+		assert.equal(isTAO, false, "isTAO() returns incorrect value");
+
+		try {
+			isTAO = await library.isTAO(nameId1);
+		} catch (e) {
+			isTAO = false;
+		}
+		assert.equal(isTAO, false, "isTAO() returns incorrect value");
+	});
+
+	it("isName() - should return true if Name ID is a Name", async function() {
+		var isName = await library.isName(nameId1);
+		assert.equal(isName, true, "isName() returns incorrect value");
+
+		try {
+			isName = await library.isName(someAddress);
+		} catch (e) {
+			isName = false;
+		}
+		assert.equal(isName, false, "isName() returns incorrect value");
+
+		try {
+			isName = await library.isName(taoId1);
+		} catch (e) {
+			isName = false;
+		}
+		assert.equal(isName, false, "isName() returns incorrect value");
+	});
+
+	it("isValidERC20TokenAddress() - should check whether or not an address is a valid ERC20 Token", async function() {
+		var isValid = await library.isValidERC20TokenAddress(aotoken.address);
+		assert.equal(isValid, true, "isValidERC20TokenAddress() returns incorrect value");
+
+		try {
+			isValid = await library.isValidERC20TokenAddress(someAddress);
+		} catch (e) {
+			isValid = false;
+		}
+		assert.equal(isValid, false, "isValidERC20TokenAddress() returns incorrect value");
+	});
+
+	it("isTheAO() - should check if calling address is The AO", async function() {
+		var aoContentTheAO = await aocontent.theAO();
+		var isTheAO = await library.isTheAO(theAO, aoContentTheAO, nametaoposition.address);
+		assert.equal(isTheAO, true, "isTheAO() returns incorrect value");
+
+		try {
+			isTheAO = await library.isTheAO(account1, aoContentTheAO, nametaoposition.address);
+		} catch (e) {
+			isTheAO = false;
+		}
+		assert.equal(isTheAO, false, "isTheAO() returns incorrect value");
+
+		await aocontent.transferOwnership(taoId1, { from: theAO });
+		aoContentTheAO = await aocontent.theAO();
+		isTheAO = await library.isTheAO(account1, aoContentTheAO, nametaoposition.address);
+		assert.equal(isTheAO, true, "isTheAO() returns incorrect value");
+
+		try {
+			isTheAO = await library.isTheAO(account2, aoContentTheAO, nametaoposition.address);
+		} catch (e) {
+			isTheAO = false;
+		}
+		assert.equal(isTheAO, false, "isTheAO() returns incorrect value");
+
+		await aocontent.transferOwnership(nameId1, { from: account1 });
+		aoContentTheAO = await aocontent.theAO();
+		isTheAO = await library.isTheAO(account1, aoContentTheAO, nametaoposition.address);
+		assert.equal(isTheAO, true, "isTheAO() returns incorrect value");
+	});
+
+	it("PERCENTAGE_DIVISOR() - should have the correct percentage divisor value", async function() {
 		percentageDivisor = await library.PERCENTAGE_DIVISOR();
 		assert.equal(percentageDivisor.toNumber(), 10 ** 6, "Contract has incorrect PERCENTAGE_DIVISOR value");
 	});
 
-	it("should have the correct multiplier divisor value", async function() {
+	it("MULTIPLIER_DIVISOR() - should have the correct multiplier divisor value", async function() {
 		multiplierDivisor = await library.MULTIPLIER_DIVISOR();
 		assert.equal(multiplierDivisor.toNumber(), 10 ** 6, "Contract has incorrect MULTIPLIER_DIVISOR value");
 	});
@@ -219,36 +315,14 @@ contract("AOLibrary", function(accounts) {
 		assert.equal(newMultiplier.toString(), _newMultiplier.toString(), "Library returns incorrect new multiplier after conversion");
 	});
 
-	it("isTAO() - should return true if TAO ID is a TAO", async function() {
-		var isTAO = await library.isTAO(taoId);
-		assert.equal(isTAO, true, "Library returns incorrect bool value when a TAO ID is a TAO");
-	});
+	it("numDigits() - should return correct num of digits of a number", async function() {
+		var numDigits = await library.numDigits(2);
+		assert.equal(numDigits.toNumber(), 1, "numDigits() returns incorrect value");
 
-	it("isName() - should return true if Name ID is a Name", async function() {
-		var isName = await library.isName(nameId1);
-		assert.equal(isName, true, "Library returns incorrect bool value when a Name ID is a Name");
-	});
+		numDigits = await library.numDigits(23);
+		assert.equal(numDigits.toNumber(), 2, "numDigits() returns incorrect value");
 
-	it("addressIsTAOAdvocateListenerSpeaker() - should return true if the address is either TAO's Advocate/Listener/Speaker", async function() {
-		var addressIsTAOAdvocateListenerSpeaker = await library.addressIsTAOAdvocateListenerSpeaker(namefactory.address, account2, taoId);
-		assert.equal(
-			addressIsTAOAdvocateListenerSpeaker,
-			false,
-			"Library returns incorrect bool value when address is not TAO's Advocate/Listener/Speaker"
-		);
-
-		var addressIsTAOAdvocateListenerSpeaker = await library.addressIsTAOAdvocateListenerSpeaker(namefactory.address, account1, taoId);
-		assert.equal(
-			addressIsTAOAdvocateListenerSpeaker,
-			true,
-			"Library returns incorrect bool value when address is TAO's Advocate/Listener/Speaker"
-		);
-	});
-
-	it("getTAOCurrencyBalances() - should return Logos/Ethos/Pathos balances of a Name ID", async function() {
-		var balances = await library.getTAOCurrencyBalances(nameId1, logos.address, ethos.address, pathos.address);
-		assert.equal(balances[0].toNumber(), 10, "getTAOCurrencyBalances() returns incorrect Logos balance");
-		assert.equal(balances[1].toNumber(), 20, "getTAOCurrencyBalances() returns incorrect Ethos balance");
-		assert.equal(balances[2].toNumber(), 30, "getTAOCurrencyBalances() returns incorrect Pathos balance");
+		numDigits = await library.numDigits(2345678);
+		assert.equal(numDigits.toNumber(), 7, "numDigits() returns incorrect value");
 	});
 });
