@@ -412,86 +412,83 @@ contract("AOTreasury", function(accounts) {
 		);
 	});
 
-	contract("exchange()", function() {
-		before(async function() {
-			await aotoken.setWhitelist(theAO, true, { from: theAO });
-			await aotoken.mintToken(account1, 100, { from: theAO });
-		});
-		it("should exchange token from `fromDenominationName` to `toDenominationName` correctly", async function() {
-			var canExchange, exchangeDenominationEvent, exchangeId;
-			try {
-				var result = await aotreasury.exchangeDenomination(50, "deca", "ao", { from: account1 });
-				exchangeDenominationEvent = result.logs[0];
-				exchangeId = exchangeDenominationEvent.args.exchangeId;
-				canExchange = true;
-			} catch (e) {
-				canExchange = false;
-				exchangeDenominationEvent = null;
-				exchangeId = null;
-			}
-			assert.notEqual(canExchange, true, "Contract can exchange token from invalid origin denomination");
+	it("exchangeDenomination() - should exchange token from `fromDenominationName` to `toDenominationName` correctly", async function() {
+		await aotoken.setWhitelist(theAO, true, { from: theAO });
+		await aotoken.mintToken(account1, 100, { from: theAO });
 
-			try {
-				var result = await aotreasury.exchangeDenomination(50, "ao", "deca", { from: account1 });
-				exchangeDenominationEvent = result.logs[0];
-				exchangeId = exchangeDenominationEvent.args.exchangeId;
-				canExchange = true;
-			} catch (e) {
-				canExchange = false;
-				exchangeDenominationEvent = null;
-				exchangeId = null;
-			}
-			assert.notEqual(canExchange, true, "Contract can exchange token to invalid target denomination");
+		var canExchange, exchangeDenominationEvent, exchangeId;
+		try {
+			var result = await aotreasury.exchangeDenomination(50, "deca", "ao", { from: account1 });
+			exchangeDenominationEvent = result.logs[0];
+			exchangeId = exchangeDenominationEvent.args.exchangeId;
+			canExchange = true;
+		} catch (e) {
+			canExchange = false;
+			exchangeDenominationEvent = null;
+			exchangeId = null;
+		}
+		assert.notEqual(canExchange, true, "Contract can exchange token from invalid origin denomination");
 
-			try {
-				var result = await aotreasury.exchangeDenomination(1000, "ao", "kilo", { from: account1 });
-				exchangeDenominationEvent = result.logs[0];
-				exchangeId = exchangeDenominationEvent.args.exchangeId;
-				canExchange = true;
-			} catch (e) {
-				canExchange = false;
-				exchangeDenominationEvent = null;
-				exchangeId = null;
-			}
-			assert.notEqual(canExchange, true, "Account1 can exchange token more than he/she has");
+		try {
+			var result = await aotreasury.exchangeDenomination(50, "ao", "deca", { from: account1 });
+			exchangeDenominationEvent = result.logs[0];
+			exchangeId = exchangeDenominationEvent.args.exchangeId;
+			canExchange = true;
+		} catch (e) {
+			canExchange = false;
+			exchangeDenominationEvent = null;
+			exchangeId = null;
+		}
+		assert.notEqual(canExchange, true, "Contract can exchange token to invalid target denomination");
 
-			var account1AoBalanceBefore = await aotoken.balanceOf(account1);
-			var account1KiloBalanceBefore = await aokilo.balanceOf(account1);
+		try {
+			var result = await aotreasury.exchangeDenomination(1000, "ao", "kilo", { from: account1 });
+			exchangeDenominationEvent = result.logs[0];
+			exchangeId = exchangeDenominationEvent.args.exchangeId;
+			canExchange = true;
+		} catch (e) {
+			canExchange = false;
+			exchangeDenominationEvent = null;
+			exchangeId = null;
+		}
+		assert.notEqual(canExchange, true, "Account1 can exchange token more than he/she has");
 
-			try {
-				var result = await aotreasury.exchangeDenomination(50, "ao", "kilo", { from: account1 });
-				exchangeDenominationEvent = result.logs[0];
-				exchangeId = exchangeDenominationEvent.args.exchangeId;
-				canExchange = true;
-			} catch (e) {
-				canExchange = false;
-				exchangeDenominationEvent = null;
-				exchangeId = null;
-			}
-			assert.equal(canExchange, true, "Contract can't complete exchange on valid denominations");
-			var account1AoBalanceAfter = await aotoken.balanceOf(account1);
-			var account1KiloBalanceAfter = await aokilo.balanceOf(account1);
+		var account1AoBalanceBefore = await aotoken.balanceOf(account1);
+		var account1KiloBalanceBefore = await aokilo.balanceOf(account1);
 
-			assert.equal(
-				account1AoBalanceAfter.toNumber(),
-				account1AoBalanceBefore.minus(50).toNumber(),
-				"Account1 has incorrect AO Token balance after exchanging"
-			);
-			assert.equal(
-				account1KiloBalanceAfter.toNumber(),
-				account1KiloBalanceBefore.plus(50).toNumber(),
-				"Account1 has incorrect AO Kilo Token balance after exchanging"
-			);
+		try {
+			var result = await aotreasury.exchangeDenomination(50, "ao", "kilo", { from: account1 });
+			exchangeDenominationEvent = result.logs[0];
+			exchangeId = exchangeDenominationEvent.args.exchangeId;
+			canExchange = true;
+		} catch (e) {
+			canExchange = false;
+			exchangeDenominationEvent = null;
+			exchangeId = null;
+		}
+		assert.equal(canExchange, true, "Contract can't complete exchange on valid denominations");
+		var account1AoBalanceAfter = await aotoken.balanceOf(account1);
+		var account1KiloBalanceAfter = await aokilo.balanceOf(account1);
 
-			var denominationExchange = await aotreasury.getDenominationExchangeById(exchangeId);
-			var fromSymbol = await aotoken.symbol();
-			var toSymbol = await aokilo.symbol();
-			assert.equal(denominationExchange[0], account1, "DenominationExchange returns incorrect sender address");
-			assert.equal(denominationExchange[1], aotoken.address, "DenominationExchange returns incorrect fromDenominationAddress");
-			assert.equal(denominationExchange[2], aokilo.address, "DenominationExchange returns incorrect toDenominationAddress");
-			assert.equal(denominationExchange[3], fromSymbol, "DenominationExchange returns incorrect from denomination symbol");
-			assert.equal(denominationExchange[4], toSymbol, "DenominationExchange returns incorrect to denomination symbol");
-			assert.equal(denominationExchange[5], 50, "DenominationExchange returns incorrect to amount exchanged");
-		});
+		assert.equal(
+			account1AoBalanceAfter.toNumber(),
+			account1AoBalanceBefore.minus(50).toNumber(),
+			"Account1 has incorrect AO Token balance after exchanging"
+		);
+		assert.equal(
+			account1KiloBalanceAfter.toNumber(),
+			account1KiloBalanceBefore.plus(50).toNumber(),
+			"Account1 has incorrect AO Kilo Token balance after exchanging"
+		);
+
+		var denominationExchange = await aotreasury.getDenominationExchangeById(exchangeId);
+		var fromSymbol = await aotoken.symbol();
+		var toSymbol = await aokilo.symbol();
+		assert.equal(denominationExchange[0], account1, "DenominationExchange returns incorrect sender address");
+		assert.equal(denominationExchange[1], aotoken.address, "DenominationExchange returns incorrect fromDenominationAddress");
+		assert.equal(denominationExchange[2], aokilo.address, "DenominationExchange returns incorrect toDenominationAddress");
+		assert.equal(denominationExchange[3], fromSymbol, "DenominationExchange returns incorrect from denomination symbol");
+		assert.equal(denominationExchange[4], toSymbol, "DenominationExchange returns incorrect to denomination symbol");
+		assert.equal(denominationExchange[5], 50, "DenominationExchange returns incorrect to amount exchanged");
 	});
 });
