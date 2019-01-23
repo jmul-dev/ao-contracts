@@ -1,8 +1,16 @@
-var NameFactory = artifacts.require("./NameFactory.sol");
-var TAOFactory = artifacts.require("./TAOFactory.sol");
-var TAOPosition = artifacts.require("./TAOPosition.sol");
 var Position = artifacts.require("./Position.sol");
+var NameFactory = artifacts.require("./NameFactory.sol");
+var NameTAOVault = artifacts.require("./NameTAOVault.sol");
+var TAOFactory = artifacts.require("./TAOFactory.sol");
+var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var NameTAOLookup = artifacts.require("./NameTAOLookup.sol");
+var NamePublicKey = artifacts.require("./NamePublicKey.sol");
+var TAOFamily = artifacts.require("./TAOFamily.sol");
+var TAOPosition = artifacts.require("./TAOPosition.sol");
+var Logos = artifacts.require("./Logos.sol");
+var Pathos = artifacts.require("./Pathos.sol");
+var Ethos = artifacts.require("./Ethos.sol");
+var TAOPool = artifacts.require("./TAOPool.sol");
 var EthCrypto = require("eth-crypto");
 
 contract("Name & TAO", function(accounts) {
