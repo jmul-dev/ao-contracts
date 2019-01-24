@@ -86,6 +86,11 @@ var AOPurchaseReceipt = artifacts.require("./AOPurchaseReceipt.sol");
 var AOContentHost = artifacts.require("./AOContentHost.sol");
 var AOContentFactory = artifacts.require("./AOContentFactory.sol");
 
+// Testing ERC20 Tokens
+var TokenOne = artifacts.require("./TokenOne.sol");
+var TokenTwo = artifacts.require("./TokenTwo.sol");
+var TokenThree = artifacts.require("./TokenThree.sol");
+
 module.exports = function(deployer, network, accounts) {
 	var primordialAccount, settingAccount, primordialNameId, settingNameId, primordialTAOId, settingTAOId;
 	if (network === "rinkeby") {
@@ -164,7 +169,10 @@ module.exports = function(deployer, network, accounts) {
 		aopurchasereceipt,
 		aocontenthost,
 		aoearning,
-		aocontentfactory;
+		aocontentfactory,
+		tokenone,
+		tokentwo,
+		tokenthree;
 
 	deployer.deploy(AOLibrary, { overwrite: false });
 	deployer.link(AOLibrary, [
@@ -234,6 +242,15 @@ module.exports = function(deployer, network, accounts) {
 		AOEarning,
 		AOContentFactory
 	]);
+
+	// Deploy Testing ERC20 tokens only in development network
+	if (network === "development") {
+		deployer.deploy([
+			[TokenOne, 10 ** 6, "Token One", "TOKENONE"],
+			[TokenTwo, 10 ** 6, "Token Two", "TOKENTWO"],
+			[TokenThree, 10 ** 6, "Token Three", "TOKENTHREE"]
+		]);
+	}
 
 	deployer
 		.deploy([[Epiphany, { overwrite: false }], [Position, 0, "AO Position", "AOPOS"]])
