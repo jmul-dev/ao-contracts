@@ -121,15 +121,6 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	}
 
 	/**
-	 * @dev Allows TheAO to transfer `_amount` of ETH from this address to `_recipient`
-	 * @param _recipient The recipient address
-	 * @param _amount The amount to transfer
-	 */
-	function transferEth(address _recipient, uint256 _amount) public onlyTheAO {
-		_recipient.transfer(_amount);
-	}
-
-	/**
 	 * @dev Allows TheAO to transfer `_amount` of ERC20 Token from this address to `_recipient`
 	 * @param _erc20TokenAddress The address of ERC20 Token
 	 * @param _recipient The recipient address
@@ -168,6 +159,7 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	 */
 	function setPrice(address _tokenAddress, uint256 _price) public onlyTheAO {
 		require (erc20TokenIdLookup[_tokenAddress] > 0);
+		require (_price > 0);
 
 		ERC20Token storage _erc20Token = erc20Tokens[erc20TokenIdLookup[_tokenAddress]];
 		_erc20Token.price = _price;
@@ -277,8 +269,8 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 		require (_erc20Token.maxQuantity.sub(_erc20Token.exchangedQuantity) >= amountToTransfer);
 		require (_aoToken.availableETH() >= amountToTransfer);
 
-		// Burn the ERC20 Token from the `_from` address
-		require (TokenERC20(_token).burnFrom(_from, _value));
+		// Transfer the ERC20 Token from the `_from` address to here
+		require (TokenERC20(_token).transferFrom(_from, address(this), _value));
 
 		_erc20Token.exchangedQuantity = _erc20Token.exchangedQuantity.add(amountToTransfer);
 		balanceOf[_from] = balanceOf[_from].add(amountToTransfer);
