@@ -58,6 +58,12 @@ contract TAO {
 	}
 
 	/**
+	 * Will receive any ETH sent
+	 */
+	function () external payable {
+	}
+
+	/**
 	 * @dev Allows Vault to transfer `_amount` of ETH from this TAO to `_recipient`
 	 * @param _recipient The recipient address
 	 * @param _amount The amount to transfer
