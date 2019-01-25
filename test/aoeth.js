@@ -488,6 +488,7 @@ contract("AOETH", function(accounts) {
 	});
 
 	it("receiveApproval() - should be able to send out AOETH to user when receiving approval from ERC20 token - Token One", async function() {
+		var availableETHBefore = await aotoken.availableETH();
 		var accountTokenBalanceBefore = await tokenone.balanceOf(theAO);
 		var aoEthTokenBalanceBefore = await tokenone.balanceOf(aoeth.address);
 		var aoEthTotalSupplyBefore = await aoeth.totalSupply();
@@ -503,9 +504,10 @@ contract("AOETH", function(accounts) {
 		var _event = aoeth.ExchangeToken();
 		_event.watch(async function(error, log) {
 			if (!error) {
-				if (log.event === "ExchangeToken") {
+				if (log.event === "ExchangeToken" && log.args.tokenAddress == tokenone.address) {
 					var exchangeId = log.args.exchangeId;
 
+					var availableETHAfter = await aotoken.availableETH();
 					var accountTokenBalanceAfter = await tokenone.balanceOf(theAO);
 					var aoEthTokenBalanceAfter = await tokenone.balanceOf(aoeth.address);
 					var aoEthTotalSupplyAfter = await aoeth.totalSupply();
@@ -513,6 +515,12 @@ contract("AOETH", function(accounts) {
 					var accountAoEthBalanceAfter = await aoeth.balanceOf(theAO);
 					var totalTokenExchangesAfter = await aoeth.totalTokenExchanges();
 					var totalAddressTokenExchangesAfter = await aoeth.totalAddressTokenExchanges(theAO);
+
+					assert.equal(
+						availableETHAfter.toNumber(),
+						availableETHBefore.minus(amountToTransfer).toNumber(),
+						"availableETH() returns incorrect value"
+					);
 
 					assert.equal(
 						accountTokenBalanceAfter.toNumber(),
@@ -576,6 +584,7 @@ contract("AOETH", function(accounts) {
 	});
 
 	it("receiveApproval() - should be able to send out AOETH to user when receiving approval from ERC20 token - Token Two", async function() {
+		var availableETHBefore = await aotoken.availableETH();
 		var accountTokenBalanceBefore = await tokentwo.balanceOf(theAO);
 		var aoEthTokenBalanceBefore = await tokentwo.balanceOf(aoeth.address);
 		var aoEthTotalSupplyBefore = await aoeth.totalSupply();
@@ -591,9 +600,10 @@ contract("AOETH", function(accounts) {
 		var _event = aoeth.ExchangeToken();
 		_event.watch(async function(error, log) {
 			if (!error) {
-				if (log.event === "ExchangeToken") {
+				if (log.event === "ExchangeToken" && log.args.tokenAddress == tokentwo.address) {
 					var exchangeId = log.args.exchangeId;
 
+					var availableETHAfter = await aotoken.availableETH();
 					var accountTokenBalanceAfter = await tokentwo.balanceOf(theAO);
 					var aoEthTokenBalanceAfter = await tokentwo.balanceOf(aoeth.address);
 					var aoEthTotalSupplyAfter = await aoeth.totalSupply();
@@ -601,6 +611,12 @@ contract("AOETH", function(accounts) {
 					var accountAoEthBalanceAfter = await aoeth.balanceOf(theAO);
 					var totalTokenExchangesAfter = await aoeth.totalTokenExchanges();
 					var totalAddressTokenExchangesAfter = await aoeth.totalAddressTokenExchanges(theAO);
+
+					assert.equal(
+						availableETHAfter.toNumber(),
+						availableETHBefore.minus(amountToTransfer).toNumber(),
+						"availableETH() returns incorrect value"
+					);
 
 					assert.equal(
 						accountTokenBalanceAfter.toNumber(),
