@@ -47,6 +47,8 @@ contract AOToken is AOTokenInterface {
 	event PrimordialStake(address indexed from, uint256 value, uint256 weightedMultiplier);
 	event PrimordialUnstake(address indexed from, uint256 value, uint256 weightedMultiplier);
 
+	event NetworkExchangeEnded();
+
 	uint256 public totalLots;
 	uint256 public totalBurnLots;
 	uint256 public totalConvertLots;
@@ -141,9 +143,10 @@ contract AOToken is AOTokenInterface {
 			primordialTotalBought < TOTAL_PRIMORDIAL_FOR_SALE &&
 			primordialBuyPrice > 0 &&
 			_sentAmount > 0 &&
+			availablePrimordialForSaleInETH() > 0 &&
 			(
 				(_withETH && availableETH() > 0) ||
-				(!_withETH && availablePrimordialForSaleInETH() > 0)
+				(!_withETH && totalRedeemedAOETH < _aoeth.totalSupply())
 			)
 		);
 		_;
@@ -198,6 +201,15 @@ contract AOToken is AOTokenInterface {
 	function setPrimordialPrices(uint256 newPrimordialSellPrice, uint256 newPrimordialBuyPrice) public onlyTheAO {
 		primordialSellPrice = newPrimordialSellPrice;
 		primordialBuyPrice = newPrimordialBuyPrice;
+	}
+
+	/**
+	 * @dev Only the AO can force end network exchange
+	 */
+	function endNetworkExchange() public onlyTheAO {
+		require (!networkExchangeEnded);
+		networkExchangeEnded = true;
+		emit NetworkExchangeEnded();
 	}
 
 	/***** PRIMORDIAL TOKEN WHITELISTED ADDRESS ONLY METHODS *****/
@@ -268,12 +280,13 @@ contract AOToken is AOTokenInterface {
 	 * @dev Buy Primordial tokens from contract by sending ether
 	 */
 	function buyPrimordialToken() public payable canBuyPrimordial(msg.value, true) {
-		(uint256 tokenAmount, uint256 remainderBudget, bool shouldEndNetworkExchange) = _calculateTokenAmountAndRemainderBudget(msg.value);
+		(uint256 tokenAmount, uint256 remainderBudget, bool shouldEndNetworkExchange) = _calculateTokenAmountAndRemainderBudget(msg.value, true);
 		require (tokenAmount > 0);
 
 		// Ends network exchange if necessary
 		if (shouldEndNetworkExchange) {
 			networkExchangeEnded = true;
+			emit NetworkExchangeEnded();
 		}
 
 		// Update totalEthForPrimordial
@@ -294,12 +307,13 @@ contract AOToken is AOTokenInterface {
 	 * @dev Buy Primordial tokens from contract by sending AOETH
 	 */
 	function buyPrimordialTokenWithAOETH(uint256 _aoethAmount) public canBuyPrimordial(_aoethAmount, false) {
-		(uint256 tokenAmount, uint256 remainderBudget, bool shouldEndNetworkExchange) = _calculateTokenAmountAndRemainderBudget(_aoethAmount);
+		(uint256 tokenAmount, uint256 remainderBudget, bool shouldEndNetworkExchange) = _calculateTokenAmountAndRemainderBudget(_aoethAmount, false);
 		require (tokenAmount > 0);
 
 		// Ends network exchange if necessary
 		if (shouldEndNetworkExchange) {
 			networkExchangeEnded = true;
+			emit NetworkExchangeEnded();
 		}
 
 		// Calculate the actual AOETH that was charged for this transaction
@@ -745,7 +759,16 @@ contract AOToken is AOTokenInterface {
 	 * @return The maximum quantity of AOETH or ETH that can still be sold
 	 */
 	function availableETH() public view returns (uint256) {
-		return availablePrimordialForSaleInETH().sub(_aoeth.totalSupply()).sub(totalRedeemedAOETH);
+		if (availablePrimordialForSaleInETH() > 0) {
+			uint256 _availableETH = availablePrimordialForSaleInETH().sub(_aoeth.totalSupply().sub(totalRedeemedAOETH));
+			if (availablePrimordialForSale() == 1 && _availableETH < primordialBuyPrice) {
+				return primordialBuyPrice;
+			} else {
+				return _availableETH;
+			}
+		} else {
+			return 0;
+		}
 	}
 
 	/***** INTERNAL METHODS *****/
@@ -754,17 +777,26 @@ contract AOToken is AOTokenInterface {
 	 * @dev Calculate the amount of token the buyer will receive and remaining budget if exist
 	 *		when he/she buys primordial token
 	 * @param _budget The amount of ETH sent by buyer
+	 * @param _withETH Whether or not buyer is paying with ETH
 	 * @return uint256 of the tokenAmount the buyer will receiver
 	 * @return uint256 of the remaining budget, if exist
 	 * @return bool whether or not the network exchange should end
 	 */
-	function _calculateTokenAmountAndRemainderBudget(uint256 _budget) internal view returns (uint256, uint256, bool) {
+	function _calculateTokenAmountAndRemainderBudget(uint256 _budget, bool _withETH) internal view returns (uint256, uint256, bool) {
 		// Calculate the amount of tokens
 		uint256 tokenAmount = _budget.div(primordialBuyPrice);
 
 		// If we need to return ETH to the buyer, in the case
 		// where the buyer sends more ETH than available primordial token to be purchased
-		uint256 remainderEth = 0;
+		uint256 remainderEth = _budget.sub(tokenAmount.mul(primordialBuyPrice));
+
+		uint256 _availableETH = availableETH();
+		// If paying with ETH, it can't exceed availableETH
+		if (_withETH && _budget > availableETH()) {
+			// Calculate the amount of tokens
+			tokenAmount = _availableETH.div(primordialBuyPrice);
+			remainderEth = _budget.sub(tokenAmount.mul(primordialBuyPrice));
+		}
 
 		// Make sure primordialTotalBought is not overflowing
 		bool shouldEndNetworkExchange = false;
