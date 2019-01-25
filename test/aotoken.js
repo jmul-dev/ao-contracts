@@ -12,6 +12,7 @@ var TokenOne = artifacts.require("./TokenOne.sol");
 var TokenTwo = artifacts.require("./TokenTwo.sol");
 var TokenThree = artifacts.require("./TokenThree.sol");
 
+var EthCrypto = require("eth-crypto");
 var BigNumber = require("bignumber.js");
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
@@ -46,6 +47,7 @@ contract("AOToken", function(accounts) {
 	var aoDevTeam1 = accounts[8];
 	var aoDevTeam2 = accounts[9];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
+	var recipient = EthCrypto.createIdentity();
 
 	var account1Lots = [];
 	var account2Lots = [];
@@ -765,7 +767,7 @@ contract("AOToken", function(accounts) {
 				canBuyToken = false;
 			}
 			assert.notEqual(canBuyToken, true, "Contract does not have enough network token balance to complete user's token purchase");
-			await aotoken.mintToken(aotoken.address, 1000, { from: whitelistedAddress });
+			await aotoken.mintToken(aotoken.address, 10 ** 20, { from: whitelistedAddress });
 
 			var account2BalanceBefore = await aotoken.balanceOf(account2);
 			try {
@@ -974,6 +976,46 @@ contract("AOToken", function(accounts) {
 
 			// Unfreeze account1
 			await aotoken.freezeAccount(account1, false, { from: theAO });
+		});
+
+		it("The AO - transferETH() should be able to transfer ETH to an address", async function() {
+			await aotoken.buy({ from: account2, value: web3.toWei(2, "ether") });
+
+			var canTransferEth;
+			try {
+				await aotoken.transferEth(recipient.address, web3.toWei(1, "ether"), { from: someAddress });
+				canTransferEth = true;
+			} catch (e) {
+				canTransferEth = false;
+			}
+			assert.equal(canTransferEth, false, "Non-AO can transfer ETH out of contract");
+
+			try {
+				await aotoken.transferEth(emptyAddress, web3.toWei(1, "ether"), { from: theAO });
+				canTransferEth = true;
+			} catch (e) {
+				canTransferEth = false;
+			}
+			assert.equal(canTransferEth, false, "The AO can transfer ETH out of contract to invalid address");
+
+			try {
+				await aotoken.transferEth(recipient.address, web3.toWei(1000, "ether"), { from: theAO });
+				canTransferEth = true;
+			} catch (e) {
+				canTransferEth = false;
+			}
+			assert.equal(canTransferEth, false, "The AO can transfer ETH out of contract more than its available balance");
+
+			try {
+				await aotoken.transferEth(recipient.address, web3.toWei(1, "ether"), { from: theAO });
+				canTransferEth = true;
+			} catch (e) {
+				canTransferEth = false;
+			}
+			assert.equal(canTransferEth, true, "The AO can't transfer ETH out of contract");
+
+			var recipientBalance = await web3.eth.getBalance(recipient.address);
+			assert.equal(recipientBalance.toNumber(), web3.toWei(1, "ether"), "Recipient has incorrect balance");
 		});
 	});
 
