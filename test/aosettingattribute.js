@@ -1,14 +1,16 @@
 var AOSettingAttribute = artifacts.require("./AOSettingAttribute.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
+var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
+var Logos = artifacts.require("./Logos.sol");
 
 contract("AOSettingAttribute", function(accounts) {
-	var aosettingattribute, namefactory, taofactory;
+	var aosettingattribute, namefactory, taofactory, nametaoposition, logos;
 	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var account3 = accounts[3];
-	var whitelistedAccount = accounts[9];
+	var whitelistedAddress = accounts[9];
 	var settingId1 = 1;
 	var settingId2 = 2;
 	var settingId3 = 3;
@@ -25,8 +27,10 @@ contract("AOSettingAttribute", function(accounts) {
 		aosettingattribute = await AOSettingAttribute.deployed();
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
+		nametaoposition = await NameTAOPosition.deployed();
+		logos = await Logos.deployed();
 
-		await aosettingattribute.setWhitelist(whitelistedAccount, true, { from: theAO });
+		await logos.setWhitelist(theAO, true, { from: theAO });
 
 		// Create Names
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
@@ -42,6 +46,11 @@ contract("AOSettingAttribute", function(accounts) {
 		result = await namefactory.createName("echo", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", { from: account3 });
 		proposalTAONameId = await namefactory.ethAddressToNameId(account3);
 
+		// Mint Logos to Names
+		await logos.mintToken(creatorTAONameId, 10 ** 12, { from: theAO });
+		await logos.mintToken(associatedTAONameId, 10 ** 12, { from: theAO });
+		await logos.mintToken(proposalTAONameId, 10 ** 12, { from: theAO });
+
 		// Create TAOs
 		result = await taofactory.createTAO(
 			"creatorTAOId",
@@ -50,6 +59,9 @@ contract("AOSettingAttribute", function(accounts) {
 			"somekeyvalue",
 			"somecontentid",
 			creatorTAONameId,
+			0,
+			false,
+			0,
 			{
 				from: account1
 			}
@@ -64,6 +76,9 @@ contract("AOSettingAttribute", function(accounts) {
 			"somekeyvalue",
 			"somecontentid",
 			creatorTAONameId,
+			0,
+			false,
+			0,
 			{
 				from: account2
 			}
@@ -78,6 +93,9 @@ contract("AOSettingAttribute", function(accounts) {
 			"somekeyvalue",
 			"somecontentid",
 			creatorTAONameId,
+			0,
+			false,
+			0,
 			{
 				from: account3
 			}
@@ -86,7 +104,73 @@ contract("AOSettingAttribute", function(accounts) {
 		proposalTAOId = createTAOEvent.args.taoId;
 	});
 
-	it("only whitelisted account can add setting attribute (Data/State)", async function() {
+	it("The AO - transferOwnership() - should be able to transfer ownership to a TAO", async function() {
+		var canTransferOwnership;
+		try {
+			await aosettingattribute.transferOwnership(creatorTAOId, { from: someAddress });
+			canTransferOwnership = true;
+		} catch (e) {
+			canTransferOwnership = false;
+		}
+		assert.equal(canTransferOwnership, false, "Non-AO can transfer ownership");
+
+		try {
+			await aosettingattribute.transferOwnership(creatorTAOId, { from: theAO });
+			canTransferOwnership = true;
+		} catch (e) {
+			canTransferOwnership = false;
+		}
+		assert.equal(canTransferOwnership, true, "The AO can't transfer ownership");
+
+		var newTheAO = await aosettingattribute.theAO();
+		assert.equal(newTheAO, creatorTAOId, "Contract has incorrect TheAO address after transferring ownership");
+	});
+
+	it("The AO - setWhitelist() should be able to whitelist an address", async function() {
+		var canSetWhitelist;
+		try {
+			await aosettingattribute.setWhitelist(whitelistedAddress, true, { from: someAddress });
+			canSetWhitelist = true;
+		} catch (e) {
+			canSetWhitelist = false;
+		}
+		assert.equal(canSetWhitelist, false, "Non-AO can set whitelist");
+
+		try {
+			await aosettingattribute.setWhitelist(whitelistedAddress, true, { from: account1 });
+			canSetWhitelist = true;
+		} catch (e) {
+			canSetWhitelist = false;
+		}
+		assert.equal(canSetWhitelist, true, "The AO can't set whitelist");
+
+		var whitelistStatus = await aosettingattribute.whitelist(whitelistedAddress);
+		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
+	});
+
+	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
+		var canSetAddress;
+		try {
+			await aosettingattribute.setNameTAOPositionAddress(nametaoposition.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameTAOPosition address");
+
+		try {
+			await aosettingattribute.setNameTAOPositionAddress(nametaoposition.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameTAOPosition address");
+
+		var nameTAOPositionAddress = await aosettingattribute.nameTAOPositionAddress();
+		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
+	});
+
+	it("Whitelisted address - add() can add setting attribute (Data/State)", async function() {
 		var canAdd;
 		try {
 			var result = await aosettingattribute.add(
@@ -103,7 +187,7 @@ contract("AOSettingAttribute", function(accounts) {
 		} catch (e) {
 			canAdd = false;
 		}
-		assert.equal(canAdd, false, "Non-whitelisted account can add setting attribute");
+		assert.equal(canAdd, false, "Non-whitelisted address can add setting attribute");
 
 		try {
 			var result = await aosettingattribute.add(
@@ -114,13 +198,13 @@ contract("AOSettingAttribute", function(accounts) {
 				creatorTAOId,
 				associatedTAOId,
 				extraData,
-				{ from: whitelistedAccount }
+				{ from: whitelistedAddress }
 			);
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
-		assert.equal(canAdd, true, "Whitelisted account can't add setting attribute");
+		assert.equal(canAdd, true, "Whitelisted address can't add setting attribute");
 
 		var settingData = await aosettingattribute.getSettingData(settingId1);
 		assert.equal(settingData[0].toNumber(), settingId1, "SettingData has incorrect settingId1");
@@ -152,14 +236,14 @@ contract("AOSettingAttribute", function(accounts) {
 			creatorTAOId,
 			associatedTAOId,
 			extraData,
-			{ from: whitelistedAccount }
+			{ from: whitelistedAddress }
 		);
 	});
 
-	it("non-approved setting creation can not be finalized", async function() {
+	it("Whitelisted address - finalizeAdd() non-approved setting creation can not be finalized", async function() {
 		var canFinalize;
 		try {
-			await aosettingattribute.finalizeAdd(settingId1, creatorTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeAdd(settingId1, creatorTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -167,7 +251,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canFinalize, false, "Non-approved setting creation can be finalized");
 	});
 
-	it("only whitelisted account and setting's Associated TAO's advocate can approve setting creation", async function() {
+	it("Whitelisted address - approveAdd() setting's Associated TAO's advocate can approve setting creation", async function() {
 		var canApprove;
 		try {
 			await aosettingattribute.approveAdd(settingId1, associatedTAONameId, true, { from: account1 });
@@ -175,10 +259,10 @@ contract("AOSettingAttribute", function(accounts) {
 		} catch (e) {
 			canApprove = false;
 		}
-		assert.equal(canApprove, false, "Non-whitelisted account can approve setting creation");
+		assert.equal(canApprove, false, "Non-whitelisted address can approve setting creation");
 
 		try {
-			await aosettingattribute.approveAdd(settingId1, proposalTAONameId, true, { from: whitelistedAccount });
+			await aosettingattribute.approveAdd(settingId1, proposalTAONameId, true, { from: whitelistedAddress });
 			canApprove = true;
 		} catch (e) {
 			canApprove = false;
@@ -187,7 +271,7 @@ contract("AOSettingAttribute", function(accounts) {
 
 		// approve this setting
 		try {
-			await aosettingattribute.approveAdd(settingId1, associatedTAONameId, true, { from: whitelistedAccount });
+			await aosettingattribute.approveAdd(settingId1, associatedTAONameId, true, { from: whitelistedAddress });
 			canApprove = true;
 		} catch (e) {
 			canApprove = false;
@@ -199,7 +283,7 @@ contract("AOSettingAttribute", function(accounts) {
 
 		// reject this setting
 		try {
-			await aosettingattribute.approveAdd(settingId2, associatedTAONameId, false, { from: whitelistedAccount });
+			await aosettingattribute.approveAdd(settingId2, associatedTAONameId, false, { from: whitelistedAddress });
 			canApprove = true;
 		} catch (e) {
 			canApprove = false;
@@ -211,7 +295,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(settingData[8], true, "SettingData has incorrect rejected");
 	});
 
-	it("only whitelisted account and setting's Creator TAO's Advocate can finalize setting creation", async function() {
+	it("Whitelisted address - finalizeAdd() setting's Creator TAO's Advocate can finalize setting creation", async function() {
 		var canFinalize;
 		try {
 			await aosettingattribute.finalizeAdd(settingId1, creatorTAONameId, { from: account1 });
@@ -219,10 +303,10 @@ contract("AOSettingAttribute", function(accounts) {
 		} catch (e) {
 			canFinalize = false;
 		}
-		assert.equal(canFinalize, false, "Non-whitelisted account can finalize setting creation");
+		assert.equal(canFinalize, false, "Non-whitelisted address can finalize setting creation");
 
 		try {
-			await aosettingattribute.finalizeAdd(settingId1, proposalTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeAdd(settingId1, proposalTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -230,7 +314,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canFinalize, false, "Non-setting's Creator TAO's Advocate can finalize setting creation");
 
 		try {
-			await aosettingattribute.finalizeAdd(settingId1, creatorTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeAdd(settingId1, creatorTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -242,7 +326,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(settingData[7], true, "SettingData has incorrect locked");
 
 		try {
-			await aosettingattribute.finalizeAdd(settingId2, creatorTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeAdd(settingId2, creatorTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -250,7 +334,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canFinalize, false, "Setting's Creator TAO's Advocate can finalize rejected setting creation");
 	});
 
-	it("only whitelisted account can update setting", async function() {
+	it("Whitelisted address - update() can update setting", async function() {
 		var canUpdate;
 		try {
 			await aosettingattribute.update(settingId1, settingType, associatedTAONameId, proposalTAOId, updateSignature, extraData, {
@@ -260,17 +344,17 @@ contract("AOSettingAttribute", function(accounts) {
 		} catch (e) {
 			canUpdate = false;
 		}
-		assert.equal(canUpdate, false, "Non-whitelisted account can update setting");
+		assert.equal(canUpdate, false, "Non-whitelisted address can update setting");
 
 		try {
 			await aosettingattribute.update(settingId1, settingType, associatedTAONameId, proposalTAOId, updateSignature, extraData, {
-				from: whitelistedAccount
+				from: whitelistedAddress
 			});
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
 		}
-		assert.equal(canUpdate, true, "Whitelisted account can't update setting");
+		assert.equal(canUpdate, true, "Whitelisted address can't update setting");
 
 		var settingState = await aosettingattribute.getSettingState(settingId1);
 		assert.equal(settingState[1], true, "SettingState has incorrect pendingUpdate");
@@ -281,29 +365,29 @@ contract("AOSettingAttribute", function(accounts) {
 
 		try {
 			await aosettingattribute.update(settingId1, settingType, associatedTAONameId, proposalTAOId, updateSignature, extraData, {
-				from: whitelistedAccount
+				from: whitelistedAddress
 			});
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
 		}
-		assert.equal(canUpdate, false, "Whitelisted account can update setting that is pending update");
+		assert.equal(canUpdate, false, "Whitelisted address can update setting that is pending update");
 
 		try {
 			await aosettingattribute.update(settingId2, settingType, associatedTAONameId, proposalTAOId, updateSignature, extraData, {
-				from: whitelistedAccount
+				from: whitelistedAddress
 			});
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
 		}
-		assert.equal(canUpdate, false, "Whitelisted account can update setting that is already rejected");
+		assert.equal(canUpdate, false, "Whitelisted address can update setting that is already rejected");
 	});
 
-	it("non-approved setting update can not be finalized", async function() {
+	it("Whitelisted address - finalizeUpdate() non-approved setting update can not be finalized", async function() {
 		var canFinalize;
 		try {
-			await aosettingattribute.finalizeUpdate(settingId1, associatedTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeUpdate(settingId1, associatedTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -311,7 +395,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canFinalize, false, "Non-approved setting update can be finalized");
 	});
 
-	it("only whitelisted account and setting's Proposal TAO's advocate can approve setting update", async function() {
+	it("Whitelisted address - approveUpdate() setting's Proposal TAO's advocate can approve setting update", async function() {
 		var canApprove;
 		try {
 			await aosettingattribute.approveUpdate(settingId1, proposalTAONameId, true, { from: account1 });
@@ -319,10 +403,10 @@ contract("AOSettingAttribute", function(accounts) {
 		} catch (e) {
 			canApprove = false;
 		}
-		assert.equal(canApprove, false, "Non-whitelisted account can approve setting update");
+		assert.equal(canApprove, false, "Non-whitelisted address can approve setting update");
 
 		try {
-			await aosettingattribute.approveUpdate(settingId1, associatedTAONameId, true, { from: whitelistedAccount });
+			await aosettingattribute.approveUpdate(settingId1, associatedTAONameId, true, { from: whitelistedAddress });
 			canApprove = true;
 		} catch (e) {
 			canApprove = false;
@@ -331,7 +415,7 @@ contract("AOSettingAttribute", function(accounts) {
 
 		// approve this setting
 		try {
-			await aosettingattribute.approveUpdate(settingId1, proposalTAONameId, true, { from: whitelistedAccount });
+			await aosettingattribute.approveUpdate(settingId1, proposalTAONameId, true, { from: whitelistedAddress });
 			canApprove = true;
 		} catch (e) {
 			canApprove = false;
@@ -342,7 +426,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(settingData[7], false, "SettingData has incorrect locked");
 	});
 
-	it("only whitelisted account and setting's Associated TAO's Advocate can finalize setting update", async function() {
+	it("Whitelisted address - finalizeApprove() setting's Associated TAO's Advocate can finalize setting update", async function() {
 		var canFinalize;
 		try {
 			await aosettingattribute.finalizeApprove(settingId1, associatedTAONameId, { from: account1 });
@@ -350,10 +434,10 @@ contract("AOSettingAttribute", function(accounts) {
 		} catch (e) {
 			canFinalize = false;
 		}
-		assert.equal(canFinalize, false, "Non-whitelisted account can finalize setting update");
+		assert.equal(canFinalize, false, "Non-whitelisted address can finalize setting update");
 
 		try {
-			await aosettingattribute.finalizeUpdate(settingId1, proposalTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeUpdate(settingId1, proposalTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -361,7 +445,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canFinalize, false, "Non-setting's Associated TAO's Advocate can finalize setting update");
 
 		try {
-			await aosettingattribute.finalizeUpdate(settingId1, associatedTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeUpdate(settingId1, associatedTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -382,13 +466,13 @@ contract("AOSettingAttribute", function(accounts) {
 		// Update setting again
 		try {
 			await aosettingattribute.update(settingId1, settingType, associatedTAONameId, proposalTAOId, updateSignature, extraData, {
-				from: whitelistedAccount
+				from: whitelistedAddress
 			});
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
 		}
-		assert.equal(canUpdate, true, "Whitelisted account can't update setting");
+		assert.equal(canUpdate, true, "Whitelisted address can't update setting");
 
 		var settingState = await aosettingattribute.getSettingState(settingId1);
 		assert.equal(settingState[1], true, "SettingState has incorrect pendingUpdate");
@@ -399,7 +483,7 @@ contract("AOSettingAttribute", function(accounts) {
 
 		// Reject the setting update
 		try {
-			await aosettingattribute.approveUpdate(settingId1, proposalTAONameId, false, { from: whitelistedAccount });
+			await aosettingattribute.approveUpdate(settingId1, proposalTAONameId, false, { from: whitelistedAddress });
 			canApprove = true;
 		} catch (e) {
 			canApprove = false;
@@ -411,7 +495,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(settingState[3], emptyAddress, "SettingState has incorrect proposalTAOId");
 
 		try {
-			await aosettingattribute.finalizeUpdate(settingId1, associatedTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeUpdate(settingId1, associatedTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -419,7 +503,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canFinalize, false, "Setting's Associated TAO's Advocate can finalize rejected setting update");
 	});
 
-	it("only whitelisted account can add setting deprecation", async function() {
+	it("Whitelisted address - addDeprecation() can add setting deprecation", async function() {
 		var canAdd;
 		try {
 			var result = await aosettingattribute.addDeprecation(
@@ -435,7 +519,7 @@ contract("AOSettingAttribute", function(accounts) {
 		} catch (e) {
 			canAdd = false;
 		}
-		assert.equal(canAdd, false, "Non-whitelisted account can add setting deprecation");
+		assert.equal(canAdd, false, "Non-whitelisted address can add setting deprecation");
 
 		try {
 			var result = await aosettingattribute.addDeprecation(
@@ -445,13 +529,13 @@ contract("AOSettingAttribute", function(accounts) {
 				associatedTAOId,
 				newSettingId,
 				newSettingContractAddress,
-				{ from: whitelistedAccount }
+				{ from: whitelistedAddress }
 			);
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
-		assert.equal(canAdd, false, "Whitelisted account can add setting deprecation for non-existing setting");
+		assert.equal(canAdd, false, "Whitelisted address can add setting deprecation for non-existing setting");
 
 		try {
 			var result = await aosettingattribute.addDeprecation(
@@ -461,13 +545,13 @@ contract("AOSettingAttribute", function(accounts) {
 				associatedTAOId,
 				99,
 				newSettingContractAddress,
-				{ from: whitelistedAccount }
+				{ from: whitelistedAddress }
 			);
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
-		assert.equal(canAdd, false, "Whitelisted account can deprecate existing setting to a non-existing setting");
+		assert.equal(canAdd, false, "Whitelisted address can deprecate existing setting to a non-existing setting");
 
 		// Add new setting
 		try {
@@ -479,13 +563,13 @@ contract("AOSettingAttribute", function(accounts) {
 				creatorTAOId,
 				associatedTAOId,
 				extraData,
-				{ from: whitelistedAccount }
+				{ from: whitelistedAddress }
 			);
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
-		assert.equal(canAdd, true, "Whitelisted account can't add setting attribute");
+		assert.equal(canAdd, true, "Whitelisted address can't add setting attribute");
 
 		try {
 			var result = await aosettingattribute.addDeprecation(
@@ -495,16 +579,16 @@ contract("AOSettingAttribute", function(accounts) {
 				associatedTAOId,
 				newSettingId,
 				newSettingContractAddress,
-				{ from: whitelistedAccount }
+				{ from: whitelistedAddress }
 			);
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
-		assert.equal(canAdd, false, "Whitelisted account can route setting to a new non-approved setting");
+		assert.equal(canAdd, false, "Whitelisted address can route setting to a new non-approved setting");
 
 		try {
-			await aosettingattribute.approveAdd(newSettingId, associatedTAONameId, true, { from: whitelistedAccount });
+			await aosettingattribute.approveAdd(newSettingId, associatedTAONameId, true, { from: whitelistedAddress });
 			canApprove = true;
 		} catch (e) {
 			canApprove = false;
@@ -512,7 +596,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canApprove, true, "Setting's Associated TAO's Advocate can't approve setting creation");
 
 		try {
-			await aosettingattribute.finalizeAdd(newSettingId, creatorTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeAdd(newSettingId, creatorTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -527,13 +611,13 @@ contract("AOSettingAttribute", function(accounts) {
 				associatedTAOId,
 				newSettingId,
 				newSettingContractAddress,
-				{ from: whitelistedAccount }
+				{ from: whitelistedAddress }
 			);
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
-		assert.equal(canAdd, true, "Whitelisted account can't add setting deprecation");
+		assert.equal(canAdd, true, "Whitelisted address can't add setting deprecation");
 
 		var settingDeprecation = await aosettingattribute.getSettingDeprecation(settingId1);
 		assert.equal(settingDeprecation[0].toNumber(), settingId1, "SettingDeprecation has incorrect settingId");
@@ -557,7 +641,7 @@ contract("AOSettingAttribute", function(accounts) {
 	it("non-approved setting deprecation can not be finalized", async function() {
 		var canFinalize;
 		try {
-			await aosettingattribute.finalizeDeprecation(settingId1, creatorTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeDeprecation(settingId1, creatorTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -565,7 +649,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canFinalize, false, "Non-approved setting deprecation can be finalized");
 	});
 
-	it("only whitelisted account and setting's Associated TAO's advocate can approve setting deprecation", async function() {
+	it("Whitelisted address - approveDeprecation() setting's Associated TAO's advocate can approve setting deprecation", async function() {
 		var canApprove;
 		try {
 			await aosettingattribute.approveDeprecation(settingId1, associatedTAONameId, true, { from: account1 });
@@ -573,10 +657,10 @@ contract("AOSettingAttribute", function(accounts) {
 		} catch (e) {
 			canApprove = false;
 		}
-		assert.equal(canApprove, false, "Non-whitelisted account can approve setting deprecation");
+		assert.equal(canApprove, false, "Non-whitelisted address can approve setting deprecation");
 
 		try {
-			await aosettingattribute.approveDeprecation(settingId1, proposalTAONameId, true, { from: whitelistedAccount });
+			await aosettingattribute.approveDeprecation(settingId1, proposalTAONameId, true, { from: whitelistedAddress });
 			canApprove = true;
 		} catch (e) {
 			canApprove = false;
@@ -585,7 +669,7 @@ contract("AOSettingAttribute", function(accounts) {
 
 		// approve this setting deprecation
 		try {
-			await aosettingattribute.approveDeprecation(settingId1, associatedTAONameId, true, { from: whitelistedAccount });
+			await aosettingattribute.approveDeprecation(settingId1, associatedTAONameId, true, { from: whitelistedAddress });
 			canApprove = true;
 		} catch (e) {
 			canApprove = false;
@@ -596,7 +680,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(settingDeprecation[5], false, "SettingDeprecation has incorrect locked");
 	});
 
-	it("only whitelisted account and setting's Creator TAO's Advocate can finalize setting deprecation", async function() {
+	it("Whitelisted address - finalizeDeprecation() setting's Creator TAO's Advocate can finalize setting deprecation", async function() {
 		var canFinalize;
 		try {
 			await aosettingattribute.finalizeDeprecation(settingId1, creatorTAONameId, { from: account1 });
@@ -604,10 +688,10 @@ contract("AOSettingAttribute", function(accounts) {
 		} catch (e) {
 			canFinalize = false;
 		}
-		assert.equal(canFinalize, false, "Non-whitelisted account can finalize setting deprecation");
+		assert.equal(canFinalize, false, "Non-whitelisted address can finalize setting deprecation");
 
 		try {
-			await aosettingattribute.finalizeDeprecation(settingId1, proposalTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeDeprecation(settingId1, proposalTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -615,7 +699,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canFinalize, false, "Non-setting's Creator TAO's Advocate can finalize setting deprecation");
 
 		try {
-			await aosettingattribute.finalizeDeprecation(settingId1, creatorTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeDeprecation(settingId1, creatorTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -644,16 +728,16 @@ contract("AOSettingAttribute", function(accounts) {
 				creatorTAOId,
 				associatedTAOId,
 				extraData,
-				{ from: whitelistedAccount }
+				{ from: whitelistedAddress }
 			);
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
-		assert.equal(canAdd, true, "Whitelisted account can't add setting attribute");
+		assert.equal(canAdd, true, "Whitelisted address can't add setting attribute");
 
 		try {
-			await aosettingattribute.approveAdd(settingId3, associatedTAONameId, true, { from: whitelistedAccount });
+			await aosettingattribute.approveAdd(settingId3, associatedTAONameId, true, { from: whitelistedAddress });
 			canApprove = true;
 		} catch (e) {
 			canApprove = false;
@@ -661,7 +745,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canApprove, true, "Setting's Associated TAO's Advocate can't approve setting creation");
 
 		try {
-			await aosettingattribute.finalizeAdd(settingId3, creatorTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeAdd(settingId3, creatorTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -676,17 +760,17 @@ contract("AOSettingAttribute", function(accounts) {
 				associatedTAOId,
 				newSettingId,
 				newSettingContractAddress,
-				{ from: whitelistedAccount }
+				{ from: whitelistedAddress }
 			);
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
-		assert.equal(canAdd, true, "Whitelisted account can't add setting deprecation");
+		assert.equal(canAdd, true, "Whitelisted address can't add setting deprecation");
 
 		// reject the deprecation
 		try {
-			await aosettingattribute.approveDeprecation(settingId3, associatedTAONameId, false, { from: whitelistedAccount });
+			await aosettingattribute.approveDeprecation(settingId3, associatedTAONameId, false, { from: whitelistedAddress });
 			canApprove = true;
 		} catch (e) {
 			canApprove = false;
@@ -698,7 +782,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(settingDeprecation[6], true, "SettingDeprecation has incorrect rejected");
 
 		try {
-			await aosettingattribute.finalizeDeprecation(settingId3, creatorTAONameId, { from: whitelistedAccount });
+			await aosettingattribute.finalizeDeprecation(settingId3, creatorTAONameId, { from: whitelistedAddress });
 			canFinalize = true;
 		} catch (e) {
 			canFinalize = false;
@@ -710,7 +794,7 @@ contract("AOSettingAttribute", function(accounts) {
 		var canUpdate;
 		try {
 			await aosettingattribute.update(settingId1, associatedTAONameId, proposalTAOId, updateSignature, extraData, {
-				from: whitelistedAccount
+				from: whitelistedAddress
 			});
 			canUpdate = true;
 		} catch (e) {
