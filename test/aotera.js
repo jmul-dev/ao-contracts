@@ -1,522 +1,844 @@
+var NameFactory = artifacts.require("./NameFactory.sol");
+var TAOFactory = artifacts.require("./TAOFactory.sol");
+var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
+var Logos = artifacts.require("./Logos.sol");
 var AOTera = artifacts.require("./AOTera.sol");
+var TokenOne = artifacts.require("./TokenOne.sol");
+
+var EthCrypto = require("eth-crypto");
 
 contract("AOTera", function(accounts) {
-	var tokenMeta;
+	var namefactory, taofactory, nametaoposition, logos, aotera, tokenone, nameId, taoId;
+
 	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
-	var account3 = accounts[3];
-	var whitelistedAccount = accounts[4];
+	var whitelistedAddress = accounts[3];
+	var someAddress = accounts[4];
+	var emptyAddress = "0x0000000000000000000000000000000000000000";
+	var recipient = EthCrypto.createIdentity();
 
-	before(function() {
-		return AOTera.deployed().then(function(instance) {
-			tokenMeta = instance;
+	before(async function() {
+		namefactory = await NameFactory.deployed();
+		taofactory = await TAOFactory.deployed();
+		nametaoposition = await NameTAOPosition.deployed();
+		logos = await Logos.deployed();
+		aotera = await AOTera.deployed();
+		tokenone = await TokenOne.deployed();
+	});
+
+	contract("Variable settings", function() {
+		it("should return correct name", async function() {
+			var name = await aotera.name();
+			assert.equal(name, "AO Tera", "Contract has the incorrect name");
+		});
+
+		it("should return correct symbol", async function() {
+			var symbol = await aotera.symbol();
+			assert.equal(symbol, "AOTERA", "Contract has the incorrect symbol");
+		});
+
+		it("should have the correct power of ten", async function() {
+			var powerOfTen = await aotera.powerOfTen();
+			assert.equal(powerOfTen, 12, "Contract has the incorrect power of ten");
+		});
+
+		it("should have 0 decimal", async function() {
+			var decimals = await aotera.decimals();
+			assert.equal(decimals, 12, "Contract has the incorrect decimals");
+		});
+
+		it("should have 0 initial supply", async function() {
+			var totalSupply = await aotera.totalSupply();
+			assert.equal(totalSupply.toNumber(), 0, "Contract has incorrect initial supply");
 		});
 	});
 
-	contract("Variable Setting Tests", function() {
-		it("should return correct name", function() {
-			return tokenMeta.name.call().then(function(name) {
-				assert.equal(name, "AO Tera", "Contract has the wrong name");
+	contract("The AO Only", function() {
+		before(async function() {
+			// Create Name
+			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+				from: account1
 			});
-		});
-		it("should return correct symbol", function() {
-			return tokenMeta.symbol.call().then(function(symbol) {
-				assert.equal(symbol, "AOTERA", "Contract has the wrong symbol");
-			});
-		});
-		it("should have the correct power of ten", function() {
-			return tokenMeta.powerOfTen.call().then(function(powerOfTen) {
-				assert.equal(powerOfTen, 12, "Contract has the wrong power of ten");
-			});
-		});
-		it("should have 12 decimals", function() {
-			return tokenMeta.decimals.call().then(function(decimals) {
-				assert.equal(decimals, 12, "Contract has the wrong decimals");
-			});
-		});
-		it("should have 0 initial supply", function() {
-			return tokenMeta.balanceOf.call(accounts[0]).then(function(balance) {
-				assert.equal(balance.toNumber(), 0, "Contract has wrong initial supply");
-			});
-		});
-	});
+			nameId = await namefactory.ethAddressToNameId(account1);
 
-	contract("Network Tokens Function Tests", function() {
-		it("only The AO can mint token", async function() {
-			var canMint;
-			var balance;
-			try {
-				await tokenMeta.mintToken(account1, 100, { from: account1 });
-				canMint = true;
-			} catch (e) {
-				canMint = false;
-			}
-			balance = await tokenMeta.balanceOf(account1);
-			assert.notEqual(canMint, true, "Others can mint token");
-			assert.notEqual(balance.toNumber(), 100, "Account1 is not supposed to have tokens");
-			try {
-				await tokenMeta.mintToken(account1, 100, { from: theAO });
-				canMint = true;
-			} catch (e) {
-				canMint = false;
-			}
-			balance = await tokenMeta.balanceOf(account1);
-			assert.equal(canMint, true, "The AO can't mint token");
-			assert.equal(balance.toNumber(), 100, "Account1 has incorrect balance after minting");
+			// Mint Logos to nameId
+			await logos.setWhitelist(theAO, true, { from: theAO });
+			await logos.mintToken(nameId, 10 ** 12, { from: theAO });
+
+			result = await taofactory.createTAO(
+				"Charlie's TAO",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId,
+				0,
+				false,
+				0,
+				{
+					from: account1
+				}
+			);
+			var createTAOEvent = result.logs[0];
+			taoId = createTAOEvent.args.taoId;
 		});
-		it("transfer() - should send correct `_value` to `_to` from your account", async function() {
-			var account1Balance = await tokenMeta.balanceOf(account1);
-			var account2Balance = await tokenMeta.balanceOf(account2);
-			assert.equal(account1Balance.toNumber(), 100, "Account1 has incorrect balance before transfer");
-			assert.equal(account2Balance.toNumber(), 0, "Account2 has incorrect balance before transfer");
-			await tokenMeta.transfer(account2, 10, { from: account1 });
-			account1Balance = await tokenMeta.balanceOf(account1);
-			account2Balance = await tokenMeta.balanceOf(account2);
-			assert.equal(account1Balance.toNumber(), 90, "Account1 has incorrect balance after transfer");
-			assert.equal(account2Balance.toNumber(), 10, "Account2 has incorrect balance after transfer");
-		});
-		it("burn() - should remove `_value` tokens from the system irreversibly", async function() {
-			var account1Balance = await tokenMeta.balanceOf(account1);
-			assert.equal(account1Balance.toNumber(), 90, "Account1 has incorrect balance before burn");
-			await tokenMeta.burn(10, { from: account1 });
-			account1Balance = await tokenMeta.balanceOf(account1);
-			assert.equal(account1Balance.toNumber(), 80, "Account1 has incorrect balance after burn");
-		});
-		it("approve() - should set allowance for other address", async function() {
-			var account2Allowance = await tokenMeta.allowance(account1, account2);
-			assert.equal(account2Allowance.toNumber(), 0, "Account2 has incorrect allowance before approve");
-			await tokenMeta.approve(account2, 10, { from: account1 });
-			account2Allowance = await tokenMeta.allowance(account1, account2);
-			assert.equal(account2Allowance.toNumber(), 10, "Account2 has incorrect allowance after approve");
-		});
-		it("transferFrom() - should send `_value` tokens to `_to` in behalf of `_from`", async function() {
-			var canTransferFrom;
+
+		it("The AO - transferOwnership() - should be able to transfer ownership to a TAO", async function() {
+			var canTransferOwnership;
 			try {
-				await tokenMeta.transferFrom(account1, account2, 5, { from: theAO });
-				canTransferFrom = true;
+				await aotera.transferOwnership(taoId, { from: someAddress });
+				canTransferOwnership = true;
 			} catch (e) {
-				canTransferFrom = false;
+				canTransferOwnership = false;
 			}
-			assert.notEqual(canTransferFrom, true, "Account that was not approved is able to transfer on behalf of other");
+			assert.equal(canTransferOwnership, false, "Non-AO can transfer ownership");
+
 			try {
-				await tokenMeta.transferFrom(account1, account2, 5, { from: account2 });
-				canTransferFrom = true;
+				await aotera.transferOwnership(taoId, { from: theAO });
+				canTransferOwnership = true;
 			} catch (e) {
-				canTransferFrom = false;
+				canTransferOwnership = false;
 			}
-			assert.equal(canTransferFrom, true, "Account that was approved is not able to transfer on behalf of other");
-			var account1Balance = await tokenMeta.balanceOf(account1);
-			var account2Balance = await tokenMeta.balanceOf(account2);
-			var account2Allowance = await tokenMeta.allowance(account1, account2);
-			assert.equal(account1Balance.toNumber(), 75, "Account1 has incorrect balance after transferFrom");
-			assert.equal(account2Balance.toNumber(), 15, "Account2 has incorrect balance after transferFrom");
-			assert.equal(account2Allowance.toNumber(), 5, "Account2 has incorrect allowance after transferFrom");
+			assert.equal(canTransferOwnership, true, "The AO can't transfer ownership");
+
+			var newTheAO = await aotera.theAO();
+			assert.equal(newTheAO, taoId, "Contract has incorrect TheAO address after transferring ownership");
 		});
-		it("burnFrom() - should remove `_value` tokens from the system irreversibly on behalf of `_from`", async function() {
-			var canBurnFrom;
+
+		it("The AO - setWhitelist() should be able to whitelist an address", async function() {
+			var canSetWhitelist;
 			try {
-				await tokenMeta.burnFrom(account1, 5, { from: theAO });
-				canBurnFrom = true;
+				await aotera.setWhitelist(whitelistedAddress, true, { from: someAddress });
+				canSetWhitelist = true;
 			} catch (e) {
-				canBurnFrom = false;
+				canSetWhitelist = false;
 			}
-			assert.notEqual(canBurnFrom, true, "Account that was not approved is able to burn on behalf of other");
+			assert.equal(canSetWhitelist, false, "Non-AO can set whitelist");
+
 			try {
-				await tokenMeta.burnFrom(account1, 10, { from: account2 });
-				canBurnFrom = true;
+				await aotera.setWhitelist(whitelistedAddress, true, { from: account1 });
+				canSetWhitelist = true;
 			} catch (e) {
-				canBurnFrom = false;
+				canSetWhitelist = false;
 			}
-			assert.notEqual(canBurnFrom, true, "Account that was approved is able to burn more than it's allowance on behalf of other");
-			try {
-				await tokenMeta.burnFrom(account1, 5, { from: account2 });
-				canBurnFrom = true;
-			} catch (e) {
-				canBurnFrom = false;
-			}
-			assert.equal(canBurnFrom, true, "Account that was approved is not able to burn on behalf of other");
-			var account1Balance = await tokenMeta.balanceOf(account1);
-			var account2Allowance = await tokenMeta.allowance(account1, account2);
-			assert.equal(account1Balance.toNumber(), 70, "Account1 has incorrect balance after burnFrom");
-			assert.equal(account2Allowance.toNumber(), 0, "Account2 has incorrect allowance after burnFrom");
+			assert.equal(canSetWhitelist, true, "The AO can't set whitelist");
+
+			var whitelistStatus = await aotera.whitelist(whitelistedAddress);
+			assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
 		});
-		it("only The AO can freeze account", async function() {
+
+		it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
+			var canSetAddress;
+			try {
+				await aotera.setNameTAOPositionAddress(nametaoposition.address, { from: someAddress });
+				canSetAddress = true;
+			} catch (e) {
+				canSetAddress = false;
+			}
+			assert.equal(canSetAddress, false, "Non-AO can set NameTAOPosition address");
+
+			try {
+				await aotera.setNameTAOPositionAddress(nametaoposition.address, { from: account1 });
+				canSetAddress = true;
+			} catch (e) {
+				canSetAddress = false;
+			}
+			assert.equal(canSetAddress, true, "The AO can't set NameTAOPosition address");
+
+			var nameTAOPositionAddress = await aotera.nameTAOPositionAddress();
+			assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
+		});
+
+		it("The AO - transferERC20() should be able to transfer ERC20 to an address", async function() {
+			await tokenone.transfer(aotera.address, 100, { from: theAO });
+
+			var accountBalanceBefore = await tokenone.balanceOf(account1);
+			var aoteraBalanceBefore = await tokenone.balanceOf(aotera.address);
+
+			var canTransfer;
+			try {
+				await aotera.transferERC20(tokenone.address, account1, 10, { from: someAddress });
+				canTransfer = true;
+			} catch (e) {
+				canTransfer = false;
+			}
+			assert.equal(canTransfer, false, "Non-AO can transfer ERC20 token from aotera");
+
+			try {
+				await aotera.transferERC20(tokenone.address, account1, 1000, { from: account1 });
+				canTransfer = true;
+			} catch (e) {
+				canTransfer = false;
+			}
+			assert.equal(canTransfer, false, "The AO can transfer ERC20 token more than owned balance");
+
+			try {
+				await aotera.transferERC20(tokenone.address, account1, 100, { from: account1 });
+				canTransfer = true;
+			} catch (e) {
+				canTransfer = false;
+			}
+			assert.equal(canTransfer, true, "The AO can't transfer ERC20 token from aotera to another recipient");
+
+			var accountBalanceAfter = await tokenone.balanceOf(account1);
+			var aoteraBalanceAfter = await tokenone.balanceOf(aotera.address);
+
+			assert.equal(accountBalanceAfter.toNumber(), accountBalanceBefore.plus(100).toNumber(), "Account has incorrect ERC20 balance");
+			assert.equal(aoteraBalanceAfter.toNumber(), aoteraBalanceBefore.minus(100).toNumber(), "aotera has incorrect ERC20 balance");
+		});
+
+		it("The AO - freezeAccount() can freeze account", async function() {
 			var canFreezeAccount;
 			try {
-				await tokenMeta.freezeAccount(account1, true, { from: account1 });
+				await aotera.freezeAccount(account2, true, { from: someAddress });
 				canFreezeAccount = true;
 			} catch (e) {
 				canFreezeAccount = false;
 			}
 			assert.notEqual(canFreezeAccount, true, "Others can freeze account");
 			try {
-				await tokenMeta.freezeAccount(account1, true, { from: theAO });
+				await aotera.freezeAccount(account2, true, { from: account1 });
 				canFreezeAccount = true;
 			} catch (e) {
 				canFreezeAccount = false;
 			}
 			assert.equal(canFreezeAccount, true, "The AO can't mint token");
-			var account1Frozen = await tokenMeta.frozenAccount(account1);
-			assert.equal(account1Frozen, true, "Account1 is not frozen after The AO froze his account");
+			var account2Frozen = await aotera.frozenAccount(account2);
+			assert.equal(account2Frozen, true, "Account2 is not frozen after The AO froze his account");
+
+			await aotera.freezeAccount(account2, false, { from: account1 });
 		});
-		it("frozen account should NOT be able to transfer", async function() {
-			var canTransfer;
-			try {
-				await tokenMeta.transfer(account2, 10, { from: account1 });
-				canTransfer = true;
-			} catch (e) {
-				canTransfer = false;
-			}
-			assert.notEqual(canTransfer, true, "Frozen account can transfer");
-			// Unfreeze account1
-			await tokenMeta.freezeAccount(account1, false, { from: theAO });
-		});
-		it("only The AO can set prices", async function() {
+
+		it("The AO - setPrices() can set prices", async function() {
 			var canSetPrices;
 			try {
-				await tokenMeta.setPrices(2, 2, { from: account1 });
+				await aotera.setPrices(2, 2, { from: someAddress });
 				canSetPrices = true;
 			} catch (e) {
 				canSetPrices = false;
 			}
 			assert.notEqual(canSetPrices, true, "Others can set network token prices");
 			try {
-				await tokenMeta.setPrices(2, 2, { from: theAO });
+				await aotera.setPrices(2, 2, { from: account1 });
 				canSetPrices = true;
 			} catch (e) {
 				canSetPrices = false;
 			}
 			assert.equal(canSetPrices, true, "The AO can't set network token prices");
-			var sellPrice = await tokenMeta.sellPrice();
-			var buyPrice = await tokenMeta.buyPrice();
+			var sellPrice = await aotera.sellPrice();
+			var buyPrice = await aotera.buyPrice();
 			assert.equal(sellPrice.toNumber(), 2, "Incorrect sell price");
 			assert.equal(buyPrice.toNumber(), 2, "Incorrect buy price");
 		});
-		it("user can buy network tokens", async function() {
-			var canBuyToken;
-			try {
-				await tokenMeta.buy({ from: account2, value: 10 });
-				canBuyToken = true;
-			} catch (e) {
-				canBuyToken = false;
-			}
-			assert.notEqual(canBuyToken, true, "Contract does not have enough network token balance to complete user's token purchase");
-			await tokenMeta.mintToken(tokenMeta.address, 1000, { from: theAO });
-			var contractBalance = await tokenMeta.balanceOf(tokenMeta.address);
-			assert.equal(contractBalance.toNumber(), 1000, "Contract has incorrect balance after mint");
-			try {
-				await tokenMeta.buy({ from: account2, value: 10 });
-				canBuyToken = true;
-			} catch (e) {
-				canBuyToken = false;
-			}
-			var account2Balance = await tokenMeta.balanceOf(account2);
-			assert.equal(canBuyToken, true, "Fail buying network token from contract");
-			assert.equal(account2Balance.toNumber(), 20, "Account has incorrect balance after buying token");
-		});
-		it("user can sell network tokens to contract", async function() {
-			var canSellToken;
-			try {
-				await tokenMeta.sell(20, { from: account2 });
-				canSellToken = true;
-			} catch (e) {
-				canSellToken = false;
-			}
-			assert.notEqual(canSellToken, true, "User can sell tokens to contract even if contract does not have enough ETH balance");
-			try {
-				await tokenMeta.sell(5, { from: account2 });
-				canSellToken = true;
-			} catch (e) {
-				canSellToken = false;
-			}
-			var account2Balance = await tokenMeta.balanceOf(account2);
-			var contractBalance = await tokenMeta.balanceOf(tokenMeta.address);
-			assert.equal(canSellToken, true, "Fail selling network token to contract");
-			assert.equal(account2Balance.toNumber(), 15, "Account has incorrect balance after selling token");
-			assert.equal(contractBalance.toNumber(), 1000, "Contract has incorrect balance after user sell token");
-		});
 	});
 
-	contract("Primordial Token Function Tests", function() {
-		it("The AO should NOT be able to set Primordial prices", async function() {
-			var canSetPrimordialPrices;
-			try {
-				await tokenMeta.setPrimordialPrices(100, 100, { from: theAO });
-				canSetPrimordialPrices = true;
-			} catch (e) {
-				canSetPrimordialPrices = false;
-			}
-			assert.equal(canSetPrimordialPrices, false, "The AO can set Primordial token prices");
-		});
-		it("The AO should NOT be able to reserve Primordial tokens for The AO", async function() {
-			var canReserveForTheAO;
-			try {
-				await tokenMeta.reserveForTheAO({ from: theAO });
-				canReserveForTheAO = true;
-			} catch (e) {
-				canReserveForTheAO = false;
-			}
-			assert.equal(canReserveForTheAO, false, "The AO can reserve Primordial tokens for The AO");
-		});
-		it("buyPrimordialToken() - should NOT be able tobuy Primordial tokens from contract by sending ETH", async function() {
-			var buySuccess;
-			try {
-				await tokenMeta.buyPrimordialToken({ from: account1, value: 10000 });
-				buySuccess = true;
-			} catch (e) {
-				buySuccess = false;
-			}
-			assert.equal(buySuccess, false, "Buy Primordial token was successful when user sent some ETH");
-		});
-		it("transferPrimordialToken() - should NOT be able to send `_value` to `_to` from your account", async function() {
-			var transferPrimordialSuccess;
-			try {
-				await tokenMeta.transferPrimordialToken(account2, 0, { from: account1 });
-				transferPrimordialSuccess = true;
-			} catch (e) {
-				transferPrimordialSuccess = false;
-			}
-			assert.equal(transferPrimordialSuccess, false, "Account1 can transfer Primordial tokens");
-		});
-		it("burnPrimordialToken() - should NOT be able to remove `_value` tokens from the system irreversibly", async function() {
-			var burnPrimordialSuccess;
-			try {
-				await tokenMeta.burnPrimordialToken(0, { from: account1 });
-				burnPrimordialSuccess = true;
-			} catch (e) {
-				burnPrimordialSuccess = false;
-			}
-			assert.equal(burnPrimordialSuccess, false, "Account1 can burn Primordial tokens");
-		});
-		it("approvePrimordialToken() - should NOT be able to set Primordial allowance for other address", async function() {
-			var approvePrimordialSuccess;
-			try {
-				await tokenMeta.approvePrimordialToken(account2, 0, { from: account1 });
-				approvePrimordialSuccess = true;
-			} catch (e) {
-				approvePrimordialSuccess = false;
-			}
-			assert.equal(approvePrimordialSuccess, false, "Account1 can set Primordial allowance for other address");
-		});
-		it("totalLotsByAddress() - should NOT be able to return the total lots owned by an address", async function() {
-			var totalLotsSuccess;
-			try {
-				await tokenMeta.totalLotsByAddress(account1);
-				totalLotsSuccess = true;
-			} catch (e) {
-				totalLotsSuccess = false;
-			}
-			assert.equal(totalLotsSuccess, false, "Contract can return total lots of an address");
-		});
-		it("should NOT be able to return all lots owned by an address", async function() {
-			var allLotsSuccess;
-			try {
-				await tokenMeta.lotsByAddress(account1);
-				allLotsSuccess = true;
-			} catch (e) {
-				allLotsSuccess = false;
-			}
-			assert.equal(allLotsSuccess, false, "Contract can return all lots of an address");
-		});
-	});
-
-	contract("Token Combination Function Tests", function() {
+	contract("Network Token Function Tests", function() {
 		before(async function() {
-			await tokenMeta.mintToken(account1, 1000, { from: theAO });
+			await aotera.setWhitelist(whitelistedAddress, true, { from: theAO });
 		});
 
-		it("transferTokens() - should NOT be able to send `_value` network tokens and `_primordialValue` Primordial tokens to `_to` from your account", async function() {
-			var transferTokensSuccess;
+		it("Whitelisted address - mintToken()  can mint token", async function() {
+			var canMint;
 			try {
-				await tokenMeta.transferTokens(account2, 10, 0, { from: account1 });
-				transferTokensSuccess = true;
+				await aotera.mintToken(account1, 100, { from: someAddress });
+				canMint = true;
 			} catch (e) {
-				transferTokensSuccess = false;
+				canMint = false;
 			}
-			assert.equal(transferTokensSuccess, false, "Account1 can transfer both network tokens and Primordial tokens");
-		});
-		it("burnTokens() - should NOT be able to remove `_value` network tokens and `_primordialValue` Primordial tokens from the system irreversibly", async function() {
-			var burnTokensSuccess;
+			assert.notEqual(canMint, true, "Others can mint token");
+
+			var balanceBefore = await aotera.balanceOf(account1);
+			var totalSupplyBefore = await aotera.totalSupply();
 			try {
-				await tokenMeta.burnTokens(5, 0, { from: account1 });
-				burnTokensSuccess = true;
+				await aotera.mintToken(account1, 100, { from: whitelistedAddress });
+				canMint = true;
 			} catch (e) {
-				burnTokensSuccess = false;
+				canMint = false;
 			}
-			assert.equal(burnTokensSuccess, false, "Account1 can burn both network tokens and Primordial tokens");
-		});
-		it("approveTokens() - should NOT be able to allow `_spender` to spend no more than `_value` network tokens and `_primordialValue` Primordial tokens in your behalf", async function() {
-			var approveTokensSuccess;
-			try {
-				await tokenMeta.approveTokens(account2, 40, 0, { from: account1 });
-				approveTokensSuccess = true;
-			} catch (e) {
-				approveTokensSuccess = false;
-			}
-			assert.equal(
-				approveTokensSuccess,
-				false,
-				"Account1 can set both network tokens and Primordial tokens allowances for other address"
-			);
-		});
-	});
-	contract("Whitelisted Address Function Tests", function() {
-		var stakedPrimordialWeightedIndex;
-		before(async function() {
-			await tokenMeta.mintToken(account1, 100, { from: theAO });
+			assert.equal(canMint, true, "The AO can't mint token");
+
+			var balanceAfter = await aotera.balanceOf(account1);
+			var totalSupplyAfter = await aotera.totalSupply();
+
+			assert.equal(balanceAfter.toNumber(), balanceBefore.plus(100).toNumber(), "Account1 has incorrect balance after minting");
+			assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.plus(100).toNumber(), "Contract has incorrect totalSupply");
 		});
 
-		it("only The AO can whitelist account that can transact on behalf of others", async function() {
-			var canSetWhitelist;
-			try {
-				await tokenMeta.setWhitelist(whitelistedAccount, true, { from: account1 });
-				canSetWhitelist = true;
-			} catch (e) {
-				canSetWhitelist = false;
-			}
-			assert.notEqual(canSetWhitelist, true, "Others can set whitelist");
-			try {
-				await tokenMeta.setWhitelist(whitelistedAccount, true, { from: theAO });
-				canSetWhitelist = true;
-			} catch (e) {
-				canSetWhitelist = false;
-			}
-			assert.equal(canSetWhitelist, true, "The AO can't whitelist account to transact on behalf of others");
-			var whitelistedAccountCanTransact = await tokenMeta.whitelist(whitelistedAccount);
-			assert.equal(
-				whitelistedAccountCanTransact,
-				true,
-				"Staking account doesn't have permission to transact after The AO gave permission"
-			);
-		});
-		it("should be able to stake tokens on behalf of others", async function() {
-			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
-			var account1StakedBalanceBefore = await tokenMeta.stakedBalance(account1);
-			var totalSupplyBefore = await tokenMeta.totalSupply();
+		it("WhitelistedAddress - stakeFrom() should be able to stake tokens on behalf of others", async function() {
+			var account1BalanceBefore = await aotera.balanceOf(account1);
+			var account1StakedBalanceBefore = await aotera.stakedBalance(account1);
+			var totalSupplyBefore = await aotera.totalSupply();
 
 			var canStake;
 			try {
-				await tokenMeta.stakeFrom(account1, 10, { from: account2 });
+				await aotera.stakeFrom(account1, 10, { from: someAddress });
 				canStake = true;
 			} catch (e) {
 				canStake = false;
 			}
 			assert.notEqual(canStake, true, "Account that do not have permission can stake on behalf of others");
 			try {
-				await tokenMeta.stakeFrom(account1, 10, { from: whitelistedAccount });
+				await aotera.stakeFrom(account1, 100000, { from: whitelistedAddress });
 				canStake = true;
 			} catch (e) {
 				canStake = false;
 			}
-			assert.equal(canStake, true, "Account that has permission can't stake on behalf of thers");
+			assert.notEqual(canStake, true, "Account can stake more than available balance");
+			try {
+				await aotera.stakeFrom(account1, 10, { from: whitelistedAddress });
+				canStake = true;
+			} catch (e) {
+				canStake = false;
+			}
+			assert.equal(canStake, true, "Account that has permission can't stake on behalf of others");
 
-			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
-			var account1StakedBalanceAfter = await tokenMeta.stakedBalance(account1);
-			var totalSupplyAfter = await tokenMeta.totalSupply();
+			var account1BalanceAfter = await aotera.balanceOf(account1);
+			var account1StakedBalanceAfter = await aotera.stakedBalance(account1);
+			var totalSupplyAfter = await aotera.totalSupply();
 
 			assert.equal(
-				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.toNumber() - 10,
+				account1BalanceAfter.toString(),
+				account1BalanceBefore.minus(10).toString(),
 				"Account1 has incorrect balance after staking"
 			);
 			assert.equal(
-				account1StakedBalanceAfter.toNumber(),
-				account1StakedBalanceBefore.toNumber() + 10,
+				account1StakedBalanceAfter.toString(),
+				account1StakedBalanceBefore.plus(10).toString(),
 				"Account1 has incorrect staked balance after staking"
 			);
-			assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.toNumber(), "Contract has incorrect total supply after staking");
+			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after staking");
 		});
-		it("should be able to unstake tokens on behalf of others", async function() {
-			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
-			var account1StakedBalanceBefore = await tokenMeta.stakedBalance(account1);
-			var totalSupplyBefore = await tokenMeta.totalSupply();
+
+		it("Whitelisted address - unstakeFrom() should be able to unstake tokens on behalf of others", async function() {
+			var account1BalanceBefore = await aotera.balanceOf(account1);
+			var account1StakedBalanceBefore = await aotera.stakedBalance(account1);
+			var totalSupplyBefore = await aotera.totalSupply();
 
 			var canUnstake;
 			try {
-				await tokenMeta.unstakeFrom(account1, 10, { from: account2 });
+				await aotera.unstakeFrom(account1, 10, { from: someAddress });
 				canUnstake = true;
 			} catch (e) {
 				canUnstake = false;
 			}
 			assert.notEqual(canUnstake, true, "Account that do not have permission can unstake on behalf of others");
 			try {
-				await tokenMeta.unstakeFrom(account1, 10, { from: whitelistedAccount });
+				await aotera.unstakeFrom(account1, 100000, { from: whitelistedAddress });
 				canUnstake = true;
 			} catch (e) {
 				canUnstake = false;
 			}
-			assert.equal(canUnstake, true, "Account that has permission can't unstake on behalf of thers");
+			assert.notEqual(canUnstake, true, "Account can unstake more than available balance");
+			try {
+				await aotera.unstakeFrom(account1, 10, { from: whitelistedAddress });
+				canUnstake = true;
+			} catch (e) {
+				canUnstake = false;
+			}
+			assert.equal(canUnstake, true, "Account that has permission can't unstake on behalf of others");
 
-			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
-			var account1StakedBalanceAfter = await tokenMeta.stakedBalance(account1);
-			var totalSupplyAfter = await tokenMeta.totalSupply();
+			var account1BalanceAfter = await aotera.balanceOf(account1);
+			var account1StakedBalanceAfter = await aotera.stakedBalance(account1);
+			var totalSupplyAfter = await aotera.totalSupply();
 
 			assert.equal(
-				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.toNumber() + 10,
+				account1BalanceAfter.toString(),
+				account1BalanceBefore.plus(10).toString(),
 				"Account1 has incorrect balance after unstaking"
 			);
 			assert.equal(
-				account1StakedBalanceAfter.toNumber(),
-				account1StakedBalanceBefore.toNumber() - 10,
+				account1StakedBalanceAfter.toString(),
+				account1StakedBalanceBefore.minus(10).toString(),
 				"Account1 has incorrect staked balance after unstaking"
 			);
-			assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.toNumber(), "Contract has incorrect total supply after unstaking");
+			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after unstaking");
 		});
-		it("should not be able to stake Primordial tokens on behalf of others", async function() {
-			var canStakePrimordial;
+
+		it("Whitelisted address - escrowFrom() should be able to escrow tokens on behalf of others", async function() {
+			var account1BalanceBefore = await aotera.balanceOf(account1);
+			var account2BalanceBefore = await aotera.balanceOf(account2);
+			var account2EscrowedBalanceBefore = await aotera.escrowedBalance(account2);
+			var totalSupplyBefore = await aotera.totalSupply();
+
+			var canEscrow;
 			try {
-				await tokenMeta.stakePrimordialTokenFrom(account1, 10, 0, { from: whitelistedAccount });
-				canStakePrimordial = true;
+				await aotera.escrowFrom(account1, account2, 10, { from: someAddress });
+				canEscrow = true;
 			} catch (e) {
-				canStakePrimordial = false;
+				canEscrow = false;
 			}
-			assert.equal(canStakePrimordial, false, "Contract allows account to stake Primordial tokens on behalf of thers");
-		});
-		it("should not be able to unstake Primordial tokens on behalf of others", async function() {
-			var canUnstakePrimordial;
+			assert.notEqual(canEscrow, true, "Account that do not have permission can escrow on behalf of others");
 			try {
-				await tokenMeta.unstakePrimordialTokenFrom(account1, 10, 0, { from: whitelistedAccount });
-				canUnstakePrimordial = true;
+				await aotera.escrowFrom(account1, account2, 1000, { from: whitelistedAddress });
+				canEscrow = true;
 			} catch (e) {
-				canUnstakePrimordial = false;
+				canEscrow = false;
 			}
-			assert.equal(canUnstakePrimordial, false, "Contract allows account to unstake Primordial tokens on behalf of thers");
+			assert.notEqual(canEscrow, true, "Account can escrow more than available balance");
+			try {
+				await aotera.escrowFrom(account1, account2, 10, { from: whitelistedAddress });
+				canEscrow = true;
+			} catch (e) {
+				canEscrow = false;
+			}
+			assert.equal(canEscrow, true, "Account that has permission can't escrow on behalf of others");
+
+			var account1BalanceAfter = await aotera.balanceOf(account1);
+			var account2BalanceAfter = await aotera.balanceOf(account2);
+			var account2EscrowedBalanceAfter = await aotera.escrowedBalance(account2);
+			var totalSupplyAfter = await aotera.totalSupply();
+
+			assert.equal(
+				account1BalanceAfter.toString(),
+				account1BalanceBefore.minus(10).toString(),
+				"Account1 has incorrect balance after escrow"
+			);
+			assert.equal(account2BalanceAfter.toString(), account2BalanceBefore.toString(), "Account2 has incorrect balance after escrow");
+			assert.equal(
+				account2EscrowedBalanceAfter.toString(),
+				account2EscrowedBalanceBefore.plus(10).toString(),
+				"Account2 has incorrect escrowed balance after escrow"
+			);
+			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after escrow");
 		});
-		it("should be able to burn tokens on behalf of others", async function() {
-			var account1BalanceBefore = await tokenMeta.balanceOf(account1);
-			var totalSupplyBefore = await tokenMeta.totalSupply();
+
+		it("Whitelisted address - mintTokenEscrow() should be able to mint and escrow tokens to an account", async function() {
+			var account1BalanceBefore = await aotera.balanceOf(account1);
+			var account1EscrowedBalanceBefore = await aotera.escrowedBalance(account1);
+			var totalSupplyBefore = await aotera.totalSupply();
+
+			var canMintEscrow;
+			try {
+				await aotera.mintTokenEscrow(account1, 10, { from: someAddress });
+				canMintEscrow = true;
+			} catch (e) {
+				canMintEscrow = false;
+			}
+			assert.notEqual(canMintEscrow, true, "Account that do not have permission can mint and escrow");
+			try {
+				await aotera.mintTokenEscrow(account1, 10, { from: whitelistedAddress });
+				canMintEscrow = true;
+			} catch (e) {
+				canMintEscrow = false;
+			}
+			assert.equal(canMintEscrow, true, "Account that has permission can't mint and escrow");
+
+			var account1BalanceAfter = await aotera.balanceOf(account1);
+			var account1EscrowedBalanceAfter = await aotera.escrowedBalance(account1);
+			var totalSupplyAfter = await aotera.totalSupply();
+
+			assert.equal(
+				account1BalanceAfter.toString(),
+				account1BalanceBefore.toString(),
+				"Account1 has incorrect balance after mint and escrow"
+			);
+			assert.equal(
+				account1EscrowedBalanceAfter.toString(),
+				account1EscrowedBalanceBefore.plus(10).toString(),
+				"Account1 has incorrect escrowed balance after mint and escrow"
+			);
+			assert.equal(
+				totalSupplyAfter.toString(),
+				totalSupplyBefore.plus(10).toString(),
+				"Contract has incorrect total supply after mint and escrow"
+			);
+		});
+
+		it("Whitelisted address - unescrowFrom() should be able to unescrow tokens for an account", async function() {
+			var account1BalanceBefore = await aotera.balanceOf(account1);
+			var account1EscrowedBalanceBefore = await aotera.escrowedBalance(account1);
+			var totalSupplyBefore = await aotera.totalSupply();
+
+			var canUnescrow;
+			try {
+				await aotera.unescrowFrom(account1, 10, { from: someAddress });
+				canUnescrow = true;
+			} catch (e) {
+				canUnescrow = false;
+			}
+			assert.notEqual(canUnescrow, true, "Account that do not have permission can unescrow tokens on behalf of others");
+			try {
+				await aotera.unescrowFrom(account1, 100000, { from: whitelistedAddress });
+				canUnescrow = true;
+			} catch (e) {
+				canUnescrow = false;
+			}
+			assert.notEqual(canUnescrow, true, "Account can unescrow more than available balance");
+			try {
+				await aotera.unescrowFrom(account1, 10, { from: whitelistedAddress });
+				canUnescrow = true;
+			} catch (e) {
+				canUnescrow = false;
+			}
+			assert.equal(canUnescrow, true, "Account that has permission can't unescrow on behalf of others");
+
+			var account1BalanceAfter = await aotera.balanceOf(account1);
+			var account1EscrowedBalanceAfter = await aotera.escrowedBalance(account1);
+			var totalSupplyAfter = await aotera.totalSupply();
+
+			assert.equal(
+				account1BalanceAfter.toString(),
+				account1BalanceBefore.plus(10).toString(),
+				"Account1 has incorrect balance after unescrow"
+			);
+			assert.equal(
+				account1EscrowedBalanceAfter.toString(),
+				account1EscrowedBalanceBefore.minus(10).toString(),
+				"Account1 has incorrect escrowed balance after unescrow"
+			);
+			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after unescrow");
+		});
+
+		it("Whitelisted address - whitelistBurnFrom() should be able to burn tokens on behalf of others", async function() {
+			var account1BalanceBefore = await aotera.balanceOf(account1);
+			var totalSupplyBefore = await aotera.totalSupply();
 
 			var canBurn;
 			try {
-				await tokenMeta.whitelistBurnFrom(account1, 10, { from: account2 });
+				await aotera.whitelistBurnFrom(account1, 10, { from: someAddress });
 				canBurn = true;
 			} catch (e) {
 				canBurn = false;
 			}
 			assert.notEqual(canBurn, true, "Account that do not have permission can burn on behalf of others");
 			try {
-				await tokenMeta.whitelistBurnFrom(account1, 10, { from: whitelistedAccount });
+				await aotera.whitelistBurnFrom(account1, 1000000, { from: whitelistedAddress });
 				canBurn = true;
 			} catch (e) {
 				canBurn = false;
 			}
-			assert.equal(canBurn, true, "Account that has permission can't burn on behalf of thers");
+			assert.notEqual(canBurn, true, "Account can burn more than available balance");
+			try {
+				await aotera.whitelistBurnFrom(account1, 10, { from: whitelistedAddress });
+				canBurn = true;
+			} catch (e) {
+				canBurn = false;
+			}
+			assert.equal(canBurn, true, "Account that has permission can't burn on behalf of others");
 
-			var account1BalanceAfter = await tokenMeta.balanceOf(account1);
-			var totalSupplyAfter = await tokenMeta.totalSupply();
+			var account1BalanceAfter = await aotera.balanceOf(account1);
+			var totalSupplyAfter = await aotera.totalSupply();
 
 			assert.equal(
-				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.minus(10).toNumber(),
+				account1BalanceAfter.toString(),
+				account1BalanceBefore.minus(10).toString(),
 				"Account1 has incorrect balance after burning"
 			);
 			assert.equal(
-				totalSupplyAfter.toNumber(),
-				totalSupplyBefore.minus(10).toNumber(),
+				totalSupplyAfter.toString(),
+				totalSupplyBefore.minus(10).toString(),
 				"Contract has incorrect total supply after burning"
 			);
+		});
+
+		it("Whitelisted address - whitelistTransferFrom() should be able to transfer tokens from an address to another address", async function() {
+			var account1BalanceBefore = await aotera.balanceOf(account1);
+			var account2BalanceBefore = await aotera.balanceOf(account2);
+			var totalSupplyBefore = await aotera.totalSupply();
+
+			var canTransferFrom;
+			try {
+				await aotera.whitelistTransferFrom(account1, account2, 10, { from: someAddress });
+				canTransferFrom = true;
+			} catch (e) {
+				canTransferFrom = false;
+			}
+			assert.notEqual(canTransferFrom, true, "Account that do not have permission can transfer on behalf of others");
+
+			try {
+				await aotera.whitelistTransferFrom(account1, account2, 1000000, { from: whitelistedAddress });
+				canTransferFrom = true;
+			} catch (e) {
+				canTransferFrom = false;
+			}
+			assert.notEqual(canTransferFrom, true, "Account can transfer more than available balance");
+
+			try {
+				await aotera.whitelistTransferFrom(account1, account2, 10, { from: whitelistedAddress });
+				canTransferFrom = true;
+			} catch (e) {
+				canTransferFrom = false;
+			}
+			assert.equal(canTransferFrom, true, "Account that has permission can't transfer on behalf of others");
+
+			var account1BalanceAfter = await aotera.balanceOf(account1);
+			var account2BalanceAfter = await aotera.balanceOf(account2);
+			var totalSupplyAfter = await aotera.totalSupply();
+
+			assert.equal(
+				account1BalanceAfter.toString(),
+				account1BalanceBefore.minus(10).toString(),
+				"Account1 has incorrect balance after transfer"
+			);
+			assert.equal(
+				account2BalanceAfter.toString(),
+				account2BalanceBefore.plus(10).toString(),
+				"Account2 has incorrect balance after transfer"
+			);
+			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after transfer");
+		});
+
+		it("buy() - user can buy network tokens", async function() {
+			await aotera.setPrices(1, 1, { from: theAO });
+
+			var canBuyToken;
+			try {
+				await aotera.buy({ from: account2, value: 10 });
+				canBuyToken = true;
+			} catch (e) {
+				canBuyToken = false;
+			}
+			assert.notEqual(canBuyToken, true, "Contract does not have enough network token balance to complete user's token purchase");
+			await aotera.mintToken(aotera.address, 10 ** 20, { from: whitelistedAddress });
+
+			var account2BalanceBefore = await aotera.balanceOf(account2);
+			try {
+				await aotera.buy({ from: account2, value: 10 });
+				canBuyToken = true;
+			} catch (e) {
+				canBuyToken = false;
+			}
+			var account2BalanceAfter = await aotera.balanceOf(account2);
+			assert.equal(canBuyToken, true, "Fail buying network token from contract");
+			assert.equal(
+				account2BalanceAfter.toNumber(),
+				account2BalanceBefore.plus(10).toNumber(),
+				"Account has incorrect balance after buying token"
+			);
+		});
+
+		it("sell() - user can sell network tokens to contract", async function() {
+			await aotera.setPrices(100, 1, { from: theAO });
+
+			var canSellToken;
+			try {
+				await aotera.sell(10, { from: account2 });
+				canSellToken = true;
+			} catch (e) {
+				canSellToken = false;
+			}
+			assert.notEqual(canSellToken, true, "User can sell tokens to contract even if contract does not have enough ETH balance");
+
+			await aotera.setPrices(1, 1, { from: theAO });
+
+			var account2BalanceBefore = await aotera.balanceOf(account2);
+			var contractBalanceBefore = await aotera.balanceOf(aotera.address);
+
+			try {
+				await aotera.sell(5, { from: account2 });
+				canSellToken = true;
+			} catch (e) {
+				canSellToken = false;
+			}
+			assert.equal(canSellToken, true, "Fail selling network token to contract");
+
+			var account2BalanceAfter = await aotera.balanceOf(account2);
+			var contractBalanceAfter = await aotera.balanceOf(aotera.address);
+			assert.equal(
+				account2BalanceAfter.toNumber(),
+				account2BalanceBefore.minus(5).toNumber(),
+				"Account has incorrect balance after selling token"
+			);
+			assert.equal(
+				contractBalanceAfter.toNumber(),
+				contractBalanceBefore.plus(5).toNumber(),
+				"Contract has incorrect balance after user sell token"
+			);
+		});
+
+		it("transfer() - should send correct `_value` to `_to` from your account", async function() {
+			var account1BalanceBefore = await aotera.balanceOf(account1);
+			var account2BalanceBefore = await aotera.balanceOf(account2);
+			await aotera.transfer(account2, 10, { from: account1 });
+			account1BalanceAfter = await aotera.balanceOf(account1);
+			account2BalanceAfter = await aotera.balanceOf(account2);
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.minus(10).toNumber(),
+				"Account1 has incorrect balance after transfer"
+			);
+			assert.equal(
+				account2BalanceAfter.toNumber(),
+				account2BalanceBefore.plus(10).toNumber(),
+				"Account2 has incorrect balance after transfer"
+			);
+		});
+
+		it("burn() - should remove `_value` tokens from the system irreversibly", async function() {
+			var account1BalanceBefore = await aotera.balanceOf(account1);
+			await aotera.burn(10, { from: account1 });
+			account1BalanceAfter = await aotera.balanceOf(account1);
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.minus(10).toNumber(),
+				"Account1 has incorrect balance after burn"
+			);
+		});
+
+		it("approve() - should set allowance for other address", async function() {
+			var account2AllowanceBefore = await aotera.allowance(account1, account2);
+			await aotera.approve(account2, 10, { from: account1 });
+			var account2AllowanceAfter = await aotera.allowance(account1, account2);
+			assert.equal(
+				account2AllowanceAfter.toNumber(),
+				account2AllowanceBefore.plus(10).toNumber(),
+				"Account2 has incorrect allowance after approve"
+			);
+		});
+
+		it("transferFrom() - should send `_value` tokens to `_to` in behalf of `_from`", async function() {
+			var canTransferFrom;
+			try {
+				await aotera.transferFrom(account1, account2, 5, { from: someAddress });
+				canTransferFrom = true;
+			} catch (e) {
+				canTransferFrom = false;
+			}
+			assert.notEqual(canTransferFrom, true, "Account that was not approved is able to transfer on behalf of other");
+
+			try {
+				await aotera.transferFrom(account1, account2, 1000, { from: account2 });
+				canTransferFrom = true;
+			} catch (e) {
+				canTransferFrom = false;
+			}
+			assert.notEqual(
+				canTransferFrom,
+				true,
+				"Account that was approved is able to transfer more than it's allowance on behalf of other"
+			);
+
+			var account1BalanceBefore = await aotera.balanceOf(account1);
+			var account2BalanceBefore = await aotera.balanceOf(account2);
+			var account2AllowanceBefore = await aotera.allowance(account1, account2);
+
+			try {
+				await aotera.transferFrom(account1, account2, 5, { from: account2 });
+				canTransferFrom = true;
+			} catch (e) {
+				canTransferFrom = false;
+			}
+			assert.equal(canTransferFrom, true, "Account that was approved is not able to transfer on behalf of other");
+
+			var account1BalanceAfter = await aotera.balanceOf(account1);
+			var account2BalanceAfter = await aotera.balanceOf(account2);
+			var account2AllowanceAfter = await aotera.allowance(account1, account2);
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.minus(5).toNumber(),
+				"Account1 has incorrect balance after transferFrom"
+			);
+			assert.equal(
+				account2BalanceAfter.toNumber(),
+				account2BalanceBefore.plus(5).toNumber(),
+				"Account2 has incorrect balance after transferFrom"
+			);
+			assert.equal(
+				account2AllowanceAfter.toNumber(),
+				account2AllowanceBefore.minus(5).toNumber(),
+				"Account2 has incorrect allowance after transferFrom"
+			);
+		});
+
+		it("burnFrom() - should remove `_value` tokens from the system irreversibly on behalf of `_from`", async function() {
+			var canBurnFrom;
+			try {
+				await aotera.burnFrom(account1, 5, { from: someAddress });
+				canBurnFrom = true;
+			} catch (e) {
+				canBurnFrom = false;
+			}
+			assert.notEqual(canBurnFrom, true, "Account that was not approved is able to burn on behalf of other");
+
+			try {
+				await aotera.burnFrom(account1, 10, { from: account2 });
+				canBurnFrom = true;
+			} catch (e) {
+				canBurnFrom = false;
+			}
+			assert.notEqual(canBurnFrom, true, "Account that was approved is able to burn more than it's allowance on behalf of other");
+
+			var account1BalanceBefore = await aotera.balanceOf(account1);
+			var account2AllowanceBefore = await aotera.allowance(account1, account2);
+
+			try {
+				await aotera.burnFrom(account1, 5, { from: account2 });
+				canBurnFrom = true;
+			} catch (e) {
+				canBurnFrom = false;
+			}
+			assert.equal(canBurnFrom, true, "Account that was approved is not able to burn on behalf of other");
+
+			var account1BalanceAfter = await aotera.balanceOf(account1);
+			var account2AllowanceAfter = await aotera.allowance(account1, account2);
+
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.minus(5).toNumber(),
+				"Account1 has incorrect balance after burnFrom"
+			);
+			assert.equal(
+				account2AllowanceAfter.toNumber(),
+				account2AllowanceBefore.minus(5).toNumber(),
+				"Account2 has incorrect allowance after burnFrom"
+			);
+		});
+
+		it("frozen account should NOT be able to transfer", async function() {
+			await aotera.freezeAccount(account1, true, { from: theAO });
+
+			var canTransfer;
+			try {
+				await aotera.transfer(account2, 10, { from: account1 });
+				canTransfer = true;
+			} catch (e) {
+				canTransfer = false;
+			}
+			assert.notEqual(canTransfer, true, "Frozen account can transfer");
+
+			// Unfreeze account1
+			await aotera.freezeAccount(account1, false, { from: theAO });
+		});
+
+		it("The AO - transferETH() should be able to transfer ETH to an address", async function() {
+			await aotera.buy({ from: account2, value: web3.toWei(2, "ether") });
+
+			var canTransferEth;
+			try {
+				await aotera.transferEth(recipient.address, web3.toWei(1, "ether"), { from: someAddress });
+				canTransferEth = true;
+			} catch (e) {
+				canTransferEth = false;
+			}
+			assert.equal(canTransferEth, false, "Non-AO can transfer ETH out of contract");
+
+			try {
+				await aotera.transferEth(emptyAddress, web3.toWei(1, "ether"), { from: theAO });
+				canTransferEth = true;
+			} catch (e) {
+				canTransferEth = false;
+			}
+			assert.equal(canTransferEth, false, "The AO can transfer ETH out of contract to invalid address");
+
+			try {
+				await aotera.transferEth(recipient.address, web3.toWei(1000, "ether"), { from: theAO });
+				canTransferEth = true;
+			} catch (e) {
+				canTransferEth = false;
+			}
+			assert.equal(canTransferEth, false, "The AO can transfer ETH out of contract more than its available balance");
+
+			try {
+				await aotera.transferEth(recipient.address, web3.toWei(1, "ether"), { from: theAO });
+				canTransferEth = true;
+			} catch (e) {
+				canTransferEth = false;
+			}
+			assert.equal(canTransferEth, true, "The AO can't transfer ETH out of contract");
+
+			var recipientBalance = await web3.eth.getBalance(recipient.address);
+			assert.equal(recipientBalance.toNumber(), web3.toWei(1, "ether"), "Recipient has incorrect balance");
 		});
 	});
 });
