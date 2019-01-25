@@ -85,6 +85,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	 * @param _amount The amount to transfer
 	 */
 	function transferEth(address _recipient, uint256 _amount) public onlyTheAO {
+		require (_recipient != address(0));
 		_recipient.transfer(_amount);
 	}
 
@@ -95,6 +96,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	 * @param _amount The amount to transfer
 	 */
 	function transferERC20(address _erc20TokenAddress, address _recipient, uint256 _amount) public onlyTheAO {
+		require (_recipient != address(0));
 		TokenERC20 _erc20 = TokenERC20(_erc20TokenAddress);
 		require (_erc20.transfer(_recipient, _amount));
 	}
