@@ -1,25 +1,17 @@
-var AOSetting = artifacts.require("./AOSetting.sol");
-var AOSettingAttribute = artifacts.require("./AOSettingAttribute.sol");
-var AOUintSetting = artifacts.require("./AOUintSetting.sol");
-var AOBoolSetting = artifacts.require("./AOBoolSetting.sol");
-var AOAddressSetting = artifacts.require("./AOAddressSetting.sol");
-var AOBytesSetting = artifacts.require("./AOBytesSetting.sol");
-var AOStringSetting = artifacts.require("./AOStringSetting.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
+var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
+var Logos = artifacts.require("./Logos.sol");
+
+var AOSetting = artifacts.require("./AOSetting.sol");
+var AOSettingAttribute = artifacts.require("./AOSettingAttribute.sol");
+var AOSettingValue = artifacts.require("./AOSettingValue.sol");
 
 contract("AOSetting", function(accounts) {
-	var aosetting,
-		aosettingattribute,
-		aouintsetting,
-		aoboolsetting,
-		aoaddresssetting,
-		aobytessetting,
-		aostringsetting,
-		namefactory,
-		taofactory;
+	var namefactory, taofactory, nametaoposition, logos, aosetting, aosettingattribute, aosettingvalue;
 	var theAO = accounts[0];
-	var whitelistedAccount = accounts[9];
+
+	var whitelistedAddress = accounts[9];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
 	var account3 = accounts[3];
@@ -65,15 +57,16 @@ contract("AOSetting", function(accounts) {
 	var newSettingContractAddress = accounts[7];
 
 	before(async function() {
-		aosetting = await AOSetting.deployed();
-		aosettingattribute = await AOSettingAttribute.deployed();
-		aouintsetting = await AOUintSetting.deployed();
-		aoboolsetting = await AOBoolSetting.deployed();
-		aoaddresssetting = await AOAddressSetting.deployed();
-		aobytessetting = await AOBytesSetting.deployed();
-		aostringsetting = await AOStringSetting.deployed();
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
+		nametaoposition = await NameTAOPosition.deployed();
+		logos = await Logos.deployed();
+
+		aosetting = await AOSetting.deployed();
+		aosettingattribute = await AOSettingAttribute.deployed();
+		aosettingvalue = await AOSettingValue.deployed();
+
+		await logos.setWhitelist(theAO, true, { from: theAO });
 
 		// Create Names
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
@@ -89,6 +82,11 @@ contract("AOSetting", function(accounts) {
 		result = await namefactory.createName("echo", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", { from: account3 });
 		proposalTAONameId = await namefactory.ethAddressToNameId(account3);
 
+		// Mint Logos to Names
+		await logos.mintToken(creatorTAONameId, 10 ** 12, { from: theAO });
+		await logos.mintToken(associatedTAONameId, 10 ** 12, { from: theAO });
+		await logos.mintToken(proposalTAONameId, 10 ** 12, { from: theAO });
+
 		// Create TAOs
 		result = await taofactory.createTAO(
 			"creatorTAOId",
@@ -97,6 +95,9 @@ contract("AOSetting", function(accounts) {
 			"somekeyvalue",
 			"somecontentid",
 			creatorTAONameId,
+			0,
+			false,
+			0,
 			{
 				from: account1
 			}
@@ -111,6 +112,9 @@ contract("AOSetting", function(accounts) {
 			"somekeyvalue",
 			"somecontentid",
 			creatorTAONameId,
+			0,
+			false,
+			0,
 			{
 				from: account2
 			}
@@ -125,6 +129,9 @@ contract("AOSetting", function(accounts) {
 			"somekeyvalue",
 			"somecontentid",
 			creatorTAONameId,
+			0,
+			false,
+			0,
 			{
 				from: account3
 			}
@@ -133,7 +140,139 @@ contract("AOSetting", function(accounts) {
 		proposalTAOId = createTAOEvent.args.taoId;
 	});
 
-	it("only the Advocate of a Creator TAO can add uint setting", async function() {
+	it("The AO - transferOwnership() - should be able to transfer ownership to a TAO", async function() {
+		var canTransferOwnership;
+		try {
+			await aosetting.transferOwnership(creatorTAOId, { from: someAddress });
+			canTransferOwnership = true;
+		} catch (e) {
+			canTransferOwnership = false;
+		}
+		assert.equal(canTransferOwnership, false, "Non-AO can transfer ownership");
+
+		try {
+			await aosetting.transferOwnership(creatorTAOId, { from: theAO });
+			canTransferOwnership = true;
+		} catch (e) {
+			canTransferOwnership = false;
+		}
+		assert.equal(canTransferOwnership, true, "The AO can't transfer ownership");
+
+		var newTheAO = await aosetting.theAO();
+		assert.equal(newTheAO, creatorTAOId, "Contract has incorrect TheAO address after transferring ownership");
+	});
+
+	it("The AO - setWhitelist() should be able to whitelist an address", async function() {
+		var canSetWhitelist;
+		try {
+			await aosetting.setWhitelist(whitelistedAddress, true, { from: someAddress });
+			canSetWhitelist = true;
+		} catch (e) {
+			canSetWhitelist = false;
+		}
+		assert.equal(canSetWhitelist, false, "Non-AO can set whitelist");
+
+		try {
+			await aosetting.setWhitelist(whitelistedAddress, true, { from: account1 });
+			canSetWhitelist = true;
+		} catch (e) {
+			canSetWhitelist = false;
+		}
+		assert.equal(canSetWhitelist, true, "The AO can't set whitelist");
+
+		var whitelistStatus = await aosetting.whitelist(whitelistedAddress);
+		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
+	});
+
+	it("The AO - setNameFactoryAddress() should be able to set NameFactory address", async function() {
+		var canSetAddress;
+		try {
+			await aosetting.setNameFactoryAddress(namefactory.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameFactory address");
+
+		try {
+			await aosetting.setNameFactoryAddress(namefactory.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameFactory address");
+
+		var nameFactoryAddress = await aosetting.nameFactoryAddress();
+		assert.equal(nameFactoryAddress, namefactory.address, "Contract has incorrect nameFactoryAddress");
+	});
+
+	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
+		var canSetAddress;
+		try {
+			await aosetting.setNameTAOPositionAddress(nametaoposition.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameTAOPosition address");
+
+		try {
+			await aosetting.setNameTAOPositionAddress(nametaoposition.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameTAOPosition address");
+
+		var nameTAOPositionAddress = await aosetting.nameTAOPositionAddress();
+		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
+	});
+
+	it("The AO - setAOSettingAttributeAddress() should be able to set AOSettingAttribute address", async function() {
+		var canSetAddress;
+		try {
+			await aosetting.setAOSettingAttributeAddress(aosettingattribute.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set AOSettingAttribute address");
+
+		try {
+			await aosetting.setAOSettingAttributeAddress(aosettingattribute.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set AOSettingAttribute address");
+
+		var aoSettingAttributeAddress = await aosetting.aoSettingAttributeAddress();
+		assert.equal(aoSettingAttributeAddress, aosettingattribute.address, "Contract has incorrect aosettingattributeAddress");
+	});
+
+	it("The AO - setAOSettingValueAddress() should be able to set AOSettingValue address", async function() {
+		var canSetAddress;
+		try {
+			await aosetting.setAOSettingValueAddress(aosettingvalue.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set AOSettingValue address");
+
+		try {
+			await aosetting.setAOSettingValueAddress(aosettingvalue.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set AOSettingValue address");
+
+		var aoSettingValueAddress = await aosetting.aoSettingValueAddress();
+		assert.equal(aoSettingValueAddress, aosettingvalue.address, "Contract has incorrect aoSettingValueAddress");
+	});
+
+	it("addUintSetting() - only the Advocate of a Creator TAO can add uint setting", async function() {
 		settingName = "uintSetting";
 		var settingNameExist = await aosetting.settingNameExist(settingName, associatedTAOId);
 		assert.equal(settingNameExist, false, "settingNameExist returns incorrect value");
@@ -220,8 +359,8 @@ contract("AOSetting", function(accounts) {
 			"Contract has incorrect totalSetting after adding setting"
 		);
 
-		var pendingValue = await aouintsetting.pendingValue(settingId1.toNumber());
-		assert.equal(pendingValue.toNumber(), uintValue, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId1.toNumber());
+		assert.equal(pendingValue[4].toNumber(), uintValue, "Setting has incorrect pendingValue");
 
 		var settingId = await aosetting.getSettingIdByTAOName(associatedTAOId, settingName);
 		assert.equal(
@@ -313,7 +452,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canAdd, true, "Advocate of Creator TAO can't create setting");
 	});
 
-	it("only the Advocate of a Creator TAO can add bool setting", async function() {
+	it("addBoolSetting() - only the Advocate of a Creator TAO can add bool setting", async function() {
 		settingName = "boolSetting";
 		var settingNameExist = await aosetting.settingNameExist(settingName, associatedTAOId);
 		assert.equal(settingNameExist, false, "settingNameExist returns incorrect value");
@@ -400,8 +539,8 @@ contract("AOSetting", function(accounts) {
 			"Contract has incorrect totalSetting after adding setting"
 		);
 
-		var pendingValue = await aoboolsetting.pendingValue(settingId2.toNumber());
-		assert.equal(pendingValue, boolValue, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId2.toNumber());
+		assert.equal(pendingValue[1], boolValue, "Setting has incorrect pendingValue");
 
 		var settingId = await aosetting.getSettingIdByTAOName(associatedTAOId, settingName);
 		assert.equal(
@@ -493,7 +632,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canAdd, true, "Advocate of Creator TAO can't create setting");
 	});
 
-	it("only the Advocate of a Creator TAO can add address setting", async function() {
+	it("addAddressSetting() - only the Advocate of a Creator TAO can add address setting", async function() {
 		settingName = "addressSetting";
 		var settingNameExist = await aosetting.settingNameExist(settingName, associatedTAOId);
 		assert.equal(settingNameExist, false, "settingNameExist returns incorrect value");
@@ -580,8 +719,8 @@ contract("AOSetting", function(accounts) {
 			"Contract has incorrect totalSetting after adding setting"
 		);
 
-		var pendingValue = await aoaddresssetting.pendingValue(settingId3.toNumber());
-		assert.equal(pendingValue, addressValue, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId3.toNumber());
+		assert.equal(pendingValue[0], addressValue, "Setting has incorrect pendingValue");
 
 		var settingId = await aosetting.getSettingIdByTAOName(associatedTAOId, settingName);
 		assert.equal(
@@ -673,7 +812,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canAdd, true, "Advocate of Creator TAO can't create setting");
 	});
 
-	it("only the Advocate of a Creator TAO can add bytes setting", async function() {
+	it("addBytesSetting() - only the Advocate of a Creator TAO can add bytes setting", async function() {
 		settingName = "bytesSetting";
 		var settingNameExist = await aosetting.settingNameExist(settingName, associatedTAOId);
 		assert.equal(settingNameExist, false, "settingNameExist returns incorrect value");
@@ -760,8 +899,8 @@ contract("AOSetting", function(accounts) {
 			"Contract has incorrect totalSetting after adding setting"
 		);
 
-		var pendingValue = await aobytessetting.pendingValue(settingId4.toNumber());
-		assert.notEqual(pendingValue, nullBytesValue, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId4.toNumber());
+		assert.notEqual(pendingValue[2], nullBytesValue, "Setting has incorrect pendingValue");
 
 		var settingId = await aosetting.getSettingIdByTAOName(associatedTAOId, settingName);
 		assert.equal(
@@ -853,7 +992,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canAdd, true, "Advocate of Creator TAO can't create setting");
 	});
 
-	it("only the Advocate of a Creator TAO can add string setting", async function() {
+	it("addStringSetting() - only the Advocate of a Creator TAO can add string setting", async function() {
 		settingName = "stringSetting";
 		var settingNameExist = await aosetting.settingNameExist(settingName, associatedTAOId);
 		assert.equal(settingNameExist, false, "settingNameExist returns incorrect value");
@@ -940,8 +1079,8 @@ contract("AOSetting", function(accounts) {
 			"Contract has incorrect totalSetting after adding setting"
 		);
 
-		var pendingValue = await aostringsetting.pendingValue(settingId5.toNumber());
-		assert.equal(pendingValue, stringValue, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId5.toNumber());
+		assert.equal(pendingValue[3], stringValue, "Setting has incorrect pendingValue");
 
 		var settingId = await aosetting.getSettingIdByTAOName(associatedTAOId, settingName);
 		assert.equal(
@@ -1033,7 +1172,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canAdd, true, "Advocate of Creator TAO can't create setting");
 	});
 
-	it("only the Advocate of setting's Associated TAO can approve/reject uint setting creation", async function() {
+	it("approveSettingCreation() - only the Advocate of setting's Associated TAO can approve/reject uint setting creation", async function() {
 		var canApprove, approveSettingCreationEvent;
 		try {
 			var result = await aosetting.approveSettingCreation(99, true, { from: account1 });
@@ -1111,14 +1250,8 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(approveSettingCreationEvent.args.approved, false, "ApproveSettingCreation has incorrect approved");
 
-		var canGetSettingIdByTAOName;
-		try {
-			await aosetting.getSettingIdByTAOName(associatedTAOId, "uintSetting2");
-			canGetSettingIdByTAOName = true;
-		} catch (e) {
-			canGetSettingIdByTAOName = false;
-		}
-		assert.equal(canGetSettingIdByTAOName, false, "canGetSettingIdByTAOName() is successful even though setting creation is rejected");
+		var settingId = await aosetting.getSettingIdByTAOName(associatedTAOId, "uintSetting2");
+		assert.equal(settingId.toNumber(), 0, "getSettingIdByTAOName() returns incorrect value");
 
 		// Approve settingId16
 		try {
@@ -1132,7 +1265,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canApprove, true, "Advocate of setting's Associated TAO can't approve setting creation");
 	});
 
-	it("only the Advocate of setting's Creator TAO can finalize uint setting creation", async function() {
+	it("finalizeSettingCreation() - only the Advocate of setting's Creator TAO can finalize uint setting creation", async function() {
 		var canFinalize, finalizeSettingCreationEvent;
 		try {
 			var result = await aosetting.finalizeSettingCreation(99, { from: account1 });
@@ -1184,11 +1317,11 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 
-		var pendingValue = await aouintsetting.pendingValue(settingId1.toNumber());
-		assert.equal(pendingValue.toNumber(), 0, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId1.toNumber());
+		assert.equal(pendingValue[4].toNumber(), 0, "Setting has incorrect pendingValue");
 
-		var settingValue = await aouintsetting.settingValue(settingId1.toNumber());
-		assert.equal(settingValue.toNumber(), uintValue, "Setting has incorrect settingValue");
+		var settingValue = await aosettingvalue.settingValue(settingId1.toNumber());
+		assert.equal(settingValue[4].toNumber(), uintValue, "Setting has incorrect settingValue");
 
 		assert.equal(
 			finalizeSettingCreationEvent.args.settingId.toNumber(),
@@ -1223,7 +1356,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(settingValues[0].toNumber(), uintValue, "getSettingValuesByTAOName() return incorrect uint256 value");
 	});
 
-	it("only the Advocate of setting's Associated TAO can approve/reject bool setting creation", async function() {
+	it("approveSettingCreation() - only the Advocate of setting's Associated TAO can approve/reject bool setting creation", async function() {
 		var canApprove, approveSettingCreationEvent;
 		try {
 			var result = await aosetting.approveSettingCreation(settingId2, true, { from: account1 });
@@ -1291,14 +1424,8 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(approveSettingCreationEvent.args.approved, false, "ApproveSettingCreation has incorrect approved");
 
-		var canGetSettingIdByTAOName;
-		try {
-			await aosetting.getSettingIdByTAOName(associatedTAOId, "uintSetting2");
-			canGetSettingIdByTAOName = true;
-		} catch (e) {
-			canGetSettingIdByTAOName = false;
-		}
-		assert.equal(canGetSettingIdByTAOName, false, "canGetSettingIdByTAOName() is successful even though setting creation is rejected");
+		var settingId = await aosetting.getSettingIdByTAOName(associatedTAOId, "boolSetting2");
+		assert.equal(settingId.toNumber(), 0, "getSettingIdByTAOName() returns incorrect value");
 
 		// Approve settingId17
 		try {
@@ -1312,7 +1439,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canApprove, true, "Advocate of setting's Associated TAO can't approve setting creation");
 	});
 
-	it("only the Advocate of setting's Creator TAO can finalize bool setting creation", async function() {
+	it("finalizeSettingCreation() - only the Advocate of setting's Creator TAO can finalize bool setting creation", async function() {
 		var canFinalize, finalizeSettingCreationEvent;
 		try {
 			var result = await aosetting.finalizeSettingCreation(settingId2, { from: account2 });
@@ -1344,11 +1471,11 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 
-		var pendingValue = await aoboolsetting.pendingValue(settingId2.toNumber());
-		assert.equal(pendingValue, false, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId2.toNumber());
+		assert.equal(pendingValue[1], false, "Setting has incorrect pendingValue");
 
-		var settingValue = await aoboolsetting.settingValue(settingId2.toNumber());
-		assert.equal(settingValue, boolValue, "Setting has incorrect settingValue");
+		var settingValue = await aosettingvalue.settingValue(settingId2.toNumber());
+		assert.equal(settingValue[1], boolValue, "Setting has incorrect settingValue");
 
 		assert.equal(
 			finalizeSettingCreationEvent.args.settingId.toNumber(),
@@ -1383,7 +1510,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(settingValues[1], boolValue, "getSettingValuesByTAOName() return incorrect bool value");
 	});
 
-	it("only the Advocate of setting's Associated TAO can approve/reject address setting creation", async function() {
+	it("approveSettingCreation() - only the Advocate of setting's Associated TAO can approve/reject address setting creation", async function() {
 		var canApprove, approveSettingCreationEvent;
 		try {
 			var result = await aosetting.approveSettingCreation(settingId3, true, { from: account1 });
@@ -1451,14 +1578,8 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(approveSettingCreationEvent.args.approved, false, "ApproveSettingCreation has incorrect approved");
 
-		var canGetSettingIdByTAOName;
-		try {
-			await aosetting.getSettingIdByTAOName(associatedTAOId, "uintSetting2");
-			canGetSettingIdByTAOName = true;
-		} catch (e) {
-			canGetSettingIdByTAOName = false;
-		}
-		assert.equal(canGetSettingIdByTAOName, false, "canGetSettingIdByTAOName() is successful even though setting creation is rejected");
+		var settingId = await aosetting.getSettingIdByTAOName(associatedTAOId, "addressSetting2");
+		assert.equal(settingId.toNumber(), 0, "getSettingIdByTAOName() returns incorrect value");
 
 		// Approve settingId18
 		try {
@@ -1472,7 +1593,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canApprove, true, "Advocate of setting's Associated TAO can't approve setting creation");
 	});
 
-	it("only the Advocate of setting's Creator TAO can finalize address setting creation", async function() {
+	it("finalizeSettingCreation() - only the Advocate of setting's Creator TAO can finalize address setting creation", async function() {
 		var canFinalize, finalizeSettingCreationEvent;
 		try {
 			var result = await aosetting.finalizeSettingCreation(settingId3, { from: account2 });
@@ -1504,11 +1625,11 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 
-		var pendingValue = await aoaddresssetting.pendingValue(settingId3.toNumber());
-		assert.equal(pendingValue, emptyAddress, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId3.toNumber());
+		assert.equal(pendingValue[0], emptyAddress, "Setting has incorrect pendingValue");
 
-		var settingValue = await aoaddresssetting.settingValue(settingId3.toNumber());
-		assert.equal(settingValue, addressValue, "Setting has incorrect settingValue");
+		var settingValue = await aosettingvalue.settingValue(settingId3.toNumber());
+		assert.equal(settingValue[0], addressValue, "Setting has incorrect settingValue");
 
 		assert.equal(
 			finalizeSettingCreationEvent.args.settingId.toNumber(),
@@ -1543,7 +1664,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(settingValues[2], addressValue, "getSettingValuesByTAOName() return incorrect address value");
 	});
 
-	it("only the Advocate of setting's Associated TAO can approve/reject bytes setting creation", async function() {
+	it("approveSettingCreation() - only the Advocate of setting's Associated TAO can approve/reject bytes setting creation", async function() {
 		var canApprove, approveSettingCreationEvent;
 		try {
 			var result = await aosetting.approveSettingCreation(settingId4, true, { from: account1 });
@@ -1611,14 +1732,8 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(approveSettingCreationEvent.args.approved, false, "ApproveSettingCreation has incorrect approved");
 
-		var canGetSettingIdByTAOName;
-		try {
-			await aosetting.getSettingIdByTAOName(associatedTAOId, "uintSetting2");
-			canGetSettingIdByTAOName = true;
-		} catch (e) {
-			canGetSettingIdByTAOName = false;
-		}
-		assert.equal(canGetSettingIdByTAOName, false, "canGetSettingIdByTAOName() is successful even though setting creation is rejected");
+		var settingId = await aosetting.getSettingIdByTAOName(associatedTAOId, "bytesSetting2");
+		assert.equal(settingId.toNumber(), 0, "getSettingIdByTAOName() returns incorrect value");
 
 		// Approve settingId19
 		try {
@@ -1632,7 +1747,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canApprove, true, "Advocate of setting's Associated TAO can't approve setting creation");
 	});
 
-	it("only the Advocate of setting's Creator TAO can finalize bytes setting creation", async function() {
+	it("finalizeSettingCreation() - only the Advocate of setting's Creator TAO can finalize bytes setting creation", async function() {
 		var canFinalize, finalizeSettingCreationEvent;
 		try {
 			var result = await aosetting.finalizeSettingCreation(settingId4, { from: account2 });
@@ -1664,11 +1779,11 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 
-		var pendingValue = await aobytessetting.pendingValue(settingId4.toNumber());
-		assert.equal(pendingValue, nullBytesValue, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId4.toNumber());
+		assert.equal(pendingValue[2], nullBytesValue, "Setting has incorrect pendingValue");
 
-		var settingValue = await aobytessetting.settingValue(settingId4.toNumber());
-		assert.notEqual(settingValue, nullBytesValue, "Setting has incorrect settingValue");
+		var settingValue = await aosettingvalue.settingValue(settingId4.toNumber());
+		assert.notEqual(settingValue[2], nullBytesValue, "Setting has incorrect settingValue");
 
 		assert.equal(
 			finalizeSettingCreationEvent.args.settingId.toNumber(),
@@ -1703,7 +1818,7 @@ contract("AOSetting", function(accounts) {
 		assert.notEqual(settingValues[3], nullBytesValue, "getSettingValuesByTAOName() return incorrect bytes32 value");
 	});
 
-	it("only the Advocate of setting's Associated TAO can approve/reject string setting creation", async function() {
+	it("approveSettingCreation() - only the Advocate of setting's Associated TAO can approve/reject string setting creation", async function() {
 		var canApprove, approveSettingCreationEvent;
 		try {
 			var result = await aosetting.approveSettingCreation(settingId5, true, { from: account1 });
@@ -1771,14 +1886,8 @@ contract("AOSetting", function(accounts) {
 		);
 		assert.equal(approveSettingCreationEvent.args.approved, false, "ApproveSettingCreation has incorrect approved");
 
-		var canGetSettingIdByTAOName;
-		try {
-			await aosetting.getSettingIdByTAOName(associatedTAOId, "uintSetting2");
-			canGetSettingIdByTAOName = true;
-		} catch (e) {
-			canGetSettingIdByTAOName = false;
-		}
-		assert.equal(canGetSettingIdByTAOName, false, "canGetSettingIdByTAOName() is successful even though setting creation is rejected");
+		var settingId = await aosetting.getSettingIdByTAOName(associatedTAOId, "stringSetting2");
+		assert.equal(settingId.toNumber(), 0, "getSettingIdByTAOName() returns incorrect value");
 
 		// Approve settingId20
 		try {
@@ -1792,7 +1901,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canApprove, true, "Advocate of setting's Associated TAO can't approve setting creation");
 	});
 
-	it("only the Advocate of setting's Creator TAO can finalize string setting creation", async function() {
+	it("finalizeSettingCreation() - only the Advocate of setting's Creator TAO can finalize string setting creation", async function() {
 		var canFinalize, finalizeSettingCreationEvent;
 		try {
 			var result = await aosetting.finalizeSettingCreation(settingId5, { from: account2 });
@@ -1824,11 +1933,11 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting creation");
 
-		var pendingValue = await aostringsetting.pendingValue(settingId5.toNumber());
-		assert.equal(pendingValue, "", "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId5.toNumber());
+		assert.equal(pendingValue[3], "", "Setting has incorrect pendingValue");
 
-		var settingValue = await aostringsetting.settingValue(settingId5.toNumber());
-		assert.equal(settingValue, stringValue, "Setting has incorrect settingValue");
+		var settingValue = await aosettingvalue.settingValue(settingId5.toNumber());
+		assert.equal(settingValue[3], stringValue, "Setting has incorrect settingValue");
 
 		assert.equal(
 			finalizeSettingCreationEvent.args.settingId.toNumber(),
@@ -1863,7 +1972,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(settingValues[4], stringValue, "getSettingValuesByTAOName() return incorrect string value");
 	});
 
-	it("only the Advocate of setting's Associated TAO can update uint setting", async function() {
+	it("updateUintSetting() - only the Advocate of setting's Associated TAO can update uint setting", async function() {
 		var canUpdate, settingUpdateEvent;
 		uintValue = 100;
 		try {
@@ -1962,8 +2071,8 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canUpdate, true, "Advocate can't update uint setting");
 
-		var pendingValue = await aouintsetting.pendingValue(settingId1.toNumber());
-		assert.equal(pendingValue.toNumber(), uintValue, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId1.toNumber());
+		assert.equal(pendingValue[4].toNumber(), uintValue, "Setting has incorrect pendingValue");
 
 		assert.equal(settingUpdateEvent.args.settingId.toNumber(), settingId1.toNumber(), "SettingUpdate event has incorrect settingId");
 		assert.equal(
@@ -1986,7 +2095,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canUpdate, false, "Advocate can update uint setting that is currently pending approval");
 	});
 
-	it("only the Advocate of setting's Associated TAO can update bool setting", async function() {
+	it("updateBoolSetting() - only the Advocate of setting's Associated TAO can update bool setting", async function() {
 		var canUpdate, settingUpdateEvent;
 		boolValue = false;
 		try {
@@ -2085,8 +2194,8 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canUpdate, true, "Advocate can't update bool setting");
 
-		var pendingValue = await aoboolsetting.pendingValue(settingId2.toNumber());
-		assert.equal(pendingValue, boolValue, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId2.toNumber());
+		assert.equal(pendingValue[1], boolValue, "Setting has incorrect pendingValue");
 
 		assert.equal(settingUpdateEvent.args.settingId.toNumber(), settingId2.toNumber(), "SettingUpdate event has incorrect settingId");
 		assert.equal(
@@ -2109,7 +2218,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canUpdate, false, "Advocate can update bool setting that is currently pending approval");
 	});
 
-	it("only the Advocate of setting's Associated TAO can update address setting", async function() {
+	it("updateAddressSetting() - only the Advocate of setting's Associated TAO can update address setting", async function() {
 		var canUpdate, settingUpdateEvent;
 		addressValue = accounts[9];
 		try {
@@ -2208,8 +2317,8 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canUpdate, true, "Advocate can't update address setting");
 
-		var pendingValue = await aoaddresssetting.pendingValue(settingId3.toNumber());
-		assert.equal(pendingValue, addressValue, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId3.toNumber());
+		assert.equal(pendingValue[0], addressValue, "Setting has incorrect pendingValue");
 
 		assert.equal(settingUpdateEvent.args.settingId.toNumber(), settingId3.toNumber(), "SettingUpdate event has incorrect settingId");
 		assert.equal(
@@ -2232,7 +2341,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canUpdate, false, "Advocate can update address setting that is currently pending approval");
 	});
 
-	it("only the Advocate of setting's Associated TAO can update bytes setting", async function() {
+	it("updateBytesSetting() - only the Advocate of setting's Associated TAO can update bytes setting", async function() {
 		var canUpdate, settingUpdateEvent;
 		bytesValue = "newbytesvalue";
 		try {
@@ -2331,8 +2440,8 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canUpdate, true, "Advocate can't update bytes setting");
 
-		var pendingValue = await aobytessetting.pendingValue(settingId4.toNumber());
-		assert.notEqual(pendingValue, nullBytesValue, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId4.toNumber());
+		assert.notEqual(pendingValue[2], nullBytesValue, "Setting has incorrect pendingValue");
 
 		assert.equal(settingUpdateEvent.args.settingId.toNumber(), settingId4.toNumber(), "SettingUpdate event has incorrect settingId");
 		assert.equal(
@@ -2355,7 +2464,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canUpdate, false, "Advocate can update bytes setting that is currently pending approval");
 	});
 
-	it("only the Advocate of setting's Associated TAO can update string setting", async function() {
+	it("updateStringSetting() - only the Advocate of setting's Associated TAO can update string setting", async function() {
 		var canUpdate, settingUpdateEvent;
 		stringValue = "newstringvalue";
 		try {
@@ -2454,8 +2563,8 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canUpdate, true, "Advocate can't update string setting");
 
-		var pendingValue = await aostringsetting.pendingValue(settingId5.toNumber());
-		assert.equal(pendingValue, stringValue, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId5.toNumber());
+		assert.equal(pendingValue[3], stringValue, "Setting has incorrect pendingValue");
 
 		assert.equal(settingUpdateEvent.args.settingId.toNumber(), settingId5.toNumber(), "SettingUpdate event has incorrect settingId");
 		assert.equal(
@@ -2478,7 +2587,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canUpdate, false, "Advocate can update string setting that is currently pending approval");
 	});
 
-	it("only the Advocate of setting's Proposal TAO can approve uint setting update", async function() {
+	it("approveSettingUpdate() - only the Advocate of setting's Proposal TAO can approve uint setting update", async function() {
 		var canApprove, approveSettingUpdateEvent;
 		try {
 			var result = await aosetting.approveSettingUpdate(99, true, { from: account3 });
@@ -2525,7 +2634,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(approveSettingUpdateEvent.args.approved, true, "ApproveSettingUpdate has incorrect approved");
 	});
 
-	it("only the Advocate of setting's Proposal TAO can approve bool setting update", async function() {
+	it("approveSettingUpdate() - only the Advocate of setting's Proposal TAO can approve bool setting update", async function() {
 		var canApprove, approveSettingUpdateEvent;
 		try {
 			var result = await aosetting.approveSettingUpdate(settingId2, true, { from: account1 });
@@ -2562,7 +2671,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(approveSettingUpdateEvent.args.approved, true, "ApproveSettingUpdate has incorrect approved");
 	});
 
-	it("only the Advocate of setting's Proposal TAO can approve address setting update", async function() {
+	it("approveSettingUpdate() - only the Advocate of setting's Proposal TAO can approve address setting update", async function() {
 		var canApprove, approveSettingUpdateEvent;
 		try {
 			var result = await aosetting.approveSettingUpdate(settingId3, true, { from: account1 });
@@ -2599,7 +2708,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(approveSettingUpdateEvent.args.approved, true, "ApproveSettingUpdate has incorrect approved");
 	});
 
-	it("only the Advocate of setting's Proposal TAO can approve bytes setting update", async function() {
+	it("approveSettingUpdate() - only the Advocate of setting's Proposal TAO can approve bytes setting update", async function() {
 		var canApprove, approveSettingUpdateEvent;
 		try {
 			var result = await aosetting.approveSettingUpdate(settingId4, true, { from: account1 });
@@ -2636,7 +2745,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(approveSettingUpdateEvent.args.approved, true, "ApproveSettingUpdate has incorrect approved");
 	});
 
-	it("only the Advocate of setting's Proposal TAO can approve string setting update", async function() {
+	it("approveSettingUpdate() - only the Advocate of setting's Proposal TAO can approve string setting update", async function() {
 		var canApprove, approveSettingUpdateEvent;
 		try {
 			var result = await aosetting.approveSettingUpdate(settingId5, true, { from: account1 });
@@ -2673,7 +2782,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(approveSettingUpdateEvent.args.approved, true, "ApproveSettingUpdate has incorrect approved");
 	});
 
-	it("only the Advocate of setting's Associated TAO can finalize uint setting update", async function() {
+	it("finalizeSettingUpdate() - only the Advocate of setting's Associated TAO can finalize uint setting update", async function() {
 		var canFinalize, finalizeSettingUpdateEvent;
 		try {
 			var result = await aosetting.finalizeSettingUpdate(99, { from: account2 });
@@ -2725,11 +2834,11 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting update");
 
-		var pendingValue = await aouintsetting.pendingValue(settingId1.toNumber());
-		assert.equal(pendingValue.toNumber(), 0, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId1.toNumber());
+		assert.equal(pendingValue[4].toNumber(), 0, "Setting has incorrect pendingValue");
 
-		var settingValue = await aouintsetting.settingValue(settingId1.toNumber());
-		assert.equal(settingValue.toNumber(), uintValue, "Setting has incorrect settingValue");
+		var settingValue = await aosettingvalue.settingValue(settingId1.toNumber());
+		assert.equal(settingValue[4].toNumber(), uintValue, "Setting has incorrect settingValue");
 
 		assert.equal(
 			finalizeSettingUpdateEvent.args.settingId.toNumber(),
@@ -2754,7 +2863,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(settingValues[0].toNumber(), uintValue, "getSettingValuesByTAOName() return incorrect uint256 value");
 	});
 
-	it("only the Advocate of setting's Associated TAO can finalize bool setting update", async function() {
+	it("finalizeSettingUpdate() - only the Advocate of setting's Associated TAO can finalize bool setting update", async function() {
 		var canFinalize, finalizeSettingUpdateEvent;
 		try {
 			var result = await aosetting.finalizeSettingUpdate(settingId2, { from: account1 });
@@ -2796,11 +2905,11 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting update");
 
-		var pendingValue = await aoboolsetting.pendingValue(settingId2.toNumber());
-		assert.equal(pendingValue, false, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId2.toNumber());
+		assert.equal(pendingValue[1], false, "Setting has incorrect pendingValue");
 
-		var settingValue = await aoboolsetting.settingValue(settingId2.toNumber());
-		assert.equal(settingValue, boolValue, "Setting has incorrect settingValue");
+		var settingValue = await aosettingvalue.settingValue(settingId2.toNumber());
+		assert.equal(settingValue[1], boolValue, "Setting has incorrect settingValue");
 
 		assert.equal(
 			finalizeSettingUpdateEvent.args.settingId.toNumber(),
@@ -2825,7 +2934,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(settingValues[1], boolValue, "getSettingValuesByTAOName() return incorrect bool value");
 	});
 
-	it("only the Advocate of setting's Associated TAO can finalize address setting update", async function() {
+	it("finalizeSettingUpdate() - only the Advocate of setting's Associated TAO can finalize address setting update", async function() {
 		var canFinalize, finalizeSettingUpdateEvent;
 		try {
 			var result = await aosetting.finalizeSettingUpdate(settingId3, { from: account1 });
@@ -2867,11 +2976,11 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting update");
 
-		var pendingValue = await aoaddresssetting.pendingValue(settingId3.toNumber());
-		assert.equal(pendingValue, emptyAddress, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId3.toNumber());
+		assert.equal(pendingValue[0], emptyAddress, "Setting has incorrect pendingValue");
 
-		var settingValue = await aoaddresssetting.settingValue(settingId3.toNumber());
-		assert.equal(settingValue, addressValue, "Setting has incorrect settingValue");
+		var settingValue = await aosettingvalue.settingValue(settingId3.toNumber());
+		assert.equal(settingValue[0], addressValue, "Setting has incorrect settingValue");
 
 		assert.equal(
 			finalizeSettingUpdateEvent.args.settingId.toNumber(),
@@ -2896,7 +3005,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(settingValues[2], addressValue, "getSettingValuesByTAOName() return incorrect address value");
 	});
 
-	it("only the Advocate of setting's Associated TAO can finalize bytes setting update", async function() {
+	it("finalizeSettingUpdate() - only the Advocate of setting's Associated TAO can finalize bytes setting update", async function() {
 		var canFinalize, finalizeSettingUpdateEvent;
 		try {
 			var result = await aosetting.finalizeSettingUpdate(settingId4, { from: account1 });
@@ -2938,11 +3047,11 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting update");
 
-		var pendingValue = await aobytessetting.pendingValue(settingId4.toNumber());
-		assert.equal(pendingValue, nullBytesValue, "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId4.toNumber());
+		assert.equal(pendingValue[2], nullBytesValue, "Setting has incorrect pendingValue");
 
-		var settingValue = await aobytessetting.settingValue(settingId4.toNumber());
-		assert.notEqual(settingValue, nullBytesValue, "Setting has incorrect settingValue");
+		var settingValue = await aosettingvalue.settingValue(settingId4.toNumber());
+		assert.notEqual(settingValue[2], nullBytesValue, "Setting has incorrect settingValue");
 
 		assert.equal(
 			finalizeSettingUpdateEvent.args.settingId.toNumber(),
@@ -2967,7 +3076,7 @@ contract("AOSetting", function(accounts) {
 		assert.notEqual(settingValues[3], nullBytesValue, "getSettingValuesByTAOName() return incorrect bytes32 value");
 	});
 
-	it("only the Advocate of setting's Associated TAO can finalize string setting update", async function() {
+	it("finalizeSettingUpdate() - only the Advocate of setting's Associated TAO can finalize string setting update", async function() {
 		var canFinalize, finalizeSettingUpdateEvent;
 		try {
 			var result = await aosetting.finalizeSettingUpdate(settingId5, { from: account1 });
@@ -3009,11 +3118,11 @@ contract("AOSetting", function(accounts) {
 		}
 		assert.equal(canFinalize, true, "Advocate can't finalize setting update");
 
-		var pendingValue = await aostringsetting.pendingValue(settingId5.toNumber());
-		assert.equal(pendingValue, "", "Setting has incorrect pendingValue");
+		var pendingValue = await aosettingvalue.pendingValue(settingId5.toNumber());
+		assert.equal(pendingValue[3], "", "Setting has incorrect pendingValue");
 
-		var settingValue = await aostringsetting.settingValue(settingId5.toNumber());
-		assert.equal(settingValue, stringValue, "Setting has incorrect settingValue");
+		var settingValue = await aosettingvalue.settingValue(settingId5.toNumber());
+		assert.equal(settingValue[3], stringValue, "Setting has incorrect settingValue");
 
 		assert.equal(
 			finalizeSettingUpdateEvent.args.settingId.toNumber(),
@@ -3038,7 +3147,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(settingValues[4], stringValue, "getSettingValuesByTAOName() return incorrect string value");
 	});
 
-	it("only the Advocate of setting's Proposal TAO can reject uint setting update", async function() {
+	it("approveSettingUpdate() - only the Advocate of setting's Proposal TAO can reject uint setting update", async function() {
 		uintValue = 1000;
 		var result = await aosetting.updateUintSetting(settingId1, uintValue, proposalTAOId, updateSignature, extraData, {
 			from: account2
@@ -3079,7 +3188,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canFinalize, false, "Advocate can finalize rejected setting update");
 	});
 
-	it("only the Advocate of setting's Proposal TAO can reject bool setting update", async function() {
+	it("approveSettingUpdate() - only the Advocate of setting's Proposal TAO can reject bool setting update", async function() {
 		boolValue = true;
 		var result = await aosetting.updateBoolSetting(settingId2, boolValue, proposalTAOId, updateSignature, extraData, {
 			from: account2
@@ -3120,7 +3229,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canFinalize, false, "Advocate can finalize rejected setting update");
 	});
 
-	it("only the Advocate of setting's Proposal TAO can reject address setting update", async function() {
+	it("approveSettingUpdate() - only the Advocate of setting's Proposal TAO can reject address setting update", async function() {
 		addressValue = accounts[9];
 		var result = await aosetting.updateAddressSetting(settingId3, addressValue, proposalTAOId, updateSignature, extraData, {
 			from: account2
@@ -3161,7 +3270,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canFinalize, false, "Advocate can finalize rejected setting update");
 	});
 
-	it("only the Advocate of setting's Proposal TAO can reject bytes setting update", async function() {
+	it("approveSettingUpdate() - only the Advocate of setting's Proposal TAO can reject bytes setting update", async function() {
 		bytesValue = "anotherbytesvalue";
 		var result = await aosetting.updateBytesSetting(settingId4, bytesValue, proposalTAOId, updateSignature, extraData, {
 			from: account2
@@ -3202,7 +3311,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canFinalize, false, "Advocate can finalize rejected setting update");
 	});
 
-	it("only the Advocate of setting's Proposal TAO can reject string setting update", async function() {
+	it("approveSettingUpdate() - only the Advocate of setting's Proposal TAO can reject string setting update", async function() {
 		stringValue = "anotherstringvalue";
 		var result = await aosetting.updateStringSetting(settingId5, stringValue, proposalTAOId, updateSignature, extraData, {
 			from: account2
@@ -3243,7 +3352,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canFinalize, false, "Advocate can finalize rejected setting update");
 	});
 
-	it("only the Advocate of a Creator TAO can add setting deprecation", async function() {
+	it("addSettingDeprecation() - only the Advocate of a Creator TAO can add setting deprecation", async function() {
 		var canAdd, settingDeprecationEvent, associatedTAOSettingDeprecationId, creatorTAOSettingDeprecationId;
 		try {
 			var result = await aosetting.addSettingDeprecation(
@@ -3479,7 +3588,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(canAdd, true, "Advocate of Creator TAO can't create setting deprecation");
 	});
 
-	it("only the Advocate of setting deprecation's Associated TAO can approve/reject uint setting deprecation", async function() {
+	it("approveSettingDeprecation() - only the Advocate of setting deprecation's Associated TAO can approve/reject uint setting deprecation", async function() {
 		var canApprove, approveSettingDeprecationEvent;
 		try {
 			var result = await aosetting.approveSettingDeprecation(99, true, { from: account1 });
@@ -3558,7 +3667,7 @@ contract("AOSetting", function(accounts) {
 		assert.equal(approveSettingDeprecationEvent.args.approved, false, "ApproveSettingDeprecation has incorrect approved");
 	});
 
-	it("only the Advocate of setting's Creator TAO can finalize setting deprecation", async function() {
+	it("finalizeSettingDeprecation() - only the Advocate of setting's Creator TAO can finalize setting deprecation", async function() {
 		var canFinalize, finalizeSettingDeprecationEvent;
 		try {
 			var result = await aosetting.finalizeSettingDeprecation(99, { from: account1 });
@@ -3627,17 +3736,17 @@ contract("AOSetting", function(accounts) {
 		);
 
 		var settingId1Values = await aosetting.getSettingValuesById(settingId1.toNumber());
-		var settingId16Value = await aouintsetting.settingValue(settingId16.toNumber());
+		var settingId16Value = await aosettingvalue.settingValue(settingId16.toNumber());
 		assert.equal(
 			settingId1Values[0].toNumber(),
-			settingId16Value.toNumber(),
+			settingId16Value[4].toNumber(),
 			"getSettingValuesById() return incorrect uint256 value for deprecated setting"
 		);
 
 		var settingId1Values = await aosetting.getSettingValuesByTAOName(associatedTAOId, "uintSetting");
 		assert.equal(
 			settingId1Values[0].toNumber(),
-			settingId16Value.toNumber(),
+			settingId16Value[4].toNumber(),
 			"getSettingValuesByTAOName() return incorrect uint256 value"
 		);
 	});
