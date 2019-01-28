@@ -165,7 +165,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
 	});
 
-	it("initialize() - only NameFactory can initially initialize PublicKey for a Name", async function() {
+	it("initialize() - only NameFactory can initialize PublicKey for a Name", async function() {
 		// Create Name
 		var result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
 			from: account2
