@@ -1,11 +1,25 @@
+var NameFactory = artifacts.require("./NameFactory.sol");
+var TAOFactory = artifacts.require("./TAOFactory.sol");
+var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
+var Logos = artifacts.require("./Logos.sol");
+
 var AOPool = artifacts.require("./AOPool.sol");
 var AOToken = artifacts.require("./AOToken.sol");
+var TokenOne = artifacts.require("./TokenOne.sol");
+
 var BigNumber = require("bignumber.js");
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
 contract("AOPool", function(accounts) {
-	var aopool,
+	var namefactory,
+		taofactory,
+		nametaoposition,
+		logos,
+		nameId,
+		taoId,
+		aopool,
 		aotoken,
+		tokenone,
 		poolId1,
 		poolId2,
 		poolId3,
@@ -38,13 +52,49 @@ contract("AOPool", function(accounts) {
 	var buyer2 = accounts[7];
 	var buyer3 = accounts[8];
 
+	var someAddress = accounts[8];
+	var whitelistedAddress = accounts[9];
 	var accountNoBalance = accounts[9];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 
 	before(async function() {
+		namefactory = await NameFactory.deployed();
+		taofactory = await TAOFactory.deployed();
+		nametaoposition = await NameTAOPosition.deployed();
+		logos = await Logos.deployed();
+
 		aopool = await AOPool.deployed();
 		aotoken = await AOToken.deployed();
+		tokenone = await TokenOne.deployed();
 
+		// Create Name
+		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+			from: account1
+		});
+		nameId = await namefactory.ethAddressToNameId(account1);
+
+		// Mint Logos to nameId
+		await logos.setWhitelist(theAO, true, { from: theAO });
+		await logos.mintToken(nameId, 10 ** 12, { from: theAO });
+
+		result = await taofactory.createTAO(
+			"Charlie's TAO",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId,
+			0,
+			false,
+			0,
+			{
+				from: account1
+			}
+		);
+		var createTAOEvent = result.logs[0];
+		taoId = createTAOEvent.args.taoId;
+
+		await aotoken.setWhitelist(theAO, true, { from: theAO });
 		await aotoken.mintToken(account1, 1000000, { from: theAO });
 		await aotoken.mintToken(account2, 1000000, { from: theAO });
 		await aotoken.mintToken(account3, 1000000, { from: theAO });
@@ -442,6 +492,132 @@ contract("AOPool", function(accounts) {
 		);
 	};
 
+	it("The AO - transferOwnership() - should be able to transfer ownership to a TAO", async function() {
+		var canTransferOwnership;
+		try {
+			await aopool.transferOwnership(taoId, { from: someAddress });
+			canTransferOwnership = true;
+		} catch (e) {
+			canTransferOwnership = false;
+		}
+		assert.equal(canTransferOwnership, false, "Non-AO can transfer ownership");
+
+		try {
+			await aopool.transferOwnership(taoId, { from: theAO });
+			canTransferOwnership = true;
+		} catch (e) {
+			canTransferOwnership = false;
+		}
+		assert.equal(canTransferOwnership, true, "The AO can't transfer ownership");
+
+		var newTheAO = await aopool.theAO();
+		assert.equal(newTheAO, taoId, "Contract has incorrect TheAO address after transferring ownership");
+	});
+
+	it("The AO - setWhitelist() should be able to whitelist an address", async function() {
+		var canSetWhitelist;
+		try {
+			await aopool.setWhitelist(whitelistedAddress, true, { from: someAddress });
+			canSetWhitelist = true;
+		} catch (e) {
+			canSetWhitelist = false;
+		}
+		assert.equal(canSetWhitelist, false, "Non-AO can set whitelist");
+
+		try {
+			await aopool.setWhitelist(whitelistedAddress, true, { from: account1 });
+			canSetWhitelist = true;
+		} catch (e) {
+			canSetWhitelist = false;
+		}
+		assert.equal(canSetWhitelist, true, "The AO can't set whitelist");
+
+		var whitelistStatus = await aopool.whitelist(whitelistedAddress);
+		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
+	});
+
+	it("The AO - setAOTokenAddress() should be able to set AOToken address", async function() {
+		var canSetAddress;
+		try {
+			await aopool.setAOTokenAddress(aotoken.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set AOToken address");
+
+		try {
+			await aopool.setAOTokenAddress(aotoken.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set AOToken address");
+
+		var aoTokenAddress = await aopool.aoTokenAddress();
+		assert.equal(aoTokenAddress, aotoken.address, "Contract has incorrect aoTokenAddress");
+	});
+
+	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
+		var canSetAddress;
+		try {
+			await aopool.setNameTAOPositionAddress(nametaoposition.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameTAOPosition address");
+
+		try {
+			await aopool.setNameTAOPositionAddress(nametaoposition.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameTAOPosition address");
+
+		var nameTAOPositionAddress = await aopool.nameTAOPositionAddress();
+		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
+	});
+
+	it("The AO - transferERC20() should be able to transfer ERC20 to an address", async function() {
+		await tokenone.transfer(aopool.address, 100, { from: theAO });
+
+		var accountBalanceBefore = await tokenone.balanceOf(account1);
+		var aopoolBalanceBefore = await tokenone.balanceOf(aopool.address);
+
+		var canTransfer;
+		try {
+			await aopool.transferERC20(tokenone.address, account1, 10, { from: someAddress });
+			canTransfer = true;
+		} catch (e) {
+			canTransfer = false;
+		}
+		assert.equal(canTransfer, false, "Non-AO can transfer ERC20 token from aopool");
+
+		try {
+			await aopool.transferERC20(tokenone.address, account1, 1000, { from: account1 });
+			canTransfer = true;
+		} catch (e) {
+			canTransfer = false;
+		}
+		assert.equal(canTransfer, false, "The AO can transfer ERC20 token more than owned balance");
+
+		try {
+			await aopool.transferERC20(tokenone.address, account1, 100, { from: account1 });
+			canTransfer = true;
+		} catch (e) {
+			canTransfer = false;
+		}
+		assert.equal(canTransfer, true, "The AO can't transfer ERC20 token from aopool to another recipient");
+
+		var accountBalanceAfter = await tokenone.balanceOf(account1);
+		var aopoolBalanceAfter = await tokenone.balanceOf(aopool.address);
+
+		assert.equal(accountBalanceAfter.toNumber(), accountBalanceBefore.plus(100).toNumber(), "Account has incorrect ERC20 balance");
+		assert.equal(aopoolBalanceAfter.toNumber(), aopoolBalanceBefore.minus(100).toNumber(), "aopool has incorrect ERC20 balance");
+	});
+
 	it("createPool() - only The AO can create Pool", async function() {
 		var price = 10000;
 		var status = true;
@@ -464,7 +640,7 @@ contract("AOPool", function(accounts) {
 				erc20CounterAsset,
 				erc20TokenAddress,
 				erc20TokenMultiplier,
-				{ from: account1 }
+				{ from: someAddress }
 			);
 			createPoolEvent = result.logs[0];
 			poolId1 = createPoolEvent.args.poolId;
@@ -487,7 +663,7 @@ contract("AOPool", function(accounts) {
 				erc20CounterAsset,
 				erc20TokenAddress,
 				erc20TokenMultiplier,
-				{ from: theAO }
+				{ from: account1 }
 			);
 			createPoolEvent = result.logs[0];
 			poolId1 = createPoolEvent.args.poolId;
@@ -510,7 +686,7 @@ contract("AOPool", function(accounts) {
 				erc20CounterAsset,
 				erc20TokenAddress,
 				erc20TokenMultiplier,
-				{ from: theAO }
+				{ from: account1 }
 			);
 			createPoolEvent = result.logs[0];
 			poolId1 = createPoolEvent.args.poolId;
@@ -533,7 +709,7 @@ contract("AOPool", function(accounts) {
 				erc20CounterAsset,
 				erc20TokenAddress,
 				erc20TokenMultiplier,
-				{ from: theAO }
+				{ from: account1 }
 			);
 			createPoolEvent = result.logs[0];
 			poolId1 = createPoolEvent.args.poolId;
@@ -556,7 +732,7 @@ contract("AOPool", function(accounts) {
 				erc20CounterAsset,
 				"0x6635f83421bf059cd8111f180f0727128685bae4",
 				erc20TokenMultiplier,
-				{ from: theAO }
+				{ from: account1 }
 			);
 			createPoolEvent = result.logs[0];
 			poolId1 = createPoolEvent.args.poolId;
@@ -579,7 +755,7 @@ contract("AOPool", function(accounts) {
 				erc20CounterAsset,
 				erc20TokenAddress,
 				0,
-				{ from: theAO }
+				{ from: account1 }
 			);
 			createPoolEvent = result.logs[0];
 			poolId1 = createPoolEvent.args.poolId;
@@ -609,7 +785,7 @@ contract("AOPool", function(accounts) {
 			erc20CounterAsset,
 			erc20TokenAddress,
 			erc20TokenMultiplier,
-			theAO
+			account1
 		);
 
 		// pool inactive
@@ -626,7 +802,7 @@ contract("AOPool", function(accounts) {
 			erc20CounterAsset,
 			erc20TokenAddress,
 			erc20TokenMultiplier,
-			theAO
+			account1
 		);
 
 		// pool active
@@ -643,7 +819,7 @@ contract("AOPool", function(accounts) {
 			erc20CounterAsset,
 			erc20TokenAddress,
 			erc20TokenMultiplier,
-			theAO
+			account1
 		);
 
 		// pool active
@@ -660,7 +836,7 @@ contract("AOPool", function(accounts) {
 			erc20CounterAsset,
 			erc20TokenAddress,
 			erc20TokenMultiplier,
-			theAO
+			account1
 		);
 
 		// pool active
@@ -677,38 +853,38 @@ contract("AOPool", function(accounts) {
 			erc20CounterAsset,
 			erc20TokenAddress,
 			erc20TokenMultiplier,
-			theAO
+			account1
 		);
 
 		// pool active
 		// no sell cap
 		// no quantity cap
 		// is ethereum
-		poolId6 = await createPool(price, status, false, sellCapAmount, false, quantityCapAmount, false, "", "", theAO);
+		poolId6 = await createPool(price, status, false, sellCapAmount, false, quantityCapAmount, false, "", "", account1);
 
 		// pool active
 		// has sell cap
 		// no quantity cap
 		// is ethereum
-		poolId7 = await createPool(price, status, true, sellCapAmount, false, quantityCapAmount, false, "", "", theAO);
+		poolId7 = await createPool(price, status, true, sellCapAmount, false, quantityCapAmount, false, "", "", account1);
 
 		// pool active
 		// no sell cap
 		// has quantity cap
 		// is ethereum
-		poolId8 = await createPool(price, status, false, sellCapAmount, true, quantityCapAmount, false, "", "", theAO);
+		poolId8 = await createPool(price, status, false, sellCapAmount, true, quantityCapAmount, false, "", "", account1);
 
 		// pool active
 		// has sell cap
 		// has quantity cap
 		// is ethereum
-		poolId9 = await createPool(price, status, true, sellCapAmount, true, quantityCapAmount, false, "", "", theAO);
+		poolId9 = await createPool(price, status, true, sellCapAmount, true, quantityCapAmount, false, "", "", account1);
 	});
 
 	it("updatePoolStatus() - only Pool's admin can start/stop a Pool", async function() {
 		var canUpdatePoolStatus;
 		try {
-			var result = await aopool.updatePoolStatus(poolId1.toString(), true, { from: account1 });
+			var result = await aopool.updatePoolStatus(poolId1.toString(), true, { from: someAddress });
 			canUpdatePoolStatus = true;
 		} catch (e) {
 			canUpdatePoolStatus = false;
@@ -716,41 +892,41 @@ contract("AOPool", function(accounts) {
 		assert.notEqual(canUpdatePoolStatus, true, "Non-Pool's admin can start/stop the Pool");
 
 		try {
-			var result = await aopool.updatePoolStatus(0, true, { from: theAO });
+			var result = await aopool.updatePoolStatus(0, true, { from: account1 });
 			canUpdatePoolStatus = true;
 		} catch (e) {
 			canUpdatePoolStatus = false;
 		}
-		assert.notEqual(canUpdatePoolStatus, true, "Pool's admin can start/stop non-existing Pool");
+		assert.notEqual(canUpdatePoolStatus, true, "The AO can start/stop non-existing Pool");
 
 		try {
-			var result = await aopool.updatePoolStatus(poolId1.toString(), true, { from: theAO });
+			var result = await aopool.updatePoolStatus(poolId1.toString(), true, { from: account1 });
 			canUpdatePoolStatus = true;
 		} catch (e) {
 			canUpdatePoolStatus = false;
 		}
-		assert.equal(canUpdatePoolStatus, true, "Pool's admin can't start/stop non-existing Pool");
+		assert.equal(canUpdatePoolStatus, true, "The AO can't start/stop Pool");
 		var pool = await aopool.pools(poolId1.toString());
 		assert.equal(pool[1], true, "Pool has incorrect status after update");
 
 		try {
-			var result = await aopool.updatePoolStatus(poolId1.toString(), false, { from: theAO });
+			var result = await aopool.updatePoolStatus(poolId1.toString(), false, { from: account1 });
 			canUpdatePoolStatus = true;
 		} catch (e) {
 			canUpdatePoolStatus = false;
 		}
-		assert.equal(canUpdatePoolStatus, true, "Pool's admin can't start/stop non-existing Pool");
+		assert.equal(canUpdatePoolStatus, true, "Pool's admin can't start/stop Pool");
 		var pool = await aopool.pools(poolId1.toString());
 		assert.equal(pool[1], false, "Pool has incorrect status after update");
 
 		// Start the pool again
-		await aopool.updatePoolStatus(poolId1.toString(), true, { from: theAO });
+		await aopool.updatePoolStatus(poolId1.toString(), true, { from: account1 });
 	});
 
 	it("changeAdminAddress() - only Pool's admin can change admin address", async function() {
 		var canChangeAdminAddress;
 		try {
-			var result = await aopool.changeAdminAddress(poolId1.toString(), account1, { from: account1 });
+			var result = await aopool.changeAdminAddress(poolId1.toString(), account1, { from: someAddress });
 			canChangeAdminAddress = true;
 		} catch (e) {
 			canChangeAdminAddress = false;
@@ -758,22 +934,12 @@ contract("AOPool", function(accounts) {
 		assert.notEqual(canChangeAdminAddress, true, "Non-Pool's admin can change admin address");
 
 		try {
-			var result = await aopool.changeAdminAddress(0, account1, { from: theAO });
+			var result = await aopool.changeAdminAddress(0, account1, { from: account1 });
 			canChangeAdminAddress = true;
 		} catch (e) {
 			canChangeAdminAddress = false;
 		}
-		assert.notEqual(canChangeAdminAddress, true, "Pool's admin can change admin address on non-existing Pool");
-
-		try {
-			var result = await aopool.changeAdminAddress(poolId1.toString(), account1, { from: theAO });
-			canChangeAdminAddress = true;
-		} catch (e) {
-			canChangeAdminAddress = false;
-		}
-		assert.equal(canChangeAdminAddress, true, "Pool's admin can't change admin address");
-		var pool = await aopool.pools(poolId1.toString());
-		assert.equal(pool[9], account1, "Pool has incorrect admin address after update");
+		assert.notEqual(canChangeAdminAddress, true, "The AO can change admin address on non-existing Pool");
 
 		try {
 			var result = await aopool.changeAdminAddress(poolId1.toString(), account2, { from: account1 });
@@ -781,22 +947,19 @@ contract("AOPool", function(accounts) {
 		} catch (e) {
 			canChangeAdminAddress = false;
 		}
-		assert.equal(canChangeAdminAddress, true, "Pool's admin can't change admin address");
+		assert.equal(canChangeAdminAddress, true, "The AO can't change admin address");
 		var pool = await aopool.pools(poolId1.toString());
 		assert.equal(pool[9], account2, "Pool has incorrect admin address after update");
 
 		try {
-			var result = await aopool.changeAdminAddress(poolId1.toString(), account3, { from: theAO });
+			var result = await aopool.changeAdminAddress(poolId1.toString(), account1, { from: account2 });
 			canChangeAdminAddress = true;
 		} catch (e) {
 			canChangeAdminAddress = false;
 		}
-		assert.equal(canChangeAdminAddress, true, "The AO can't change admin address");
+		assert.equal(canChangeAdminAddress, true, "Pool's admin can't change admin address");
 		var pool = await aopool.pools(poolId1.toString());
-		assert.equal(pool[9], account3, "Pool has incorrect admin address after update");
-
-		// Change it back again to theAO
-		await aopool.changeAdminAddress(poolId1.toString(), theAO, { from: theAO });
+		assert.equal(pool[9], account1, "Pool has incorrect admin address after update");
 	});
 
 	it("sell() - should be able to sell AO tokens in a Pool", async function() {
@@ -832,7 +995,7 @@ contract("AOPool", function(accounts) {
 		assert.equal(canSell, false, "Account can sell AO on a Pool even though entered price doesn't match Pool's price");
 
 		// Stop the pool
-		await aopool.updatePoolStatus(poolId1.toString(), false, { from: theAO });
+		await aopool.updatePoolStatus(poolId1.toString(), false, { from: account1 });
 
 		try {
 			var result = await aopool.sell(poolId1.toString(), 10, 10000, { from: account1 });
@@ -845,7 +1008,7 @@ contract("AOPool", function(accounts) {
 		assert.equal(canSell, false, "Account can sell AO on a Pool even though Pool is currently stopped (status = 0)");
 
 		// Start the pool
-		await aopool.updatePoolStatus(poolId1.toString(), true, { from: theAO });
+		await aopool.updatePoolStatus(poolId1.toString(), true, { from: account1 });
 
 		await sell(poolId1.toString(), 10, 10000, account1, account1Lots);
 		await sell(poolId3.toString(), 10, 10000, account1, account1Lots);
@@ -1028,7 +1191,7 @@ contract("AOPool", function(accounts) {
 		assert.equal(canBuy, false, "Account can buy token with Eth from Pool that is not priced in Eth");
 
 		// Stop the pool
-		await aopool.updatePoolStatus(poolId6.toString(), false, { from: theAO });
+		await aopool.updatePoolStatus(poolId6.toString(), false, { from: account1 });
 
 		try {
 			var result = await aopool.buyWithEth(poolId6.toString(), 15, 10000, { from: account1, value: 15 * 10000 });
@@ -1041,7 +1204,7 @@ contract("AOPool", function(accounts) {
 		assert.equal(canBuy, false, "Account can buy token from Pool even though Pool is currently inactive");
 
 		// Start the pool
-		await aopool.updatePoolStatus(poolId6.toString(), true, { from: theAO });
+		await aopool.updatePoolStatus(poolId6.toString(), true, { from: account1 });
 
 		await buyWithEth(poolId6.toString(), 15, 10000, buyer1);
 	});
@@ -1269,7 +1432,7 @@ contract("AOPool", function(accounts) {
 	});
 
 	it("stress testing to calculate gas cost for withdrawing Eth on last Lot especially when there is token withdrawn from the Lots before the last Lot", async function() {
-		var poolId = await createPool(1000, true, false, "", false, "", false, "", "", theAO);
+		var poolId = await createPool(1000, true, false, "", false, "", false, "", "", account1);
 		var pool = await aopool.pools(poolId.toString());
 
 		var lots = [];

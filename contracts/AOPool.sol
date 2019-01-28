@@ -342,7 +342,8 @@ contract AOPool is TheAO {
 	 * @param _status The status to set. true = start. false = stop
 	 */
 	function updatePoolStatus(uint256 _poolId, bool _status) public {
-		require (pools[_poolId].price > 0 && pools[_poolId].adminAddress == msg.sender);
+		// Check pool existence by requiring price > 0
+		require (pools[_poolId].price > 0 && (pools[_poolId].adminAddress == msg.sender || AOLibrary.isTheAO(msg.sender, theAO, nameTAOPositionAddress)));
 		pools[_poolId].status = _status;
 		emit UpdatePoolStatus(_poolId, _status);
 	}
@@ -353,7 +354,8 @@ contract AOPool is TheAO {
 	 * @param _adminAddress The new admin address to set
 	 */
 	function changeAdminAddress(uint256 _poolId, address _adminAddress) public {
-		require (pools[_poolId].price > 0 && (pools[_poolId].adminAddress == msg.sender || theAO == msg.sender));
+		// Check pool existence by requiring price > 0
+		require (pools[_poolId].price > 0 && (pools[_poolId].adminAddress == msg.sender || AOLibrary.isTheAO(msg.sender, theAO, nameTAOPositionAddress)));
 		require (_adminAddress != address(0));
 		pools[_poolId].adminAddress = _adminAddress;
 		emit ChangeAdminAddress(_poolId, _adminAddress);
