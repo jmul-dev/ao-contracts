@@ -6,7 +6,7 @@ var Logos = artifacts.require("./Logos.sol");
 var Voice = artifacts.require("./Voice.sol");
 
 contract("Voice", function(accounts) {
-	var namefactory, taofactory, nametaoposition, logos, nameId1, nameId2, taoId1, taoId2, voice;
+	var namefactory, taofactory, nametaoposition, logos, nameId1, nameId2, taoId1, voice;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
@@ -271,7 +271,7 @@ contract("Voice", function(accounts) {
 		assert.equal(canUnstake, false, "Whitelisted address can unstake Voice from a non-TAO");
 
 		try {
-			await voice.unstake(nameId1, taoId2, 900000, { from: whitelistedAddress });
+			await voice.unstake(nameId1, taoId1, 900000, { from: whitelistedAddress });
 			canUnstake = true;
 		} catch (e) {
 			canUnstake = false;
@@ -307,5 +307,13 @@ contract("Voice", function(accounts) {
 			nameStakedBalanceBefore.minus(600000).toNumber(),
 			"stakedBalance() has incorrect balance"
 		);
+
+		try {
+			await voice.unstake(nameId1, taoId1, 300000, { from: whitelistedAddress });
+			canUnstake = true;
+		} catch (e) {
+			canUnstake = false;
+		}
+		assert.equal(canUnstake, false, "Whitelisted address can unstake Voice from a TAO for a Name more than its staked balance");
 	});
 });
