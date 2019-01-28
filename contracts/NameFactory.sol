@@ -268,7 +268,7 @@ contract NameFactory is TheAO, INameFactory {
 		bytes32 _signatureS
 	) public view returns (bool) {
 		require (_nameTAOLookup.isExist(_name));
-		address _nameId = _nameTAOLookup.getAddressByName(_name);
+		address _nameId = _nameTAOLookup.getNameTAOIdByName(_name);
 		address _signatureAddress = _getValidateSignatureAddress(_data, _nonce, _signatureV, _signatureR, _signatureS);
 		if (_validateAddress != address(0)) {
 			return (

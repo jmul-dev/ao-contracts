@@ -14,7 +14,7 @@ contract NameTAOLookup is TheAO, INameTAOLookup {
 
 	struct NameTAOInfo {
 		string name;
-		address nameTAOAddress;
+		address nameTAOId;
 		string parentName;
 		uint256 typeId; // 0 = TAO. 1 = Name
 	}
@@ -114,14 +114,14 @@ contract NameTAOLookup is TheAO, INameTAOLookup {
 	/**
 	 * @dev Add a new NameTAOInfo
 	 * @param _name The name of the Name/TAO
-	 * @param _nameTAOAddress The address of the Name/TAO
+	 * @param _nameTAOId The address of the Name/TAO
 	 * @param _parentName The parent name of the Name/TAO
 	 * @param _typeId If TAO = 0. Name = 1
 	 * @return true on success
 	 */
-	function initialize(string _name, address _nameTAOAddress, string _parentName, uint256 _typeId) external onlyFactory returns (bool) {
+	function initialize(string _name, address _nameTAOId, string _parentName, uint256 _typeId) external onlyFactory returns (bool) {
 		require (bytes(_name).length > 0);
-		require (_nameTAOAddress != address(0));
+		require (_nameTAOId != address(0));
 		require (bytes(_parentName).length > 0);
 		require (_typeId == 0 || _typeId == 1);
 		require (!this.isExist(_name));
@@ -131,7 +131,7 @@ contract NameTAOLookup is TheAO, INameTAOLookup {
 		internalIdLookup[_nameKey] = internalId;
 		NameTAOInfo storage _nameTAOInfo = nameTAOInfos[internalId];
 		_nameTAOInfo.name = _name;
-		_nameTAOInfo.nameTAOAddress = _nameTAOAddress;
+		_nameTAOInfo.nameTAOId = _nameTAOId;
 		_nameTAOInfo.parentName = _parentName;
 		_nameTAOInfo.typeId = _typeId;
 
@@ -157,7 +157,7 @@ contract NameTAOLookup is TheAO, INameTAOLookup {
 		NameTAOInfo memory _nameTAOInfo = nameTAOInfos[internalIdLookup[_nameKey]];
 		return (
 			_nameTAOInfo.name,
-			_nameTAOInfo.nameTAOAddress,
+			_nameTAOInfo.nameTAOId,
 			_nameTAOInfo.parentName,
 			_nameTAOInfo.typeId
 		);
@@ -172,25 +172,25 @@ contract NameTAOLookup is TheAO, INameTAOLookup {
 	 * @return type ID. 0 = TAO. 1 = Name
 	 */
 	function getByInternalId(uint256 _internalId) public view returns (string, address, string, uint256) {
-		require (nameTAOInfos[_internalId].nameTAOAddress != address(0));
+		require (nameTAOInfos[_internalId].nameTAOId != address(0));
 		NameTAOInfo memory _nameTAOInfo = nameTAOInfos[_internalId];
 		return (
 			_nameTAOInfo.name,
-			_nameTAOInfo.nameTAOAddress,
+			_nameTAOInfo.nameTAOId,
 			_nameTAOInfo.parentName,
 			_nameTAOInfo.typeId
 		);
 	}
 
 	/**
-	 * @dev Return the nameTAOAddress given a _name
+	 * @dev Return the Name/TAO ID given a _name
 	 * @param _name The name to be queried
-	 * @return the nameTAOAddress of the name
+	 * @return the nameTAOId of the name
 	 */
-	function getAddressByName(string _name) external view returns (address) {
+	function getNameTAOIdByName(string _name) external view returns (address) {
 		require (this.isExist(_name));
 		bytes32 _nameKey = keccak256(abi.encodePacked(_name));
 		NameTAOInfo memory _nameTAOInfo = nameTAOInfos[internalIdLookup[_nameKey]];
-		return _nameTAOInfo.nameTAOAddress;
+		return _nameTAOInfo.nameTAOId;
 	}
 }

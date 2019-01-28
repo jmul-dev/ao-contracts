@@ -341,7 +341,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 	 * @return the TAO ID
 	 */
 	function _getTAOIdByName(string _name) internal view returns (address) {
-		return _nameTAOLookup.getAddressByName(_name);
+		return _nameTAOLookup.getNameTAOIdByName(_name);
 	}
 
 	/**
