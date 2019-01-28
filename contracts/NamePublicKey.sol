@@ -134,7 +134,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @param _defaultKey The default public key for this Name
 	 * @return true on success
 	 */
-	function add(address _id, address _defaultKey)
+	function initialize(address _id, address _defaultKey)
 		external
 		isName(_id)
 		onlyFactory returns (bool) {

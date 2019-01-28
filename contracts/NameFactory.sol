@@ -170,13 +170,13 @@ contract NameFactory is TheAO, INameFactory {
 		_ethAddressToNameId[msg.sender] = nameId;
 
 		// Store the name lookup information
-		require (_nameTAOLookup.add(_name, nameId, 'human', 1));
+		require (_nameTAOLookup.initialize(_name, nameId, 'human', 1));
 
 		// Store the Advocate/Listener/Speaker information
-		require (_nameTAOPosition.add(nameId, nameId, nameId, nameId));
+		require (_nameTAOPosition.initialize(nameId, nameId, nameId, nameId));
 
 		// Store the public key information
-		require (_namePublicKey.add(nameId, msg.sender));
+		require (_namePublicKey.initialize(nameId, msg.sender));
 
 		names.push(nameId);
 

@@ -91,7 +91,7 @@ contract TAOFamily is TAOController, ITAOFamily {
 	 * @param _childMinLogos The min required Logos to create a TAO
 	 * @return true on success
 	 */
-	function add(address _id, address _parentId, uint256 _childMinLogos)
+	function initialize(address _id, address _parentId, uint256 _childMinLogos)
 		external
 		isTAO(_id)
 		isNameOrTAO(_parentId)

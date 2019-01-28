@@ -119,7 +119,7 @@ contract NameTAOLookup is TheAO, INameTAOLookup {
 	 * @param _typeId If TAO = 0. Name = 1
 	 * @return true on success
 	 */
-	function add(string _name, address _nameTAOAddress, string _parentName, uint256 _typeId) external onlyFactory returns (bool) {
+	function initialize(string _name, address _nameTAOAddress, string _parentName, uint256 _typeId) external onlyFactory returns (bool) {
 		require (bytes(_name).length > 0);
 		require (_nameTAOAddress != address(0));
 		require (bytes(_parentName).length > 0);

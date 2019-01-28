@@ -287,13 +287,13 @@ contract TAOFactory is TAOController, ITAOFactory {
 		nonces[taoId]++;
 
 		// Store the name lookup information
-		require (_nameTAOLookup.add(_name, taoId, TAO(_parentId).name(), 0));
+		require (_nameTAOLookup.initialize(_name, taoId, TAO(_parentId).name(), 0));
 
 		// Store the Advocate/Listener/Speaker information
-		require (_nameTAOPosition.add(taoId, _nameId, _nameId, _nameId));
+		require (_nameTAOPosition.initialize(taoId, _nameId, _nameId, _nameId));
 
 		// Store the "Family" info of this TAO
-		require (_taoFamily.add(taoId, _parentId, _childMinLogos));
+		require (_taoFamily.initialize(taoId, _parentId, _childMinLogos));
 
 		// Creat a Pool so that public can stake Ethos/Pathos on it
 		require (_taoPool.createPool(taoId, _ethosCapStatus, _ethosCapAmount));

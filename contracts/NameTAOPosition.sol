@@ -225,14 +225,14 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	}
 
 	/**
-	 * @dev Add Position for a Name/TAO
+	 * @dev Initialize Position for a Name/TAO
 	 * @param _id The ID of the Name/TAO
 	 * @param _advocateId The Advocate ID of the Name/TAO
 	 * @param _listenerId The Listener ID of the Name/TAO
 	 * @param _speakerId The Speaker ID of the Name/TAO
 	 * @return true on success
 	 */
-	function add(address _id, address _advocateId, address _listenerId, address _speakerId)
+	function initialize(address _id, address _advocateId, address _listenerId, address _speakerId)
 		external
 		isNameOrTAO(_id)
 		isName(_advocateId)

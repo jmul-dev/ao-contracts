@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 interface INamePublicKey {
-	function add(address _id, address _defaultKey) external returns (bool);
+	function initialize(address _id, address _defaultKey) external returns (bool);
 
 	function isKeyExist(address _id, address _key) external view returns (bool);
 
