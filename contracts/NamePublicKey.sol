@@ -184,6 +184,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 */
 	function addKey(address _id, address _key) public isName(_id) onlyAdvocate(_id) {
 		require (!this.isKeyExist(_id, _key));
+		require (_key != address(0));
 
 		PublicKey storage _publicKey = publicKeys[_id];
 		_publicKey.keys.push(_key);
