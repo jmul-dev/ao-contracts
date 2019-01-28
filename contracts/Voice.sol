@@ -5,9 +5,9 @@ import './AOLibrary.sol';
 import './TheAO.sol';
 
 /**
- * @title Position
+ * @title Voice
  */
-contract Position is TheAO {
+contract Voice is TheAO {
 	using SafeMath for uint256;
 
 	// Public variables of the token
@@ -19,17 +19,14 @@ contract Position is TheAO {
 
 	uint256 public totalSupply;
 
-	// Mapping from Name ID to bool value whether or not it has received Position Token
+	// Mapping from Name ID to bool value whether or not it has received Voice Token
 	mapping (address => bool) public receivedToken;
 
-	// Mapping from Name ID to its total available balance
+	// Mapping from Name/TAO ID to its total available balance
 	mapping (address => uint256) public balanceOf;
 
-	// Mapping from Name's TAO ID to its staked amount
+	// Mapping from Name ID to TAO ID and its staked amount
 	mapping (address => mapping(address => uint256)) public taoStakedBalance;
-
-	// Mapping from TAO ID to its total staked amount
-	mapping (address => uint256) public totalTAOStakedBalance;
 
 	// This generates a public event on the blockchain that will notify clients
 	event Mint(address indexed nameId, uint256 value);
@@ -55,6 +52,22 @@ contract Position is TheAO {
 	 */
 	modifier onlyTheAO {
 		require (AOLibrary.isTheAO(msg.sender, theAO, nameTAOPositionAddress));
+		_;
+	}
+
+	/**
+	 * @dev Check if `_taoId` is a TAO
+	 */
+	modifier isTAO(address _taoId) {
+		require (AOLibrary.isTAO(_taoId));
+		_;
+	}
+
+	/**
+	 * @dev Check if `_nameId` is a Name
+	 */
+	modifier isName(address _nameId) {
+		require (AOLibrary.isName(_nameId));
 		_;
 	}
 
@@ -93,8 +106,8 @@ contract Position is TheAO {
 	 * @param _nameId Address to receive the tokens
 	 * @return true on success
 	 */
-	function mintToken(address _nameId) public inWhitelist returns (bool) {
-		// Make sure _nameId has not received Position Token
+	function mintToken(address _nameId) public inWhitelist isName(_nameId) returns (bool) {
+		// Make sure _nameId has not received Voice Token
 		require (receivedToken[_nameId] == false);
 
 		receivedToken[_nameId] = true;
@@ -109,7 +122,7 @@ contract Position is TheAO {
 	 * @param _nameId The Name ID to be queried
 	 * @return total staked balance
 	 */
-	function stakedBalance(address _nameId) public view returns (uint256) {
+	function stakedBalance(address _nameId) public isName(_nameId) view returns (uint256) {
 		return MAX_SUPPLY_PER_NAME.sub(balanceOf[_nameId]);
 	}
 
@@ -120,12 +133,12 @@ contract Position is TheAO {
 	 * @param _value The amount to stake
 	 * @return true on success
 	 */
-	function stake(address _nameId, address _taoId, uint256 _value) public inWhitelist returns (bool) {
+	function stake(address _nameId, address _taoId, uint256 _value) public inWhitelist isName(_nameId) isTAO(_taoId) returns (bool) {
 		require (_value > 0 && _value <= MAX_SUPPLY_PER_NAME);
 		require (balanceOf[_nameId] >= _value);							// Check if the targeted balance is enough
 		balanceOf[_nameId] = balanceOf[_nameId].sub(_value);			// Subtract from the targeted balance
 		taoStakedBalance[_nameId][_taoId] = taoStakedBalance[_nameId][_taoId].add(_value);	// Add to the targeted staked balance
-		totalTAOStakedBalance[_taoId] = totalTAOStakedBalance[_taoId].add(_value);
+		balanceOf[_taoId] = balanceOf[_taoId].add(_value);
 		emit Stake(_nameId, _taoId, _value);
 		return true;
 	}
@@ -137,12 +150,12 @@ contract Position is TheAO {
 	 * @param _value The amount to unstake
 	 * @return true on success
 	 */
-	function unstake(address _nameId, address _taoId, uint256 _value) public inWhitelist returns (bool) {
+	function unstake(address _nameId, address _taoId, uint256 _value) public inWhitelist isName(_nameId) isTAO(_taoId) returns (bool) {
 		require (_value > 0 && _value <= MAX_SUPPLY_PER_NAME);
 		require (taoStakedBalance[_nameId][_taoId] >= _value);	// Check if the targeted staked balance is enough
-		require (totalTAOStakedBalance[_taoId] >= _value);	// Check if the total targeted staked balance is enough
+		require (balanceOf[_taoId] >= _value);	// Check if the total targeted staked balance is enough
 		taoStakedBalance[_nameId][_taoId] = taoStakedBalance[_nameId][_taoId].sub(_value);	// Subtract from the targeted staked balance
-		totalTAOStakedBalance[_taoId] = totalTAOStakedBalance[_taoId].sub(_value);
+		balanceOf[_taoId] = balanceOf[_taoId].sub(_value);
 		balanceOf[_nameId] = balanceOf[_nameId].add(_value);			// Add to the targeted balance
 		emit Unstake(_nameId, _taoId, _value);
 		return true;

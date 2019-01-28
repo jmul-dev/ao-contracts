@@ -2,7 +2,7 @@ var AOLibrary = artifacts.require("./AOLibrary.sol");
 var Epiphany = artifacts.require("./Epiphany.sol");
 
 // Name/TAO Contracts
-var Position = artifacts.require("./Position.sol");
+var Voice = artifacts.require("./Voice.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var NameTAOVault = artifacts.require("./NameTAOVault.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
@@ -10,7 +10,7 @@ var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var NameTAOLookup = artifacts.require("./NameTAOLookup.sol");
 var NamePublicKey = artifacts.require("./NamePublicKey.sol");
 var TAOFamily = artifacts.require("./TAOFamily.sol");
-var TAOPosition = artifacts.require("./TAOPosition.sol");
+var TAOVoice = artifacts.require("./TAOVoice.sol");
 
 // Settings
 var AOSettingAttribute = artifacts.require("./AOSettingAttribute.sol");
@@ -105,7 +105,7 @@ module.exports = function(deployer, network, accounts) {
 	}
 
 	var epiphany,
-		position,
+		voice,
 		namefactory,
 		nametaovault,
 		taofactory,
@@ -113,7 +113,7 @@ module.exports = function(deployer, network, accounts) {
 		nametaolookup,
 		namepublickey,
 		taofamily,
-		taoposition,
+		taovoice,
 		aosettingattribute,
 		aosettingvalue,
 		aosetting,
@@ -176,7 +176,7 @@ module.exports = function(deployer, network, accounts) {
 
 	deployer.deploy(AOLibrary, { overwrite: false });
 	deployer.link(AOLibrary, [
-		Position,
+		Voice,
 		NameFactory,
 		NameTAOVault,
 		TAOFactory,
@@ -184,7 +184,7 @@ module.exports = function(deployer, network, accounts) {
 		NameTAOLookup,
 		NamePublicKey,
 		TAOFamily,
-		TAOPosition,
+		TAOVoice,
 		AOSettingAttribute,
 		AOSettingValue,
 		AOSetting,
@@ -253,18 +253,18 @@ module.exports = function(deployer, network, accounts) {
 	}
 
 	deployer
-		.deploy([[Epiphany, { overwrite: false }], [Position, 0, "AO Position", "AOPOS"]])
+		.deploy([[Epiphany, { overwrite: false }], [Voice, 0, "Voice", "VOICE"]])
 		.then(async function() {
 			epiphany = await Epiphany.deployed();
-			position = await Position.deployed();
+			voice = await Voice.deployed();
 
-			return deployer.deploy(NameFactory, position.address);
+			return deployer.deploy(NameFactory, voice.address);
 		})
 		.then(async function() {
 			namefactory = await NameFactory.deployed();
 
-			// Position grants access to NameFactory
-			await position.setWhitelist(namefactory.address, true, { from: primordialAccount });
+			// Voice grants access to NameFactory
+			await voice.setWhitelist(namefactory.address, true, { from: primordialAccount });
 
 			return deployer.deploy(TAOFactory, namefactory.address);
 		})
@@ -279,8 +279,8 @@ module.exports = function(deployer, network, accounts) {
 			// Link NameTAOPosition to Epiphany
 			await epiphany.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
 
-			// Link NameTAOPosition to Position
-			await position.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
+			// Link NameTAOPosition to Voice
+			await voice.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
 
 			// Link NameTAOPosition to NameFactory
 			await namefactory.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
@@ -293,7 +293,7 @@ module.exports = function(deployer, network, accounts) {
 				[NameTAOLookup, namefactory.address, taofactory.address, nametaoposition.address],
 				[NamePublicKey, namefactory.address, nametaoposition.address],
 				[TAOFamily, namefactory.address, taofactory.address, nametaoposition.address],
-				[TAOPosition, namefactory.address, position.address, nametaoposition.address],
+				[TAOVoice, namefactory.address, voice.address, nametaoposition.address],
 				[AOSettingAttribute, nametaoposition.address],
 				[AOSettingValue, nametaoposition.address],
 				[Logos, 0, "Logos", "LOGOS", nametaoposition.address],
@@ -336,7 +336,7 @@ module.exports = function(deployer, network, accounts) {
 			nametaolookup = await NameTAOLookup.deployed();
 			namepublickey = await NamePublicKey.deployed();
 			taofamily = await TAOFamily.deployed();
-			taoposition = await TAOPosition.deployed();
+			taovoice = await TAOVoice.deployed();
 			aosettingattribute = await AOSettingAttribute.deployed();
 			aosettingvalue = await AOSettingValue.deployed();
 			logos = await Logos.deployed();
@@ -391,8 +391,8 @@ module.exports = function(deployer, network, accounts) {
 			// Link TAOFamily to TAOFactory
 			await taofactory.setTAOFamilyAddress(taofamily.address, { from: primordialAccount });
 
-			// Position grants access to TAOPosition
-			await position.setWhitelist(taoposition.address, true, { from: primordialAccount });
+			// Voice grants access to TAOVoice
+			await voice.setWhitelist(taovoice.address, true, { from: primordialAccount });
 
 			// Link Logos to TAOFactory
 			await taofactory.setLogosAddress(logos.address, { from: primordialAccount });

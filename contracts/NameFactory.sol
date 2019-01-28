@@ -5,7 +5,7 @@ import './AOLibrary.sol';
 import './TheAO.sol';
 import './INameFactory.sol';
 import './Name.sol';
-import './Position.sol';
+import './Voice.sol';
 import './INameTAOLookup.sol';
 import './INameTAOPosition.sol';
 import './INamePublicKey.sol';
@@ -18,12 +18,12 @@ import './INamePublicKey.sol';
 contract NameFactory is TheAO, INameFactory {
 	using SafeMath for uint256;
 
-	address public positionAddress;
+	address public voiceAddress;
 	address public nameTAOVaultAddress;
 	address public nameTAOLookupAddress;
 	address public namePublicKeyAddress;
 
-	Position internal _position;
+	Voice internal _voice;
 	INameTAOLookup internal _nameTAOLookup;
 	INameTAOPosition internal _nameTAOPosition;
 	INamePublicKey internal _namePublicKey;
@@ -42,8 +42,8 @@ contract NameFactory is TheAO, INameFactory {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _positionAddress) public {
-		setPositionAddress(_positionAddress);
+	constructor(address _voiceAddress) public {
+		setVoiceAddress(_voiceAddress);
 	}
 
 	/**
@@ -85,13 +85,13 @@ contract NameFactory is TheAO, INameFactory {
 	}
 
 	/**
-	 * @dev The AO set the Position Address
-	 * @param _positionAddress The address of Position
+	 * @dev The AO set the Voice Address
+	 * @param _voiceAddress The address of Voice
 	 */
-	function setPositionAddress(address _positionAddress) public onlyTheAO {
-		require (_positionAddress != address(0));
-		positionAddress = _positionAddress;
-		_position = Position(positionAddress);
+	function setVoiceAddress(address _voiceAddress) public onlyTheAO {
+		require (_voiceAddress != address(0));
+		voiceAddress = _voiceAddress;
+		_voice = Voice(voiceAddress);
 	}
 
 	/**
@@ -180,8 +180,8 @@ contract NameFactory is TheAO, INameFactory {
 
 		names.push(nameId);
 
-		// Need to mint Position token for this Name
-		require (_position.mintToken(nameId));
+		// Need to mint Voice token for this Name
+		require (_voice.mintToken(nameId));
 
 		emit CreateName(msg.sender, nameId, names.length.sub(1), _name);
 	}
