@@ -66,6 +66,9 @@ contract TAOPool is TAOController, ITAOPool {
 	// Mapping from Pool's TAO ID to total Lots in the Pool
 	mapping (address => uint256) public poolTotalLot;
 
+	// Mapping from Pool's TAO ID to quantity of Logos that has been withdrawn from the Pool
+	mapping (address => uint256) public poolTotalLogosWithdrawn;
+
 	// Mapping from a Name ID to its Lots
 	mapping (address => bytes32[]) internal ownerLots;
 
@@ -160,6 +163,15 @@ contract TAOPool is TAOController, ITAOPool {
 
 	/***** PUBLIC METHODS *****/
 	/**
+	 * @dev Check whether or not Pool exist for a TAO ID
+	 * @param _id The ID to be checked
+	 * @return true if yes, false otherwise
+	 */
+	function isExist(address _id) public view returns (bool) {
+		return pools[_id].taoId != address(0);
+	}
+
+	/**
 	 * @dev Create a pool for a TAO
 	 */
 	function createPool(
@@ -211,7 +223,7 @@ contract TAOPool is TAOController, ITAOPool {
 		require (pools[_taoId].taoId != address(0));
 		// If there is an ethos cap
 		if (_ethosCapStatus) {
-			require (_ethosCapAmount >= _pathos.balanceOf(_taoId));
+			require (_ethosCapAmount > 0 && _ethosCapAmount > _pathos.balanceOf(_taoId));
 		}
 
 		pools[_taoId].ethosCapStatus = _ethosCapStatus;
@@ -294,6 +306,19 @@ contract TAOPool is TAOController, ITAOPool {
 	}
 
 	/**
+	 * @dev Return the amount of Pathos that can be staked on Pool
+	 * @param _taoId The TAO ID of the Pool
+	 * @return The amount of Pathos that can be staked
+	 */
+	function availablePathosToStake(address _taoId) public isTAO(_taoId) view returns (uint256) {
+		if (pools[_taoId].status == true) {
+			return _ethos.balanceOf(_taoId).sub(_pathos.balanceOf(_taoId));
+		} else {
+			return 0;
+		}
+	}
+
+	/**
 	 * @dev A Name stakes Pathos in Pool `_taoId`
 	 * @param _taoId The TAO ID of the Pool
 	 * @param _quantity The amount of Pathos to stake
@@ -301,7 +326,8 @@ contract TAOPool is TAOController, ITAOPool {
 	function stakePathos(address _taoId, uint256 _quantity) public isTAO(_taoId) senderIsName {
 		Pool memory _pool = pools[_taoId];
 		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
-		require (_pool.status == true && _quantity > 0 && _pathos.balanceOf(_nameId) >= _quantity && _quantity <= _ethos.balanceOf(_taoId));
+		require (_pool.status == true && _quantity > 0 && _pathos.balanceOf(_nameId) >= _quantity && _quantity <= availablePathosToStake(_taoId));
+
 		// Update contract variables
 		totalPathosStaked[_nameId] = totalPathosStaked[_nameId].add(_quantity);
 		contractTotalPathos = contractTotalPathos.add(_quantity);
@@ -333,6 +359,7 @@ contract TAOPool is TAOController, ITAOPool {
 
 		// Update contract variables
 		contractTotalLogosWithdrawn = contractTotalLogosWithdrawn.add(logosAvailableToWithdraw);
+		poolTotalLogosWithdrawn[_lot.taoId] = poolTotalLogosWithdrawn[_lot.taoId].add(logosAvailableToWithdraw);
 
 		// Mint logos to seller
 		require (_logos.mintToken(_nameId, logosAvailableToWithdraw));
