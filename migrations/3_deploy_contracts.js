@@ -9,7 +9,7 @@ var TAOFactory = artifacts.require("./TAOFactory.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var NameTAOLookup = artifacts.require("./NameTAOLookup.sol");
 var NamePublicKey = artifacts.require("./NamePublicKey.sol");
-var TAOFamily = artifacts.require("./TAOFamily.sol");
+var TAOAncestry = artifacts.require("./TAOAncestry.sol");
 var TAOVoice = artifacts.require("./TAOVoice.sol");
 
 // Settings
@@ -183,7 +183,7 @@ module.exports = function(deployer, network, accounts) {
 		NameTAOPosition,
 		NameTAOLookup,
 		NamePublicKey,
-		TAOFamily,
+		TAOAncestry,
 		TAOVoice,
 		AOSettingAttribute,
 		AOSettingValue,
@@ -292,7 +292,7 @@ module.exports = function(deployer, network, accounts) {
 				[NameTAOVault, namefactory.address, nametaoposition.address],
 				[NameTAOLookup, namefactory.address, taofactory.address, nametaoposition.address],
 				[NamePublicKey, namefactory.address, nametaoposition.address],
-				[TAOFamily, namefactory.address, taofactory.address, nametaoposition.address],
+				[TAOAncestry, namefactory.address, taofactory.address, nametaoposition.address],
 				[TAOVoice, namefactory.address, voice.address, nametaoposition.address],
 				[AOSettingAttribute, nametaoposition.address],
 				[AOSettingValue, nametaoposition.address],
@@ -335,7 +335,7 @@ module.exports = function(deployer, network, accounts) {
 			nametaovault = await NameTAOVault.deployed();
 			nametaolookup = await NameTAOLookup.deployed();
 			namepublickey = await NamePublicKey.deployed();
-			taofamily = await TAOFamily.deployed();
+			taofamily = await TAOAncestry.deployed();
 			taovoice = await TAOVoice.deployed();
 			aosettingattribute = await AOSettingAttribute.deployed();
 			aosettingvalue = await AOSettingValue.deployed();
@@ -388,8 +388,8 @@ module.exports = function(deployer, network, accounts) {
 			// Link NamePublicKey to NameFactory
 			await namefactory.setNamePublicKeyAddress(namepublickey.address, { from: primordialAccount });
 
-			// Link TAOFamily to TAOFactory
-			await taofactory.setTAOFamilyAddress(taofamily.address, { from: primordialAccount });
+			// Link TAOAncestry to TAOFactory
+			await taofactory.setTAOAncestryAddress(taofamily.address, { from: primordialAccount });
 
 			// Voice grants access to TAOVoice
 			await voice.setWhitelist(taovoice.address, true, { from: primordialAccount });

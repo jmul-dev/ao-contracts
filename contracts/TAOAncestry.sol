@@ -3,13 +3,13 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TAOController.sol';
-import './ITAOFamily.sol';
+import './ITAOAncestry.sol';
 import './ITAOFactory.sol';
 
 /**
- * @title TAOFamily
+ * @title TAOAncestry
  */
-contract TAOFamily is TAOController, ITAOFamily {
+contract TAOAncestry is TAOController, ITAOAncestry {
 	using SafeMath for uint256;
 
 	address public taoFactoryAddress;
@@ -22,7 +22,7 @@ contract TAOFamily is TAOController, ITAOFamily {
 		bool connected;		// If false, then parent TAO want to remove this child TAO
 	}
 
-	struct Family {
+	struct Ancestry {
 		address taoId;
 		address parentId;	// The parent of this TAO ID (could be a Name or TAO)
 		uint256 childMinLogos;
@@ -32,13 +32,13 @@ contract TAOFamily is TAOController, ITAOFamily {
 		uint256 childInternalId;
 	}
 
-	mapping (address => Family) internal families;
+	mapping (address => Ancestry) internal ancestries;
 
 	// Event to be broadcasted to public when Advocate updates min required Logos to create a child TAO
 	event UpdateChildMinLogos(address indexed taoId, uint256 childMinLogos, uint256 nonce);
 
 	// Event to be broadcasted to public when a TAO adds a child TAO
-	event AddChild(address indexed taoId, address childId, bool approved, bool connected, uint256 nonce);
+	event AddChild(address indexed taoId, address childId, bool approved, bool connected);
 
 	// Event to be broadcasted to public when a TAO approves a child TAO
 	event ApproveChild(address indexed taoId, address childId, uint256 nonce);
@@ -76,16 +76,16 @@ contract TAOFamily is TAOController, ITAOFamily {
 
 	/***** PUBLIC METHODS *****/
 	/**
-	 * @dev Check whether or not a TAO ID exist in the list of families
+	 * @dev Check whether or not a TAO ID exist in the list of ancestries
 	 * @param _id The ID to be checked
 	 * @return true if yes, false otherwise
 	 */
 	function isExist(address _id) public view returns (bool) {
-		return families[_id].taoId != address(0);
+		return ancestries[_id].taoId != address(0);
 	}
 
 	/**
-	 * @dev Store the Family info for a TAO
+	 * @dev Store the Ancestry info for a TAO
 	 * @param _id The ID of the TAO
 	 * @param _parentId The parent ID of this TAO
 	 * @param _childMinLogos The min required Logos to create a TAO
@@ -98,27 +98,27 @@ contract TAOFamily is TAOController, ITAOFamily {
 		onlyFactory returns (bool) {
 		require (!isExist(_id));
 
-		Family storage _family = families[_id];
-		_family.taoId = _id;
-		_family.parentId = _parentId;
-		_family.childMinLogos = _childMinLogos;
+		Ancestry storage _ancestry = ancestries[_id];
+		_ancestry.taoId = _id;
+		_ancestry.parentId = _parentId;
+		_ancestry.childMinLogos = _childMinLogos;
 		return true;
 	}
 
 	/**
-	 * @dev Get Family info given a TAO ID
+	 * @dev Get Ancestry info given a TAO ID
 	 * @param _id The ID of the TAO
 	 * @return the parent ID of this TAO (could be a Name/TAO)
 	 * @return the min required Logos to create a child TAO
 	 * @return the total child TAOs count
 	 */
-	function getFamilyById(address _id) external view returns (address, uint256, uint256) {
+	function getAncestryById(address _id) external view returns (address, uint256, uint256) {
 		require (isExist(_id));
-		Family memory _family = families[_id];
+		Ancestry memory _ancestry = ancestries[_id];
 		return (
-			_family.parentId,
-			_family.childMinLogos,
-			_family.totalChildren
+			_ancestry.parentId,
+			_ancestry.childMinLogos,
+			_ancestry.totalChildren
 		);
 	}
 
@@ -134,12 +134,12 @@ contract TAOFamily is TAOController, ITAOFamily {
 		onlyAdvocate(_id) {
 		require (isExist(_id));
 
-		Family storage _family = families[_id];
-		_family.childMinLogos = _childMinLogos;
+		Ancestry storage _ancestry = ancestries[_id];
+		_ancestry.childMinLogos = _childMinLogos;
 
 		uint256 _nonce = _taoFactory.incrementNonce(_id);
 		require (_nonce > 0);
-		emit UpdateChildMinLogos(_id, _family.childMinLogos, _nonce);
+		emit UpdateChildMinLogos(_id, _ancestry.childMinLogos, _nonce);
 	}
 
 	/**
@@ -150,14 +150,31 @@ contract TAOFamily is TAOController, ITAOFamily {
 	 */
 	function isChild(address _taoId, address _childId) public view returns (bool) {
 		require (isExist(_taoId) && isExist(_childId));
-		Family storage _family = families[_taoId];
-		Family memory _childFamily = families[_childId];
-		uint256 _childInternalId = _family.childInternalIdLookup[_childId];
+		Ancestry storage _ancestry = ancestries[_taoId];
+		Ancestry memory _childAncestry = ancestries[_childId];
+		uint256 _childInternalId = _ancestry.childInternalIdLookup[_childId];
 		return (
 			_childInternalId > 0 &&
-			_family.children[_childInternalId].approved &&
-			_family.children[_childInternalId].connected &&
-			_childFamily.parentId == _taoId
+			_ancestry.children[_childInternalId].approved &&
+			_ancestry.children[_childInternalId].connected &&
+			_childAncestry.parentId == _taoId
+		);
+	}
+
+	/**
+	 * @dev Check if `_childId` is a child TAO of `_taoId` that is not yet approved
+	 * @param _taoId The TAO ID to be checked
+	 * @param _childId The child TAO ID to check
+	 * @return true if yes. Otherwise return false.
+	 */
+	function isNotApprovedChild(address _taoId, address _childId) public view returns (bool) {
+		require (isExist(_taoId) && isExist(_childId));
+		Ancestry storage _ancestry = ancestries[_taoId];
+		uint256 _childInternalId = _ancestry.childInternalIdLookup[_childId];
+		return (
+			_childInternalId > 0 &&
+			!_ancestry.children[_childInternalId].approved &&
+			!_ancestry.children[_childInternalId].connected
 		);
 	}
 
@@ -172,31 +189,24 @@ contract TAOFamily is TAOController, ITAOFamily {
 		isTAO(_childId)
 		onlyFactory returns (bool) {
 		require (!isChild(_taoId, _childId));
-		Family storage _family = families[_taoId];
-		require (_family.childInternalIdLookup[_childId] == 0);
+		Ancestry storage _ancestry = ancestries[_taoId];
+		require (_ancestry.childInternalIdLookup[_childId] == 0);
 
-		_family.childInternalId++;
-		_family.childInternalIdLookup[_childId] = _family.childInternalId;
-		uint256 _nonce = _taoFactory.incrementNonce(_taoId);
-		require (_nonce > 0);
+		_ancestry.childInternalId++;
+		_ancestry.childInternalIdLookup[_childId] = _ancestry.childInternalId;
 
-		Child storage _child = _family.children[_family.childInternalId];
+		Child storage _child = _ancestry.children[_ancestry.childInternalId];
 		_child.taoId = _childId;
 
 		// If _taoId's Advocate == _childId's Advocate, then the child is automatically approved and connected
 		// Otherwise, child TAO needs parent TAO approval
 		address _taoAdvocate = _nameTAOPosition.getAdvocate(_taoId);
 		address _childAdvocate = _nameTAOPosition.getAdvocate(_childId);
+		emit AddChild(_taoId, _childId, _child.approved, _child.connected);
+
 		if (_taoAdvocate == _childAdvocate) {
-			_family.totalChildren++;
-			_child.approved = true;
-			_child.connected = true;
-
-			Family storage _childFamily = families[_childId];
-			_childFamily.parentId = _taoId;
+			_approveChild(_taoId, _childId);
 		}
-
-		emit AddChild(_taoId, _childId, _child.approved, _child.connected, _nonce);
 		return true;
 	}
 
@@ -212,27 +222,8 @@ contract TAOFamily is TAOController, ITAOFamily {
 		senderIsName()
 		onlyAdvocate(_taoId) {
 		require (isExist(_taoId) && isExist(_childId));
-		Family storage _family = families[_taoId];
-		Family storage _childFamily = families[_childId];
-		uint256 _childInternalId = _family.childInternalIdLookup[_childId];
-
-		require (_childInternalId > 0 &&
-			!_family.children[_childInternalId].approved &&
-			!_family.children[_childInternalId].connected
-		);
-
-		_family.totalChildren++;
-
-		Child storage _child = _family.children[_childInternalId];
-		_child.approved = true;
-		_child.connected = true;
-
-		_childFamily.parentId = _taoId;
-
-		uint256 _nonce = _taoFactory.incrementNonce(_taoId);
-		require (_nonce > 0);
-
-		emit ApproveChild(_taoId, _childId, _nonce);
+		require (isNotApprovedChild(_taoId, _childId));
+		_approveChild(_taoId, _childId);
 	}
 
 	/**
@@ -248,15 +239,15 @@ contract TAOFamily is TAOController, ITAOFamily {
 		onlyAdvocate(_taoId) {
 		require (isChild(_taoId, _childId));
 
-		Family storage _family = families[_taoId];
-		_family.totalChildren--;
+		Ancestry storage _ancestry = ancestries[_taoId];
+		_ancestry.totalChildren--;
 
-		Child storage _child = _family.children[_family.childInternalIdLookup[_childId]];
+		Child storage _child = _ancestry.children[_ancestry.childInternalIdLookup[_childId]];
 		_child.connected = false;
-		_family.childInternalIdLookup[_childId] = 0;
+		_ancestry.childInternalIdLookup[_childId] = 0;
 
-		Family storage _childFamily = families[_childId];
-		_childFamily.parentId = address(0);
+		Ancestry storage _childAncestry = ancestries[_childId];
+		_childAncestry.parentId = address(0);
 
 		uint256 _nonce = _taoFactory.incrementNonce(_taoId);
 		require (_nonce > 0);
@@ -273,12 +264,37 @@ contract TAOFamily is TAOController, ITAOFamily {
 	 */
 	function getChildIds(address _taoId, uint256 _from, uint256 _to) public view returns (address[]) {
 		require (isExist(_taoId));
-		Family storage _family = families[_taoId];
-		require (_from >= 1 && _to >= _from && _family.childInternalId >= _to);
+		Ancestry storage _ancestry = ancestries[_taoId];
+		require (_from >= 1 && _to >= _from && _ancestry.childInternalId >= _to);
 		address[] memory _childIds = new address[](_to.sub(_from).add(1));
 		for (uint256 i = _from; i <= _to; i++) {
-			_childIds[i.sub(_from)] = _family.children[i].approved && _family.children[i].connected ? _family.children[i].taoId : address(0);
+			_childIds[i.sub(_from)] = _ancestry.children[i].approved && _ancestry.children[i].connected ? _ancestry.children[i].taoId : address(0);
 		}
 		return _childIds;
+	}
+
+	/***** INTERNAL METHOD *****/
+	/**
+	 * @dev Actually approving the child TAO
+	 * @param _taoId The TAO ID to be checked
+	 * @param _childId The child TAO ID to be approved
+	 */
+	function _approveChild(address _taoId, address _childId) internal {
+		Ancestry storage _ancestry = ancestries[_taoId];
+		Ancestry storage _childAncestry = ancestries[_childId];
+		uint256 _childInternalId = _ancestry.childInternalIdLookup[_childId];
+
+		_ancestry.totalChildren++;
+
+		Child storage _child = _ancestry.children[_childInternalId];
+		_child.approved = true;
+		_child.connected = true;
+
+		_childAncestry.parentId = _taoId;
+
+		uint256 _nonce = _taoFactory.incrementNonce(_taoId);
+		require (_nonce > 0);
+
+		emit ApproveChild(_taoId, _childId, _nonce);
 	}
 }

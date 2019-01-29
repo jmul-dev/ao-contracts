@@ -5,7 +5,7 @@ import './TAOController.sol';
 import './ITAOFactory.sol';
 import './Name.sol';
 import './INameTAOLookup.sol';		// Store the name lookup for a Name/TAO
-import './ITAOFamily.sol';			// Store TAO's child information
+import './ITAOAncestry.sol';			// Store TAO's child information
 import './IAOSetting.sol';
 import './Logos.sol';
 import './ITAOPool.sol';
@@ -24,14 +24,14 @@ contract TAOFactory is TAOController, ITAOFactory {
 	address public aoSettingAddress;
 	address public logosAddress;
 	address public nameTAOVaultAddress;
-	address public taoFamilyAddress;
+	address public taoAncestryAddress;
 	address public settingTAOId;
 	address public taoPoolAddress;
 
 	INameTAOLookup internal _nameTAOLookup;
 	IAOSetting internal _aoSetting;
 	Logos internal _logos;
-	ITAOFamily internal _taoFamily;
+	ITAOAncestry internal _taoAncestry;
 	ITAOPool internal _taoPool;
 
 	// Mapping from TAO ID to its nonce
@@ -50,7 +50,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 	 * @dev Checks if calling address can update TAO's nonce
 	 */
 	modifier canUpdateNonce {
-		require (msg.sender == nameTAOPositionAddress || msg.sender == taoFamilyAddress || msg.sender == taoPoolAddress);
+		require (msg.sender == nameTAOPositionAddress || msg.sender == taoAncestryAddress || msg.sender == taoPoolAddress);
 		_;
 	}
 
@@ -95,13 +95,13 @@ contract TAOFactory is TAOController, ITAOFactory {
 	}
 
 	/**
-	 * @dev The AO set the TAOFamily Address
-	 * @param _taoFamilyAddress The address of TAOFamily
+	 * @dev The AO set the TAOAncestry Address
+	 * @param _taoAncestryAddress The address of TAOAncestry
 	 */
-	function setTAOFamilyAddress(address _taoFamilyAddress) public onlyTheAO {
-		require (_taoFamilyAddress != address(0));
-		taoFamilyAddress = _taoFamilyAddress;
-		_taoFamily = ITAOFamily(taoFamilyAddress);
+	function setTAOAncestryAddress(address _taoAncestryAddress) public onlyTheAO {
+		require (_taoAncestryAddress != address(0));
+		taoAncestryAddress = _taoAncestryAddress;
+		_taoAncestry = ITAOAncestry(taoAncestryAddress);
 	}
 
 	/**
@@ -162,7 +162,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 		uint256 _parentCreateChildTAOMinLogos;
 		uint256 _createChildTAOMinLogos = _getSettingVariables();
 		if (AOLibrary.isTAO(_parentId)) {
-			(, _parentCreateChildTAOMinLogos,) = _taoFamily.getFamilyById(_parentId);
+			(, _parentCreateChildTAOMinLogos,) = _taoAncestry.getAncestryById(_parentId);
 		}
 		if (_parentCreateChildTAOMinLogos > 0) {
 			require (_logos.sumBalanceOf(_nameFactory.ethAddressToNameId(msg.sender)) >= _parentCreateChildTAOMinLogos);
@@ -292,8 +292,8 @@ contract TAOFactory is TAOController, ITAOFactory {
 		// Store the Advocate/Listener/Speaker information
 		require (_nameTAOPosition.initialize(taoId, _nameId, _nameId, _nameId));
 
-		// Store the "Family" info of this TAO
-		require (_taoFamily.initialize(taoId, _parentId, _childMinLogos));
+		// Store the "Ancestry" info of this TAO
+		require (_taoAncestry.initialize(taoId, _parentId, _childMinLogos));
 
 		// Creat a Pool so that public can stake Ethos/Pathos on it
 		require (_taoPool.createPool(taoId, _ethosCapStatus, _ethosCapAmount));
@@ -303,7 +303,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 		emit CreateTAO(msg.sender, _nameId, taoId, taos.length.sub(1), _parentId, TAO(_parentId).typeId());
 
 		if (AOLibrary.isTAO(_parentId)) {
-			require (_taoFamily.addChild(_parentId, taoId));
+			require (_taoAncestry.addChild(_parentId, taoId));
 		}
 		return true;
 	}
