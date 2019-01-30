@@ -215,9 +215,13 @@ contract TAOFactory is TAOController, ITAOFactory {
 	 * @return list of TAO IDs
 	 */
 	function getTAOIds(uint256 _from, uint256 _to) public view returns (address[]) {
-		require (_from >= 0 && _to >= _from && taos.length > _to);
+		require (_from >= 0 && _to >= _from);
+		require (taos.length > 0);
 
 		address[] memory _taos = new address[](_to.sub(_from).add(1));
+		if (_to > taos.length.sub(1)) {
+			_to = taos.length.sub(1);
+		}
 		for (uint256 i = _from; i <= _to; i++) {
 			_taos[i.sub(_from)] = taos[i];
 		}
