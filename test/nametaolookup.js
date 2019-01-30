@@ -6,7 +6,19 @@ var Logos = artifacts.require("./Logos.sol");
 var NameTAOLookup = artifacts.require("./NameTAOLookup.sol");
 
 contract("NameTAOLookup", function(accounts) {
-	var namefactory, taofactory, nametaoposition, logos, nameId1, nameId2, taoId1, taoId2, nametaolookup, internalId1, internalId2;
+	var namefactory,
+		taofactory,
+		nametaoposition,
+		logos,
+		nameId1,
+		nameId2,
+		taoId1,
+		taoId2,
+		taoId3,
+		nametaolookup,
+		internalId1,
+		internalId2,
+		internalId3;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
@@ -180,7 +192,7 @@ contract("NameTAOLookup", function(accounts) {
 		var totalTAOsBefore = await nametaolookup.totalTAOs();
 
 		result = await taofactory.createTAO(
-			"Delta's TAO",
+			"Delta's TAO #1",
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
@@ -199,10 +211,37 @@ contract("NameTAOLookup", function(accounts) {
 		var totalTAOsAfter = await nametaolookup.totalTAOs();
 		assert.equal(totalTAOsAfter.toNumber(), totalTAOsBefore.plus(1).toNumber(), "Contract has incorrect totalTAOs value");
 
-		isExist = await nametaolookup.isExist("Delta's TAO");
+		isExist = await nametaolookup.isExist("Delta's TAO #1");
 		assert.equal(isExist, true, "isExist() returns incorrect value");
 
 		internalId2 = await nametaolookup.internalId();
+
+		totalTAOsBefore = await nametaolookup.totalTAOs();
+
+		result = await taofactory.createTAO(
+			"Delta's TAO #2",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			taoId2,
+			0,
+			false,
+			0,
+			{
+				from: account2
+			}
+		);
+		createTAOEvent = result.logs[0];
+		taoId3 = createTAOEvent.args.taoId;
+
+		totalTAOsAfter = await nametaolookup.totalTAOs();
+		assert.equal(totalTAOsAfter.toNumber(), totalTAOsBefore.plus(1).toNumber(), "Contract has incorrect totalTAOs value");
+
+		isExist = await nametaolookup.isExist("Delta's TAO #2");
+		assert.equal(isExist, true, "isExist() returns incorrect value");
+
+		internalId3 = await nametaolookup.internalId();
 	});
 
 	it("getByName() - should get NameTAOInfo given a name", async function() {
@@ -221,10 +260,16 @@ contract("NameTAOLookup", function(accounts) {
 		assert.equal(getByName[2], "human", "getByName() returns incorrect parentName");
 		assert.equal(getByName[3].toNumber(), 1, "getByName() returns incorrect typeId");
 
-		getByName = await nametaolookup.getByName("Delta's TAO");
-		assert.equal(getByName[0], "Delta's TAO", "getByName() returns incorrect name");
+		getByName = await nametaolookup.getByName("Delta's TAO #1");
+		assert.equal(getByName[0], "Delta's TAO #1", "getByName() returns incorrect name");
 		assert.equal(getByName[1], taoId2, "getByName() returns incorrect nameTAOId");
 		assert.equal(getByName[2], "delta", "getByName() returns incorrect parentName");
+		assert.equal(getByName[3].toNumber(), 0, "getByName() returns incorrect typeId");
+
+		getByName = await nametaolookup.getByName("Delta's TAO #2");
+		assert.equal(getByName[0], "Delta's TAO #2", "getByName() returns incorrect name");
+		assert.equal(getByName[1], taoId3, "getByName() returns incorrect nameTAOId");
+		assert.equal(getByName[2], "Delta's TAO #1", "getByName() returns incorrect parentName");
 		assert.equal(getByName[3].toNumber(), 0, "getByName() returns incorrect typeId");
 	});
 
@@ -245,9 +290,15 @@ contract("NameTAOLookup", function(accounts) {
 		assert.equal(getByInternalId[3].toNumber(), 1, "getByInternalId() returns incorrect typeId");
 
 		getByInternalId = await nametaolookup.getByInternalId(internalId2.toNumber());
-		assert.equal(getByInternalId[0], "Delta's TAO", "getByInternalId() returns incorrect name");
+		assert.equal(getByInternalId[0], "Delta's TAO #1", "getByInternalId() returns incorrect name");
 		assert.equal(getByInternalId[1], taoId2, "getByInternalId() returns incorrect nameTAOId");
 		assert.equal(getByInternalId[2], "delta", "getByInternalId() returns incorrect parentName");
+		assert.equal(getByInternalId[3].toNumber(), 0, "getByInternalId() returns incorrect typeId");
+
+		getByInternalId = await nametaolookup.getByInternalId(internalId3.toNumber());
+		assert.equal(getByInternalId[0], "Delta's TAO #2", "getByInternalId() returns incorrect name");
+		assert.equal(getByInternalId[1], taoId3, "getByInternalId() returns incorrect nameTAOId");
+		assert.equal(getByInternalId[2], "Delta's TAO #1", "getByInternalId() returns incorrect parentName");
 		assert.equal(getByInternalId[3].toNumber(), 0, "getByInternalId() returns incorrect typeId");
 	});
 
@@ -264,7 +315,10 @@ contract("NameTAOLookup", function(accounts) {
 		getNameTAOIdByName = await nametaolookup.getNameTAOIdByName("delta");
 		assert.equal(getNameTAOIdByName, nameId2, "getNameTAOIdByName() returns incorrect Name/TAO ID");
 
-		getNameTAOIdByName = await nametaolookup.getNameTAOIdByName("Delta's TAO");
+		getNameTAOIdByName = await nametaolookup.getNameTAOIdByName("Delta's TAO #1");
 		assert.equal(getNameTAOIdByName, taoId2, "getNameTAOIdByName() returns incorrect Name/TAO ID");
+
+		getNameTAOIdByName = await nametaolookup.getNameTAOIdByName("Delta's TAO #2");
+		assert.equal(getNameTAOIdByName, taoId3, "getNameTAOIdByName() returns incorrect Name/TAO ID");
 	});
 });
