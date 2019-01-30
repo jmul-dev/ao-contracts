@@ -291,7 +291,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 		nonces[taoId]++;
 
 		// Store the name lookup information
-		require (_nameTAOLookup.initialize(_name, taoId, TAO(_parentId).name(), 0));
+		require (_nameTAOLookup.initialize(_name, taoId, 0, TAO(_parentId).name(), _parentId, uint256(TAO(_parentId).typeId())));
 
 		// Store the Advocate/Listener/Speaker information
 		require (_nameTAOPosition.initialize(taoId, _nameId, _nameId, _nameId));
@@ -345,7 +345,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 	 * @return the TAO ID
 	 */
 	function _getTAOIdByName(string _name) internal view returns (address) {
-		return _nameTAOLookup.getNameTAOIdByName(_name);
+		return _nameTAOLookup.getIdByName(_name);
 	}
 
 	/**

@@ -15,16 +15,20 @@ contract NameTAOLookup is TheAO, INameTAOLookup {
 	struct NameTAOInfo {
 		string name;
 		address nameTAOId;
-		string parentName;
 		uint256 typeId; // 0 = TAO. 1 = Name
+		string parentName;
+		address parentId; // Can be a Name ID/TAO ID/ETH address
+		uint256 parentTypeId; // 0 = TAO. 1 = Name. 2 = ETH address
 	}
 
-	uint256 public internalId;
 	uint256 public totalNames;
 	uint256 public totalTAOs;
 
-	mapping (uint256 => NameTAOInfo) internal nameTAOInfos;
-	mapping (bytes32 => uint256) internal internalIdLookup;
+	// Mapping from Name/TAO ID to NameTAOInfo
+	mapping (address => NameTAOInfo) internal nameTAOInfos;
+
+	// Mapping from name to Name/TAO ID
+	mapping (bytes32 => address) internal nameToNameTAOIdLookup;
 
 	/**
 	 * @dev Constructor function
@@ -108,32 +112,41 @@ contract NameTAOLookup is TheAO, INameTAOLookup {
 	 */
 	function isExist(string _name) external view returns (bool) {
 		bytes32 _nameKey = keccak256(abi.encodePacked(_name));
-		return (internalIdLookup[_nameKey] > 0);
+		return (nameToNameTAOIdLookup[_nameKey] != address(0));
 	}
 
 	/**
 	 * @dev Add a new NameTAOInfo
 	 * @param _name The name of the Name/TAO
 	 * @param _nameTAOId The address of the Name/TAO
-	 * @param _parentName The parent name of the Name/TAO
 	 * @param _typeId If TAO = 0. Name = 1
+	 * @param _parentName The parent name of the Name/TAO
+	 * @param _parentId The address of the parent. Can be a Name ID/TAO ID/ETH address
+	 * @param _parentTypeId If TAO = 0. Name = 1. 2 = ETH address
 	 * @return true on success
 	 */
-	function initialize(string _name, address _nameTAOId, string _parentName, uint256 _typeId) external onlyFactory returns (bool) {
+	function initialize(string _name, address _nameTAOId, uint256 _typeId, string _parentName, address _parentId, uint256 _parentTypeId) external onlyFactory returns (bool) {
 		require (bytes(_name).length > 0);
 		require (_nameTAOId != address(0));
-		require (bytes(_parentName).length > 0);
 		require (_typeId == 0 || _typeId == 1);
+		require (bytes(_parentName).length > 0);
+		require (_parentId != address(0));
+		require (_parentTypeId >= 0 && _parentTypeId <= 2);
 		require (!this.isExist(_name));
+		if (_parentTypeId != 2) {
+			require (this.isExist(_parentName));
+		}
 
-		internalId++;
 		bytes32 _nameKey = keccak256(abi.encodePacked(_name));
-		internalIdLookup[_nameKey] = internalId;
-		NameTAOInfo storage _nameTAOInfo = nameTAOInfos[internalId];
+		nameToNameTAOIdLookup[_nameKey] = _nameTAOId;
+
+		NameTAOInfo storage _nameTAOInfo = nameTAOInfos[_nameTAOId];
 		_nameTAOInfo.name = _name;
 		_nameTAOInfo.nameTAOId = _nameTAOId;
-		_nameTAOInfo.parentName = _parentName;
 		_nameTAOInfo.typeId = _typeId;
+		_nameTAOInfo.parentName = _parentName;
+		_nameTAOInfo.parentId = _parentId;
+		_nameTAOInfo.parentTypeId = _parentTypeId;
 
 		if (_typeId == 0) {
 			totalTAOs++;
@@ -148,37 +161,45 @@ contract NameTAOLookup is TheAO, INameTAOLookup {
 	 * @param _name The name to be queried
 	 * @return the name of Name/TAO
 	 * @return the address of Name/TAO
-	 * @return the parent name of Name/TAO
 	 * @return type ID. 0 = TAO. 1 = Name
+	 * @return the parent name of Name/TAO
+	 * @return the address of the parent. Can be a Name ID/TAO ID/ETH address
+	 * @return the parent typeId. If TAO = 0. Name = 1. 2 = ETH address
 	 */
-	function getByName(string _name) public view returns (string, address, string, uint256) {
+	function getByName(string _name) public view returns (string, address, uint256, string, address, uint256) {
 		require (this.isExist(_name));
 		bytes32 _nameKey = keccak256(abi.encodePacked(_name));
-		NameTAOInfo memory _nameTAOInfo = nameTAOInfos[internalIdLookup[_nameKey]];
+		NameTAOInfo memory _nameTAOInfo = nameTAOInfos[nameToNameTAOIdLookup[_nameKey]];
 		return (
 			_nameTAOInfo.name,
 			_nameTAOInfo.nameTAOId,
+			_nameTAOInfo.typeId,
 			_nameTAOInfo.parentName,
-			_nameTAOInfo.typeId
+			_nameTAOInfo.parentId,
+			_nameTAOInfo.parentTypeId
 		);
 	}
 
 	/**
-	 * @dev Get the NameTAOInfo given an ID
-	 * @param _internalId The internal ID to be queried
+	 * @dev Get the NameTAOInfo given a Name/TAO ID
+	 * @param _id The Name/TAO ID to be queried
 	 * @return the name of Name/TAO
 	 * @return the address of Name/TAO
-	 * @return the parent name of Name/TAO
 	 * @return type ID. 0 = TAO. 1 = Name
+	 * @return the parent name of Name/TAO
+	 * @return the address of the parent. Can be a Name ID/TAO ID/ETH address
+	 * @return the parent typeId. If TAO = 0. Name = 1. 2 = ETH address
 	 */
-	function getByInternalId(uint256 _internalId) public view returns (string, address, string, uint256) {
-		require (nameTAOInfos[_internalId].nameTAOId != address(0));
-		NameTAOInfo memory _nameTAOInfo = nameTAOInfos[_internalId];
+	function getById(address _id) external view returns (string, address, uint256, string, address, uint256) {
+		require (nameTAOInfos[_id].nameTAOId != address(0));
+		NameTAOInfo memory _nameTAOInfo = nameTAOInfos[_id];
 		return (
 			_nameTAOInfo.name,
 			_nameTAOInfo.nameTAOId,
+			_nameTAOInfo.typeId,
 			_nameTAOInfo.parentName,
-			_nameTAOInfo.typeId
+			_nameTAOInfo.parentId,
+			_nameTAOInfo.parentTypeId
 		);
 	}
 
@@ -187,10 +208,9 @@ contract NameTAOLookup is TheAO, INameTAOLookup {
 	 * @param _name The name to be queried
 	 * @return the nameTAOId of the name
 	 */
-	function getNameTAOIdByName(string _name) external view returns (address) {
+	function getIdByName(string _name) external view returns (address) {
 		require (this.isExist(_name));
 		bytes32 _nameKey = keccak256(abi.encodePacked(_name));
-		NameTAOInfo memory _nameTAOInfo = nameTAOInfos[internalIdLookup[_nameKey]];
-		return _nameTAOInfo.nameTAOId;
+		return nameToNameTAOIdLookup[_nameKey];
 	}
 }

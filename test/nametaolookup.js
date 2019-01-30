@@ -6,19 +6,7 @@ var Logos = artifacts.require("./Logos.sol");
 var NameTAOLookup = artifacts.require("./NameTAOLookup.sol");
 
 contract("NameTAOLookup", function(accounts) {
-	var namefactory,
-		taofactory,
-		nametaoposition,
-		logos,
-		nameId1,
-		nameId2,
-		taoId1,
-		taoId2,
-		taoId3,
-		nametaolookup,
-		internalId1,
-		internalId2,
-		internalId3;
+	var namefactory, taofactory, nametaoposition, logos, nameId1, nameId2, taoId1, taoId2, taoId3, nametaolookup;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
@@ -184,7 +172,8 @@ contract("NameTAOLookup", function(accounts) {
 		var isExist = await nametaolookup.isExist("delta");
 		assert.equal(isExist, true, "isExist() returns incorrect value");
 
-		internalId1 = await nametaolookup.internalId();
+		var getIdByName = await nametaolookup.getIdByName("delta");
+		assert.equal(getIdByName, nameId2, "getIdByName() returns incorrect value");
 
 		var totalNamesAfter = await nametaolookup.totalNames();
 		assert.equal(totalNamesAfter.toNumber(), totalNamesBefore.plus(1).toNumber(), "Contract has incorrect totalNames value");
@@ -214,7 +203,8 @@ contract("NameTAOLookup", function(accounts) {
 		isExist = await nametaolookup.isExist("Delta's TAO #1");
 		assert.equal(isExist, true, "isExist() returns incorrect value");
 
-		internalId2 = await nametaolookup.internalId();
+		getIdByName = await nametaolookup.getIdByName("Delta's TAO #1");
+		assert.equal(getIdByName, taoId2, "getIdByName() returns incorrect value");
 
 		totalTAOsBefore = await nametaolookup.totalTAOs();
 
@@ -241,7 +231,8 @@ contract("NameTAOLookup", function(accounts) {
 		isExist = await nametaolookup.isExist("Delta's TAO #2");
 		assert.equal(isExist, true, "isExist() returns incorrect value");
 
-		internalId3 = await nametaolookup.internalId();
+		getIdByName = await nametaolookup.getIdByName("Delta's TAO #2");
+		assert.equal(getIdByName, taoId3, "getIdByName() returns incorrect value");
 	});
 
 	it("getByName() - should get NameTAOInfo given a name", async function() {
@@ -257,68 +248,80 @@ contract("NameTAOLookup", function(accounts) {
 		getByName = await nametaolookup.getByName("delta");
 		assert.equal(getByName[0], "delta", "getByName() returns incorrect name");
 		assert.equal(getByName[1], nameId2, "getByName() returns incorrect nameTAOId");
-		assert.equal(getByName[2], "human", "getByName() returns incorrect parentName");
-		assert.equal(getByName[3].toNumber(), 1, "getByName() returns incorrect typeId");
+		assert.equal(getByName[2].toNumber(), 1, "getByName() returns incorrect typeId");
+		assert.equal(getByName[3], "human", "getByName() returns incorrect parentName");
+		assert.equal(getByName[4], account2, "getByName() returns incorrect parentId");
+		assert.equal(getByName[5].toNumber(), 2, "getByName() returns incorrect parentTypeId");
 
 		getByName = await nametaolookup.getByName("Delta's TAO #1");
 		assert.equal(getByName[0], "Delta's TAO #1", "getByName() returns incorrect name");
 		assert.equal(getByName[1], taoId2, "getByName() returns incorrect nameTAOId");
-		assert.equal(getByName[2], "delta", "getByName() returns incorrect parentName");
-		assert.equal(getByName[3].toNumber(), 0, "getByName() returns incorrect typeId");
+		assert.equal(getByName[2].toNumber(), 0, "getByName() returns incorrect typeId");
+		assert.equal(getByName[3], "delta", "getByName() returns incorrect parentName");
+		assert.equal(getByName[4], nameId2, "getByName() returns incorrect parentId");
+		assert.equal(getByName[5].toNumber(), 1, "getByName() returns incorrect parentTypeId");
 
 		getByName = await nametaolookup.getByName("Delta's TAO #2");
 		assert.equal(getByName[0], "Delta's TAO #2", "getByName() returns incorrect name");
 		assert.equal(getByName[1], taoId3, "getByName() returns incorrect nameTAOId");
-		assert.equal(getByName[2], "Delta's TAO #1", "getByName() returns incorrect parentName");
-		assert.equal(getByName[3].toNumber(), 0, "getByName() returns incorrect typeId");
+		assert.equal(getByName[2].toNumber(), 0, "getByName() returns incorrect typeId");
+		assert.equal(getByName[3], "Delta's TAO #1", "getByName() returns incorrect parentName");
+		assert.equal(getByName[4], taoId2, "getByName() returns incorrect parentId");
+		assert.equal(getByName[5].toNumber(), 0, "getByName() returns incorrect parentTypeId");
 	});
 
-	it("getByInternalId() - should get NameTAOInfo given an internal ID", async function() {
-		var canGetByInternalId, getByInternalId;
+	it("getById() - should get NameTAOInfo given an Name/TAO ID", async function() {
+		var canGetById, getById;
 		try {
-			getByInternalId = await nametaolookup.getByInternalId(100);
-			canGetByInternalId = true;
+			getById = await nametaolookup.getById(someAddress);
+			canGetById = true;
 		} catch (e) {
-			canGetByInternalId = false;
+			canGetById = false;
 		}
-		assert.equal(canGetByInternalId, false, "Can getByInternalId() of non-existing internal ID");
+		assert.equal(canGetById, false, "Can getById() of non-existing Name/TAO ID");
 
-		getByInternalId = await nametaolookup.getByInternalId(internalId1.toNumber());
-		assert.equal(getByInternalId[0], "delta", "getByInternalId() returns incorrect name");
-		assert.equal(getByInternalId[1], nameId2, "getByInternalId() returns incorrect nameTAOId");
-		assert.equal(getByInternalId[2], "human", "getByInternalId() returns incorrect parentName");
-		assert.equal(getByInternalId[3].toNumber(), 1, "getByInternalId() returns incorrect typeId");
+		getById = await nametaolookup.getById(nameId2);
+		assert.equal(getById[0], "delta", "getById() returns incorrect name");
+		assert.equal(getById[1], nameId2, "getById() returns incorrect nameTAOId");
+		assert.equal(getById[2].toNumber(), 1, "getById() returns incorrect typeId");
+		assert.equal(getById[3], "human", "getById() returns incorrect parentName");
+		assert.equal(getById[4], account2, "getById() returns incorrect parentId");
+		assert.equal(getById[5].toNumber(), 2, "getById() returns incorrect parentTypeId");
 
-		getByInternalId = await nametaolookup.getByInternalId(internalId2.toNumber());
-		assert.equal(getByInternalId[0], "Delta's TAO #1", "getByInternalId() returns incorrect name");
-		assert.equal(getByInternalId[1], taoId2, "getByInternalId() returns incorrect nameTAOId");
-		assert.equal(getByInternalId[2], "delta", "getByInternalId() returns incorrect parentName");
-		assert.equal(getByInternalId[3].toNumber(), 0, "getByInternalId() returns incorrect typeId");
+		getById = await nametaolookup.getById(taoId2);
+		assert.equal(getById[0], "Delta's TAO #1", "getById() returns incorrect name");
+		assert.equal(getById[1], taoId2, "getById() returns incorrect nameTAOId");
+		assert.equal(getById[2].toNumber(), 0, "getById() returns incorrect typeId");
+		assert.equal(getById[3], "delta", "getById() returns incorrect parentName");
+		assert.equal(getById[4], nameId2, "getById() returns incorrect parentId");
+		assert.equal(getById[5].toNumber(), 1, "getById() returns incorrect parentTypeId");
 
-		getByInternalId = await nametaolookup.getByInternalId(internalId3.toNumber());
-		assert.equal(getByInternalId[0], "Delta's TAO #2", "getByInternalId() returns incorrect name");
-		assert.equal(getByInternalId[1], taoId3, "getByInternalId() returns incorrect nameTAOId");
-		assert.equal(getByInternalId[2], "Delta's TAO #1", "getByInternalId() returns incorrect parentName");
-		assert.equal(getByInternalId[3].toNumber(), 0, "getByInternalId() returns incorrect typeId");
+		getById = await nametaolookup.getById(taoId3);
+		assert.equal(getById[0], "Delta's TAO #2", "getById() returns incorrect name");
+		assert.equal(getById[1], taoId3, "getById() returns incorrect nameTAOId");
+		assert.equal(getById[2].toNumber(), 0, "getById() returns incorrect typeId");
+		assert.equal(getById[3], "Delta's TAO #1", "getById() returns incorrect parentName");
+		assert.equal(getById[4], taoId2, "getById() returns incorrect parentId");
+		assert.equal(getById[5].toNumber(), 0, "getById() returns incorrect parentTypeId");
 	});
 
-	it("getNameTAOIdByName() - should return Name/TAO ID given a name", async function() {
-		var canGetNameTAOIdByName, getNameTAOIdByName;
+	it("getIdByName() - should return Name/TAO ID given a name", async function() {
+		var canGetIdByName, getIdByName;
 		try {
-			getNameTAOIdByName = await nametaolookup.getNameTAOIdByName("somename");
-			canGetNameTAOIdByName = true;
+			getIdByName = await nametaolookup.getIdByName("somename");
+			canGetIdByName = true;
 		} catch (e) {
-			canGetNameTAOIdByName = false;
+			canGetIdByName = false;
 		}
-		assert.equal(canGetNameTAOIdByName, false, "Can getNameTAOIdByName() of non-existing name");
+		assert.equal(canGetIdByName, false, "Can getIdByName() of non-existing name");
 
-		getNameTAOIdByName = await nametaolookup.getNameTAOIdByName("delta");
-		assert.equal(getNameTAOIdByName, nameId2, "getNameTAOIdByName() returns incorrect Name/TAO ID");
+		getIdByName = await nametaolookup.getIdByName("delta");
+		assert.equal(getIdByName, nameId2, "getIdByName() returns incorrect Name/TAO ID");
 
-		getNameTAOIdByName = await nametaolookup.getNameTAOIdByName("Delta's TAO #1");
-		assert.equal(getNameTAOIdByName, taoId2, "getNameTAOIdByName() returns incorrect Name/TAO ID");
+		getIdByName = await nametaolookup.getIdByName("Delta's TAO #1");
+		assert.equal(getIdByName, taoId2, "getIdByName() returns incorrect Name/TAO ID");
 
-		getNameTAOIdByName = await nametaolookup.getNameTAOIdByName("Delta's TAO #2");
-		assert.equal(getNameTAOIdByName, taoId3, "getNameTAOIdByName() returns incorrect Name/TAO ID");
+		getIdByName = await nametaolookup.getIdByName("Delta's TAO #2");
+		assert.equal(getIdByName, taoId3, "getIdByName() returns incorrect Name/TAO ID");
 	});
 });

@@ -170,7 +170,7 @@ contract NameFactory is TheAO, INameFactory {
 		_ethAddressToNameId[msg.sender] = nameId;
 
 		// Store the name lookup information
-		require (_nameTAOLookup.initialize(_name, nameId, 'human', 1));
+		require (_nameTAOLookup.initialize(_name, nameId, 1, 'human', msg.sender, 2));
 
 		// Store the Advocate/Listener/Speaker information
 		require (_nameTAOPosition.initialize(nameId, nameId, nameId, nameId));
@@ -268,7 +268,7 @@ contract NameFactory is TheAO, INameFactory {
 		bytes32 _signatureS
 	) public view returns (bool) {
 		require (_nameTAOLookup.isExist(_name));
-		address _nameId = _nameTAOLookup.getNameTAOIdByName(_name);
+		address _nameId = _nameTAOLookup.getIdByName(_name);
 		address _signatureAddress = _getValidateSignatureAddress(_data, _nonce, _signatureV, _signatureR, _signatureS);
 		if (_validateAddress != address(0)) {
 			return (
