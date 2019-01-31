@@ -1,22 +1,34 @@
 pragma solidity ^0.4.24;
 
+import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
 import './INameTAOPosition.sol';
 import './INameFactory.sol';
 import './ITAOFactory.sol';
+import './ITAOAncestry.sol';
+import './IAOSetting.sol';
 import './Logos.sol';
 
 /**
  * @title NameTAOPosition
  */
 contract NameTAOPosition is TheAO, INameTAOPosition {
+	using SafeMath for uint256;
+
+	address public settingTAOId;
 	address public nameFactoryAddress;
 	address public taoFactoryAddress;
+	address public aoSettingAddress;
+	address public taoAncestryAddress;
 	address public logosAddress;
+
+	uint256 public totalTAOAdvocateChallenges;
 
 	INameFactory internal _nameFactory;
 	ITAOFactory internal _taoFactory;
+	IAOSetting internal _aoSetting;
+	ITAOAncestry internal _taoAncestry;
 	Logos internal _logos;
 
 	struct PositionDetail {
@@ -26,7 +38,21 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		bool created;
 	}
 
+	struct TAOAdvocateChallenge {
+		bytes32 challengeId;
+		address newAdvocateId;		// The Name ID that wants to be the new Advocate
+		address taoId;				// The TAO ID being challenged
+		bool completed;				// Status of the challenge
+		uint256 createdTimestamp;	// Timestamp when this challenge is created
+		uint256 lockedUntilTimestamp;	// The deadline for current Advocate to respond
+		uint256 completeBeforeTimestamp; // The deadline for the challenger to respond and complete the challenge
+	}
+
+	// Mapping from Name/TAO ID to its PositionDetail info
 	mapping (address => PositionDetail) internal positionDetails;
+
+	// Mapping from challengeId to TAOAdvocateChallenge info
+	mapping (bytes32 => TAOAdvocateChallenge) internal taoAdvocateChallenges;
 
 	// Event to be broadcasted to public when current Advocate of TAO sets New Advocate
 	event SetAdvocate(address indexed taoId, address oldAdvocateId, address newAdvocateId, uint256 nonce);
@@ -36,6 +62,12 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 
 	// Event to be broadcasted to public when current Advocate of Name/TAO sets New Speaker
 	event SetSpeaker(address indexed taoId, address oldSpeakerId, address newSpeakerId, uint256 nonce);
+
+	// Event to be broadcasted to public when a Name challenges to become TAO's new Advocate
+	event ChallengeTAOAdvocate(address indexed taoId, bytes32 indexed challengeId, address currentAdvocateId, address challengerAdvocateId, uint256 createdTimestamp, uint256 lockedUntilTimestamp, uint256 completeBeforeTimestamp);
+
+	// Event to be broadcasted to public when Challenger completes the TAO Advocate challenge
+	event CompleteTAOAdvocateChallenge(address indexed taoId, bytes32 indexed challengeId);
 
 	/**
 	 * @dev Constructor function
@@ -126,7 +158,7 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	}
 
 	/**
-	 * @dev The AO set the nameFactoryAddress Address
+	 * @dev The AO set the NameFactory Address
 	 * @param _nameFactoryAddress The address of NameFactory
 	 */
 	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
@@ -136,13 +168,42 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	}
 
 	/**
-	 * @dev The AO set the taoFactoryAddress Address
+	 * @dev The AO set the TAOFactory Address
 	 * @param _taoFactoryAddress The address of TAOFactory
 	 */
 	function setTAOFactoryAddress(address _taoFactoryAddress) public onlyTheAO {
 		require (_taoFactoryAddress != address(0));
 		taoFactoryAddress = _taoFactoryAddress;
 		_taoFactory = ITAOFactory(_taoFactoryAddress);
+	}
+
+	/**
+	 * @dev The AO sets setting TAO ID
+	 * @param _settingTAOId The new setting TAO ID to set
+	 */
+	function setSettingTAOId(address _settingTAOId) public onlyTheAO {
+		require (AOLibrary.isTAO(_settingTAOId));
+		settingTAOId = _settingTAOId;
+	}
+
+	/**
+	 * @dev The AO sets AO Setting address
+	 * @param _aoSettingAddress The address of AOSetting
+	 */
+	function setAOSettingAddress(address _aoSettingAddress) public onlyTheAO {
+		require (_aoSettingAddress != address(0));
+		aoSettingAddress = _aoSettingAddress;
+		_aoSetting = IAOSetting(_aoSettingAddress);
+	}
+
+	/**
+	 * @dev The AO set the TAOAncestry Address
+	 * @param _taoAncestryAddress The address of TAOAncestry
+	 */
+	function setTAOAncestryAddress(address _taoAncestryAddress) public onlyTheAO {
+		require (_taoAncestryAddress != address(0));
+		taoAncestryAddress = _taoAncestryAddress;
+		_taoAncestry = ITAOAncestry(taoAncestryAddress);
 	}
 
 	/**
@@ -166,13 +227,24 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	}
 
 	/**
-	 * @dev Check whether or not eth address is advocate of _id
+	 * @dev Check whether or not `_sender` eth address is Advocate of _id
 	 * @param _sender The eth address to check
 	 * @param _id The ID to be checked
 	 * @return true if yes, false otherwise
 	 */
 	function senderIsAdvocate(address _sender, address _id) external view returns (bool) {
 		return (positionDetails[_id].created && positionDetails[_id].advocateId == _nameFactory.ethAddressToNameId(_sender));
+	}
+
+	/**
+	 * @dev Check whether or not `_sender` eth address is Advocate of Parent of _id
+	 * @param _sender The eth address to check
+	 * @param _id The ID to be checked
+	 * @return true if yes, false otherwise
+	 */
+	function senderIsAdvocateOfParent(address _sender, address _id) public view returns (bool) {
+		(address _parentId,,) = _taoAncestry.getAncestryById(_id);
+		 return ((AOLibrary.isName(_parentId) || (AOLibrary.isTAO(_parentId) && _taoAncestry.isChild(_parentId, _id))) && this.senderIsAdvocate(_sender, _parentId));
 	}
 
 	/**
@@ -308,20 +380,144 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		public
 		isTAO(_taoId)
 		isName(_newAdvocateId)
-		senderIsName()
+		senderIsName
 		onlyAdvocate(_taoId) {
+		require (isExist(_taoId));
+		_setAdvocate(_taoId, _newAdvocateId);
+	}
 
-		PositionDetail storage _positionDetail = positionDetails[_taoId];
-		address _currentAdvocateId = _positionDetail.advocateId;
-		_positionDetail.advocateId = _newAdvocateId;
+	/**
+	 * Only Advocate of Parent of `_taoId` can replace child `_taoId` 's Advocate with himself
+	 * @param _taoId The ID of the TAO
+	 */
+	function parentReplaceChildAdvocate(address _taoId)
+		public
+		isTAO(_taoId)
+		senderIsName {
+		require (isExist(_taoId));
+		require (senderIsAdvocateOfParent(msg.sender, _taoId));
+		address _parentNameId = _nameFactory.ethAddressToNameId(msg.sender);
+		address _currentAdvocateId = this.getAdvocate(_taoId);
 
-		uint256 _nonce = _taoFactory.incrementNonce(_taoId);
-		require (_nonce > 0);
-		emit SetAdvocate(_taoId, _currentAdvocateId, _positionDetail.advocateId, _nonce);
+		// Make sure it's not replacing itself
+		require (_parentNameId != _currentAdvocateId);
 
-		if (AOLibrary.isTAO(_taoId)) {
-			require (_logos.transferAdvocatedTAOLogos(_currentAdvocateId, _taoId));
+		// Parent has to have more Logos than current Advocate
+		require (_logos.sumBalanceOf(_parentNameId) > _logos.sumBalanceOf(this.getAdvocate(_taoId)));
+
+		_setAdvocate(_taoId, _parentNameId);
+	}
+
+	/**
+	 * A Name challenges current TAO's Advocate to be its new Advocate
+	 * @param _taoId The ID of the TAO
+	 */
+	function challengeTAOAdvocate(address _taoId)
+		public
+		isTAO(_taoId)
+		senderIsName {
+		require (isExist(_taoId));
+		address _newAdvocateId = _nameFactory.ethAddressToNameId(msg.sender);
+		address _currentAdvocateId = this.getAdvocate(_taoId);
+
+		// Make sure it's not challenging itself
+		require (_newAdvocateId != _currentAdvocateId);
+
+		// New Advocate has to have more Logos than current Advocate
+		require (_logos.sumBalanceOf(_newAdvocateId) > _logos.sumBalanceOf(_currentAdvocateId));
+
+		(uint256 _lockDuration, uint256 _completeDuration) = _getSettingVariables();
+
+		totalTAOAdvocateChallenges++;
+		bytes32 _challengeId = keccak256(abi.encodePacked(this, _taoId, _newAdvocateId, totalTAOAdvocateChallenges));
+		TAOAdvocateChallenge storage _taoAdvocateChallenge = taoAdvocateChallenges[_challengeId];
+		_taoAdvocateChallenge.challengeId = _challengeId;
+		_taoAdvocateChallenge.newAdvocateId = _newAdvocateId;
+		_taoAdvocateChallenge.taoId = _taoId;
+		_taoAdvocateChallenge.createdTimestamp = now;
+		_taoAdvocateChallenge.lockedUntilTimestamp = _taoAdvocateChallenge.createdTimestamp.add(_lockDuration);
+		_taoAdvocateChallenge.completeBeforeTimestamp = _taoAdvocateChallenge.lockedUntilTimestamp.add(_completeDuration);
+
+		emit ChallengeTAOAdvocate(_taoId, _challengeId, _currentAdvocateId, _newAdvocateId, _taoAdvocateChallenge.createdTimestamp, _taoAdvocateChallenge.lockedUntilTimestamp, _taoAdvocateChallenge.completeBeforeTimestamp);
+	}
+
+	/**
+	 * Get status of a TAOAdvocateChallenge given a `_challengeId` and a `_sender` eth address
+	 * @param _challengeId The ID of TAOAdvocateChallenge
+	 * @param _sender The sender address
+	 * @return status of the challenge
+	 *		1 = Can complete challenge
+	 *		2 = Challenge not exist
+	 *		3 = Sender is not the creator of the challenge
+	 *		4 = Transaction is not in the allowed period of time
+	 *		5 = Challenge has been completed
+	 *		6 = Challenger has less Logos than current Advocate of TAO
+	 */
+	function getChallengeStatus(bytes32 _challengeId, address _sender) public view returns (uint8) {
+		address _challengerNameId = _nameFactory.ethAddressToNameId(_sender);
+		TAOAdvocateChallenge storage _taoAdvocateChallenge = taoAdvocateChallenges[_challengeId];
+
+		// If the challenge does not exist
+		if (_taoAdvocateChallenge.taoId == address(0)) {
+			return 2;
+		} else if (_challengerNameId != _taoAdvocateChallenge.newAdvocateId) {
+			// If the calling address is not the creator of the challenge
+			return 3;
+		} else if (now < _taoAdvocateChallenge.lockedUntilTimestamp || now > _taoAdvocateChallenge.completeBeforeTimestamp) {
+			// If this transaction is not in the allowed period of time
+			return 4;
+		} else if (_taoAdvocateChallenge.completed) {
+			// If the challenge has been completed
+			return 5;
+		} else if (_logos.sumBalanceOf(_challengerNameId) <= _logos.sumBalanceOf(this.getAdvocate(_taoAdvocateChallenge.taoId))) {
+			// If challenger has less Logos than current Advocate of TAO
+			return 6;
+		} else {
+			// Can complete!
+			return 1;
 		}
+	}
+
+	/**
+	 * Only owner of challenge can respond and complete of the challenge
+	 * @param _challengeId The ID of the TAOAdvocateChallenge
+	 */
+	function completeTAOAdvocateChallenge(bytes32 _challengeId)
+		public
+		senderIsName {
+		TAOAdvocateChallenge storage _taoAdvocateChallenge = taoAdvocateChallenges[_challengeId];
+
+		// Make sure the challenger can complete this challenge
+		require (getChallengeStatus(_challengeId, msg.sender) == 1);
+
+		_taoAdvocateChallenge.completed = true;
+
+		_setAdvocate(_taoAdvocateChallenge.taoId, _taoAdvocateChallenge.newAdvocateId);
+
+		emit CompleteTAOAdvocateChallenge(_taoAdvocateChallenge.taoId, _challengeId);
+	}
+
+	/**
+	 * @dev Get TAOAdvocateChallenge info given an ID
+	 * @param _challengeId The ID of TAOAdvocateChallenge
+	 * @return the new Advocate ID in the challenge
+	 * @return the ID of Name/TAO
+	 * @return the completion status of the challenge
+	 * @return the created timestamp
+	 * @return the lockedUntil timestamp (The deadline for current Advocate to respond)
+	 * @return the completeBefore timestamp (The deadline for the challenger to respond and complete the challenge)
+	 */
+	function getTAOAdvocateChallengeById(bytes32 _challengeId) public view returns (address, address, bool, uint256, uint256, uint256) {
+		TAOAdvocateChallenge memory _taoAdvocateChallenge = taoAdvocateChallenges[_challengeId];
+		require (_taoAdvocateChallenge.taoId != address(0));
+		return (
+			_taoAdvocateChallenge.newAdvocateId,
+			_taoAdvocateChallenge.taoId,
+			_taoAdvocateChallenge.completed,
+			_taoAdvocateChallenge.createdTimestamp,
+			_taoAdvocateChallenge.lockedUntilTimestamp,
+			_taoAdvocateChallenge.completeBeforeTimestamp
+		);
 	}
 
 	/**
@@ -333,8 +529,9 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		public
 		isNameOrTAO(_id)
 		isNameOrTAO(_newListenerId)
-		senderIsName()
+		senderIsName
 		onlyAdvocate(_id) {
+		require (isExist(_id));
 
 		// If _id is a Name, then new Listener can only be a Name
 		// If _id is a TAO, then new Listener can be a TAO/Name
@@ -365,8 +562,9 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		public
 		isNameOrTAO(_id)
 		isNameOrTAO(_newSpeakerId)
-		senderIsName()
+		senderIsName
 		onlyAdvocate(_id) {
+		require (isExist(_id));
 
 		// If _id is a Name, then new Speaker can only be a Name
 		// If _id is a TAO, then new Speaker can be a TAO/Name
@@ -386,5 +584,40 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 			_nonce = _taoFactory.incrementNonce(_id);
 		}
 		emit SetSpeaker(_id, _currentSpeakerId, _positionDetail.speakerId, _nonce);
+	}
+
+	/***** INTERNAL METHOD *****/
+	/**
+	 * @dev Actually setting Advocate for a TAO
+	 * @param _taoId The ID of the TAO
+	 * @param _newAdvocateId The new advocate ID to be set
+	 */
+	function _setAdvocate(address _taoId, address _newAdvocateId) internal {
+		PositionDetail storage _positionDetail = positionDetails[_taoId];
+		address _currentAdvocateId = _positionDetail.advocateId;
+		_positionDetail.advocateId = _newAdvocateId;
+
+		uint256 _nonce = _taoFactory.incrementNonce(_taoId);
+		require (_nonce > 0);
+
+		// Transfer Advocated TAO Logos to the new Advocate
+		require (_logos.transferAdvocatedTAOLogos(_currentAdvocateId, _taoId));
+
+		emit SetAdvocate(_taoId, _currentAdvocateId, _positionDetail.advocateId, _nonce);
+	}
+
+	/**
+	 * @dev Get setting variables
+	 * @return challengeTAOAdvocateLockDuration = The amount of time for current Advocate to respond to TAO Advocate challenge from another Name
+	 * @return challengeTAOAdvocateCompleteDuration = The amount of time for challenger Advocate to respond and complete the challenge after the lock period ends
+	 */
+	function _getSettingVariables() internal view returns (uint256, uint256) {
+		(uint256 challengeTAOAdvocateLockDuration,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'challengeTAOAdvocateLockDuration');
+		(uint256 challengeTAOAdvocateCompleteDuration,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'challengeTAOAdvocateCompleteDuration');
+
+		return (
+			challengeTAOAdvocateLockDuration,
+			challengeTAOAdvocateCompleteDuration
+		);
 	}
 }
