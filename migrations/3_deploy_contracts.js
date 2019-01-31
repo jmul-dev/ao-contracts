@@ -112,7 +112,7 @@ module.exports = function(deployer, network, accounts) {
 		nametaoposition,
 		nametaolookup,
 		namepublickey,
-		taofamily,
+		taoancestry,
 		taovoice,
 		aosettingattribute,
 		aosettingvalue,
@@ -335,7 +335,7 @@ module.exports = function(deployer, network, accounts) {
 			nametaovault = await NameTAOVault.deployed();
 			nametaolookup = await NameTAOLookup.deployed();
 			namepublickey = await NamePublicKey.deployed();
-			taofamily = await TAOAncestry.deployed();
+			taoancestry = await TAOAncestry.deployed();
 			taovoice = await TAOVoice.deployed();
 			aosettingattribute = await AOSettingAttribute.deployed();
 			aosettingvalue = await AOSettingValue.deployed();
@@ -389,7 +389,10 @@ module.exports = function(deployer, network, accounts) {
 			await namefactory.setNamePublicKeyAddress(namepublickey.address, { from: primordialAccount });
 
 			// Link TAOAncestry to TAOFactory
-			await taofactory.setTAOAncestryAddress(taofamily.address, { from: primordialAccount });
+			await taofactory.setTAOAncestryAddress(taoancestry.address, { from: primordialAccount });
+
+			// Link TAOAncestry to NameTAOPosition
+			await nametaoposition.setTAOAncestryAddress(taoancestry.address, { from: primordialAccount });
 
 			// Voice grants access to TAOVoice
 			await voice.setWhitelist(taovoice.address, true, { from: primordialAccount });
@@ -487,6 +490,9 @@ module.exports = function(deployer, network, accounts) {
 			// Link AOSetting to TAOFactory
 			await taofactory.setAOSettingAddress(aosetting.address, { from: primordialAccount });
 
+			// Link AOSetting to NameTAOPosition
+			await nametaoposition.setAOSettingAddress(aosetting.address, { from: primordialAccount });
+
 			// Link TAOPool to TAOFactory
 			await taofactory.setTAOPoolAddress(taopool.address, { from: primordialAccount });
 
@@ -549,6 +555,9 @@ module.exports = function(deployer, network, accounts) {
 
 			// Set settingTAOId in TAOFactory
 			await taofactory.setSettingTAOId(settingTAOId, { from: primordialAccount });
+
+			// Set settingTAOId in NameTAOPosition
+			await nametaoposition.setSettingTAOId(settingTAOId, { from: primordialAccount });
 
 			/***** Add Settings *****/
 			/**
@@ -675,6 +684,45 @@ module.exports = function(deployer, network, accounts) {
 				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
 			} catch (e) {
 				console.log("Unable to add theAOEthosEarnedRate setting", e);
+			}
+
+			/**
+			 * challengeTAOAdvocateLockDuration = 7 days = 7 * 86400 = 604800
+			 * The amount of time for current Advocate to response to Advocate replacement challenge from another Name
+			 */
+			try {
+				var result = await aosetting.addUintSetting("challengeTAOAdvocateLockDuration", 604800, primordialTAOId, settingTAOId, "", {
+					from: primordialAccount
+				});
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add challengeTAOAdvocateLockDuration setting", e);
+			}
+
+			/**
+			 * challengeTAOAdvocateCompleteDuration = 7 days = 7 * 86400 = 604800
+			 * The amount of time for challenger Advocate to check and complete the challenge after the lock period ends
+			 */
+			try {
+				var result = await aosetting.addUintSetting(
+					"challengeTAOAdvocateCompleteDuration",
+					604800,
+					primordialTAOId,
+					settingTAOId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add challengeTAOAdvocateCompleteDuration setting", e);
 			}
 
 			/**
