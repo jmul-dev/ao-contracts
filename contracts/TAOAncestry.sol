@@ -148,7 +148,7 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 	 * @param _childId The child TAO ID to check
 	 * @return true if yes. Otherwise return false.
 	 */
-	function isChild(address _taoId, address _childId) public view returns (bool) {
+	function isChild(address _taoId, address _childId) external view returns (bool) {
 		require (isExist(_taoId) && isExist(_childId));
 		Ancestry storage _ancestry = ancestries[_taoId];
 		Ancestry memory _childAncestry = ancestries[_childId];
@@ -188,7 +188,7 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 		isTAO(_taoId)
 		isTAO(_childId)
 		onlyFactory returns (bool) {
-		require (!isChild(_taoId, _childId));
+		require (!this.isChild(_taoId, _childId));
 		Ancestry storage _ancestry = ancestries[_taoId];
 		require (_ancestry.childInternalIdLookup[_childId] == 0);
 
@@ -237,7 +237,7 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 		isTAO(_childId)
 		senderIsName()
 		onlyAdvocate(_taoId) {
-		require (isChild(_taoId, _childId));
+		require (this.isChild(_taoId, _childId));
 
 		Ancestry storage _ancestry = ancestries[_taoId];
 		_ancestry.totalChildren--;

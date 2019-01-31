@@ -6,4 +6,6 @@ interface ITAOAncestry {
 	function getAncestryById(address _id) external view returns (address, uint256, uint256);
 
 	function addChild(address _taoId, address _childId) external returns (bool);
+
+	function isChild(address _taoId, address _childId) external view returns (bool);
 }
