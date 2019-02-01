@@ -1,7 +1,7 @@
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
-var AOToken = artifacts.require("./AOToken.sol");
+var AOIon = artifacts.require("./AOIon.sol");
 var AOTreasury = artifacts.require("./AOTreasury.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
 var AOContent = artifacts.require("./AOContent.sol");
@@ -16,7 +16,7 @@ contract("AOStakedContent", function(accounts) {
 	var namefactory,
 		taofactory,
 		nametaoposition,
-		aotoken,
+		aoion,
 		aotreasury,
 		aosetting,
 		aocontent,
@@ -53,7 +53,7 @@ contract("AOStakedContent", function(accounts) {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
 		nametaoposition = await NameTAOPosition.deployed();
-		aotoken = await AOToken.deployed();
+		aoion = await AOIon.deployed();
 		aotreasury = await AOTreasury.deployed();
 		aosetting = await AOSetting.deployed();
 		aocontent = await AOContent.deployed();
@@ -84,8 +84,8 @@ contract("AOStakedContent", function(accounts) {
 
 		// Mint Logos to nameId1 and nameId2
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
-		await logos.mintToken(nameId2, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId2, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -141,17 +141,17 @@ contract("AOStakedContent", function(accounts) {
 		// AOContent grant access to whitelistedAddress
 		await aocontent.setWhitelist(whitelistedAddress, true, { from: theAO });
 
-		// Let's give account1 and account2 some tokens
-		await aotoken.setWhitelist(theAO, true, { from: theAO });
-		await aotoken.mintToken(account1, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
+		// Let's give account1 and account2 some ions
+		await aoion.setWhitelist(theAO, true, { from: theAO });
+		await aoion.mint(account1, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 		// Buy 2 lots so that we can test avg weighted multiplier
-		await aotoken.buyPrimordialToken({ from: account1, value: 500000000000 });
-		await aotoken.buyPrimordialToken({ from: account1, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account1, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account1, value: 500000000000 });
 
-		await aotoken.mintToken(account2, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
+		await aoion.mint(account2, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 		// Buy 2 lots so that we can test avg weighted multiplier
-		await aotoken.buyPrimordialToken({ from: account2, value: 500000000000 });
-		await aotoken.buyPrimordialToken({ from: account2, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account2, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account2, value: 500000000000 });
 	});
 
 	var create = async function(
@@ -163,11 +163,11 @@ contract("AOStakedContent", function(accounts) {
 		primordialAmount,
 		profitPercentage
 	) {
-		var accountBalanceBefore = await aotoken.balanceOf(stakeOwner);
-		var accountStakedBalanceBefore = await aotoken.stakedBalance(stakeOwner);
-		var accountWeightedMultiplierBefore = await aotoken.weightedMultiplierByAddress(stakeOwner);
-		var accountPrimordialBalanceBefore = await aotoken.primordialBalanceOf(stakeOwner);
-		var accountPrimordialStakedBalanceBefore = await aotoken.primordialStakedBalance(
+		var accountBalanceBefore = await aoion.balanceOf(stakeOwner);
+		var accountStakedBalanceBefore = await aoion.stakedBalance(stakeOwner);
+		var accountWeightedMultiplierBefore = await aoion.weightedMultiplierByAddress(stakeOwner);
+		var accountPrimordialBalanceBefore = await aoion.primordialBalanceOf(stakeOwner);
+		var accountPrimordialStakedBalanceBefore = await aoion.primordialStakedBalance(
 			stakeOwner,
 			accountWeightedMultiplierBefore.toNumber()
 		);
@@ -215,11 +215,11 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(stakedContent[6], true, "StakedContent has incorrect active");
 
 		// Verify the account balance after staking
-		var accountBalanceAfter = await aotoken.balanceOf(stakeOwner);
-		var accountStakedBalanceAfter = await aotoken.stakedBalance(stakeOwner);
-		var accountWeightedMultiplierAfter = await aotoken.weightedMultiplierByAddress(stakeOwner);
-		var accountPrimordialBalanceAfter = await aotoken.primordialBalanceOf(stakeOwner);
-		var accountPrimordialStakedBalanceAfter = await aotoken.primordialStakedBalance(
+		var accountBalanceAfter = await aoion.balanceOf(stakeOwner);
+		var accountStakedBalanceAfter = await aoion.stakedBalance(stakeOwner);
+		var accountWeightedMultiplierAfter = await aoion.weightedMultiplierByAddress(stakeOwner);
+		var accountPrimordialBalanceAfter = await aoion.primordialBalanceOf(stakeOwner);
+		var accountPrimordialStakedBalanceAfter = await aoion.primordialStakedBalance(
 			stakeOwner,
 			accountWeightedMultiplierAfter.toNumber()
 		);
@@ -262,11 +262,11 @@ contract("AOStakedContent", function(accounts) {
 		primordialAmount
 	) {
 		var stakedContentBefore = await aostakedcontent.getById(stakedContentId);
-		var accountBalanceBefore = await aotoken.balanceOf(account);
-		var accountStakedBalanceBefore = await aotoken.stakedBalance(account);
-		var accountWeightedMultiplierBefore = await aotoken.weightedMultiplierByAddress(account);
-		var accountPrimordialBalanceBefore = await aotoken.primordialBalanceOf(account);
-		var accountPrimordialStakedBalanceBefore = await aotoken.primordialStakedBalance(account, stakedContentBefore[4].toString());
+		var accountBalanceBefore = await aoion.balanceOf(account);
+		var accountStakedBalanceBefore = await aoion.stakedBalance(account);
+		var accountWeightedMultiplierBefore = await aoion.weightedMultiplierByAddress(account);
+		var accountPrimordialBalanceBefore = await aoion.primordialBalanceOf(account);
+		var accountPrimordialStakedBalanceBefore = await aoion.primordialStakedBalance(account, stakedContentBefore[4].toString());
 
 		var networkAmount =
 			networkIntegerAmount > 0 || networkFractionAmount > 0
@@ -290,14 +290,14 @@ contract("AOStakedContent", function(accounts) {
 		} catch (e) {
 			canUnstakePartial = false;
 		}
-		assert.equal(canUnstakePartial, true, "Stake owner was unable to partially unstake tokens from existing staked content.");
+		assert.equal(canUnstakePartial, true, "Stake owner was unable to partially unstake ions from existing staked content.");
 
 		var stakedContentAfter = await aostakedcontent.getById(stakedContentId);
-		var accountBalanceAfter = await aotoken.balanceOf(account);
-		var accountStakedBalanceAfter = await aotoken.stakedBalance(account);
-		var accountWeightedMultiplierAfter = await aotoken.weightedMultiplierByAddress(account);
-		var accountPrimordialBalanceAfter = await aotoken.primordialBalanceOf(account);
-		var accountPrimordialStakedBalanceAfter = await aotoken.primordialStakedBalance(account, stakedContentAfter[4].toString());
+		var accountBalanceAfter = await aoion.balanceOf(account);
+		var accountStakedBalanceAfter = await aoion.stakedBalance(account);
+		var accountWeightedMultiplierAfter = await aoion.weightedMultiplierByAddress(account);
+		var accountPrimordialBalanceAfter = await aoion.primordialBalanceOf(account);
+		var accountPrimordialStakedBalanceAfter = await aoion.primordialStakedBalance(account, stakedContentAfter[4].toString());
 
 		assert.equal(
 			stakedContentAfter[2].toString(),
@@ -344,11 +344,11 @@ contract("AOStakedContent", function(accounts) {
 
 	var unstakeContent = async function(account, stakedContentId) {
 		var stakedContentBefore = await aostakedcontent.getById(stakedContentId);
-		var accountBalanceBefore = await aotoken.balanceOf(account);
-		var accountStakedBalanceBefore = await aotoken.stakedBalance(account);
-		var accountWeightedMultiplierBefore = await aotoken.weightedMultiplierByAddress(account);
-		var accountPrimordialBalanceBefore = await aotoken.primordialBalanceOf(account);
-		var accountPrimordialStakedBalanceBefore = await aotoken.primordialStakedBalance(account, stakedContentBefore[4].toString());
+		var accountBalanceBefore = await aoion.balanceOf(account);
+		var accountStakedBalanceBefore = await aoion.stakedBalance(account);
+		var accountWeightedMultiplierBefore = await aoion.weightedMultiplierByAddress(account);
+		var accountPrimordialBalanceBefore = await aoion.primordialBalanceOf(account);
+		var accountPrimordialStakedBalanceBefore = await aoion.primordialStakedBalance(account, stakedContentBefore[4].toString());
 
 		var networkAmount = stakedContentBefore[2];
 		var primordialAmount = stakedContentBefore[3];
@@ -360,14 +360,14 @@ contract("AOStakedContent", function(accounts) {
 		} catch (e) {
 			canUnstake = false;
 		}
-		assert.equal(canUnstake, true, "Stake owner address unable to unstake network and primordial token from existing staked content");
+		assert.equal(canUnstake, true, "Stake owner address unable to unstake network and primordial ions from existing staked content");
 
 		var stakedContentAfter = await aostakedcontent.getById(stakedContentId);
-		var accountBalanceAfter = await aotoken.balanceOf(account);
-		var accountStakedBalanceAfter = await aotoken.stakedBalance(account);
-		var accountWeightedMultiplierAfter = await aotoken.weightedMultiplierByAddress(account);
-		var accountPrimordialBalanceAfter = await aotoken.primordialBalanceOf(account);
-		var accountPrimordialStakedBalanceAfter = await aotoken.primordialStakedBalance(account, stakedContentBefore[4].toString());
+		var accountBalanceAfter = await aoion.balanceOf(account);
+		var accountStakedBalanceAfter = await aoion.stakedBalance(account);
+		var accountWeightedMultiplierAfter = await aoion.weightedMultiplierByAddress(account);
+		var accountPrimordialBalanceAfter = await aoion.primordialBalanceOf(account);
+		var accountPrimordialStakedBalanceAfter = await aoion.primordialStakedBalance(account, stakedContentBefore[4].toString());
 
 		assert.equal(stakedContentAfter[2].toString(), 0, "Staked content has incorrect networkAmount after unstaking");
 		assert.equal(stakedContentAfter[3].toString(), 0, "Staked content has incorrect primordialAmount after unstaking");
@@ -409,14 +409,11 @@ contract("AOStakedContent", function(accounts) {
 		primordialAmount
 	) {
 		var stakedContentBefore = await aostakedcontent.getById(stakedContentId);
-		var accountBalanceBefore = await aotoken.balanceOf(account);
-		var accountStakedBalanceBefore = await aotoken.stakedBalance(account);
-		var accountWeightedMultiplierBefore = await aotoken.weightedMultiplierByAddress(account);
-		var accountPrimordialBalanceBefore = await aotoken.primordialBalanceOf(account);
-		var accountPrimordialStakedBalanceBefore = await aotoken.primordialStakedBalance(
-			account,
-			accountWeightedMultiplierBefore.toString()
-		);
+		var accountBalanceBefore = await aoion.balanceOf(account);
+		var accountStakedBalanceBefore = await aoion.stakedBalance(account);
+		var accountWeightedMultiplierBefore = await aoion.weightedMultiplierByAddress(account);
+		var accountPrimordialBalanceBefore = await aoion.primordialBalanceOf(account);
+		var accountPrimordialStakedBalanceBefore = await aoion.primordialStakedBalance(account, accountWeightedMultiplierBefore.toString());
 
 		var canStakeExisting;
 		try {
@@ -434,7 +431,7 @@ contract("AOStakedContent", function(accounts) {
 		} catch (e) {
 			canStakeExisting = false;
 		}
-		assert.equal(canStakeExisting, true, "Stake owner can't stake tokens on existing staked content");
+		assert.equal(canStakeExisting, true, "Stake owner can't stake ions on existing staked content");
 
 		var networkAmount =
 			networkIntegerAmount > 0 || networkFractionAmount > 0
@@ -442,11 +439,11 @@ contract("AOStakedContent", function(accounts) {
 				: 0;
 
 		var stakedContentAfter = await aostakedcontent.getById(stakedContentId);
-		var accountBalanceAfter = await aotoken.balanceOf(account);
-		var accountStakedBalanceAfter = await aotoken.stakedBalance(account);
-		var accountWeightedMultiplierAfter = await aotoken.weightedMultiplierByAddress(account);
-		var accountPrimordialBalanceAfter = await aotoken.primordialBalanceOf(account);
-		var accountPrimordialStakedBalanceAfter = await aotoken.primordialStakedBalance(account, stakedContentAfter[4].toString());
+		var accountBalanceAfter = await aoion.balanceOf(account);
+		var accountStakedBalanceAfter = await aoion.stakedBalance(account);
+		var accountWeightedMultiplierAfter = await aoion.weightedMultiplierByAddress(account);
+		var accountPrimordialBalanceAfter = await aoion.primordialBalanceOf(account);
+		var accountPrimordialStakedBalanceAfter = await aoion.primordialStakedBalance(account, stakedContentAfter[4].toString());
 
 		assert.equal(
 			stakedContentAfter[2].toString(),
@@ -555,26 +552,26 @@ contract("AOStakedContent", function(accounts) {
 		contentId3 = storeContentEvent.args.contentId;
 	});
 
-	it("The AO - should be able to set AOToken address", async function() {
+	it("The AO - should be able to set AOIon address", async function() {
 		var canSetAddress;
 		try {
-			await aostakedcontent.setAOTokenAddress(aotoken.address, { from: someAddress });
+			await aostakedcontent.setAOIonAddress(aoion.address, { from: someAddress });
 			canSetAddress = true;
 		} catch (e) {
 			canSetAddress = false;
 		}
-		assert.equal(canSetAddress, false, "Non-AO can set AOToken address");
+		assert.equal(canSetAddress, false, "Non-AO can set AOIon address");
 
 		try {
-			await aostakedcontent.setAOTokenAddress(aotoken.address, { from: account1 });
+			await aostakedcontent.setAOIonAddress(aoion.address, { from: account1 });
 			canSetAddress = true;
 		} catch (e) {
 			canSetAddress = false;
 		}
-		assert.equal(canSetAddress, true, "The AO can't set AOToken address");
+		assert.equal(canSetAddress, true, "The AO can't set AOIon address");
 
-		var aoTokenAddress = await aostakedcontent.aoTokenAddress();
-		assert.equal(aoTokenAddress, aotoken.address, "Contract has incorrect aoTokenAddress");
+		var aoIonAddress = await aostakedcontent.aoIonAddress();
+		assert.equal(aoIonAddress, aoion.address, "Contract has incorrect aoIonAddress");
 	});
 
 	it("The AO - should be able to set AOTreasury address", async function() {
@@ -894,18 +891,18 @@ contract("AOStakedContent", function(accounts) {
 		} catch (e) {
 			canUnstakePartial = false;
 		}
-		assert.notEqual(canUnstakePartial, true, "Stake owner can partially unstake more tokens than it's existing balance.");
+		assert.notEqual(canUnstakePartial, true, "Stake owner can partially unstake more ions than it's existing balance.");
 	});
 
-	it("unstakePartialContent() - should be able to partially unstake only network token from existing staked content", async function() {
+	it("unstakePartialContent() - should be able to partially unstake only network ions from existing staked content", async function() {
 		await unstakePartialContent(account1, stakedContentId1, 1, 10, "kilo", 0);
 	});
 
-	it("unstakePartialContent() - should be able to partially unstake only primordial token from existing staked content", async function() {
+	it("unstakePartialContent() - should be able to partially unstake only primordial ions from existing staked content", async function() {
 		await unstakePartialContent(account1, stakedContentId1, 0, 0, "", 10);
 	});
 
-	it("unstakePartialContent() - should be able to partially unstake both network and primordial token from existing staked content", async function() {
+	it("unstakePartialContent() - should be able to partially unstake both network and primordial ions from existing staked content", async function() {
 		await unstakePartialContent(account1, stakedContentId1, 1, 10, "kilo", 10);
 	});
 
@@ -1068,7 +1065,7 @@ contract("AOStakedContent", function(accounts) {
 		await stakeExistingContent(account1, stakedContentId3, 0, 0, "", 3000000);
 	});
 
-	it("stakeExistingContent() - should be able to stake only network tokens on existing staked content", async function() {
+	it("stakeExistingContent() - should be able to stake only network ions on existing staked content", async function() {
 		await stakeExistingContent(account1, stakedContentId1, 1, 0, "mega", 0);
 		await stakeExistingContent(account2, stakedContentId2, 1, 0, "mega", 0);
 		await stakeExistingContent(account1, stakedContentId3, 1, 0, "mega", 0);
@@ -1079,7 +1076,7 @@ contract("AOStakedContent", function(accounts) {
 		await aostakedcontent.unstakeContent(stakedContentId3, { from: account1 });
 	});
 
-	it("stakeExistingContent() - should be able to stake only primordial tokens on existing staked content", async function() {
+	it("stakeExistingContent() - should be able to stake only primordial ions on existing staked content", async function() {
 		await stakeExistingContent(account1, stakedContentId1, 0, 0, "", 1000000);
 		await stakeExistingContent(account2, stakedContentId2, 0, 0, "", 1000000);
 		await stakeExistingContent(account1, stakedContentId3, 0, 0, "", 1000000);
@@ -1090,7 +1087,7 @@ contract("AOStakedContent", function(accounts) {
 		await aostakedcontent.unstakeContent(stakedContentId3, { from: account1 });
 	});
 
-	it("stakeExistingContent() - should be able to stake both network and primordial tokens on existing staked content", async function() {
+	it("stakeExistingContent() - should be able to stake both network and primordial ions on existing staked content", async function() {
 		await stakeExistingContent(account1, stakedContentId1, 2, 10, "kilo", 1000000);
 		await stakeExistingContent(account2, stakedContentId2, 500, 0, "kilo", 500000);
 		await stakeExistingContent(account1, stakedContentId3, 0, 300000, "mega", 700000);

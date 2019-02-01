@@ -2,7 +2,7 @@ var AOLibrary = artifacts.require("./AOLibrary.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
-var AOToken = artifacts.require("./AOToken.sol");
+var AOIon = artifacts.require("./AOIon.sol");
 var AOTreasury = artifacts.require("./AOTreasury.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
 var AOContent = artifacts.require("./AOContent.sol");
@@ -24,7 +24,7 @@ contract("AOEarning", function(accounts) {
 		namefactory,
 		taofactory,
 		nametaoposition,
-		aotoken,
+		aoion,
 		aotreasury,
 		aosetting,
 		aocontent,
@@ -132,7 +132,7 @@ contract("AOEarning", function(accounts) {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
 		nametaoposition = await NameTAOPosition.deployed();
-		aotoken = await AOToken.deployed();
+		aoion = await AOIon.deployed();
 		aotreasury = await AOTreasury.deployed();
 		aosetting = await AOSetting.deployed();
 		aocontent = await AOContent.deployed();
@@ -190,8 +190,8 @@ contract("AOEarning", function(accounts) {
 
 		// Mint Logos to nameId1 and nameId2
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
-		await logos.mintToken(nameId2, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId2, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -216,20 +216,20 @@ contract("AOEarning", function(accounts) {
 		await aocontenthost.setWhitelist(whitelistedAddress, true, { from: theAO });
 		await aopurchasereceipt.setWhitelist(whitelistedAddress, true, { from: theAO });
 
-		// Let's give accounts some tokens
-		await aotoken.setWhitelist(theAO, true, { from: theAO });
-		await aotoken.mintToken(account1, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
+		// Let's give accounts some ions
+		await aoion.setWhitelist(theAO, true, { from: theAO });
+		await aoion.mint(account1, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 		// Buy 2 lots so that we can test avg weighted multiplier
-		await aotoken.buyPrimordialToken({ from: account1, value: 500000000000 });
-		await aotoken.buyPrimordialToken({ from: account1, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account1, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account1, value: 500000000000 });
 
-		await aotoken.mintToken(account2, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
+		await aoion.mint(account2, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 		// Buy 2 lots so that we can test avg weighted multiplier
-		await aotoken.buyPrimordialToken({ from: account2, value: 500000000000 });
-		await aotoken.buyPrimordialToken({ from: account2, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account2, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account2, value: 500000000000 });
 
-		await aotoken.mintToken(account3, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
-		await aotoken.mintToken(account4, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
+		await aoion.mint(account3, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
+		await aoion.mint(account4, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 	});
 
 	var buyContentCalculateEarning = async function(
@@ -257,13 +257,13 @@ contract("AOEarning", function(accounts) {
 		var contentHostPrice = new BigNumber(await aocontenthost.contentHostPrice(contentHostId));
 		var contentHostPaidByAO = new BigNumber(await aocontenthost.contentHostPaidByAO(contentHostId));
 
-		var stakeOwnerBalanceBefore = new BigNumber(await aotoken.balanceOf(stakeOwner));
-		var hostBalanceBefore = new BigNumber(await aotoken.balanceOf(host));
-		var theAOBalanceBefore = new BigNumber(await aotoken.balanceOf(theAO));
+		var stakeOwnerBalanceBefore = new BigNumber(await aoion.balanceOf(stakeOwner));
+		var hostBalanceBefore = new BigNumber(await aoion.balanceOf(host));
+		var theAOBalanceBefore = new BigNumber(await aoion.balanceOf(theAO));
 
-		var stakeOwnerEscrowedBalanceBefore = new BigNumber(await aotoken.escrowedBalance(stakeOwner));
-		var hostEscrowedBalanceBefore = new BigNumber(await aotoken.escrowedBalance(host));
-		var theAOEscrowedBalanceBefore = new BigNumber(await aotoken.escrowedBalance(theAO));
+		var stakeOwnerEscrowedBalanceBefore = new BigNumber(await aoion.escrowedBalance(stakeOwner));
+		var hostEscrowedBalanceBefore = new BigNumber(await aoion.escrowedBalance(host));
+		var theAOEscrowedBalanceBefore = new BigNumber(await aoion.escrowedBalance(theAO));
 
 		var canBuyContent, buyContentEvent, purchaseReceiptId;
 		try {
@@ -284,11 +284,11 @@ contract("AOEarning", function(accounts) {
 			buyContentEvent = null;
 			purchaseReceiptId = null;
 		}
-		assert.equal(canBuyContent, true, "Account can't buy content even though sent tokens >= price");
+		assert.equal(canBuyContent, true, "Account can't buy content even though sent ions >= price");
 
-		var stakeOwnerBalanceAfter = new BigNumber(await aotoken.balanceOf(stakeOwner));
-		var hostBalanceAfter = new BigNumber(await aotoken.balanceOf(host));
-		var theAOBalanceAfter = new BigNumber(await aotoken.balanceOf(theAO));
+		var stakeOwnerBalanceAfter = new BigNumber(await aoion.balanceOf(stakeOwner));
+		var hostBalanceAfter = new BigNumber(await aoion.balanceOf(host));
+		var theAOBalanceAfter = new BigNumber(await aoion.balanceOf(theAO));
 
 		assert.equal(
 			stakeOwnerBalanceAfter.toString(),
@@ -399,9 +399,9 @@ contract("AOEarning", function(accounts) {
 		assert.equal(theAOPurchaseReceiptEarning[4].toNumber(), 0, "theAOPurchaseReceiptEarning has incorrect ethos amount");
 
 		// Verify escrowed balance
-		var stakeOwnerEscrowedBalanceAfter = await aotoken.escrowedBalance(stakeOwner);
-		var hostEscrowedBalanceAfter = await aotoken.escrowedBalance(host);
-		var theAOEscrowedBalanceAfter = await aotoken.escrowedBalance(theAO);
+		var stakeOwnerEscrowedBalanceAfter = await aoion.escrowedBalance(stakeOwner);
+		var hostEscrowedBalanceAfter = await aoion.escrowedBalance(host);
+		var theAOEscrowedBalanceAfter = await aoion.escrowedBalance(theAO);
 
 		// since the stake owner and the host are the same
 		if (stakeOwner == host) {
@@ -501,13 +501,13 @@ contract("AOEarning", function(accounts) {
 		var stakeOwnerPathosBalanceBefore = await pathos.balanceOf(stakeOwnerNameId);
 		var hostEthosBalanceBefore = await ethos.balanceOf(hostNameId);
 
-		var stakeOwnerBalanceBefore = await aotoken.balanceOf(stakeOwner);
-		var hostBalanceBefore = await aotoken.balanceOf(host);
-		var theAOBalanceBefore = await aotoken.balanceOf(theAO);
+		var stakeOwnerBalanceBefore = await aoion.balanceOf(stakeOwner);
+		var hostBalanceBefore = await aoion.balanceOf(host);
+		var theAOBalanceBefore = await aoion.balanceOf(theAO);
 
-		var stakeOwnerEscrowedBalanceBefore = await aotoken.escrowedBalance(stakeOwner);
-		var hostEscrowedBalanceBefore = await aotoken.escrowedBalance(host);
-		var theAOEscrowedBalanceBefore = await aotoken.escrowedBalance(theAO);
+		var stakeOwnerEscrowedBalanceBefore = await aoion.escrowedBalance(stakeOwner);
+		var hostEscrowedBalanceBefore = await aoion.escrowedBalance(host);
+		var theAOEscrowedBalanceBefore = await aoion.escrowedBalance(theAO);
 
 		var ownerPurchaseReceiptStakeEarningBefore = await aoearning.ownerPurchaseReceiptStakeEarnings(stakeOwner, purchaseReceiptId);
 		var ownerPurchaseReceiptHostEarningBefore = await aoearning.ownerPurchaseReceiptHostEarnings(host, purchaseReceiptId);
@@ -569,9 +569,9 @@ contract("AOEarning", function(accounts) {
 			"Host has incorrect ethos balance"
 		);
 
-		var stakeOwnerBalanceAfter = await aotoken.balanceOf(stakeOwner);
-		var hostBalanceAfter = await aotoken.balanceOf(host);
-		var theAOBalanceAfter = await aotoken.balanceOf(theAO);
+		var stakeOwnerBalanceAfter = await aoion.balanceOf(stakeOwner);
+		var hostBalanceAfter = await aoion.balanceOf(host);
+		var theAOBalanceAfter = await aoion.balanceOf(theAO);
 
 		// Verify the balance
 		if (isAOContentUsageType) {
@@ -659,9 +659,9 @@ contract("AOEarning", function(accounts) {
 			"The AO has incorrect balance after request node become host"
 		);
 
-		var stakeOwnerEscrowedBalanceAfter = await aotoken.escrowedBalance(stakeOwner);
-		var hostEscrowedBalanceAfter = await aotoken.escrowedBalance(host);
-		var theAOEscrowedBalanceAfter = await aotoken.escrowedBalance(theAO);
+		var stakeOwnerEscrowedBalanceAfter = await aoion.escrowedBalance(stakeOwner);
+		var hostEscrowedBalanceAfter = await aoion.escrowedBalance(host);
+		var theAOEscrowedBalanceAfter = await aoion.escrowedBalance(theAO);
 
 		// Verify the escrowed balance
 		// since stake owner and host are the same
@@ -1219,26 +1219,26 @@ contract("AOEarning", function(accounts) {
 		assert.equal(aoSettingAddress, aosetting.address, "Contract has incorrect aoSettingAddress");
 	});
 
-	it("The AO - should be able to set AOToken address", async function() {
+	it("The AO - should be able to set AOIon address", async function() {
 		var canSetAddress;
 		try {
-			await aoearning.setAOTokenAddress(aotoken.address, { from: someAddress });
+			await aoearning.setAOIonAddress(aoion.address, { from: someAddress });
 			canSetAddress = true;
 		} catch (e) {
 			canSetAddress = false;
 		}
-		assert.equal(canSetAddress, false, "Non-AO can set AOToken address");
+		assert.equal(canSetAddress, false, "Non-AO can set AOIon address");
 
 		try {
-			await aoearning.setAOTokenAddress(aotoken.address, { from: account1 });
+			await aoearning.setAOIonAddress(aoion.address, { from: account1 });
 			canSetAddress = true;
 		} catch (e) {
 			canSetAddress = false;
 		}
-		assert.equal(canSetAddress, true, "The AO can't set AOToken address");
+		assert.equal(canSetAddress, true, "The AO can't set AOIon address");
 
-		var aoTokenAddress = await aoearning.aoTokenAddress();
-		assert.equal(aoTokenAddress, aotoken.address, "Contract has incorrect aoTokenAddress");
+		var aoIonAddress = await aoearning.aoIonAddress();
+		assert.equal(aoIonAddress, aoion.address, "Contract has incorrect aoIonAddress");
 	});
 
 	it("The AO - should be able to set NameFactory address", async function() {

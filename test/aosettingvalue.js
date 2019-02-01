@@ -36,7 +36,7 @@ contract("AOSettingValue", function(accounts) {
 
 		// Mint Logos to nameId
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId, 10 ** 12, { from: theAO });
+		await logos.mint(nameId, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",

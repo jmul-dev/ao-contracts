@@ -6,7 +6,7 @@ import './Voice.sol';
 /**
  * @title TAOVoice
  *
- * The purpose of this contract is for Name to stake/unstake Voice token on a TAO
+ * The purpose of this contract is for Name to stake/unstake Voice on a TAO
  */
 contract TAOVoice is TAOController {
 	address public voiceAddress;

@@ -362,7 +362,7 @@ contract TAOPool is TAOController, ITAOPool {
 		poolTotalLogosWithdrawn[_lot.taoId] = poolTotalLogosWithdrawn[_lot.taoId].add(logosAvailableToWithdraw);
 
 		// Mint logos to seller
-		require (_logos.mintToken(_nameId, logosAvailableToWithdraw));
+		require (_logos.mint(_nameId, logosAvailableToWithdraw));
 
 		emit WithdrawLogos(_lot.nameId, _lot.lotId, _lot.taoId, logosAvailableToWithdraw, _lot.lotValueInLogos, _lot.logosWithdrawn);
 	}

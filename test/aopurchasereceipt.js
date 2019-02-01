@@ -1,7 +1,7 @@
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
-var AOToken = artifacts.require("./AOToken.sol");
+var AOIon = artifacts.require("./AOIon.sol");
 var AOTreasury = artifacts.require("./AOTreasury.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
 var AOContent = artifacts.require("./AOContent.sol");
@@ -20,7 +20,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 	var namefactory,
 		taofactory,
 		nametaoposition,
-		aotoken,
+		aoion,
 		aotreasury,
 		aosetting,
 		aocontent,
@@ -98,7 +98,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
 		nametaoposition = await NameTAOPosition.deployed();
-		aotoken = await AOToken.deployed();
+		aoion = await AOIon.deployed();
 		aotreasury = await AOTreasury.deployed();
 		aosetting = await AOSetting.deployed();
 		aocontent = await AOContent.deployed();
@@ -132,8 +132,8 @@ contract("AOPurchaseReceipt", function(accounts) {
 
 		// Mint Logos to nameId1 and nameId2
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
-		await logos.mintToken(nameId2, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId2, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -157,19 +157,19 @@ contract("AOPurchaseReceipt", function(accounts) {
 		await aostakedcontent.setWhitelist(whitelistedAddress, true, { from: theAO });
 		await aocontenthost.setWhitelist(whitelistedAddress, true, { from: theAO });
 
-		// Let's give accounts some tokens
-		await aotoken.setWhitelist(theAO, true, { from: theAO });
-		await aotoken.mintToken(account1, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
+		// Let's give accounts some ions
+		await aoion.setWhitelist(theAO, true, { from: theAO });
+		await aoion.mint(account1, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 		// Buy 2 lots so that we can test avg weighted multiplier
-		await aotoken.buyPrimordialToken({ from: account1, value: 500000000000 });
-		await aotoken.buyPrimordialToken({ from: account1, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account1, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account1, value: 500000000000 });
 
-		await aotoken.mintToken(account2, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
+		await aoion.mint(account2, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 		// Buy 2 lots so that we can test avg weighted multiplier
-		await aotoken.buyPrimordialToken({ from: account2, value: 500000000000 });
-		await aotoken.buyPrimordialToken({ from: account2, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account2, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account2, value: 500000000000 });
 
-		await aotoken.mintToken(account3, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
+		await aoion.mint(account3, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 	});
 
 	var buyContent = async function(
@@ -181,7 +181,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		publicKey,
 		publicAddress
 	) {
-		var accountBalanceBefore = new BigNumber(await aotoken.balanceOf(account));
+		var accountBalanceBefore = new BigNumber(await aoion.balanceOf(account));
 		var contentHost = await aocontenthost.getById(contentHostId);
 		var stakedContentId = contentHost[0];
 		var contentId = contentHost[1];
@@ -213,7 +213,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 			buyContentEvent = null;
 			purchaseReceiptId = null;
 		}
-		assert.equal(canBuyContent, true, "Account can't buy content even though sent tokens >= price");
+		assert.equal(canBuyContent, true, "Account can't buy content even though sent ions >= price");
 
 		var isExist = await aopurchasereceipt.isExist(purchaseReceiptId);
 		assert.equal(isExist, true, "isExist() returns incorrect value");
@@ -233,7 +233,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		assert.equal(purchaseReceipt[7], publicKey, "PurchaseReceipt has incorrect publicKey");
 		assert.equal(purchaseReceipt[8].toLowerCase(), publicAddress.toLowerCase(), "PurchaseReceipt has incorrect publicAddress");
 
-		var accountBalanceAfter = new BigNumber(await aotoken.balanceOf(account));
+		var accountBalanceAfter = new BigNumber(await aoion.balanceOf(account));
 		assert.equal(
 			accountBalanceAfter.toString(),
 			isAOContentUsageType ? accountBalanceBefore.minus(contentHostPrice).toString() : accountBalanceBefore.toString(),
@@ -545,7 +545,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 			buyContentEvent = null;
 			purchaseReceiptId = null;
 		}
-		assert.equal(canBuyContent, false, "Account can buy hosted content and send tokens < price");
+		assert.equal(canBuyContent, false, "Account can buy hosted content and send ions < price");
 
 		try {
 			var result = await aopurchasereceipt.buyContent(contentId1, 5, 0, "mega", "", account3LocalIdentity.address, {
@@ -613,7 +613,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 			buyContentEvent = null;
 			purchaseReceiptId = null;
 		}
-		assert.equal(canBuyContent, false, "Account without enough tokens balance can buy hosted content");
+		assert.equal(canBuyContent, false, "Account without enough ions balance can buy hosted content");
 	});
 
 	it("buyContent() - should be able to buy content and store all of the earnings of stake owner (content creator)/host/The AO in escrow", async function() {

@@ -1,5 +1,5 @@
 var AOLibrary = artifacts.require("./AOLibrary.sol");
-var AOToken = artifacts.require("./AOToken.sol");
+var AOIon = artifacts.require("./AOIon.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
@@ -12,7 +12,7 @@ BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1 }); // no rounding
 
 contract("AOLibrary", function(accounts) {
 	var library,
-		aotoken,
+		aoion,
 		nametaoposition,
 		namefactory,
 		taofactory,
@@ -32,7 +32,7 @@ contract("AOLibrary", function(accounts) {
 
 	before(async function() {
 		library = await AOLibrary.deployed();
-		aotoken = await AOToken.deployed();
+		aoion = await AOIon.deployed();
 		nametaoposition = await NameTAOPosition.deployed();
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
@@ -47,7 +47,7 @@ contract("AOLibrary", function(accounts) {
 
 		// Mint Logos to nameId1
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -106,7 +106,7 @@ contract("AOLibrary", function(accounts) {
 	});
 
 	it("isValidERC20TokenAddress() - should check whether or not an address is a valid ERC20 Token", async function() {
-		var isValid = await library.isValidERC20TokenAddress(aotoken.address);
+		var isValid = await library.isValidERC20TokenAddress(aoion.address);
 		assert.equal(isValid, true, "isValidERC20TokenAddress() returns incorrect value");
 
 		try {
@@ -203,13 +203,13 @@ contract("AOLibrary", function(accounts) {
 		assert.equal(multiplier.toNumber(), _multiplier.toString(), "Library returns incorrect multiplier for a given lot");
 	});
 
-	it("calculateNetworkTokenBonusPercentage() - should calculate and return the correct network token bonus percentage on a given lot", async function() {
+	it("calculateNetworkBonusPercentage() - should calculate and return the correct network ion bonus percentage on a given lot", async function() {
 		var P = new BigNumber(50);
 		var T = new BigNumber(1000);
 		var M = new BigNumber(300);
 		var Bs = new BigNumber(1000000);
 		var Be = new BigNumber(250000);
-		var bonusPercentage = await library.calculateNetworkTokenBonusPercentage(
+		var bonusPercentage = await library.calculateNetworkBonusPercentage(
 			P.toString(),
 			T.toString(),
 			M.toString(),
@@ -239,41 +239,31 @@ contract("AOLibrary", function(accounts) {
 		assert.equal(
 			bonusPercentage.toString(),
 			_bonusPercentage.toString(),
-			"Library returns incorrect network token bonus percentage for a given lot"
+			"Library returns incorrect network ion bonus percentage for a given lot"
 		);
 	});
 
-	it("calculateNetworkTokenBonusAmount() - should calculate and return the correct network token bonus amount on a given lot", async function() {
+	it("calculateNetworkBonusAmount() - should calculate and return the correct network ion bonus amount on a given lot", async function() {
 		var P = new BigNumber(50);
 		var T = new BigNumber(1000);
 		var M = new BigNumber(300);
 		var Bs = new BigNumber(1000000);
 		var Be = new BigNumber(250000);
 
-		var bonusPercentage = await library.calculateNetworkTokenBonusPercentage(
+		var bonusPercentage = await library.calculateNetworkBonusPercentage(
 			P.toString(),
 			T.toString(),
 			M.toString(),
 			Bs.toString(),
 			Be.toString()
 		);
-		var bonusAmount = await library.calculateNetworkTokenBonusAmount(
-			P.toString(),
-			T.toString(),
-			M.toString(),
-			Bs.toString(),
-			Be.toString()
-		);
+		var bonusAmount = await library.calculateNetworkBonusAmount(P.toString(), T.toString(), M.toString(), Bs.toString(), Be.toString());
 
 		// Bonus Amount = B% * P
 		// But since B% is in percentageDivisor, need to divide it with percentageDivisor
 		// Bonus Amount = (B% * P) / percentageDivisor
 		var _bonusAmount = new BigNumber(bonusPercentage).times(P).div(percentageDivisor);
-		assert.equal(
-			bonusAmount.toNumber(),
-			_bonusAmount.toString(),
-			"Library returns incorrect network token bonus amount for a given lot"
-		);
+		assert.equal(bonusAmount.toNumber(), _bonusAmount.toString(), "Library returns incorrect network ion bonus amount for a given lot");
 	});
 
 	it("calculateMaximumBurnAmount() - should calculate and return the correct maximum burn amount", async function() {
@@ -295,7 +285,7 @@ contract("AOLibrary", function(accounts) {
 		);
 	});
 
-	it("calculateMultiplierAfterBurn() - should calculate and return the correct new multiplier after burning primordial token", async function() {
+	it("calculateMultiplierAfterBurn() - should calculate and return the correct new multiplier after burning primordial ion", async function() {
 		var P = new BigNumber(70);
 		var M = new BigNumber(40000000);
 		var B = new BigNumber(14);
@@ -305,7 +295,7 @@ contract("AOLibrary", function(accounts) {
 		assert.equal(newMultiplier.toString(), _newMultiplier.toString(), "Library returns incorrect new multiplier after burning");
 	});
 
-	it("calculateMultiplierAfterConversion() - should calculate and return the correct new multiplier after converting network token to primordial token", async function() {
+	it("calculateMultiplierAfterConversion() - should calculate and return the correct new multiplier after converting network ion to primordial ion", async function() {
 		var P = new BigNumber(70);
 		var M = new BigNumber(40000000);
 		var C = new BigNumber(14);

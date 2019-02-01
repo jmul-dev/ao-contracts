@@ -23,7 +23,7 @@ contract("Epiphany", function(accounts) {
 
 		// Mint Logos to nameId
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId, 10 ** 12, { from: theAO });
+		await logos.mint(nameId, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO("newTAO", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId, 0, false, 0, {
 			from: account1

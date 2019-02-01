@@ -6,8 +6,8 @@ contract PathosGiga is TAOCurrency {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _nameTAOPositionAddress)
-		TAOCurrency(initialSupply, tokenName, tokenSymbol, _nameTAOPositionAddress) public {
+	constructor(string _name, string _symbol, address _nameTAOPositionAddress)
+		TAOCurrency(_name, _symbol, _nameTAOPositionAddress) public {
 		powerOfTen = 9;
 		decimals = 9;
 	}

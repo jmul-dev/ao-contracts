@@ -5,7 +5,7 @@ import './AOLibrary.sol';
 import './TheAO.sol';
 import './TokenERC20.sol';
 import './tokenRecipient.sol';
-import './AOToken.sol';
+import './AOIon.sol';
 
 /**
  * @title AOETH
@@ -13,9 +13,9 @@ import './AOToken.sol';
 contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	using SafeMath for uint256;
 
-	address public aoTokenAddress;
+	address public aoIonAddress;
 
-	AOToken internal _aoToken;
+	AOIon internal _aoIon;
 
 	uint256 public totalERC20Tokens;
 	uint256 public totalTokenExchanges;
@@ -65,9 +65,9 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _aoTokenAddress, address _nameTAOPositionAddress)
+	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _aoIonAddress, address _nameTAOPositionAddress)
 		TokenERC20(initialSupply, tokenName, tokenSymbol) public {
-		setAOTokenAddress(_aoTokenAddress);
+		setAOIonAddress(_aoIonAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
@@ -102,13 +102,13 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	}
 
 	/**
-	 * @dev The AO set the AOToken Address
-	 * @param _aoTokenAddress The address of AOToken
+	 * @dev The AO set the AOIon Address
+	 * @param _aoIonAddress The address of AOIon
 	 */
-	function setAOTokenAddress(address _aoTokenAddress) public onlyTheAO {
-		require (_aoTokenAddress != address(0));
-		aoTokenAddress = _aoTokenAddress;
-		_aoToken = AOToken(_aoTokenAddress);
+	function setAOIonAddress(address _aoIonAddress) public onlyTheAO {
+		require (_aoIonAddress != address(0));
+		aoIonAddress = _aoIonAddress;
+		_aoIon = AOIon(_aoIonAddress);
 	}
 
 	/**
@@ -267,7 +267,7 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 
 		uint256 amountToTransfer = _value.div(_erc20Token.price);
 		require (_erc20Token.maxQuantity.sub(_erc20Token.exchangedQuantity) >= amountToTransfer);
-		require (_aoToken.availableETH() >= amountToTransfer);
+		require (_aoIon.availableETH() >= amountToTransfer);
 
 		// Transfer the ERC20 Token from the `_from` address to here
 		require (TokenERC20(_token).transferFrom(_from, address(this), _value));

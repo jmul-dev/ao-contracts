@@ -7,15 +7,15 @@ import './TokenERC20.sol';
 import './tokenRecipient.sol';
 
 /**
- * @title AOTokenInterface
+ * @title AOIonInterface
  */
-contract AOTokenInterface is TheAO, TokenERC20 {
+contract AOIonInterface is TheAO, TokenERC20 {
 	using SafeMath for uint256;
 
 	// To differentiate denomination of AO
 	uint256 public powerOfTen;
 
-	/***** NETWORK TOKEN VARIABLES *****/
+	/***** NETWORK ION VARIABLES *****/
 	uint256 public sellPrice;
 	uint256 public buyPrice;
 
@@ -33,8 +33,8 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _nameTAOPositionAddress)
-		TokenERC20(initialSupply, tokenName, tokenSymbol) public {
+	constructor(string _name, string _symbol, address _nameTAOPositionAddress)
+		TokenERC20(0, _name, _symbol) public {
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
 		powerOfTen = 0;
 		decimals = 0;
@@ -102,7 +102,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	}
 
 	/**
-	 * @dev Prevent/Allow target from sending & receiving tokens
+	 * @dev Prevent/Allow target from sending & receiving ions
 	 * @param target Address to be frozen
 	 * @param freeze Either to freeze it or not
 	 */
@@ -112,7 +112,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	}
 
 	/**
-	 * @dev Allow users to buy tokens for `newBuyPrice` eth and sell tokens for `newSellPrice` eth
+	 * @dev Allow users to buy ions for `newBuyPrice` eth and sell ions for `newSellPrice` eth
 	 * @param newSellPrice Price users can sell to the contract
 	 * @param newBuyPrice Price users can buy from the contract
 	 */
@@ -121,20 +121,20 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 		buyPrice = newBuyPrice;
 	}
 
-	/***** NETWORK TOKEN WHITELISTED ADDRESS ONLY METHODS *****/
+	/***** NETWORK ION WHITELISTED ADDRESS ONLY METHODS *****/
 	/**
-	 * @dev Create `mintedAmount` tokens and send it to `target`
-	 * @param target Address to receive the tokens
-	 * @param mintedAmount The amount of tokens it will receive
+	 * @dev Create `mintedAmount` ions and send it to `target`
+	 * @param target Address to receive the ions
+	 * @param mintedAmount The amount of ions it will receive
 	 * @return true on success
 	 */
-	function mintToken(address target, uint256 mintedAmount) public inWhitelist returns (bool) {
-		_mintToken(target, mintedAmount);
+	function mint(address target, uint256 mintedAmount) public inWhitelist returns (bool) {
+		_mint(target, mintedAmount);
 		return true;
 	}
 
 	/**
-	 * @dev Stake `_value` tokens on behalf of `_from`
+	 * @dev Stake `_value` ions on behalf of `_from`
 	 * @param _from The address of the target
 	 * @param _value The amount to stake
 	 * @return true on success
@@ -148,7 +148,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	}
 
 	/**
-	 * @dev Unstake `_value` tokens on behalf of `_from`
+	 * @dev Unstake `_value` ions on behalf of `_from`
 	 * @param _from The address of the target
 	 * @param _value The amount to unstake
 	 * @return true on success
@@ -165,7 +165,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	 * @dev Store `_value` from `_from` to `_to` in escrow
 	 * @param _from The address of the sender
 	 * @param _to The address of the recipient
-	 * @param _value The amount of network tokens to put in escrow
+	 * @param _value The amount of network ions to put in escrow
 	 * @return true on success
 	 */
 	function escrowFrom(address _from, address _to, uint256 _value) public inWhitelist returns (bool) {
@@ -177,11 +177,11 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	}
 
 	/**
-	 * @dev Create `mintedAmount` tokens and send it to `target` escrow balance
-	 * @param target Address to receive the tokens
-	 * @param mintedAmount The amount of tokens it will receive in escrow
+	 * @dev Create `mintedAmount` ions and send it to `target` escrow balance
+	 * @param target Address to receive ions
+	 * @param mintedAmount The amount of ions it will receive in escrow
 	 */
-	function mintTokenEscrow(address target, uint256 mintedAmount) public inWhitelist returns (bool) {
+	function mintEscrow(address target, uint256 mintedAmount) public inWhitelist returns (bool) {
 		escrowedBalance[target] = escrowedBalance[target].add(mintedAmount);
 		totalSupply = totalSupply.add(mintedAmount);
 		emit Escrow(this, target, mintedAmount);
@@ -191,7 +191,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	/**
 	 * @dev Release escrowed `_value` from `_from`
 	 * @param _from The address of the sender
-	 * @param _value The amount of escrowed network tokens to be released
+	 * @param _value The amount of escrowed network ions to be released
 	 * @return true on success
 	 */
 	function unescrowFrom(address _from, uint256 _value) public inWhitelist returns (bool) {
@@ -204,7 +204,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 
 	/**
 	 *
-	 * @dev Whitelisted address remove `_value` tokens from the system irreversibly on behalf of `_from`.
+	 * @dev Whitelisted address remove `_value` ions from the system irreversibly on behalf of `_from`.
 	 *
 	 * @param _from the address of the sender
 	 * @param _value the amount of money to burn
@@ -218,9 +218,9 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	}
 
 	/**
-	 * @dev Whitelisted address transfer tokens from other address
+	 * @dev Whitelisted address transfer ions from other address
 	 *
-	 * Send `_value` tokens to `_to` on behalf of `_from`
+	 * Send `_value` ions to `_to` on behalf of `_from`
 	 *
 	 * @param _from The address of the sender
 	 * @param _to The address of the recipient
@@ -233,7 +233,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 
 	/***** PUBLIC METHODS *****/
 	/**
-	 * @dev Buy tokens from contract by sending ether
+	 * @dev Buy ions from contract by sending ether
 	 */
 	function buy() public payable {
 		require (buyPrice > 0);
@@ -242,8 +242,8 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	}
 
 	/**
-	 * @dev Sell `amount` tokens to contract
-	 * @param amount The amount of tokens to be sold
+	 * @dev Sell `amount` ions to contract
+	 * @param amount The amount of ions to be sold
 	 */
 	function sell(uint256 amount) public {
 		require (sellPrice > 0);
@@ -255,7 +255,7 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 
 	/***** INTERNAL METHODS *****/
 	/**
-	 * @dev Send `_value` tokens from `_from` to `_to`
+	 * @dev Send `_value` ions from `_from` to `_to`
 	 * @param _from The address of sender
 	 * @param _to The address of the recipient
 	 * @param _value The amount to send
@@ -274,11 +274,11 @@ contract AOTokenInterface is TheAO, TokenERC20 {
 	}
 
 	/**
-	 * @dev Create `mintedAmount` tokens and send it to `target`
-	 * @param target Address to receive the tokens
-	 * @param mintedAmount The amount of tokens it will receive
+	 * @dev Create `mintedAmount` ions and send it to `target`
+	 * @param target Address to receive the ions
+	 * @param mintedAmount The amount of ions it will receive
 	 */
-	function _mintToken(address target, uint256 mintedAmount) internal {
+	function _mint(address target, uint256 mintedAmount) internal {
 		balanceOf[target] = balanceOf[target].add(mintedAmount);
 		totalSupply = totalSupply.add(mintedAmount);
 		emit Transfer(0, this, mintedAmount);

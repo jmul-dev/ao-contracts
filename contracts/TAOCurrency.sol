@@ -10,7 +10,7 @@ import './TheAO.sol';
 contract TAOCurrency is TheAO {
 	using SafeMath for uint256;
 
-	// Public variables of the token
+	// Public variables of the contract
 	string public name;
 	string public symbol;
 	uint8 public decimals;
@@ -35,13 +35,11 @@ contract TAOCurrency is TheAO {
 	/**
 	 * Constructor function
 	 *
-	 * Initializes contract with initial supply tokens to the creator of the contract
+	 * Initializes contract with initial supply TAOCurrency to the creator of the contract
 	 */
-	constructor (uint256 initialSupply, string tokenName, string tokenSymbol, address _nameTAOPositionAddress) public {
-		totalSupply = initialSupply;			// Update total supply
-		balanceOf[msg.sender] = totalSupply;	// Give the creator all initial tokens
-		name = tokenName;						// Set the name for display purposes
-		symbol = tokenSymbol;					// Set the symbol for display purposes
+	constructor (string _name, string _symbol, address _nameTAOPositionAddress) public {
+		name = _name;		// Set the name for display purposes
+		symbol = _symbol;	// Set the symbol for display purposes
 
 		powerOfTen = 0;
 		decimals = 0;
@@ -98,9 +96,9 @@ contract TAOCurrency is TheAO {
 
 	/***** PUBLIC METHODS *****/
 	/**
-	 * @dev transfer tokens from other address
+	 * @dev transfer TAOCurrency from other address
 	 *
-	 * Send `_value` tokens to `_to` in behalf of `_from`
+	 * Send `_value` TAOCurrency to `_to` in behalf of `_from`
 	 *
 	 * @param _from The address of the sender
 	 * @param _to The address of the recipient
@@ -112,19 +110,19 @@ contract TAOCurrency is TheAO {
 	}
 
 	/**
-	 * @dev Create `mintedAmount` tokens and send it to `target`
-	 * @param target Address to receive the tokens
-	 * @param mintedAmount The amount of tokens it will receive
+	 * @dev Create `mintedAmount` TAOCurrency and send it to `target`
+	 * @param target Address to receive TAOCurrency
+	 * @param mintedAmount The amount of TAOCurrency it will receive
 	 * @return true on success
 	 */
-	function mintToken(address target, uint256 mintedAmount) public inWhitelist isNameOrTAO(target) returns (bool) {
-		_mintToken(target, mintedAmount);
+	function mint(address target, uint256 mintedAmount) public inWhitelist isNameOrTAO(target) returns (bool) {
+		_mint(target, mintedAmount);
 		return true;
 	}
 
 	/**
 	 *
-	 * @dev Whitelisted address remove `_value` tokens from the system irreversibly on behalf of `_from`.
+	 * @dev Whitelisted address remove `_value` TAOCurrency from the system irreversibly on behalf of `_from`.
 	 *
 	 * @param _from the address of the sender
 	 * @param _value the amount of money to burn
@@ -139,7 +137,7 @@ contract TAOCurrency is TheAO {
 
 	/***** INTERNAL METHODS *****/
 	/**
-	 * @dev Send `_value` tokens from `_from` to `_to`
+	 * @dev Send `_value` TAOCurrency from `_from` to `_to`
 	 * @param _from The address of sender
 	 * @param _to The address of the recipient
 	 * @param _value The amount to send
@@ -156,11 +154,11 @@ contract TAOCurrency is TheAO {
 	}
 
 	/**
-	 * @dev Create `mintedAmount` tokens and send it to `target`
-	 * @param target Address to receive the tokens
-	 * @param mintedAmount The amount of tokens it will receive
+	 * @dev Create `mintedAmount` TAOCurrency and send it to `target`
+	 * @param target Address to receive TAOCurrency
+	 * @param mintedAmount The amount of TAOCurrency it will receive
 	 */
-	function _mintToken(address target, uint256 mintedAmount) internal {
+	function _mint(address target, uint256 mintedAmount) internal {
 		balanceOf[target] = balanceOf[target].add(mintedAmount);
 		totalSupply = totalSupply.add(mintedAmount);
 		emit Transfer(0, this, mintedAmount);

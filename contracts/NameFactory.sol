@@ -180,8 +180,8 @@ contract NameFactory is TheAO, INameFactory {
 
 		names.push(nameId);
 
-		// Need to mint Voice token for this Name
-		require (_voice.mintToken(nameId));
+		// Need to mint Voice for this Name
+		require (_voice.mint(nameId));
 
 		emit CreateName(msg.sender, nameId, names.length.sub(1), _name);
 	}

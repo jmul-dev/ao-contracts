@@ -6,7 +6,7 @@ import './TheAO.sol';
 import './INameFactory.sol';
 import './INameTAOPosition.sol';
 import './TokenERC20.sol';
-import './AOToken.sol';
+import './AOIon.sol';
 
 /**
  * @title NameTAOVault
@@ -15,11 +15,11 @@ contract NameTAOVault is TheAO {
 	using SafeMath for uint256;
 
 	address public nameFactoryAddress;
-	address public aoTokenAddress;
+	address public aoIonAddress;
 
 	INameFactory internal _nameFactory;
 	INameTAOPosition internal _nameTAOPosition;
-	AOToken internal _aoToken;
+	AOIon internal _aoIon;
 
 	// Event to be broadcasted to public when Advocate of `from` Name/TAO transfer ETH
 	// `from` is a Name/TAO
@@ -112,13 +112,13 @@ contract NameTAOVault is TheAO {
 	}
 
 	/**
-	 * @dev The AO sets AOToken (base denomination of AO) address
-	 * @param _aoTokenAddress The address of AOToken
+	 * @dev The AO sets AOIon (base denomination of AO) address
+	 * @param _aoIonAddress The address of AOIon
 	 */
-	function setAOTokenAddress(address _aoTokenAddress) public onlyTheAO {
-		require (_aoTokenAddress != address(0));
-		aoTokenAddress = _aoTokenAddress;
-		_aoToken = AOToken(_aoTokenAddress);
+	function setAOIonAddress(address _aoIonAddress) public onlyTheAO {
+		require (_aoIonAddress != address(0));
+		aoIonAddress = _aoIonAddress;
+		_aoIon = AOIon(_aoIonAddress);
 	}
 
 	/***** PUBLIC METHODS *****/
@@ -147,7 +147,7 @@ contract NameTAOVault is TheAO {
 	 * @return The AO balance
 	 */
 	function AOBalanceOf(address _id) public isNameOrTAO(_id) view returns (uint256) {
-		return _aoToken.balanceOf(_id);
+		return _aoIon.balanceOf(_id);
 	}
 
 	/**
@@ -156,7 +156,7 @@ contract NameTAOVault is TheAO {
 	 * @return The AO+ balance
 	 */
 	function primordialAOBalanceOf(address _id) public isNameOrTAO(_id) view returns (uint256) {
-		return _aoToken.primordialBalanceOf(_id);
+		return _aoIon.primordialBalanceOf(_id);
 	}
 
 	/**
@@ -195,9 +195,9 @@ contract NameTAOVault is TheAO {
 	 * @param _amount The amount to transfer
 	 */
 	function transferAO(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) {
-		require (_amount > 0 && _aoToken.balanceOf(_from) >= _amount);
+		require (_amount > 0 && _aoIon.balanceOf(_from) >= _amount);
 		require (_to != address(0) && _from != _to);
-		require (_aoToken.whitelistTransferFrom(_from, _to, _amount));
+		require (_aoIon.whitelistTransferFrom(_from, _to, _amount));
 		emit TransferAO(_nameFactory.ethAddressToNameId(msg.sender), _from, _to, _amount);
 	}
 
@@ -208,9 +208,9 @@ contract NameTAOVault is TheAO {
 	 * @param _amount The amount to transfer
 	 */
 	function transferPrimordialAO(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) {
-		require (_amount > 0 && _aoToken.primordialBalanceOf(_from) >= _amount);
+		require (_amount > 0 && _aoIon.primordialBalanceOf(_from) >= _amount);
 		require (_to != address(0) && _from != _to);
-		require (_aoToken.whitelistTransferPrimordialTokenFrom(_from, _to, _amount));
+		require (_aoIon.whitelistTransferPrimordialFrom(_from, _to, _amount));
 		emit TransferPrimordialAO(_nameFactory.ethAddressToNameId(msg.sender), _from, _to, _amount);
 	}
 }

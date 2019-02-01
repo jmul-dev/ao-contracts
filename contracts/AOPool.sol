@@ -4,7 +4,7 @@ import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
 import './TokenERC20.sol';
-import './AOToken.sol';
+import './AOIon.sol';
 
 /**
  * @title AOPool
@@ -14,8 +14,8 @@ import './AOToken.sol';
 contract AOPool is TheAO {
 	using SafeMath for uint256;
 
-	address public aoTokenAddress;
-	AOToken internal _aoToken;
+	address public aoIonAddress;
+	AOIon internal _aoIon;
 
 	struct Pool {
 		uint256 price;	// Flat price of AO
@@ -70,10 +70,10 @@ contract AOPool is TheAO {
 		uint256 lotQuantity;				// Amount of AO being added to the Pool from this Lot
 		uint256 poolId;						// Identifier for the Pool this Lot is adding to
 		uint256 poolPreSellSnapshot;		// Amount of contributed to the Pool prior to this Lot Number
-		uint256 poolSellLotSnapshot;		// poolPreSellSnapshot + lotQuantity - tokenWithdrawn
+		uint256 poolSellLotSnapshot;		// poolPreSellSnapshot + lotQuantity - ionWithdrawn
 		uint256 lotValueInCounterAsset;		// Amount of AO x Pool Price
 		uint256 counterAssetWithdrawn;		// Amount of Counter-Asset withdrawn from this Lot
-		uint256 tokenWithdrawn;				// Amount of AO withdrawn from this Lot
+		uint256 ionWithdrawn;				// Amount of AO withdrawn from this Lot
 		uint256 timestamp;
 	}
 
@@ -135,32 +135,32 @@ contract AOPool is TheAO {
 	// Mapping from Pool's Lot ID to Lot internal ID
 	mapping (uint256 => mapping (bytes32 => uint256)) internal poolLotInternalIdLookup;
 
-	// Mapping from Pool's Lot internal ID to total token withdrawn
-	mapping (uint256 => mapping (uint256 => uint256)) internal poolLotTokenWithdrawn;
+	// Mapping from Pool's Lot internal ID to total ion withdrawn
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolLotIonWithdrawn;
 
-	// Mapping from Pool's tenth Lot to total token withdrawn
-	// This is to help optimize calculating the total token withdrawn before certain Lot
-	mapping (uint256 => mapping (uint256 => uint256)) internal poolTenthLotTokenWithdrawnSnapshot;
+	// Mapping from Pool's tenth Lot to total ion withdrawn
+	// This is to help optimize calculating the total ion withdrawn before certain Lot
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolTenthLotIonWithdrawnSnapshot;
 
-	// Mapping from Pool's hundredth Lot to total token withdrawn
-	// This is to help optimize calculating the total token withdrawn before certain Lot
-	mapping (uint256 => mapping (uint256 => uint256)) internal poolHundredthLotTokenWithdrawnSnapshot;
+	// Mapping from Pool's hundredth Lot to total ion withdrawn
+	// This is to help optimize calculating the total ion withdrawn before certain Lot
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolHundredthLotIonWithdrawnSnapshot;
 
-	// Mapping from Pool's thousandth Lot to total token withdrawn
-	// This is to help optimize calculating the total token withdrawn before certain Lot
-	mapping (uint256 => mapping (uint256 => uint256)) internal poolThousandthLotTokenWithdrawnSnapshot;
+	// Mapping from Pool's thousandth Lot to total ion withdrawn
+	// This is to help optimize calculating the total ion withdrawn before certain Lot
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolThousandthLotIonWithdrawnSnapshot;
 
-	// Mapping from Pool's ten thousandth Lot to total token withdrawn
-	// This is to help optimize calculating the total token withdrawn before certain Lot
-	mapping (uint256 => mapping (uint256 => uint256)) internal poolTenThousandthLotTokenWithdrawnSnapshot;
+	// Mapping from Pool's ten thousandth Lot to total ion withdrawn
+	// This is to help optimize calculating the total ion withdrawn before certain Lot
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolTenThousandthLotIonWithdrawnSnapshot;
 
-	// Mapping from Pool's hundred thousandth Lot to total token withdrawn
-	// This is to help optimize calculating the total token withdrawn before certain Lot
-	mapping (uint256 => mapping (uint256 => uint256)) internal poolHundredThousandthLotTokenWithdrawnSnapshot;
+	// Mapping from Pool's hundred thousandth Lot to total ion withdrawn
+	// This is to help optimize calculating the total ion withdrawn before certain Lot
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolHundredThousandthLotIonWithdrawnSnapshot;
 
-	// Mapping from Pool's millionth Lot to total token withdrawn
-	// This is to help optimize calculating the total token withdrawn before certain Lot
-	mapping (uint256 => mapping (uint256 => uint256)) internal poolMillionthLotTokenWithdrawnSnapshot;
+	// Mapping from Pool's millionth Lot to total ion withdrawn
+	// This is to help optimize calculating the total ion withdrawn before certain Lot
+	mapping (uint256 => mapping (uint256 => uint256)) internal poolMillionthLotIonWithdrawnSnapshot;
 
 	// Event to be broadcasted to public when Pool is created
 	event CreatePool(uint256 indexed poolId, address indexed adminAddress, uint256 price, bool status, bool sellCapStatus, uint256 sellCapAmount, bool quantityCapStatus, uint256 quantityCapAmount, bool erc20CounterAsset, address erc20TokenAddress, uint256 erc20TokenMultiplier);
@@ -187,14 +187,14 @@ contract AOPool is TheAO {
 	// Event to be broadcasted to public when a buyer withdraw ETH from Lot
 	event WithdrawEth(address indexed seller, bytes32 indexed lotId, uint256 indexed poolId, uint256 withdrawnAmount, uint256 currentLotValueInCounterAsset, uint256 currentLotCounterAssetWithdrawn);
 
-	// Event to be broadcasted to public when a seller withdraw token from Lot
-	event WithdrawToken(address indexed seller, bytes32 indexed lotId, uint256 indexed poolId, uint256 withdrawnAmount, uint256 currentlotValueInCounterAsset, uint256 currentLotTokenWithdrawn);
+	// Event to be broadcasted to public when a seller withdraw ion from Lot
+	event WithdrawIon(address indexed seller, bytes32 indexed lotId, uint256 indexed poolId, uint256 withdrawnAmount, uint256 currentlotValueInCounterAsset, uint256 currentLotIonWithdrawn);
 
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(address _aoTokenAddress, address _nameTAOPositionAddress) public {
-		setAOTokenAddress(_aoTokenAddress);
+	constructor(address _aoIonAddress, address _nameTAOPositionAddress) public {
+		setAOIonAddress(_aoIonAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
@@ -229,13 +229,13 @@ contract AOPool is TheAO {
 	}
 
 	/**
-	 * @dev The AO set the AOTokenAddress Address
-	 * @param _aoTokenAddress The address of AOTokenAddress
+	 * @dev The AO set the AOIonAddress Address
+	 * @param _aoIonAddress The address of AOIonAddress
 	 */
-	function setAOTokenAddress(address _aoTokenAddress) public onlyTheAO {
-		require (_aoTokenAddress != address(0));
-		aoTokenAddress = _aoTokenAddress;
-		_aoToken = AOToken(_aoTokenAddress);
+	function setAOIonAddress(address _aoIonAddress) public onlyTheAO {
+		require (_aoIonAddress != address(0));
+		aoIonAddress = _aoIonAddress;
+		_aoIon = AOIon(_aoIonAddress);
 	}
 
 	/**
@@ -370,7 +370,7 @@ contract AOPool is TheAO {
 	 */
 	function sell(uint256 _poolId, uint256 _quantity, uint256 _price) public {
 		Pool memory _pool = pools[_poolId];
-		require (_pool.status == true && _pool.price == _price && _quantity > 0 && _aoToken.balanceOf(msg.sender) >= _quantity);
+		require (_pool.status == true && _pool.price == _price && _quantity > 0 && _aoIon.balanceOf(msg.sender) >= _quantity);
 
 		// If there is a sell cap
 		if (_pool.sellCapStatus == true) {
@@ -408,7 +408,7 @@ contract AOPool is TheAO {
 		contractTotalQuantity = contractTotalQuantity.add(_quantity);
 		contractTotalSell = contractTotalSell.add(_quantity);
 
-		require (_aoToken.whitelistTransferFrom(msg.sender, this, _quantity));
+		require (_aoIon.whitelistTransferFrom(msg.sender, this, _quantity));
 
 		emit LotCreation(_lot.poolId, _lot.lotId, _lot.seller, _lot.lotQuantity, _pool.price, _lot.poolPreSellSnapshot, _lot.poolSellLotSnapshot, _lot.lotValueInCounterAsset, _pool.erc20CounterAsset, _lot.timestamp);
 	}
@@ -461,7 +461,7 @@ contract AOPool is TheAO {
 
 		totalBought[msg.sender] = totalBought[msg.sender].add(_quantity);
 
-		require (_aoToken.whitelistTransferFrom(this, msg.sender, _quantity));
+		require (_aoIon.whitelistTransferFrom(this, msg.sender, _quantity));
 
 		emit BuyWithEth(_poolId, msg.sender, _quantity, _price, poolTotalBuy[_poolId]);
 	}
@@ -499,7 +499,7 @@ contract AOPool is TheAO {
 	/**
 	 * @dev Seller gets Lot `_lotId` (priced in ETH) available to withdraw info
 	 * @param _lotId The ID of the Lot
-	 * @return The amount of token sold
+	 * @return The amount of ion sold
 	 * @return Ethereum available to withdraw from the Lot
 	 * @return Current Ethereum withdrawn from the Lot
 	 */
@@ -513,13 +513,13 @@ contract AOPool is TheAO {
 		uint256 soldQuantity = 0;
 		uint256 ethAvailableToWithdraw = 0;
 
-		// Check whether or not there are tokens withdrawn from Lots before this Lot
-		uint256 lotAdjustment = totalTokenWithdrawnBeforeLot(_lotId);
+		// Check whether or not there are ions withdrawn from Lots before this Lot
+		uint256 lotAdjustment = totalIonWithdrawnBeforeLot(_lotId);
 
 		if (poolTotalBuy[_lot.poolId] > _lot.poolPreSellSnapshot.sub(lotAdjustment) && _lot.lotValueInCounterAsset > 0) {
 			soldQuantity = (poolTotalBuy[_lot.poolId] >= _lot.poolSellLotSnapshot.sub(lotAdjustment)) ? _lot.lotQuantity : poolTotalBuy[_lot.poolId].sub(_lot.poolPreSellSnapshot.sub(lotAdjustment));
 			if (soldQuantity > 0) {
-				soldQuantity = soldQuantity.sub(_lot.counterAssetWithdrawn.div(_pool.price)).sub(_lot.tokenWithdrawn);
+				soldQuantity = soldQuantity.sub(_lot.counterAssetWithdrawn.div(_pool.price)).sub(_lot.ionWithdrawn);
 				ethAvailableToWithdraw = soldQuantity.mul(_pool.price);
 			}
 		}
@@ -527,11 +527,11 @@ contract AOPool is TheAO {
 	}
 
 	/**
-	 * @dev Seller withdraw token from Lot `_lotId`
+	 * @dev Seller withdraw ion from Lot `_lotId`
 	 * @param _lotId The ID of the Lot
-	 * @param _quantity The amount of token to withdraw
+	 * @param _quantity The amount of ion to withdraw
 	 */
-	function withdrawToken(bytes32 _lotId, uint256 _quantity) public {
+	function withdrawIon(bytes32 _lotId, uint256 _quantity) public {
 		Lot storage _lot = lots[_lotId];
 		require (_lot.seller == msg.sender && _lot.lotValueInCounterAsset > 0);
 
@@ -539,52 +539,52 @@ contract AOPool is TheAO {
 		require (_quantity > 0 && _quantity <= _lot.lotValueInCounterAsset.div(_pool.price));
 
 		// Update lot variables
-		_lot.tokenWithdrawn = _lot.tokenWithdrawn.add(_quantity);
+		_lot.ionWithdrawn = _lot.ionWithdrawn.add(_quantity);
 		_lot.lotValueInCounterAsset = _lot.lotValueInCounterAsset.sub(_quantity.mul(_pool.price));
 		_lot.poolSellLotSnapshot = _lot.poolSellLotSnapshot.sub(_quantity);
-		poolLotTokenWithdrawn[_lot.poolId][poolLotInternalIdLookup[_lot.poolId][_lotId]] = poolLotTokenWithdrawn[_lot.poolId][poolLotInternalIdLookup[_lot.poolId][_lotId]].add(_quantity);
+		poolLotIonWithdrawn[_lot.poolId][poolLotInternalIdLookup[_lot.poolId][_lotId]] = poolLotIonWithdrawn[_lot.poolId][poolLotInternalIdLookup[_lot.poolId][_lotId]].add(_quantity);
 
 		// Store Pool's millionth Lot snapshot
 		uint256 millionth = poolLotInternalIdLookup[_lot.poolId][_lotId].div(1000000);
 		if (poolLotInternalIdLookup[_lot.poolId][_lotId].sub(millionth.mul(1000000)) != 0) {
 			millionth++;
 		}
-		poolMillionthLotTokenWithdrawnSnapshot[_lot.poolId][millionth] = poolMillionthLotTokenWithdrawnSnapshot[_lot.poolId][millionth].add(_quantity);
+		poolMillionthLotIonWithdrawnSnapshot[_lot.poolId][millionth] = poolMillionthLotIonWithdrawnSnapshot[_lot.poolId][millionth].add(_quantity);
 
 		// Store Pool's hundred thousandth Lot snapshot
 		uint256 hundredThousandth = poolLotInternalIdLookup[_lot.poolId][_lotId].div(100000);
 		if (poolLotInternalIdLookup[_lot.poolId][_lotId].sub(hundredThousandth.mul(100000)) != 0) {
 			hundredThousandth++;
 		}
-		poolHundredThousandthLotTokenWithdrawnSnapshot[_lot.poolId][hundredThousandth] = poolHundredThousandthLotTokenWithdrawnSnapshot[_lot.poolId][hundredThousandth].add(_quantity);
+		poolHundredThousandthLotIonWithdrawnSnapshot[_lot.poolId][hundredThousandth] = poolHundredThousandthLotIonWithdrawnSnapshot[_lot.poolId][hundredThousandth].add(_quantity);
 
 		// Store Pool's ten thousandth Lot snapshot
 		uint256 tenThousandth = poolLotInternalIdLookup[_lot.poolId][_lotId].div(10000);
 		if (poolLotInternalIdLookup[_lot.poolId][_lotId].sub(tenThousandth.mul(10000)) != 0) {
 			tenThousandth++;
 		}
-		poolTenThousandthLotTokenWithdrawnSnapshot[_lot.poolId][tenThousandth] = poolTenThousandthLotTokenWithdrawnSnapshot[_lot.poolId][tenThousandth].add(_quantity);
+		poolTenThousandthLotIonWithdrawnSnapshot[_lot.poolId][tenThousandth] = poolTenThousandthLotIonWithdrawnSnapshot[_lot.poolId][tenThousandth].add(_quantity);
 
 		// Store Pool's thousandth Lot snapshot
 		uint256 thousandth = poolLotInternalIdLookup[_lot.poolId][_lotId].div(1000);
 		if (poolLotInternalIdLookup[_lot.poolId][_lotId].sub(thousandth.mul(1000)) != 0) {
 			thousandth++;
 		}
-		poolThousandthLotTokenWithdrawnSnapshot[_lot.poolId][thousandth] = poolThousandthLotTokenWithdrawnSnapshot[_lot.poolId][thousandth].add(_quantity);
+		poolThousandthLotIonWithdrawnSnapshot[_lot.poolId][thousandth] = poolThousandthLotIonWithdrawnSnapshot[_lot.poolId][thousandth].add(_quantity);
 
 		// Store Pool's hundredth Lot snapshot
 		uint256 hundredth = poolLotInternalIdLookup[_lot.poolId][_lotId].div(100);
 		if (poolLotInternalIdLookup[_lot.poolId][_lotId].sub(hundredth.mul(100)) != 0) {
 			hundredth++;
 		}
-		poolHundredthLotTokenWithdrawnSnapshot[_lot.poolId][hundredth] = poolHundredthLotTokenWithdrawnSnapshot[_lot.poolId][hundredth].add(_quantity);
+		poolHundredthLotIonWithdrawnSnapshot[_lot.poolId][hundredth] = poolHundredthLotIonWithdrawnSnapshot[_lot.poolId][hundredth].add(_quantity);
 
 		// Store Pool's tenth Lot snapshot
 		uint256 tenth = poolLotInternalIdLookup[_lot.poolId][_lotId].div(10);
 		if (poolLotInternalIdLookup[_lot.poolId][_lotId].sub(tenth.mul(10)) != 0) {
 			tenth++;
 		}
-		poolTenthLotTokenWithdrawnSnapshot[_lot.poolId][tenth] = poolTenthLotTokenWithdrawnSnapshot[_lot.poolId][tenth].add(_quantity);
+		poolTenthLotIonWithdrawnSnapshot[_lot.poolId][tenth] = poolTenthLotIonWithdrawnSnapshot[_lot.poolId][tenth].add(_quantity);
 
 		// Update contract variables
 		poolTotalQuantity[_lot.poolId] = poolTotalQuantity[_lot.poolId].sub(_quantity);
@@ -594,37 +594,37 @@ contract AOPool is TheAO {
 
 		totalPutOnSale[msg.sender] = totalPutOnSale[msg.sender].sub(_quantity);
 
-		assert (_lot.tokenWithdrawn.add(_lot.lotValueInCounterAsset.div(_pool.price)).add(_lot.counterAssetWithdrawn.div(_pool.price)) == _lot.lotQuantity);
+		assert (_lot.ionWithdrawn.add(_lot.lotValueInCounterAsset.div(_pool.price)).add(_lot.counterAssetWithdrawn.div(_pool.price)) == _lot.lotQuantity);
 
-		require (_aoToken.whitelistTransferFrom(this, msg.sender, _quantity));
+		require (_aoIon.whitelistTransferFrom(this, msg.sender, _quantity));
 
-		emit WithdrawToken(_lot.seller, _lot.lotId, _lot.poolId, _quantity, _lot.lotValueInCounterAsset, _lot.tokenWithdrawn);
+		emit WithdrawIon(_lot.seller, _lot.lotId, _lot.poolId, _quantity, _lot.lotValueInCounterAsset, _lot.ionWithdrawn);
 	}
 
 	/**
-	 * @dev Get total token withdrawn from all Lots before Lot `_lotId`
+	 * @dev Get total ion withdrawn from all Lots before Lot `_lotId`
 	 * @param _lotId The ID of the Lot
-	 * @return Total token withdrawn from all Lots before Lot `_lotId`
+	 * @return Total ion withdrawn from all Lots before Lot `_lotId`
 	 */
-	function totalTokenWithdrawnBeforeLot(bytes32 _lotId) public view returns (uint256) {
+	function totalIonWithdrawnBeforeLot(bytes32 _lotId) public view returns (uint256) {
 		Lot memory _lot = lots[_lotId];
 		require (_lot.seller != address(0) && poolLotInternalIdLookup[_lot.poolId][_lotId] > 0);
 
-		uint256 totalTokenWithdrawn = 0;
+		uint256 totalIonWithdrawn = 0;
 		uint256 lotInternalId = poolLotInternalIdLookup[_lot.poolId][_lotId];
 		uint256 lowerBound = 0;
 
 		uint256 millionth = lotInternalId.div(1000000);
 		if (millionth > 0) {
 			for (uint256 i=1; i<=millionth; i++) {
-				if (poolMillionthLotTokenWithdrawnSnapshot[_lot.poolId][i] > 0) {
-					totalTokenWithdrawn = totalTokenWithdrawn.add(poolMillionthLotTokenWithdrawnSnapshot[_lot.poolId][i]);
+				if (poolMillionthLotIonWithdrawnSnapshot[_lot.poolId][i] > 0) {
+					totalIonWithdrawn = totalIonWithdrawn.add(poolMillionthLotIonWithdrawnSnapshot[_lot.poolId][i]);
 				}
 			}
 			lowerBound = millionth.mul(1000000);
 			if (lowerBound == lotInternalId) {
-				totalTokenWithdrawn = totalTokenWithdrawn.sub(poolLotTokenWithdrawn[_lot.poolId][lotInternalId]);
-				return totalTokenWithdrawn;
+				totalIonWithdrawn = totalIonWithdrawn.sub(poolLotIonWithdrawn[_lot.poolId][lotInternalId]);
+				return totalIonWithdrawn;
 			} else {
 				lowerBound = lowerBound.div(100000);
 			}
@@ -633,14 +633,14 @@ contract AOPool is TheAO {
 		uint256 hundredThousandth = lotInternalId.div(100000);
 		if (hundredThousandth > 0) {
 			for (i=lowerBound.add(1); i<=hundredThousandth; i++) {
-				if (poolHundredThousandthLotTokenWithdrawnSnapshot[_lot.poolId][i] > 0) {
-					totalTokenWithdrawn = totalTokenWithdrawn.add(poolHundredThousandthLotTokenWithdrawnSnapshot[_lot.poolId][i]);
+				if (poolHundredThousandthLotIonWithdrawnSnapshot[_lot.poolId][i] > 0) {
+					totalIonWithdrawn = totalIonWithdrawn.add(poolHundredThousandthLotIonWithdrawnSnapshot[_lot.poolId][i]);
 				}
 			}
 			lowerBound = hundredThousandth.mul(100000);
 			if (lowerBound == lotInternalId) {
-				totalTokenWithdrawn = totalTokenWithdrawn.sub(poolLotTokenWithdrawn[_lot.poolId][lotInternalId]);
-				return totalTokenWithdrawn;
+				totalIonWithdrawn = totalIonWithdrawn.sub(poolLotIonWithdrawn[_lot.poolId][lotInternalId]);
+				return totalIonWithdrawn;
 			} else {
 				lowerBound = lowerBound.div(10000);
 			}
@@ -649,14 +649,14 @@ contract AOPool is TheAO {
 		uint256 tenThousandth = lotInternalId.div(10000);
 		if (tenThousandth > 0) {
 			for (i=lowerBound.add(1); i<=tenThousandth; i++) {
-				if (poolTenThousandthLotTokenWithdrawnSnapshot[_lot.poolId][i] > 0) {
-					totalTokenWithdrawn = totalTokenWithdrawn.add(poolTenThousandthLotTokenWithdrawnSnapshot[_lot.poolId][i]);
+				if (poolTenThousandthLotIonWithdrawnSnapshot[_lot.poolId][i] > 0) {
+					totalIonWithdrawn = totalIonWithdrawn.add(poolTenThousandthLotIonWithdrawnSnapshot[_lot.poolId][i]);
 				}
 			}
 			lowerBound = tenThousandth.mul(10000);
 			if (lowerBound == lotInternalId) {
-				totalTokenWithdrawn = totalTokenWithdrawn.sub(poolLotTokenWithdrawn[_lot.poolId][lotInternalId]);
-				return totalTokenWithdrawn;
+				totalIonWithdrawn = totalIonWithdrawn.sub(poolLotIonWithdrawn[_lot.poolId][lotInternalId]);
+				return totalIonWithdrawn;
 			} else {
 				lowerBound = lowerBound.div(1000);
 			}
@@ -665,14 +665,14 @@ contract AOPool is TheAO {
 		uint256 thousandth = lotInternalId.div(1000);
 		if (thousandth > 0) {
 			for (i=lowerBound.add(1); i<=thousandth; i++) {
-				if (poolThousandthLotTokenWithdrawnSnapshot[_lot.poolId][i] > 0) {
-					totalTokenWithdrawn = totalTokenWithdrawn.add(poolThousandthLotTokenWithdrawnSnapshot[_lot.poolId][i]);
+				if (poolThousandthLotIonWithdrawnSnapshot[_lot.poolId][i] > 0) {
+					totalIonWithdrawn = totalIonWithdrawn.add(poolThousandthLotIonWithdrawnSnapshot[_lot.poolId][i]);
 				}
 			}
 			lowerBound = thousandth.mul(1000);
 			if (lowerBound == lotInternalId) {
-				totalTokenWithdrawn = totalTokenWithdrawn.sub(poolLotTokenWithdrawn[_lot.poolId][lotInternalId]);
-				return totalTokenWithdrawn;
+				totalIonWithdrawn = totalIonWithdrawn.sub(poolLotIonWithdrawn[_lot.poolId][lotInternalId]);
+				return totalIonWithdrawn;
 			} else {
 				lowerBound = lowerBound.div(100);
 			}
@@ -681,14 +681,14 @@ contract AOPool is TheAO {
 		uint256 hundredth = lotInternalId.div(100);
 		if (hundredth > 0) {
 			for (i=lowerBound.add(1); i<=hundredth; i++) {
-				if (poolHundredthLotTokenWithdrawnSnapshot[_lot.poolId][i] > 0) {
-					totalTokenWithdrawn = totalTokenWithdrawn.add(poolHundredthLotTokenWithdrawnSnapshot[_lot.poolId][i]);
+				if (poolHundredthLotIonWithdrawnSnapshot[_lot.poolId][i] > 0) {
+					totalIonWithdrawn = totalIonWithdrawn.add(poolHundredthLotIonWithdrawnSnapshot[_lot.poolId][i]);
 				}
 			}
 			lowerBound = hundredth.mul(100);
 			if (lowerBound == lotInternalId) {
-				totalTokenWithdrawn = totalTokenWithdrawn.sub(poolLotTokenWithdrawn[_lot.poolId][lotInternalId]);
-				return totalTokenWithdrawn;
+				totalIonWithdrawn = totalIonWithdrawn.sub(poolLotIonWithdrawn[_lot.poolId][lotInternalId]);
+				return totalIonWithdrawn;
 			} else {
 				lowerBound = lowerBound.div(10);
 			}
@@ -697,22 +697,22 @@ contract AOPool is TheAO {
 		uint256 tenth = lotInternalId.div(10);
 		if (tenth > 0) {
 			for (i=lowerBound.add(1); i<=tenth; i++) {
-				if (poolTenthLotTokenWithdrawnSnapshot[_lot.poolId][i] > 0) {
-					totalTokenWithdrawn = totalTokenWithdrawn.add(poolTenthLotTokenWithdrawnSnapshot[_lot.poolId][i]);
+				if (poolTenthLotIonWithdrawnSnapshot[_lot.poolId][i] > 0) {
+					totalIonWithdrawn = totalIonWithdrawn.add(poolTenthLotIonWithdrawnSnapshot[_lot.poolId][i]);
 				}
 			}
 			lowerBound = tenth.mul(10);
 			if (lowerBound == lotInternalId) {
-				totalTokenWithdrawn = totalTokenWithdrawn.sub(poolLotTokenWithdrawn[_lot.poolId][lotInternalId]);
-				return totalTokenWithdrawn;
+				totalIonWithdrawn = totalIonWithdrawn.sub(poolLotIonWithdrawn[_lot.poolId][lotInternalId]);
+				return totalIonWithdrawn;
 			}
 		}
 
 		for (i=lowerBound.add(1); i<lotInternalId; i++) {
-			if (poolLotTokenWithdrawn[_lot.poolId][i] > 0) {
-				totalTokenWithdrawn = totalTokenWithdrawn.add(poolLotTokenWithdrawn[_lot.poolId][i]);
+			if (poolLotIonWithdrawn[_lot.poolId][i] > 0) {
+				totalIonWithdrawn = totalIonWithdrawn.add(poolLotIonWithdrawn[_lot.poolId][i]);
 			}
 		}
-		return totalTokenWithdrawn;
+		return totalIonWithdrawn;
 	}
 }

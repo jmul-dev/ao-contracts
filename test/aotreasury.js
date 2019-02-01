@@ -1,4 +1,4 @@
-var AOToken = artifacts.require("./AOToken.sol");
+var AOIon = artifacts.require("./AOIon.sol");
 var AOKilo = artifacts.require("./AOKilo.sol");
 var AOMega = artifacts.require("./AOMega.sol");
 var AOGiga = artifacts.require("./AOGiga.sol");
@@ -17,7 +17,7 @@ var Logos = artifacts.require("./Logos.sol");
 
 contract("AOTreasury", function(accounts) {
 	var aotreasury,
-		aotoken,
+		aoion,
 		aokilo,
 		aomega,
 		aogiga,
@@ -41,7 +41,7 @@ contract("AOTreasury", function(accounts) {
 	var ao, kilo, mega, giga, tera, peta, exa, zetta, yotta, xona;
 	before(async function() {
 		aotreasury = await AOTreasury.deployed();
-		aotoken = await AOToken.deployed();
+		aoion = await AOIon.deployed();
 		aokilo = await AOKilo.deployed();
 		aomega = await AOMega.deployed();
 		aogiga = await AOGiga.deployed();
@@ -65,7 +65,7 @@ contract("AOTreasury", function(accounts) {
 
 		// Mint Logos to nameId1 and nameId2
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -97,7 +97,7 @@ contract("AOTreasury", function(accounts) {
 		yotta = await aotreasury.getDenominationByName("yotta");
 		xona = await aotreasury.getDenominationByName("xona");
 
-		assert.equal(ao[1], aotoken.address, "contract is missing ao from list of denominations");
+		assert.equal(ao[1], aoion.address, "contract is missing ao from list of denominations");
 		assert.equal(kilo[1], aokilo.address, "contract is missing kilo from list of denominations");
 		assert.equal(mega[1], aomega.address, "Contract is missing mega from list of denominations");
 		assert.equal(giga[1], aogiga.address, "Contract is missing giga from list of denominations");
@@ -300,17 +300,17 @@ contract("AOTreasury", function(accounts) {
 
 	it("getBaseDenomination() - should return base denomination info", async function() {
 		var denomination = await aotreasury.getBaseDenomination();
-		var name = await aotoken.name();
-		var symbol = await aotoken.symbol();
-		var decimals = await aotoken.decimals();
-		var powerOfTen = await aotoken.powerOfTen();
+		var name = await aoion.name();
+		var symbol = await aoion.symbol();
+		var decimals = await aoion.decimals();
+		var powerOfTen = await aoion.powerOfTen();
 
 		assert.equal(
 			web3.toAscii(denomination[0]).replace(/\0/g, ""),
 			"ao",
 			"getBaseDenomination() returns incorrect value for denomination internal name"
 		);
-		assert.equal(denomination[1], aotoken.address, "getBaseDenomination() returns incorrect value for denomination address");
+		assert.equal(denomination[1], aoion.address, "getBaseDenomination() returns incorrect value for denomination address");
 		assert.equal(denomination[2], name, "getBaseDenomination() returns incorrect value for name");
 		assert.equal(denomination[3], symbol, "getBaseDenomination() returns incorrect value for symbol");
 		assert.equal(denomination[4].toNumber(), decimals.toNumber(), "getBaseDenomination() returns incorrect value for decimals");
@@ -319,11 +319,11 @@ contract("AOTreasury", function(accounts) {
 
 	it("toBase() should return correct amount", async function() {
 		var kiloToBase = await aotreasury.toBase(9, 1, "kilo");
-		assert.equal(kiloToBase.toNumber(), 9001, "toBase kilo return wrong amount of token");
+		assert.equal(kiloToBase.toNumber(), 9001, "toBase kilo return wrong amount of ion");
 		kiloToBase = await aotreasury.toBase(9, 20, "kilo");
-		assert.equal(kiloToBase.toNumber(), 9020, "toBase kilo return wrong amount of token");
+		assert.equal(kiloToBase.toNumber(), 9020, "toBase kilo return wrong amount of ion");
 		kiloToBase = await aotreasury.toBase(9, 100, "kilo");
-		assert.equal(kiloToBase.toNumber(), 9100, "toBase kilo return wrong amount of token");
+		assert.equal(kiloToBase.toNumber(), 9100, "toBase kilo return wrong amount of ion");
 
 		var megaToBase = await aotreasury.toBase(9, 123, "mega");
 		var gigaToBase = await aotreasury.toBase(9, 123, "giga");
@@ -334,14 +334,14 @@ contract("AOTreasury", function(accounts) {
 		var yottaToBase = await aotreasury.toBase(9, 123, "yotta");
 		var xonaToBase = await aotreasury.toBase(9, 123, "xona");
 
-		assert.equal(megaToBase.toNumber(), 9000123, "toBase mega return wrong amount of token");
-		assert.equal(gigaToBase.toNumber(), 9000000123, "toBase giga return wrong amount of token");
-		assert.equal(teraToBase.toNumber(), 9000000000123, "toBase tera return wrong amount of token");
-		assert.equal(petaToBase.toNumber(), "9000000000000123", "toBase peta return wrong amount of token");
-		assert.equal(exaToBase.toNumber(), "9000000000000000123", "toBase exa return wrong amount of token");
-		assert.equal(zettaToBase.toNumber(), "9000000000000000000123", "toBase zetta return wrong amount of token");
-		assert.equal(yottaToBase.toNumber(), "9000000000000000000000123", "toBase yotta return wrong amount of token");
-		assert.equal(xonaToBase.toNumber(), "9000000000000000000000000123", "toBase xona return wrong amount of token");
+		assert.equal(megaToBase.toNumber(), 9000123, "toBase mega return wrong amount of ion");
+		assert.equal(gigaToBase.toNumber(), 9000000123, "toBase giga return wrong amount of ion");
+		assert.equal(teraToBase.toNumber(), 9000000000123, "toBase tera return wrong amount of ion");
+		assert.equal(petaToBase.toNumber(), "9000000000000123", "toBase peta return wrong amount of ion");
+		assert.equal(exaToBase.toNumber(), "9000000000000000123", "toBase exa return wrong amount of ion");
+		assert.equal(zettaToBase.toNumber(), "9000000000000000000123", "toBase zetta return wrong amount of ion");
+		assert.equal(yottaToBase.toNumber(), "9000000000000000000000123", "toBase yotta return wrong amount of ion");
+		assert.equal(xonaToBase.toNumber(), "9000000000000000000000000123", "toBase xona return wrong amount of ion");
 	});
 
 	it("fromBase() should return correct amount", async function() {
@@ -412,9 +412,9 @@ contract("AOTreasury", function(accounts) {
 		);
 	});
 
-	it("exchangeDenomination() - should exchange token from `fromDenominationName` to `toDenominationName` correctly", async function() {
-		await aotoken.setWhitelist(theAO, true, { from: theAO });
-		await aotoken.mintToken(account1, 100, { from: theAO });
+	it("exchangeDenomination() - should exchange ion from `fromDenominationName` to `toDenominationName` correctly", async function() {
+		await aoion.setWhitelist(theAO, true, { from: theAO });
+		await aoion.mint(account1, 100, { from: theAO });
 
 		var canExchange, exchangeDenominationEvent, exchangeId;
 		try {
@@ -427,7 +427,7 @@ contract("AOTreasury", function(accounts) {
 			exchangeDenominationEvent = null;
 			exchangeId = null;
 		}
-		assert.notEqual(canExchange, true, "Contract can exchange token from invalid origin denomination");
+		assert.notEqual(canExchange, true, "Contract can exchange ion from invalid origin denomination");
 
 		try {
 			var result = await aotreasury.exchangeDenomination(50, "ao", "deca", { from: account1 });
@@ -439,7 +439,7 @@ contract("AOTreasury", function(accounts) {
 			exchangeDenominationEvent = null;
 			exchangeId = null;
 		}
-		assert.notEqual(canExchange, true, "Contract can exchange token to invalid target denomination");
+		assert.notEqual(canExchange, true, "Contract can exchange ion to invalid target denomination");
 
 		try {
 			var result = await aotreasury.exchangeDenomination(1000, "ao", "kilo", { from: account1 });
@@ -451,9 +451,9 @@ contract("AOTreasury", function(accounts) {
 			exchangeDenominationEvent = null;
 			exchangeId = null;
 		}
-		assert.notEqual(canExchange, true, "Account1 can exchange token more than he/she has");
+		assert.notEqual(canExchange, true, "Account1 can exchange ion more than he/she has");
 
-		var account1AoBalanceBefore = await aotoken.balanceOf(account1);
+		var account1AoBalanceBefore = await aoion.balanceOf(account1);
 		var account1KiloBalanceBefore = await aokilo.balanceOf(account1);
 
 		try {
@@ -467,25 +467,25 @@ contract("AOTreasury", function(accounts) {
 			exchangeId = null;
 		}
 		assert.equal(canExchange, true, "Contract can't complete exchange on valid denominations");
-		var account1AoBalanceAfter = await aotoken.balanceOf(account1);
+		var account1AoBalanceAfter = await aoion.balanceOf(account1);
 		var account1KiloBalanceAfter = await aokilo.balanceOf(account1);
 
 		assert.equal(
 			account1AoBalanceAfter.toNumber(),
 			account1AoBalanceBefore.minus(50).toNumber(),
-			"Account1 has incorrect AO Token balance after exchanging"
+			"Account1 has incorrect AO ion balance after exchanging"
 		);
 		assert.equal(
 			account1KiloBalanceAfter.toNumber(),
 			account1KiloBalanceBefore.plus(50).toNumber(),
-			"Account1 has incorrect AO Kilo Token balance after exchanging"
+			"Account1 has incorrect AO Kilo balance after exchanging"
 		);
 
 		var denominationExchange = await aotreasury.getDenominationExchangeById(exchangeId);
-		var fromSymbol = await aotoken.symbol();
+		var fromSymbol = await aoion.symbol();
 		var toSymbol = await aokilo.symbol();
 		assert.equal(denominationExchange[0], account1, "DenominationExchange returns incorrect sender address");
-		assert.equal(denominationExchange[1], aotoken.address, "DenominationExchange returns incorrect fromDenominationAddress");
+		assert.equal(denominationExchange[1], aoion.address, "DenominationExchange returns incorrect fromDenominationAddress");
 		assert.equal(denominationExchange[2], aokilo.address, "DenominationExchange returns incorrect toDenominationAddress");
 		assert.equal(denominationExchange[3], fromSymbol, "DenominationExchange returns incorrect from denomination symbol");
 		assert.equal(denominationExchange[4], toSymbol, "DenominationExchange returns incorrect to denomination symbol");

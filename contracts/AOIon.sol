@@ -2,29 +2,29 @@ pragma solidity ^0.4.24;
 
 import './SafeMath.sol';
 import './AOLibrary.sol';
-import './AOTokenInterface.sol';
+import './AOIonInterface.sol';
 import './tokenRecipient.sol';
 import './IAOSetting.sol';
 import './AOETH.sol';
 
 /**
- * @title AOToken
+ * @title AOIon
  */
-contract AOToken is AOTokenInterface {
+contract AOIon is AOIonInterface {
 	using SafeMath for uint256;
 
 	address public settingTAOId;
 	address public aoSettingAddress;
 	address public aoethAddress;
 
-	// AO Dev Team addresses to receive Primordial/Network Tokens
+	// AO Dev Team addresses to receive Primordial/Network Ions
 	address public aoDevTeam1 = 0x5C63644D01Ba385eBAc5bcf2DDc1e6dBC1182b52;
 	address public aoDevTeam2 = 0x156C79bf4347D1891da834Ea30662A14177CbF28;
 
 	IAOSetting internal _aoSetting;
 	AOETH internal _aoeth;
 
-	/***** PRIMORDIAL TOKEN VARIABLES *****/
+	/***** PRIMORDIAL ION VARIABLES *****/
 	uint256 public primordialTotalSupply;
 	uint256 public primordialTotalBought;
 	uint256 public primordialSellPrice;
@@ -32,13 +32,13 @@ contract AOToken is AOTokenInterface {
 	uint256 public totalEthForPrimordial;	// Total ETH sent for Primordial AO+
 	uint256 public totalRedeemedAOETH;		// Total AOETH redeemed for Primordial AO+
 
-	// Total available primordial token for sale 1,125,899,906,842,620 AO+
+	// Total available primordial ion for sale 1,125,899,906,842,620 AO+
 	uint256 constant public TOTAL_PRIMORDIAL_FOR_SALE = 1125899906842620;
 
 	mapping (address => uint256) public primordialBalanceOf;
 	mapping (address => mapping (address => uint256)) public primordialAllowance;
 
-	// Mapping from owner's lot weighted multiplier to the amount of staked tokens
+	// Mapping from owner's lot weighted multiplier to the amount of staked ions
 	mapping (address => mapping (uint256 => uint256)) public primordialStakedBalance;
 
 	event PrimordialTransfer(address indexed from, address indexed to, uint256 value);
@@ -62,25 +62,25 @@ contract AOToken is AOTokenInterface {
 		bytes32 lotId;
 		uint256 multiplier;	// This value is in 10^6, so 1000000 = 1
 		address lotOwner;
-		uint256 tokenAmount;
+		uint256 amount;
 	}
 
 	/**
-	 * Struct to store info when account burns primordial token
+	 * Struct to store info when account burns primordial ion
 	 */
 	struct BurnLot {
 		bytes32 burnLotId;
 		address lotOwner;
-		uint256 tokenAmount;
+		uint256 amount;
 	}
 
 	/**
-	 * Struct to store info when account converts network token to primordial token
+	 * Struct to store info when account converts network ion to primordial ion
 	 */
 	struct ConvertLot {
 		bytes32 convertLotId;
 		address lotOwner;
-		uint256 tokenAmount;
+		uint256 amount;
 	}
 
 	// Mapping from Lot ID to Lot object
@@ -109,34 +109,34 @@ contract AOToken is AOTokenInterface {
 
 	// Event to be broadcasted to public when a lot is created
 	// multiplier value is in 10^6 to account for 6 decimal points
-	event LotCreation(address indexed lotOwner, bytes32 indexed lotId, uint256 multiplier, uint256 primordialTokenAmount, uint256 networkTokenBonusAmount);
+	event LotCreation(address indexed lotOwner, bytes32 indexed lotId, uint256 multiplier, uint256 primordialAmount, uint256 networkBonusAmount);
 
-	// Event to be broadcasted to public when user buys primordial token
+	// Event to be broadcasted to public when user buys primordial ion
 	// payWith 1 == with Ethereum
 	// payWith 2 == with AOETH
-	event BuyPrimordialToken(address indexed lotOwner, bytes32 indexed lotId, uint8 payWith, uint256 sentAmount, uint256 refundedAmount);
+	event BuyPrimordial(address indexed lotOwner, bytes32 indexed lotId, uint8 payWith, uint256 sentAmount, uint256 refundedAmount);
 
-	// Event to be broadcasted to public when burn lot is created (when account burns primordial tokens)
-	event BurnLotCreation(address indexed lotOwner, bytes32 indexed burnLotId, uint256 burnTokenAmount, uint256 multiplierAfterBurn);
+	// Event to be broadcasted to public when burn lot is created (when account burns primordial ions)
+	event BurnLotCreation(address indexed lotOwner, bytes32 indexed burnLotId, uint256 burnAmount, uint256 multiplierAfterBurn);
 
-	// Event to be broadcasted to public when convert lot is created (when account convert network tokens to primordial tokens)
-	event ConvertLotCreation(address indexed lotOwner, bytes32 indexed convertLotId, uint256 convertTokenAmount, uint256 multiplierAfterBurn);
+	// Event to be broadcasted to public when convert lot is created (when account convert network ions to primordial ions)
+	event ConvertLotCreation(address indexed lotOwner, bytes32 indexed convertLotId, uint256 convertAmount, uint256 multiplierAfterBurn);
 
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _settingTAOId, address _aoSettingAddress, address _nameTAOPositionAddress)
-		AOTokenInterface(initialSupply, tokenName, tokenSymbol, _nameTAOPositionAddress) public {
+	constructor(string _name, string _symbol, address _settingTAOId, address _aoSettingAddress, address _nameTAOPositionAddress)
+		AOIonInterface(_name, _symbol, _nameTAOPositionAddress) public {
 		setSettingTAOId(_settingTAOId);
 		setAOSettingAddress(_aoSettingAddress);
 
 		powerOfTen = 0;
 		decimals = 0;
-		setPrimordialPrices(0, 10000); // Set Primordial buy price to 10000 Wei/token
+		setPrimordialPrices(0, 10000); // Set Primordial buy price to 10000 Wei/ion
 	}
 
 	/**
-	 * @dev Checks if buyer can buy primordial token
+	 * @dev Checks if buyer can buy primordial ion
 	 */
 	modifier canBuyPrimordial(uint256 _sentAmount, bool _withETH) {
 		require (networkExchangeEnded == false &&
@@ -173,7 +173,7 @@ contract AOToken is AOTokenInterface {
 	}
 
 	/**
-	 * @dev Set AO Dev team addresses to receive Primordial/Network tokens during network exchange
+	 * @dev Set AO Dev team addresses to receive Primordial/Network ions during network exchange
 	 * @param _aoDevTeam1 The first AO dev team address
 	 * @param _aoDevTeam2 The second AO dev team address
 	 */
@@ -192,9 +192,9 @@ contract AOToken is AOTokenInterface {
 		_aoeth = AOETH(_aoethAddress);
 	}
 
-	/***** PRIMORDIAL TOKEN The AO ONLY METHODS *****/
+	/***** PRIMORDIAL ION THE AO ONLY METHODS *****/
 	/**
-	 * @dev Allow users to buy Primordial tokens for `newBuyPrice` eth and sell Primordial tokens for `newSellPrice` eth
+	 * @dev Allow users to buy Primordial ions for `newBuyPrice` eth and sell Primordial ions for `newSellPrice` eth
 	 * @param newPrimordialSellPrice Price users can sell to the contract
 	 * @param newPrimordialBuyPrice Price users can buy from the contract
 	 */
@@ -212,15 +212,15 @@ contract AOToken is AOTokenInterface {
 		emit NetworkExchangeEnded();
 	}
 
-	/***** PRIMORDIAL TOKEN WHITELISTED ADDRESS ONLY METHODS *****/
+	/***** PRIMORDIAL ION WHITELISTED ADDRESS ONLY METHODS *****/
 	/**
-	 * @dev Stake `_value` Primordial tokens at `_weightedMultiplier ` multiplier on behalf of `_from`
+	 * @dev Stake `_value` Primordial ions at `_weightedMultiplier ` multiplier on behalf of `_from`
 	 * @param _from The address of the target
-	 * @param _value The amount of Primordial tokens to stake
-	 * @param _weightedMultiplier The weighted multiplier of the Primordial tokens
+	 * @param _value The amount of Primordial ions to stake
+	 * @param _weightedMultiplier The weighted multiplier of the Primordial ions
 	 * @return true on success
 	 */
-	function stakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist returns (bool) {
+	function stakePrimordialFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist returns (bool) {
 		// Check if the targeted balance is enough
 		require (primordialBalanceOf[_from] >= _value);
 		// Make sure the weighted multiplier is the same as account's current weighted multiplier
@@ -234,13 +234,13 @@ contract AOToken is AOTokenInterface {
 	}
 
 	/**
-	 * @dev Unstake `_value` Primordial tokens at `_weightedMultiplier` on behalf of `_from`
+	 * @dev Unstake `_value` Primordial ions at `_weightedMultiplier` on behalf of `_from`
 	 * @param _from The address of the target
 	 * @param _value The amount to unstake
-	 * @param _weightedMultiplier The weighted multiplier of the Primordial tokens
+	 * @param _weightedMultiplier The weighted multiplier of the Primordial ions
 	 * @return true on success
 	 */
-	function unstakePrimordialTokenFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist returns (bool) {
+	function unstakePrimordialFrom(address _from, uint256 _value, uint256 _weightedMultiplier) public inWhitelist returns (bool) {
 		// Check if the targeted staked balance is enough
 		require (primordialStakedBalance[_from][_weightedMultiplier] >= _value);
 		// Subtract from the targeted staked balance
@@ -252,13 +252,13 @@ contract AOToken is AOTokenInterface {
 	}
 
 	/**
-	 * @dev Send `_value` primordial tokens to `_to` on behalf of `_from`
+	 * @dev Send `_value` primordial ions to `_to` on behalf of `_from`
 	 * @param _from The address of the sender
 	 * @param _to The address of the recipient
 	 * @param _value The amount to send
 	 * @return true on success
 	 */
-	function whitelistTransferPrimordialTokenFrom(address _from, address _to, uint256 _value) public inWhitelist returns (bool) {
+	function whitelistTransferPrimordialFrom(address _from, address _to, uint256 _value) public inWhitelist returns (bool) {
 		bytes32 _createdLotId = _createWeightedMultiplierLot(_to, _value, ownerWeightedMultiplier[_from]);
 		Lot memory _lot = lots[_createdLotId];
 
@@ -268,20 +268,20 @@ contract AOToken is AOTokenInterface {
 		// Update the weighted multiplier of the recipient
 		ownerWeightedMultiplier[_to] = AOLibrary.calculateWeightedMultiplier(ownerWeightedMultiplier[_to], primordialBalanceOf[_to], ownerWeightedMultiplier[_from], _value);
 
-		// Transfer the Primordial tokens
-		require (_transferPrimordialToken(_from, _to, _value));
-		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.multiplier, _lot.tokenAmount, 0);
+		// Transfer the Primordial ions
+		require (_transferPrimordial(_from, _to, _value));
+		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.multiplier, _lot.amount, 0);
 		return true;
 	}
 
 	/***** PUBLIC METHODS *****/
-	/***** Primordial TOKEN PUBLIC METHODS *****/
+	/***** PRIMORDIAL ION PUBLIC METHODS *****/
 	/**
-	 * @dev Buy Primordial tokens from contract by sending ether
+	 * @dev Buy Primordial ions from contract by sending ether
 	 */
-	function buyPrimordialToken() public payable canBuyPrimordial(msg.value, true) {
-		(uint256 tokenAmount, uint256 remainderBudget, bool shouldEndNetworkExchange) = _calculateTokenAmountAndRemainderBudget(msg.value, true);
-		require (tokenAmount > 0);
+	function buyPrimordial() public payable canBuyPrimordial(msg.value, true) {
+		(uint256 amount, uint256 remainderBudget, bool shouldEndNetworkExchange) = _calculateAmountAndRemainderBudget(msg.value, true);
+		require (amount > 0);
 
 		// Ends network exchange if necessary
 		if (shouldEndNetworkExchange) {
@@ -292,10 +292,10 @@ contract AOToken is AOTokenInterface {
 		// Update totalEthForPrimordial
 		totalEthForPrimordial = totalEthForPrimordial.add(msg.value.sub(remainderBudget));
 
-		// Send the primordial token to buyer and reward AO devs
-		bytes32 _lotId = _sendPrimordialTokenAndRewardDev(tokenAmount, msg.sender);
+		// Send the primordial ion to buyer and reward AO devs
+		bytes32 _lotId = _sendPrimordialAndRewardDev(amount, msg.sender);
 
-		emit BuyPrimordialToken(msg.sender, _lotId, 1, msg.value, remainderBudget);
+		emit BuyPrimordial(msg.sender, _lotId, 1, msg.value, remainderBudget);
 
 		// Send remainder budget back to buyer if exist
 		if (remainderBudget > 0) {
@@ -304,11 +304,11 @@ contract AOToken is AOTokenInterface {
 	}
 
 	/**
-	 * @dev Buy Primordial tokens from contract by sending AOETH
+	 * @dev Buy Primordial ion from contract by sending AOETH
 	 */
-	function buyPrimordialTokenWithAOETH(uint256 _aoethAmount) public canBuyPrimordial(_aoethAmount, false) {
-		(uint256 tokenAmount, uint256 remainderBudget, bool shouldEndNetworkExchange) = _calculateTokenAmountAndRemainderBudget(_aoethAmount, false);
-		require (tokenAmount > 0);
+	function buyPrimordialWithAOETH(uint256 _aoethAmount) public canBuyPrimordial(_aoethAmount, false) {
+		(uint256 amount, uint256 remainderBudget, bool shouldEndNetworkExchange) = _calculateAmountAndRemainderBudget(_aoethAmount, false);
+		require (amount > 0);
 
 		// Ends network exchange if necessary
 		if (shouldEndNetworkExchange) {
@@ -325,19 +325,19 @@ contract AOToken is AOTokenInterface {
 		// Transfer AOETH from buyer to here
 		require (_aoeth.whitelistTransferFrom(msg.sender, address(this), actualCharge));
 
-		// Send the primordial token to buyer and reward AO devs
-		bytes32 _lotId = _sendPrimordialTokenAndRewardDev(tokenAmount, msg.sender);
+		// Send the primordial ion to buyer and reward AO devs
+		bytes32 _lotId = _sendPrimordialAndRewardDev(amount, msg.sender);
 
-		emit BuyPrimordialToken(msg.sender, _lotId, 2, _aoethAmount, remainderBudget);
+		emit BuyPrimordial(msg.sender, _lotId, 2, _aoethAmount, remainderBudget);
 	}
 
 	/**
-	 * @dev Send `_value` Primordial tokens to `_to` from your account
+	 * @dev Send `_value` Primordial ions to `_to` from your account
 	 * @param _to The address of the recipient
 	 * @param _value The amount to send
 	 * @return true on success
 	 */
-	function transferPrimordialToken(address _to, uint256 _value) public returns (bool success) {
+	function transferPrimordial(address _to, uint256 _value) public returns (bool success) {
 		bytes32 _createdLotId = _createWeightedMultiplierLot(_to, _value, ownerWeightedMultiplier[msg.sender]);
 		Lot memory _lot = lots[_createdLotId];
 
@@ -347,20 +347,20 @@ contract AOToken is AOTokenInterface {
 		// Update the weighted multiplier of the recipient
 		ownerWeightedMultiplier[_to] = AOLibrary.calculateWeightedMultiplier(ownerWeightedMultiplier[_to], primordialBalanceOf[_to], ownerWeightedMultiplier[msg.sender], _value);
 
-		// Transfer the Primordial tokens
-		require (_transferPrimordialToken(msg.sender, _to, _value));
-		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.multiplier, _lot.tokenAmount, 0);
+		// Transfer the Primordial ions
+		require (_transferPrimordial(msg.sender, _to, _value));
+		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.multiplier, _lot.amount, 0);
 		return true;
 	}
 
 	/**
-	 * @dev Send `_value` Primordial tokens to `_to` from `_from`
+	 * @dev Send `_value` Primordial ions to `_to` from `_from`
 	 * @param _from The address of the sender
 	 * @param _to The address of the recipient
 	 * @param _value The amount to send
 	 * @return true on success
 	 */
-	function transferPrimordialTokenFrom(address _from, address _to, uint256 _value) public returns (bool success) {
+	function transferPrimordialFrom(address _from, address _to, uint256 _value) public returns (bool success) {
 		require (_value <= primordialAllowance[_from][msg.sender]);
 		primordialAllowance[_from][msg.sender] = primordialAllowance[_from][msg.sender].sub(_value);
 
@@ -373,46 +373,46 @@ contract AOToken is AOTokenInterface {
 		// Update the weighted multiplier of the recipient
 		ownerWeightedMultiplier[_to] = AOLibrary.calculateWeightedMultiplier(ownerWeightedMultiplier[_to], primordialBalanceOf[_to], ownerWeightedMultiplier[_from], _value);
 
-		// Transfer the Primordial tokens
-		require (_transferPrimordialToken(_from, _to, _value));
-		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.multiplier, _lot.tokenAmount, 0);
+		// Transfer the Primordial ions
+		require (_transferPrimordial(_from, _to, _value));
+		emit LotCreation(_lot.lotOwner, _lot.lotId, _lot.multiplier, _lot.amount, 0);
 		return true;
 	}
 
 	/**
-	 * @dev Allows `_spender` to spend no more than `_value` Primordial tokens in your behalf
+	 * @dev Allows `_spender` to spend no more than `_value` Primordial ions in your behalf
 	 * @param _spender The address authorized to spend
 	 * @param _value The max amount they can spend
 	 * @return true on success
 	 */
-	function approvePrimordialToken(address _spender, uint256 _value) public returns (bool success) {
+	function approvePrimordial(address _spender, uint256 _value) public returns (bool success) {
 		primordialAllowance[msg.sender][_spender] = _value;
 		emit PrimordialApproval(msg.sender, _spender, _value);
 		return true;
 	}
 
 	/**
-	 * @dev Allows `_spender` to spend no more than `_value` Primordial tokens in your behalf, and then ping the contract about it
+	 * @dev Allows `_spender` to spend no more than `_value` Primordial ions in your behalf, and then ping the contract about it
 	 * @param _spender The address authorized to spend
 	 * @param _value The max amount they can spend
 	 * @param _extraData some extra information to send to the approved contract
 	 * @return true on success
 	 */
-	function approvePrimordialTokenAndCall(address _spender, uint256 _value, bytes _extraData) public returns (bool success) {
+	function approvePrimordialAndCall(address _spender, uint256 _value, bytes _extraData) public returns (bool success) {
 		tokenRecipient spender = tokenRecipient(_spender);
-		if (approvePrimordialToken(_spender, _value)) {
+		if (approvePrimordial(_spender, _value)) {
 			spender.receiveApproval(msg.sender, _value, this, _extraData);
 			return true;
 		}
 	}
 
 	/**
-	 * @dev Remove `_value` Primordial tokens from the system irreversibly
+	 * @dev Remove `_value` Primordial ions from the system irreversibly
 	 *		and re-weight the account's multiplier after burn
 	 * @param _value The amount to burn
 	 * @return true on success
 	 */
-	function burnPrimordialToken(uint256 _value) public returns (bool success) {
+	function burnPrimordial(uint256 _value) public returns (bool success) {
 		require (primordialBalanceOf[msg.sender] >= _value);
 		require (calculateMaximumBurnAmount(msg.sender) >= _value);
 
@@ -428,13 +428,13 @@ contract AOToken is AOTokenInterface {
 	}
 
 	/**
-	 * @dev Remove `_value` Primordial tokens from the system irreversibly on behalf of `_from`
+	 * @dev Remove `_value` Primordial ions from the system irreversibly on behalf of `_from`
 	 *		and re-weight `_from`'s multiplier after burn
 	 * @param _from The address of sender
 	 * @param _value The amount to burn
 	 * @return true on success
 	 */
-	function burnPrimordialTokenFrom(address _from, uint256 _value) public returns (bool success) {
+	function burnPrimordialFrom(address _from, uint256 _value) public returns (bool success) {
 		require (primordialBalanceOf[_from] >= _value);
 		require (primordialAllowance[_from][msg.sender] >= _value);
 		require (calculateMaximumBurnAmount(_from) >= _value);
@@ -476,12 +476,12 @@ contract AOToken is AOTokenInterface {
 	 * @return id of the lot
 	 * @return The address of the lot owner
 	 * @return multiplier of the lot in (10 ** 6)
-	 * @return Primordial token amount in the lot
+	 * @return Primordial ion amount in the lot
 	 */
 	function lotOfOwnerByIndex(address _lotOwner, uint256 _index) public view returns (bytes32, address, uint256, uint256) {
 		require (_index < ownedLots[_lotOwner].length);
 		Lot memory _lot = lots[ownedLots[_lotOwner][_index]];
-		return (_lot.lotId, _lot.lotOwner, _lot.multiplier, _lot.tokenAmount);
+		return (_lot.lotId, _lot.lotOwner, _lot.multiplier, _lot.amount);
 	}
 
 	/**
@@ -490,11 +490,11 @@ contract AOToken is AOTokenInterface {
 	 * @return id of the lot
 	 * @return The lot owner address
 	 * @return multiplier of the lot in (10 ** 6)
-	 * @return Primordial token amount in the lot
+	 * @return Primordial ion amount in the lot
 	 */
 	function lotById(bytes32 _lotId) public view returns (bytes32, address, uint256, uint256) {
 		Lot memory _lot = lots[_lotId];
-		return (_lot.lotId, _lot.lotOwner, _lot.multiplier, _lot.tokenAmount);
+		return (_lot.lotId, _lot.lotOwner, _lot.multiplier, _lot.amount);
 	}
 
 	/**
@@ -520,11 +520,11 @@ contract AOToken is AOTokenInterface {
 	 * @param _burnLotId The burn lot ID in question
 	 * @return id of the lot
 	 * @return The address of the burn lot owner
-	 * @return Primordial token amount in the burn lot
+	 * @return Primordial ion amount in the burn lot
 	 */
 	function burnLotById(bytes32 _burnLotId) public view returns (bytes32, address, uint256) {
 		BurnLot memory _burnLot = burnLots[_burnLotId];
-		return (_burnLot.burnLotId, _burnLot.lotOwner, _burnLot.tokenAmount);
+		return (_burnLot.burnLotId, _burnLot.lotOwner, _burnLot.amount);
 	}
 
 	/**
@@ -550,11 +550,11 @@ contract AOToken is AOTokenInterface {
 	 * @param _convertLotId The convert lot ID in question
 	 * @return id of the lot
 	 * @return The address of the convert lot owner
-	 * @return Primordial token amount in the convert lot
+	 * @return Primordial ion amount in the convert lot
 	 */
 	function convertLotById(bytes32 _convertLotId) public view returns (bytes32, address, uint256) {
 		ConvertLot memory _convertLot = convertLots[_convertLotId];
-		return (_convertLot.convertLotId, _convertLot.lotOwner, _convertLot.tokenAmount);
+		return (_convertLot.convertLotId, _convertLot.lotOwner, _convertLot.amount);
 	}
 
 	/**
@@ -576,36 +576,36 @@ contract AOToken is AOTokenInterface {
 	}
 
 	/**
-	 * @dev Calculate the primordial token multiplier, bonus network token percentage, and the
-	 *		bonus network token amount on a given lot when someone purchases primordial token
+	 * @dev Calculate the primordial ion multiplier, bonus network ion percentage, and the
+	 *		bonus network ion amount on a given lot when someone purchases primordial ion
 	 *		during network exchange
-	 * @param _purchaseAmount The amount of primordial token intended to be purchased
+	 * @param _purchaseAmount The amount of primordial ion intended to be purchased
 	 * @return The multiplier in (10 ** 6)
 	 * @return The bonus percentage
-	 * @return The amount of network token as bonus
+	 * @return The amount of network ion as bonus
 	 */
 	function calculateMultiplierAndBonus(uint256 _purchaseAmount) public view returns (uint256, uint256, uint256) {
-		(uint256 startingPrimordialMultiplier, uint256 endingPrimordialMultiplier, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
+		(uint256 startingPrimordialMultiplier, uint256 endingPrimordialMultiplier, uint256 startingNetworkBonusMultiplier, uint256 endingNetworkBonusMultiplier) = _getSettingVariables();
 		return (
 			AOLibrary.calculatePrimordialMultiplier(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingPrimordialMultiplier, endingPrimordialMultiplier),
-			AOLibrary.calculateNetworkTokenBonusPercentage(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier),
-			AOLibrary.calculateNetworkTokenBonusAmount(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier)
+			AOLibrary.calculateNetworkBonusPercentage(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingNetworkBonusMultiplier, endingNetworkBonusMultiplier),
+			AOLibrary.calculateNetworkBonusAmount(_purchaseAmount, TOTAL_PRIMORDIAL_FOR_SALE, primordialTotalBought, startingNetworkBonusMultiplier, endingNetworkBonusMultiplier)
 		);
 	}
 
 	/**
 	 * @dev Calculate the maximum amount of Primordial an account can burn
 	 * @param _account The address of the account
-	 * @return The maximum primordial token amount to burn
+	 * @return The maximum primordial ion amount to burn
 	 */
 	function calculateMaximumBurnAmount(address _account) public view returns (uint256) {
 		return AOLibrary.calculateMaximumBurnAmount(primordialBalanceOf[_account], ownerWeightedMultiplier[_account], ownerMaxMultiplier[_account]);
 	}
 
 	/**
-	 * @dev Calculate account's new multiplier after burn `_amountToBurn` primordial tokens
+	 * @dev Calculate account's new multiplier after burn `_amountToBurn` primordial ions
 	 * @param _account The address of the account
-	 * @param _amountToBurn The amount of primordial token to burn
+	 * @param _amountToBurn The amount of primordial ion to burn
 	 * @return The new multiplier in (10 ** 6)
 	 */
 	function calculateMultiplierAfterBurn(address _account, uint256 _amountToBurn) public view returns (uint256) {
@@ -614,9 +614,9 @@ contract AOToken is AOTokenInterface {
 	}
 
 	/**
-	 * @dev Calculate account's new multiplier after converting `amountToConvert` network token to primordial token
+	 * @dev Calculate account's new multiplier after converting `amountToConvert` network ion to primordial ion
 	 * @param _account The address of the account
-	 * @param _amountToConvert The amount of network token to convert
+	 * @param _amountToConvert The amount of network ion to convert
 	 * @return The new multiplier in (10 ** 6)
 	 */
 	function calculateMultiplierAfterConversion(address _account, uint256 _amountToConvert) public view returns (uint256) {
@@ -624,7 +624,7 @@ contract AOToken is AOTokenInterface {
 	}
 
 	/**
-	 * @dev Convert `_value` of network tokens to primordial tokens
+	 * @dev Convert `_value` of network ions to primordial ions
 	 *		and re-weight the account's multiplier after conversion
 	 * @param _value The amount to convert
 	 * @return true on success
@@ -634,10 +634,10 @@ contract AOToken is AOTokenInterface {
 
 		// Update the account's multiplier
 		ownerWeightedMultiplier[msg.sender] = calculateMultiplierAfterConversion(msg.sender, _value);
-		// Burn network token
+		// Burn network ion
 		burn(_value);
-		// mint primordial token
-		_mintPrimordialToken(msg.sender, _value);
+		// mint primordial ion
+		_mintPrimordial(msg.sender, _value);
 
 		// Store convert lot info
 		totalConvertLots++;
@@ -651,89 +651,89 @@ contract AOToken is AOTokenInterface {
 		ConvertLot storage convertLot = convertLots[convertLotId];
 		convertLot.convertLotId = convertLotId;
 		convertLot.lotOwner = msg.sender;
-		convertLot.tokenAmount = _value;
+		convertLot.amount = _value;
 		ownedConvertLots[msg.sender].push(convertLotId);
-		emit ConvertLotCreation(convertLot.lotOwner, convertLot.convertLotId, convertLot.tokenAmount, ownerWeightedMultiplier[convertLot.lotOwner]);
+		emit ConvertLotCreation(convertLot.lotOwner, convertLot.convertLotId, convertLot.amount, ownerWeightedMultiplier[convertLot.lotOwner]);
 		return true;
 	}
 
-	/***** NETWORK TOKEN & PRIMORDIAL TOKEN METHODS *****/
+	/***** NETWORK ION & PRIMORDIAL ION METHODS *****/
 	/**
-	 * @dev Send `_value` network tokens and `_primordialValue` primordial tokens to `_to` from your account
+	 * @dev Send `_value` network ions and `_primordialValue` primordial ions to `_to` from your account
 	 * @param _to The address of the recipient
-	 * @param _value The amount of network tokens to send
-	 * @param _primordialValue The amount of Primordial tokens to send
+	 * @param _value The amount of network ions to send
+	 * @param _primordialValue The amount of Primordial ions to send
 	 * @return true on success
 	 */
-	function transferTokens(address _to, uint256 _value, uint256 _primordialValue) public returns (bool success) {
+	function transferIons(address _to, uint256 _value, uint256 _primordialValue) public returns (bool success) {
 		require (super.transfer(_to, _value));
-		require (transferPrimordialToken(_to, _primordialValue));
+		require (transferPrimordial(_to, _primordialValue));
 		return true;
 	}
 
 	/**
-	 * @dev Send `_value` network tokens and `_primordialValue` primordial tokens to `_to` from `_from`
+	 * @dev Send `_value` network ions and `_primordialValue` primordial ions to `_to` from `_from`
 	 * @param _from The address of the sender
 	 * @param _to The address of the recipient
-	 * @param _value The amount of network tokens tokens to send
-	 * @param _primordialValue The amount of Primordial tokens to send
+	 * @param _value The amount of network ions to send
+	 * @param _primordialValue The amount of Primordial ions to send
 	 * @return true on success
 	 */
-	function transferTokensFrom(address _from, address _to, uint256 _value, uint256 _primordialValue) public returns (bool success) {
+	function transferIonsFrom(address _from, address _to, uint256 _value, uint256 _primordialValue) public returns (bool success) {
 		require (super.transferFrom(_from, _to, _value));
-		require (transferPrimordialTokenFrom(_from, _to, _primordialValue));
+		require (transferPrimordialFrom(_from, _to, _primordialValue));
 		return true;
 	}
 
 	/**
-	 * @dev Allows `_spender` to spend no more than `_value` network tokens and `_primordialValue` Primordial tokens in your behalf
+	 * @dev Allows `_spender` to spend no more than `_value` network ions and `_primordialValue` Primordial ions in your behalf
 	 * @param _spender The address authorized to spend
-	 * @param _value The max amount of network tokens they can spend
-	 * @param _primordialValue The max amount of network tokens they can spend
+	 * @param _value The max amount of network ions they can spend
+	 * @param _primordialValue The max amount of network ions they can spend
 	 * @return true on success
 	 */
-	function approveTokens(address _spender, uint256 _value, uint256 _primordialValue) public returns (bool success) {
+	function approveIons(address _spender, uint256 _value, uint256 _primordialValue) public returns (bool success) {
 		require (super.approve(_spender, _value));
-		require (approvePrimordialToken(_spender, _primordialValue));
+		require (approvePrimordial(_spender, _primordialValue));
 		return true;
 	}
 
 	/**
-	 * @dev Allows `_spender` to spend no more than `_value` network tokens and `_primordialValue` Primordial tokens in your behalf, and then ping the contract about it
+	 * @dev Allows `_spender` to spend no more than `_value` network ions and `_primordialValue` Primordial ions in your behalf, and then ping the contract about it
 	 * @param _spender The address authorized to spend
-	 * @param _value The max amount of network tokens they can spend
-	 * @param _primordialValue The max amount of Primordial Tokens they can spend
+	 * @param _value The max amount of network ions they can spend
+	 * @param _primordialValue The max amount of Primordial ions they can spend
 	 * @param _extraData some extra information to send to the approved contract
 	 * @return true on success
 	 */
-	function approveTokensAndCall(address _spender, uint256 _value, uint256 _primordialValue, bytes _extraData) public returns (bool success) {
+	function approveIonsAndCall(address _spender, uint256 _value, uint256 _primordialValue, bytes _extraData) public returns (bool success) {
 		require (super.approveAndCall(_spender, _value, _extraData));
-		require (approvePrimordialTokenAndCall(_spender, _primordialValue, _extraData));
+		require (approvePrimordialAndCall(_spender, _primordialValue, _extraData));
 		return true;
 	}
 
 	/**
-	 * @dev Remove `_value` network tokens and `_primordialValue` Primordial tokens from the system irreversibly
-	 * @param _value The amount of network tokens to burn
-	 * @param _primordialValue The amount of Primordial tokens to burn
+	 * @dev Remove `_value` network ions and `_primordialValue` Primordial ions from the system irreversibly
+	 * @param _value The amount of network ions to burn
+	 * @param _primordialValue The amount of Primordial ions to burn
 	 * @return true on success
 	 */
-	function burnTokens(uint256 _value, uint256 _primordialValue) public returns (bool success) {
+	function burnIons(uint256 _value, uint256 _primordialValue) public returns (bool success) {
 		require (super.burn(_value));
-		require (burnPrimordialToken(_primordialValue));
+		require (burnPrimordial(_primordialValue));
 		return true;
 	}
 
 	/**
-	 * @dev Remove `_value` network tokens and `_primordialValue` Primordial tokens from the system irreversibly on behalf of `_from`
+	 * @dev Remove `_value` network ions and `_primordialValue` Primordial ions from the system irreversibly on behalf of `_from`
 	 * @param _from The address of sender
-	 * @param _value The amount of network tokens to burn
-	 * @param _primordialValue The amount of Primordial tokens to burn
+	 * @param _value The amount of network ions to burn
+	 * @param _primordialValue The amount of Primordial ions to burn
 	 * @return true on success
 	 */
-	function burnTokensFrom(address _from, uint256 _value, uint256 _primordialValue) public returns (bool success) {
+	function burnIonsFrom(address _from, uint256 _value, uint256 _primordialValue) public returns (bool success) {
 		require (super.burnFrom(_from, _value));
-		require (burnPrimordialTokenFrom(_from, _primordialValue));
+		require (burnPrimordialFrom(_from, _primordialValue));
 		return true;
 	}
 
@@ -772,79 +772,79 @@ contract AOToken is AOTokenInterface {
 	}
 
 	/***** INTERNAL METHODS *****/
-	/***** PRIMORDIAL TOKEN INTERNAL METHODS *****/
+	/***** PRIMORDIAL ION INTERNAL METHODS *****/
 	/**
-	 * @dev Calculate the amount of token the buyer will receive and remaining budget if exist
-	 *		when he/she buys primordial token
+	 * @dev Calculate the amount of ion the buyer will receive and remaining budget if exist
+	 *		when he/she buys primordial ion
 	 * @param _budget The amount of ETH sent by buyer
 	 * @param _withETH Whether or not buyer is paying with ETH
-	 * @return uint256 of the tokenAmount the buyer will receiver
+	 * @return uint256 of the amount the buyer will receiver
 	 * @return uint256 of the remaining budget, if exist
 	 * @return bool whether or not the network exchange should end
 	 */
-	function _calculateTokenAmountAndRemainderBudget(uint256 _budget, bool _withETH) internal view returns (uint256, uint256, bool) {
-		// Calculate the amount of tokens
-		uint256 tokenAmount = _budget.div(primordialBuyPrice);
+	function _calculateAmountAndRemainderBudget(uint256 _budget, bool _withETH) internal view returns (uint256, uint256, bool) {
+		// Calculate the amount of ion
+		uint256 amount = _budget.div(primordialBuyPrice);
 
 		// If we need to return ETH to the buyer, in the case
-		// where the buyer sends more ETH than available primordial token to be purchased
-		uint256 remainderEth = _budget.sub(tokenAmount.mul(primordialBuyPrice));
+		// where the buyer sends more ETH than available primordial ion to be purchased
+		uint256 remainderEth = _budget.sub(amount.mul(primordialBuyPrice));
 
 		uint256 _availableETH = availableETH();
 		// If paying with ETH, it can't exceed availableETH
 		if (_withETH && _budget > availableETH()) {
-			// Calculate the amount of tokens
-			tokenAmount = _availableETH.div(primordialBuyPrice);
-			remainderEth = _budget.sub(tokenAmount.mul(primordialBuyPrice));
+			// Calculate the amount of ions
+			amount = _availableETH.div(primordialBuyPrice);
+			remainderEth = _budget.sub(amount.mul(primordialBuyPrice));
 		}
 
 		// Make sure primordialTotalBought is not overflowing
 		bool shouldEndNetworkExchange = false;
-		if (primordialTotalBought.add(tokenAmount) >= TOTAL_PRIMORDIAL_FOR_SALE) {
-			tokenAmount = TOTAL_PRIMORDIAL_FOR_SALE.sub(primordialTotalBought);
+		if (primordialTotalBought.add(amount) >= TOTAL_PRIMORDIAL_FOR_SALE) {
+			amount = TOTAL_PRIMORDIAL_FOR_SALE.sub(primordialTotalBought);
 			shouldEndNetworkExchange = true;
-			remainderEth = _budget.sub(tokenAmount.mul(primordialBuyPrice));
+			remainderEth = _budget.sub(amount.mul(primordialBuyPrice));
 		}
-		return (tokenAmount, remainderEth, shouldEndNetworkExchange);
+		return (amount, remainderEth, shouldEndNetworkExchange);
 	}
 
 	/**
-	 * @dev Actually sending the primordial token to buyer and reward AO devs accordingly
-	 * @param tokenAmount The amount of primordial token to be sent to buyer
-	 * @param to The recipient of the token
+	 * @dev Actually sending the primordial ion to buyer and reward AO devs accordingly
+	 * @param amount The amount of primordial ion to be sent to buyer
+	 * @param to The recipient of ion
 	 * @return the lot Id of the buyer
 	 */
-	function _sendPrimordialTokenAndRewardDev(uint256 tokenAmount, address to) internal returns (bytes32) {
-		(uint256 startingPrimordialMultiplier,, uint256 startingNetworkTokenBonusMultiplier, uint256 endingNetworkTokenBonusMultiplier) = _getSettingVariables();
+	function _sendPrimordialAndRewardDev(uint256 amount, address to) internal returns (bytes32) {
+		(uint256 startingPrimordialMultiplier,, uint256 startingNetworkBonusMultiplier, uint256 endingNetworkBonusMultiplier) = _getSettingVariables();
 
 		// Update primordialTotalBought
-		(uint256 multiplier, uint256 networkTokenBonusPercentage, uint256 networkTokenBonusAmount) = calculateMultiplierAndBonus(tokenAmount);
-		primordialTotalBought = primordialTotalBought.add(tokenAmount);
-		bytes32 _lotId = _createPrimordialLot(to, tokenAmount, multiplier, networkTokenBonusAmount);
+		(uint256 multiplier, uint256 networkBonusPercentage, uint256 networkBonusAmount) = calculateMultiplierAndBonus(amount);
+		primordialTotalBought = primordialTotalBought.add(amount);
+		bytes32 _lotId = _createPrimordialLot(to, amount, multiplier, networkBonusAmount);
 
-		// Calculate The AO and AO Dev Team's portion of Primordial and Network Token Bonus
+		// Calculate The AO and AO Dev Team's portion of Primordial and Network ion Bonus
 		uint256 inverseMultiplier = startingPrimordialMultiplier.sub(multiplier); // Inverse of the buyer's multiplier
-		uint256 theAONetworkTokenBonusAmount = (startingNetworkTokenBonusMultiplier.sub(networkTokenBonusPercentage).add(endingNetworkTokenBonusMultiplier)).mul(tokenAmount).div(AOLibrary.PERCENTAGE_DIVISOR());
+		uint256 theAONetworkBonusAmount = (startingNetworkBonusMultiplier.sub(networkBonusPercentage).add(endingNetworkBonusMultiplier)).mul(amount).div(AOLibrary.PERCENTAGE_DIVISOR());
 		if (aoDevTeam1 != address(0)) {
-			_createPrimordialLot(aoDevTeam1, tokenAmount.div(2), inverseMultiplier, theAONetworkTokenBonusAmount.div(2));
+			_createPrimordialLot(aoDevTeam1, amount.div(2), inverseMultiplier, theAONetworkBonusAmount.div(2));
 		}
 		if (aoDevTeam2 != address(0)) {
-			_createPrimordialLot(aoDevTeam2, tokenAmount.div(2), inverseMultiplier, theAONetworkTokenBonusAmount.div(2));
+			_createPrimordialLot(aoDevTeam2, amount.div(2), inverseMultiplier, theAONetworkBonusAmount.div(2));
 		}
-		_mintToken(theAO, theAONetworkTokenBonusAmount);
+		_mint(theAO, theAONetworkBonusAmount);
 		return _lotId;
 	}
 
 	/**
-	 * @dev Create a lot with `primordialTokenAmount` of primordial tokens with `_multiplier` for an `account`
-	 *		during network exchange, and reward `_networkTokenBonusAmount` if exist
+	 * @dev Create a lot with `primordialAmount` of primordial ions with `_multiplier` for an `account`
+	 *		during network exchange, and reward `_networkBonusAmount` if exist
 	 * @param _account Address of the lot owner
-	 * @param _primordialTokenAmount The amount of primordial tokens to be stored in the lot
+	 * @param _primordialAmount The amount of primordial ions to be stored in the lot
 	 * @param _multiplier The multiplier for this lot in (10 ** 6)
-	 * @param _networkTokenBonusAmount The network token bonus amount
+	 * @param _networkBonusAmount The network ion bonus amount
 	 * @return Created lot Id
 	 */
-	function _createPrimordialLot(address _account, uint256 _primordialTokenAmount, uint256 _multiplier, uint256 _networkTokenBonusAmount) internal returns (bytes32) {
+	function _createPrimordialLot(address _account, uint256 _primordialAmount, uint256 _multiplier, uint256 _networkBonusAmount) internal returns (bytes32) {
 		totalLots++;
 
 		// Generate lotId
@@ -857,26 +857,26 @@ contract AOToken is AOTokenInterface {
 		lot.lotId = lotId;
 		lot.multiplier = _multiplier;
 		lot.lotOwner = _account;
-		lot.tokenAmount = _primordialTokenAmount;
+		lot.amount = _primordialAmount;
 		ownedLots[_account].push(lotId);
-		ownerWeightedMultiplier[_account] = AOLibrary.calculateWeightedMultiplier(ownerWeightedMultiplier[_account], primordialBalanceOf[_account], lot.multiplier, lot.tokenAmount);
+		ownerWeightedMultiplier[_account] = AOLibrary.calculateWeightedMultiplier(ownerWeightedMultiplier[_account], primordialBalanceOf[_account], lot.multiplier, lot.amount);
 		// If this is the first lot, set this as the max multiplier of the account
 		if (ownedLots[_account].length == 1) {
 			ownerMaxMultiplier[_account] = lot.multiplier;
 		}
-		_mintPrimordialToken(_account, lot.tokenAmount);
-		_mintToken(_account, _networkTokenBonusAmount);
+		_mintPrimordial(_account, lot.amount);
+		_mint(_account, _networkBonusAmount);
 
-		emit LotCreation(lot.lotOwner, lot.lotId, lot.multiplier, lot.tokenAmount, _networkTokenBonusAmount);
+		emit LotCreation(lot.lotOwner, lot.lotId, lot.multiplier, lot.amount, _networkBonusAmount);
 		return lotId;
 	}
 
 	/**
-	 * @dev Create `mintedAmount` Primordial tokens and send it to `target`
-	 * @param target Address to receive the Primordial tokens
-	 * @param mintedAmount The amount of Primordial tokens it will receive
+	 * @dev Create `mintedAmount` Primordial ions and send it to `target`
+	 * @param target Address to receive the Primordial ions
+	 * @param mintedAmount The amount of Primordial ions it will receive
 	 */
-	function _mintPrimordialToken(address target, uint256 mintedAmount) internal {
+	function _mintPrimordial(address target, uint256 mintedAmount) internal {
 		primordialBalanceOf[target] = primordialBalanceOf[target].add(mintedAmount);
 		primordialTotalSupply = primordialTotalSupply.add(mintedAmount);
 		emit PrimordialTransfer(0, this, mintedAmount);
@@ -884,15 +884,15 @@ contract AOToken is AOTokenInterface {
 	}
 
 	/**
-	 * @dev Create a lot with `tokenAmount` of tokens at `weightedMultiplier` for an `account`
+	 * @dev Create a lot with `amount` of ions at `weightedMultiplier` for an `account`
 	 * @param _account Address of lot owner
-	 * @param _tokenAmount The amount of tokens
+	 * @param _amount The amount of ions
 	 * @param _weightedMultiplier The multiplier of the lot (in 10^6)
 	 * @return bytes32 of new created lot ID
 	 */
-	function _createWeightedMultiplierLot(address _account, uint256 _tokenAmount, uint256 _weightedMultiplier) internal returns (bytes32) {
+	function _createWeightedMultiplierLot(address _account, uint256 _amount, uint256 _weightedMultiplier) internal returns (bytes32) {
 		require (_account != address(0));
-		require (_tokenAmount > 0);
+		require (_amount > 0);
 
 		totalLots++;
 
@@ -906,7 +906,7 @@ contract AOToken is AOTokenInterface {
 		lot.lotId = lotId;
 		lot.multiplier = _weightedMultiplier;
 		lot.lotOwner = _account;
-		lot.tokenAmount = _tokenAmount;
+		lot.amount = _amount;
 		ownedLots[_account].push(lotId);
 		// If this is the first lot, set this as the max multiplier of the account
 		if (ownedLots[_account].length == 1) {
@@ -916,12 +916,12 @@ contract AOToken is AOTokenInterface {
 	}
 
 	/**
-	 * @dev Send `_value` Primordial tokens from `_from` to `_to`
+	 * @dev Send `_value` Primordial ions from `_from` to `_to`
 	 * @param _from The address of sender
 	 * @param _to The address of the recipient
 	 * @param _value The amount to send
 	 */
-	function _transferPrimordialToken(address _from, address _to, uint256 _value) internal returns (bool) {
+	function _transferPrimordial(address _from, address _to, uint256 _value) internal returns (bool) {
 		require (_to != address(0));									// Prevent transfer to 0x0 address. Use burn() instead
 		require (primordialBalanceOf[_from] >= _value);						// Check if the sender has enough
 		require (primordialBalanceOf[_to].add(_value) >= primordialBalanceOf[_to]);	// Check for overflows
@@ -938,9 +938,9 @@ contract AOToken is AOTokenInterface {
 	/**
 	 * @dev Store burn lot information
 	 * @param _account The address of the account
-	 * @param _tokenAmount The amount of primordial tokens to burn
+	 * @param _amount The amount of primordial ions to burn
 	 */
-	function _createBurnLot(address _account, uint256 _tokenAmount) internal {
+	function _createBurnLot(address _account, uint256 _amount) internal {
 		totalBurnLots++;
 
 		// Generate burn lot Id
@@ -952,25 +952,25 @@ contract AOToken is AOTokenInterface {
 		BurnLot storage burnLot = burnLots[burnLotId];
 		burnLot.burnLotId = burnLotId;
 		burnLot.lotOwner = _account;
-		burnLot.tokenAmount = _tokenAmount;
+		burnLot.amount = _amount;
 		ownedBurnLots[_account].push(burnLotId);
-		emit BurnLotCreation(burnLot.lotOwner, burnLot.burnLotId, burnLot.tokenAmount, ownerWeightedMultiplier[burnLot.lotOwner]);
+		emit BurnLotCreation(burnLot.lotOwner, burnLot.burnLotId, burnLot.amount, ownerWeightedMultiplier[burnLot.lotOwner]);
 	}
 
 	/**
 	 * @dev Get setting variables
-	 * @return startingPrimordialMultiplier The starting multiplier used to calculate primordial token
-	 * @return endingPrimordialMultiplier The ending multiplier used to calculate primordial token
-	 * @return startingNetworkTokenBonusMultiplier The starting multiplier used to calculate network token bonus
-	 * @return endingNetworkTokenBonusMultiplier The ending multiplier used to calculate network token bonus
+	 * @return startingPrimordialMultiplier The starting multiplier used to calculate primordial ion
+	 * @return endingPrimordialMultiplier The ending multiplier used to calculate primordial ion
+	 * @return startingNetworkBonusMultiplier The starting multiplier used to calculate network ion bonus
+	 * @return endingNetworkBonusMultiplier The ending multiplier used to calculate network ion bonus
 	 */
 	function _getSettingVariables() internal view returns (uint256, uint256, uint256, uint256) {
 		(uint256 startingPrimordialMultiplier,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'startingPrimordialMultiplier');
 		(uint256 endingPrimordialMultiplier,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'endingPrimordialMultiplier');
 
-		(uint256 startingNetworkTokenBonusMultiplier,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'startingNetworkTokenBonusMultiplier');
-		(uint256 endingNetworkTokenBonusMultiplier,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'endingNetworkTokenBonusMultiplier');
+		(uint256 startingNetworkBonusMultiplier,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'startingNetworkBonusMultiplier');
+		(uint256 endingNetworkBonusMultiplier,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'endingNetworkBonusMultiplier');
 
-		return (startingPrimordialMultiplier, endingPrimordialMultiplier, startingNetworkTokenBonusMultiplier, endingNetworkTokenBonusMultiplier);
+		return (startingPrimordialMultiplier, endingPrimordialMultiplier, startingNetworkBonusMultiplier, endingNetworkBonusMultiplier);
 	}
 }

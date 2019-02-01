@@ -89,20 +89,20 @@ contract("NameTAOPosition", function(accounts) {
 
 		// Mint Logos to nameId
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
-		await logos.mintToken(nameId3, 10 ** 12, { from: theAO });
-		await logos.mintToken(nameId4, 10 ** 12, { from: theAO });
-		await logos.mintToken(nameId5, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId3, 10 ** 12, { from: theAO });
+		await logos.mint(nameId4, 10 ** 12, { from: theAO });
+		await logos.mint(nameId5, 10 ** 12, { from: theAO });
 
 		await pathos.setWhitelist(theAO, true, { from: theAO });
-		await pathos.mintToken(nameId3, 10 ** 6, { from: theAO });
-		await pathos.mintToken(nameId4, 10 ** 6, { from: theAO });
-		await pathos.mintToken(nameId5, 10 ** 6, { from: theAO });
+		await pathos.mint(nameId3, 10 ** 6, { from: theAO });
+		await pathos.mint(nameId4, 10 ** 6, { from: theAO });
+		await pathos.mint(nameId5, 10 ** 6, { from: theAO });
 
 		await ethos.setWhitelist(theAO, true, { from: theAO });
-		await ethos.mintToken(nameId3, 10 ** 6, { from: theAO });
-		await ethos.mintToken(nameId4, 10 ** 6, { from: theAO });
-		await ethos.mintToken(nameId5, 10 ** 6, { from: theAO });
+		await ethos.mint(nameId3, 10 ** 6, { from: theAO });
+		await ethos.mint(nameId4, 10 ** 6, { from: theAO });
+		await ethos.mint(nameId5, 10 ** 6, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -349,7 +349,7 @@ contract("NameTAOPosition", function(accounts) {
 			from: account2
 		});
 		nameId2 = await namefactory.ethAddressToNameId(account2);
-		await logos.mintToken(nameId2, 10 ** 12, { from: theAO });
+		await logos.mint(nameId2, 10 ** 12, { from: theAO });
 
 		var isExist = await nametaoposition.isExist(nameId2);
 		assert.equal(isExist, true, "isExist() returns incorrect value");
@@ -679,7 +679,7 @@ contract("NameTAOPosition", function(accounts) {
 		var getAdvocate = await nametaoposition.getAdvocate(taoId4);
 		assert.equal(getAdvocate, nameId3, "TAO has incorrect Advocate");
 
-		await logos.mintToken(nameId2, nameLogosBalance.plus(10 ** 6).toNumber(), { from: theAO });
+		await logos.mint(nameId2, nameLogosBalance.plus(10 ** 6).toNumber(), { from: theAO });
 
 		var nameId2_totalAdvocatedTAOLogosBefore = await logos.totalAdvocatedTAOLogos(nameId2);
 		var nameId2_advocatedTAOLogosBefore = await logos.advocatedTAOLogos(nameId2, taoId2);
@@ -766,7 +766,7 @@ contract("NameTAOPosition", function(accounts) {
 
 		// Mint more logos challenger
 		var currentAdvocateLogosBalance = await logos.balanceOf(nameId3);
-		await logos.mintToken(nameId2, currentAdvocateLogosBalance.plus(10 ** 3).toNumber(), { from: theAO });
+		await logos.mint(nameId2, currentAdvocateLogosBalance.plus(10 ** 3).toNumber(), { from: theAO });
 
 		challengeId1 = await challengeTAOAdvocate(taoId1, account2);
 		challengeId2 = await challengeTAOAdvocate(taoId4, account2);
@@ -849,7 +849,7 @@ contract("NameTAOPosition", function(accounts) {
 		// Current Advocate Name ID 3
 		// Challenger Name ID 2
 		// Should fail because current Advocate has more Logos than challenger
-		await logos.mintToken(nameId3, 10 ** 10, { from: theAO });
+		await logos.mint(nameId3, 10 ** 10, { from: theAO });
 
 		getChallengeStatus = await nametaoposition.getChallengeStatus(challengeId2, account2);
 		assert.equal(getChallengeStatus.toNumber(), 6, "getChallengeStatus() returns incorrect value");

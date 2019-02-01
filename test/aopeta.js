@@ -64,7 +64,7 @@ contract("AOPeta", function(accounts) {
 
 			// Mint Logos to nameId
 			await logos.setWhitelist(theAO, true, { from: theAO });
-			await logos.mintToken(nameId, 10 ** 12, { from: theAO });
+			await logos.mint(nameId, 10 ** 12, { from: theAO });
 
 			result = await taofactory.createTAO(
 				"Charlie's TAO",
@@ -203,7 +203,7 @@ contract("AOPeta", function(accounts) {
 			} catch (e) {
 				canFreezeAccount = false;
 			}
-			assert.equal(canFreezeAccount, true, "The AO can't mint token");
+			assert.equal(canFreezeAccount, true, "The AO can't mint AOPeta");
 			var account2Frozen = await aopeta.frozenAccount(account2);
 			assert.equal(account2Frozen, true, "Account2 is not frozen after The AO froze his account");
 
@@ -218,14 +218,14 @@ contract("AOPeta", function(accounts) {
 			} catch (e) {
 				canSetPrices = false;
 			}
-			assert.notEqual(canSetPrices, true, "Others can set network token prices");
+			assert.notEqual(canSetPrices, true, "Others can set network AOPeta prices");
 			try {
 				await aopeta.setPrices(2, 2, { from: account1 });
 				canSetPrices = true;
 			} catch (e) {
 				canSetPrices = false;
 			}
-			assert.equal(canSetPrices, true, "The AO can't set network token prices");
+			assert.equal(canSetPrices, true, "The AO can't set network AOPeta prices");
 			var sellPrice = await aopeta.sellPrice();
 			var buyPrice = await aopeta.buyPrice();
 			assert.equal(sellPrice.toNumber(), 2, "Incorrect sell price");
@@ -233,30 +233,30 @@ contract("AOPeta", function(accounts) {
 		});
 	});
 
-	contract("Network Token Function Tests", function() {
+	contract("Network Ion Function Tests", function() {
 		before(async function() {
 			await aopeta.setWhitelist(whitelistedAddress, true, { from: theAO });
 		});
 
-		it("Whitelisted address - mintToken()  can mint token", async function() {
+		it("Whitelisted address - mint()  can mint", async function() {
 			var canMint;
 			try {
-				await aopeta.mintToken(account1, 100, { from: someAddress });
+				await aopeta.mint(account1, 100, { from: someAddress });
 				canMint = true;
 			} catch (e) {
 				canMint = false;
 			}
-			assert.notEqual(canMint, true, "Others can mint token");
+			assert.notEqual(canMint, true, "Others can mint");
 
 			var balanceBefore = await aopeta.balanceOf(account1);
 			var totalSupplyBefore = await aopeta.totalSupply();
 			try {
-				await aopeta.mintToken(account1, 100, { from: whitelistedAddress });
+				await aopeta.mint(account1, 100, { from: whitelistedAddress });
 				canMint = true;
 			} catch (e) {
 				canMint = false;
 			}
-			assert.equal(canMint, true, "The AO can't mint token");
+			assert.equal(canMint, true, "The AO can't mint");
 
 			var balanceAfter = await aopeta.balanceOf(account1);
 			var totalSupplyAfter = await aopeta.totalSupply();
@@ -265,7 +265,7 @@ contract("AOPeta", function(accounts) {
 			assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.plus(100).toNumber(), "Contract has incorrect totalSupply");
 		});
 
-		it("WhitelistedAddress - stakeFrom() should be able to stake tokens on behalf of others", async function() {
+		it("WhitelistedAddress - stakeFrom() should be able to stake ions on behalf of others", async function() {
 			var account1BalanceBefore = await aopeta.balanceOf(account1);
 			var account1StakedBalanceBefore = await aopeta.stakedBalance(account1);
 			var totalSupplyBefore = await aopeta.totalSupply();
@@ -310,7 +310,7 @@ contract("AOPeta", function(accounts) {
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after staking");
 		});
 
-		it("Whitelisted address - unstakeFrom() should be able to unstake tokens on behalf of others", async function() {
+		it("Whitelisted address - unstakeFrom() should be able to unstake ions on behalf of others", async function() {
 			var account1BalanceBefore = await aopeta.balanceOf(account1);
 			var account1StakedBalanceBefore = await aopeta.stakedBalance(account1);
 			var totalSupplyBefore = await aopeta.totalSupply();
@@ -355,7 +355,7 @@ contract("AOPeta", function(accounts) {
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after unstaking");
 		});
 
-		it("Whitelisted address - escrowFrom() should be able to escrow tokens on behalf of others", async function() {
+		it("Whitelisted address - escrowFrom() should be able to escrow ions on behalf of others", async function() {
 			var account1BalanceBefore = await aopeta.balanceOf(account1);
 			var account2BalanceBefore = await aopeta.balanceOf(account2);
 			var account2EscrowedBalanceBefore = await aopeta.escrowedBalance(account2);
@@ -403,21 +403,21 @@ contract("AOPeta", function(accounts) {
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after escrow");
 		});
 
-		it("Whitelisted address - mintTokenEscrow() should be able to mint and escrow tokens to an account", async function() {
+		it("Whitelisted address - mintEscrow() should be able to mint and escrow ions to an account", async function() {
 			var account1BalanceBefore = await aopeta.balanceOf(account1);
 			var account1EscrowedBalanceBefore = await aopeta.escrowedBalance(account1);
 			var totalSupplyBefore = await aopeta.totalSupply();
 
 			var canMintEscrow;
 			try {
-				await aopeta.mintTokenEscrow(account1, 10, { from: someAddress });
+				await aopeta.mintEscrow(account1, 10, { from: someAddress });
 				canMintEscrow = true;
 			} catch (e) {
 				canMintEscrow = false;
 			}
 			assert.notEqual(canMintEscrow, true, "Account that do not have permission can mint and escrow");
 			try {
-				await aopeta.mintTokenEscrow(account1, 10, { from: whitelistedAddress });
+				await aopeta.mintEscrow(account1, 10, { from: whitelistedAddress });
 				canMintEscrow = true;
 			} catch (e) {
 				canMintEscrow = false;
@@ -445,7 +445,7 @@ contract("AOPeta", function(accounts) {
 			);
 		});
 
-		it("Whitelisted address - unescrowFrom() should be able to unescrow tokens for an account", async function() {
+		it("Whitelisted address - unescrowFrom() should be able to unescrow ions for an account", async function() {
 			var account1BalanceBefore = await aopeta.balanceOf(account1);
 			var account1EscrowedBalanceBefore = await aopeta.escrowedBalance(account1);
 			var totalSupplyBefore = await aopeta.totalSupply();
@@ -457,7 +457,7 @@ contract("AOPeta", function(accounts) {
 			} catch (e) {
 				canUnescrow = false;
 			}
-			assert.notEqual(canUnescrow, true, "Account that do not have permission can unescrow tokens on behalf of others");
+			assert.notEqual(canUnescrow, true, "Account that do not have permission can unescrow ions on behalf of others");
 			try {
 				await aopeta.unescrowFrom(account1, 100000, { from: whitelistedAddress });
 				canUnescrow = true;
@@ -490,7 +490,7 @@ contract("AOPeta", function(accounts) {
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after unescrow");
 		});
 
-		it("Whitelisted address - whitelistBurnFrom() should be able to burn tokens on behalf of others", async function() {
+		it("Whitelisted address - whitelistBurnFrom() should be able to burn ions on behalf of others", async function() {
 			var account1BalanceBefore = await aopeta.balanceOf(account1);
 			var totalSupplyBefore = await aopeta.totalSupply();
 
@@ -532,7 +532,7 @@ contract("AOPeta", function(accounts) {
 			);
 		});
 
-		it("Whitelisted address - whitelistTransferFrom() should be able to transfer tokens from an address to another address", async function() {
+		it("Whitelisted address - whitelistTransferFrom() should be able to transfer ions from an address to another address", async function() {
 			var account1BalanceBefore = await aopeta.balanceOf(account1);
 			var account2BalanceBefore = await aopeta.balanceOf(account2);
 			var totalSupplyBefore = await aopeta.totalSupply();
@@ -579,46 +579,46 @@ contract("AOPeta", function(accounts) {
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after transfer");
 		});
 
-		it("buy() - user can buy network tokens", async function() {
+		it("buy() - user can buy network ions", async function() {
 			await aopeta.setPrices(1, 1, { from: theAO });
 
-			var canBuyToken;
+			var canBuy;
 			try {
 				await aopeta.buy({ from: account2, value: 10 });
-				canBuyToken = true;
+				canBuy = true;
 			} catch (e) {
-				canBuyToken = false;
+				canBuy = false;
 			}
-			assert.notEqual(canBuyToken, true, "Contract does not have enough network token balance to complete user's token purchase");
-			await aopeta.mintToken(aopeta.address, 10 ** 20, { from: whitelistedAddress });
+			assert.notEqual(canBuy, true, "Contract does not have enough network ion balance to complete user's ion purchase");
+			await aopeta.mint(aopeta.address, 10 ** 20, { from: whitelistedAddress });
 
 			var account2BalanceBefore = await aopeta.balanceOf(account2);
 			try {
 				await aopeta.buy({ from: account2, value: 10 });
-				canBuyToken = true;
+				canBuy = true;
 			} catch (e) {
-				canBuyToken = false;
+				canBuy = false;
 			}
 			var account2BalanceAfter = await aopeta.balanceOf(account2);
-			assert.equal(canBuyToken, true, "Fail buying network token from contract");
+			assert.equal(canBuy, true, "Fail buying network ion from contract");
 			assert.equal(
 				account2BalanceAfter.toNumber(),
 				account2BalanceBefore.plus(10).toNumber(),
-				"Account has incorrect balance after buying token"
+				"Account has incorrect balance after buying ion"
 			);
 		});
 
-		it("sell() - user can sell network tokens to contract", async function() {
+		it("sell() - user can sell network ions to contract", async function() {
 			await aopeta.setPrices(100, 1, { from: theAO });
 
-			var canSellToken;
+			var canSell;
 			try {
 				await aopeta.sell(10, { from: account2 });
-				canSellToken = true;
+				canSell = true;
 			} catch (e) {
-				canSellToken = false;
+				canSell = false;
 			}
-			assert.notEqual(canSellToken, true, "User can sell tokens to contract even if contract does not have enough ETH balance");
+			assert.notEqual(canSell, true, "User can sell ions to contract even if contract does not have enough ETH balance");
 
 			await aopeta.setPrices(1, 1, { from: theAO });
 
@@ -627,23 +627,23 @@ contract("AOPeta", function(accounts) {
 
 			try {
 				await aopeta.sell(5, { from: account2 });
-				canSellToken = true;
+				canSell = true;
 			} catch (e) {
-				canSellToken = false;
+				canSell = false;
 			}
-			assert.equal(canSellToken, true, "Fail selling network token to contract");
+			assert.equal(canSell, true, "Fail selling network ion to contract");
 
 			var account2BalanceAfter = await aopeta.balanceOf(account2);
 			var contractBalanceAfter = await aopeta.balanceOf(aopeta.address);
 			assert.equal(
 				account2BalanceAfter.toNumber(),
 				account2BalanceBefore.minus(5).toNumber(),
-				"Account has incorrect balance after selling token"
+				"Account has incorrect balance after selling ion"
 			);
 			assert.equal(
 				contractBalanceAfter.toNumber(),
 				contractBalanceBefore.plus(5).toNumber(),
-				"Contract has incorrect balance after user sell token"
+				"Contract has incorrect balance after user sell ion"
 			);
 		});
 
@@ -665,7 +665,7 @@ contract("AOPeta", function(accounts) {
 			);
 		});
 
-		it("burn() - should remove `_value` tokens from the system irreversibly", async function() {
+		it("burn() - should remove `_value` ions from the system irreversibly", async function() {
 			var account1BalanceBefore = await aopeta.balanceOf(account1);
 			await aopeta.burn(10, { from: account1 });
 			account1BalanceAfter = await aopeta.balanceOf(account1);
@@ -687,7 +687,7 @@ contract("AOPeta", function(accounts) {
 			);
 		});
 
-		it("transferFrom() - should send `_value` tokens to `_to` in behalf of `_from`", async function() {
+		it("transferFrom() - should send `_value` ions to `_to` in behalf of `_from`", async function() {
 			var canTransferFrom;
 			try {
 				await aopeta.transferFrom(account1, account2, 5, { from: someAddress });
@@ -741,7 +741,7 @@ contract("AOPeta", function(accounts) {
 			);
 		});
 
-		it("burnFrom() - should remove `_value` tokens from the system irreversibly on behalf of `_from`", async function() {
+		it("burnFrom() - should remove `_value` ions from the system irreversibly on behalf of `_from`", async function() {
 			var canBurnFrom;
 			try {
 				await aopeta.burnFrom(account1, 5, { from: someAddress });

@@ -127,23 +127,23 @@ library AOLibrary {
 	/**
 	 * @dev Calculate the new weighted multiplier when adding `_additionalPrimordialAmount` at `_additionalWeightedMultiplier` to the current `_currentPrimordialBalance` at `_currentWeightedMultiplier`
 	 * @param _currentWeightedMultiplier Account's current weighted multiplier
-	 * @param _currentPrimordialBalance Account's current primordial token balance
+	 * @param _currentPrimordialBalance Account's current primordial ion balance
 	 * @param _additionalWeightedMultiplier The weighted multiplier to be added
-	 * @param _additionalPrimordialAmount The primordial token amount to be added
+	 * @param _additionalPrimordialAmount The primordial ion amount to be added
 	 * @return the new primordial weighted multiplier
 	 */
 	function calculateWeightedMultiplier(uint256 _currentWeightedMultiplier, uint256 _currentPrimordialBalance, uint256 _additionalWeightedMultiplier, uint256 _additionalPrimordialAmount) public pure returns (uint256) {
 		if (_currentWeightedMultiplier > 0) {
-			uint256 _totalWeightedTokens = (_currentWeightedMultiplier.mul(_currentPrimordialBalance)).add(_additionalWeightedMultiplier.mul(_additionalPrimordialAmount));
-			uint256 _totalTokens = _currentPrimordialBalance.add(_additionalPrimordialAmount);
-			return _totalWeightedTokens.div(_totalTokens);
+			uint256 _totalWeightedIons = (_currentWeightedMultiplier.mul(_currentPrimordialBalance)).add(_additionalWeightedMultiplier.mul(_additionalPrimordialAmount));
+			uint256 _totalIons = _currentPrimordialBalance.add(_additionalPrimordialAmount);
+			return _totalWeightedIons.div(_totalIons);
 		} else {
 			return _additionalWeightedMultiplier;
 		}
 	}
 
 	/**
-	 * @dev Calculate the primordial token multiplier on a given lot
+	 * @dev Calculate the primordial ion multiplier on a given lot
 	 *		Total Primordial Mintable = T
 	 *		Total Primordial Minted = M
 	 *		Starting Multiplier = S
@@ -151,9 +151,9 @@ library AOLibrary {
 	 *		To Purchase = P
 	 *		Multiplier for next Lot of Amount = (1 - ((M + P/2) / T)) x (S-E)
 	 *
-	 * @param _purchaseAmount The amount of primordial token intended to be purchased
-	 * @param _totalPrimordialMintable Total Primordial token intable
-	 * @param _totalPrimordialMinted Total Primordial token minted so far
+	 * @param _purchaseAmount The amount of primordial ion intended to be purchased
+	 * @param _totalPrimordialMintable Total Primordial ion mintable
+	 * @param _totalPrimordialMinted Total Primordial ion minted so far
 	 * @param _startingMultiplier The starting multiplier in (10 ** 6)
 	 * @param _endingMultiplier The ending multiplier in (10 ** 6)
 	 * @return The multiplier in (10 ** 6)
@@ -186,22 +186,22 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Calculate the bonus percentage of network token on a given lot
+	 * @dev Calculate the bonus percentage of network ion on a given lot
 	 *		Total Primordial Mintable = T
 	 *		Total Primordial Minted = M
-	 *		Starting Network Token Bonus Multiplier = Bs
-	 *		Ending Network Token Bonus Multiplier = Be
+	 *		Starting Network Bonus Multiplier = Bs
+	 *		Ending Network Bonus Multiplier = Be
 	 *		To Purchase = P
 	 *		AO Bonus % = B% = (1 - ((M + P/2) / T)) x (Bs-Be)
 	 *
-	 * @param _purchaseAmount The amount of primordial token intended to be purchased
-	 * @param _totalPrimordialMintable Total Primordial token intable
-	 * @param _totalPrimordialMinted Total Primordial token minted so far
-	 * @param _startingMultiplier The starting Network token bonus multiplier
-	 * @param _endingMultiplier The ending Network token bonus multiplier
+	 * @param _purchaseAmount The amount of primordial ion intended to be purchased
+	 * @param _totalPrimordialMintable Total Primordial ion intable
+	 * @param _totalPrimordialMinted Total Primordial ion minted so far
+	 * @param _startingMultiplier The starting Network ion bonus multiplier
+	 * @param _endingMultiplier The ending Network ion bonus multiplier
 	 * @return The bonus percentage
 	 */
-	function calculateNetworkTokenBonusPercentage(uint256 _purchaseAmount, uint256 _totalPrimordialMintable, uint256 _totalPrimordialMinted, uint256 _startingMultiplier, uint256 _endingMultiplier) public pure returns (uint256) {
+	function calculateNetworkBonusPercentage(uint256 _purchaseAmount, uint256 _totalPrimordialMintable, uint256 _totalPrimordialMinted, uint256 _startingMultiplier, uint256 _endingMultiplier) public pure returns (uint256) {
 		if (_purchaseAmount > 0 && _purchaseAmount <= _totalPrimordialMintable.sub(_totalPrimordialMinted)) {
 			/**
 			 * Let temp = M + (P/2)
@@ -227,24 +227,24 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Calculate the bonus amount of network token on a given lot
+	 * @dev Calculate the bonus amount of network ion on a given lot
 	 *		AO Bonus Amount = B% x P
 	 *
-	 * @param _purchaseAmount The amount of primordial token intended to be purchased
-	 * @param _totalPrimordialMintable Total Primordial token intable
-	 * @param _totalPrimordialMinted Total Primordial token minted so far
-	 * @param _startingMultiplier The starting Network token bonus multiplier
-	 * @param _endingMultiplier The ending Network token bonus multiplier
+	 * @param _purchaseAmount The amount of primordial ion intended to be purchased
+	 * @param _totalPrimordialMintable Total Primordial ion intable
+	 * @param _totalPrimordialMinted Total Primordial ion minted so far
+	 * @param _startingMultiplier The starting Network ion bonus multiplier
+	 * @param _endingMultiplier The ending Network ion bonus multiplier
 	 * @return The bonus percentage
 	 */
-	function calculateNetworkTokenBonusAmount(uint256 _purchaseAmount, uint256 _totalPrimordialMintable, uint256 _totalPrimordialMinted, uint256 _startingMultiplier, uint256 _endingMultiplier) public pure returns (uint256) {
-		uint256 bonusPercentage = calculateNetworkTokenBonusPercentage(_purchaseAmount, _totalPrimordialMintable, _totalPrimordialMinted, _startingMultiplier, _endingMultiplier);
+	function calculateNetworkBonusAmount(uint256 _purchaseAmount, uint256 _totalPrimordialMintable, uint256 _totalPrimordialMinted, uint256 _startingMultiplier, uint256 _endingMultiplier) public pure returns (uint256) {
+		uint256 bonusPercentage = calculateNetworkBonusPercentage(_purchaseAmount, _totalPrimordialMintable, _totalPrimordialMinted, _startingMultiplier, _endingMultiplier);
 		/**
 		 * Since bonusPercentage is in _PERCENTAGE_DIVISOR format, need to divide it with _PERCENTAGE DIVISOR
-		 * when calculating the network token bonus amount
+		 * when calculating the network ion bonus amount
 		 */
-		uint256 networkTokenBonus = bonusPercentage.mul(_purchaseAmount).div(_PERCENTAGE_DIVISOR);
-		return networkTokenBonus;
+		uint256 networkBonus = bonusPercentage.mul(_purchaseAmount).div(_PERCENTAGE_DIVISOR);
+		return networkBonus;
 	}
 
 	/**
@@ -255,7 +255,7 @@ library AOLibrary {
 	 *		_amountToBurn = B
 	 *		B = ((S x P) - (P x M)) / S
 	 *
-	 * @param _primordialBalance Account's primordial token balance
+	 * @param _primordialBalance Account's primordial ion balance
 	 * @param _currentWeightedMultiplier Account's current weighted multiplier
 	 * @param _maximumMultiplier The maximum multiplier of this account
 	 * @return The maximum burn amount
@@ -265,16 +265,16 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Calculate the new multiplier after burning primordial token
+	 * @dev Calculate the new multiplier after burning primordial ion
 	 *		_primordialBalance = P
 	 *		_currentWeightedMultiplier = M
 	 *		_amountToBurn = B
 	 *		_newMultiplier = E
 	 *		E = (P x M) / (P - B)
 	 *
-	 * @param _primordialBalance Account's primordial token balance
+	 * @param _primordialBalance Account's primordial ion balance
 	 * @param _currentWeightedMultiplier Account's current weighted multiplier
-	 * @param _amountToBurn The amount of primordial token to burn
+	 * @param _amountToBurn The amount of primordial ion to burn
 	 * @return The new multiplier
 	 */
 	function calculateMultiplierAfterBurn(uint256 _primordialBalance, uint256 _currentWeightedMultiplier, uint256 _amountToBurn) public pure returns (uint256) {
@@ -282,16 +282,16 @@ library AOLibrary {
 	}
 
 	/**
-	 * @dev Calculate the new multiplier after converting network token to primordial token
+	 * @dev Calculate the new multiplier after converting network ion to primordial ion
 	 *		_primordialBalance = P
 	 *		_currentWeightedMultiplier = M
 	 *		_amountToConvert = C
 	 *		_newMultiplier = E
 	 *		E = (P x M) / (P + C)
 	 *
-	 * @param _primordialBalance Account's primordial token balance
+	 * @param _primordialBalance Account's primordial ion balance
 	 * @param _currentWeightedMultiplier Account's current weighted multiplier
-	 * @param _amountToConvert The amount of network token to convert
+	 * @param _amountToConvert The amount of network ion to convert
 	 * @return The new multiplier
 	 */
 	function calculateMultiplierAfterConversion(uint256 _primordialBalance, uint256 _currentWeightedMultiplier, uint256 _amountToConvert) public pure returns (uint256) {

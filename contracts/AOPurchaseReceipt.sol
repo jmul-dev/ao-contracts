@@ -36,7 +36,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 		bytes32 contentId;
 		address buyer;
 		uint256 price;
-		uint256 amountPaidByBuyer;	// total network token paid in base denomination
+		uint256 amountPaidByBuyer;	// total network ion paid in base denomination
 		uint256 amountPaidByAO; // total amount paid by AO
 		string publicKey; // The public key provided by request node
 		address publicAddress; // The public address provided by request node
@@ -180,11 +180,11 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 
 	/***** PUBLIC METHODS *****/
 	/**
-	 * @dev Bring content in to the requesting node by sending network tokens to the contract to pay for the content
+	 * @dev Bring content in to the requesting node by sending network ions to the contract to pay for the content
 	 * @param _contentHostId The ID of hosted content
-	 * @param _networkIntegerAmount The integer amount of network token to pay
-	 * @param _networkFractionAmount The fraction amount of network token to pay
-	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
+	 * @param _networkIntegerAmount The integer amount of network ion to pay
+	 * @param _networkFractionAmount The fraction amount of network ion to pay
+	 * @param _denomination The denomination of the network ion, i.e ao, kilo, mega, etc.
 	 * @param _publicKey The public key of the request node
 	 * @param _publicAddress The public address of the request node
 	 */
@@ -199,7 +199,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 
 		(bytes32 _stakedContentId, bytes32 _contentId,,,) = _aoContentHost.getById(_contentHostId);
 
-		// Make sure the token amount can pay for the content price
+		// Make sure the ion amount can pay for the content price
 		if (_aoContent.isAOContentUsageType(_contentId)) {
 			require (_canBuyAOContent(_aoContentHost.contentHostPrice(_contentHostId), _networkIntegerAmount, _networkFractionAmount, _denomination));
 		}
@@ -330,11 +330,11 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	}
 
 	/**
-	 * @dev Check whether the network token is adequate to pay for existing staked content
+	 * @dev Check whether the network ion is adequate to pay for existing staked content
 	 * @param _price The price of the content
-	 * @param _networkIntegerAmount The integer amount of the network token
-	 * @param _networkFractionAmount The fraction amount of the network token
-	 * @param _denomination The denomination of the the network token
+	 * @param _networkIntegerAmount The integer amount of the network ion
+	 * @param _networkFractionAmount The fraction amount of the network ion
+	 * @param _denomination The denomination of the the network ion
 	 * @return true when the amount is sufficient, false otherwise
 	 */
 	function _canBuyAOContent(uint256 _price, uint256 _networkIntegerAmount, uint256 _networkFractionAmount, bytes8 _denomination) internal view returns (bool) {

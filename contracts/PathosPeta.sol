@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
-import "./Pathos.sol";
+import "./TAOCurrency.sol";
 
-contract PathosPeta is Pathos {
+contract PathosPeta is TAOCurrency {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _nameTAOPositionAddress)
-		Pathos(initialSupply, tokenName, tokenSymbol, _nameTAOPositionAddress) public {
+	constructor(string _name, string _symbol, address _nameTAOPositionAddress)
+		TAOCurrency(_name, _symbol, _nameTAOPositionAddress) public {
 		powerOfTen = 15;
 		decimals = 15;
 	}

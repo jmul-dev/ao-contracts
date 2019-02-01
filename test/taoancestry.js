@@ -41,8 +41,8 @@ contract("TAOAncestry", function(accounts) {
 
 		// Mint Logos to nameId
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
-		await logos.mintToken(nameId2, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId2, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -325,7 +325,7 @@ contract("TAOAncestry", function(accounts) {
 
 	it("addChild() - TAO Factory should be able to add child to a TAO and but not automatically approved/connected if it's from a different Advocate", async function() {
 		// First mint logos to nameId3
-		await logos.mintToken(nameId3, 10 ** 12, { from: theAO });
+		await logos.mint(nameId3, 10 ** 12, { from: theAO });
 
 		var ancestryBefore = await taoancestry.getAncestryById(taoId2);
 

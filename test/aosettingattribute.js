@@ -47,9 +47,9 @@ contract("AOSettingAttribute", function(accounts) {
 		proposalTAONameId = await namefactory.ethAddressToNameId(account3);
 
 		// Mint Logos to Names
-		await logos.mintToken(creatorTAONameId, 10 ** 12, { from: theAO });
-		await logos.mintToken(associatedTAONameId, 10 ** 12, { from: theAO });
-		await logos.mintToken(proposalTAONameId, 10 ** 12, { from: theAO });
+		await logos.mint(creatorTAONameId, 10 ** 12, { from: theAO });
+		await logos.mint(associatedTAONameId, 10 ** 12, { from: theAO });
+		await logos.mint(proposalTAONameId, 10 ** 12, { from: theAO });
 
 		// Create TAOs
 		result = await taofactory.createTAO(

@@ -4,7 +4,7 @@ var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var Logos = artifacts.require("./Logos.sol");
 
 var NameTAOVault = artifacts.require("./NameTAOVault.sol");
-var AOToken = artifacts.require("./AOToken.sol");
+var AOIon = artifacts.require("./AOIon.sol");
 var TokenOne = artifacts.require("./TokenOne.sol");
 
 var BigNumber = require("bignumber.js");
@@ -13,7 +13,7 @@ var EthCrypto = require("eth-crypto");
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
 contract("NameTAOVault", function(accounts) {
-	var namefactory, taofactory, nametaoposition, logos, nameId1, nameId2, taoId1, taoId2, nametaovault, aotoken, tokenone;
+	var namefactory, taofactory, nametaoposition, logos, nameId1, nameId2, taoId1, taoId2, nametaovault, aoion, tokenone;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
@@ -30,7 +30,7 @@ contract("NameTAOVault", function(accounts) {
 		nametaoposition = await NameTAOPosition.deployed();
 		logos = await Logos.deployed();
 		nametaovault = await NameTAOVault.deployed();
-		aotoken = await AOToken.deployed();
+		aoion = await AOIon.deployed();
 		tokenone = await TokenOne.deployed();
 
 		// Create Name
@@ -46,8 +46,8 @@ contract("NameTAOVault", function(accounts) {
 
 		// Mint Logos to nameId
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
-		await logos.mintToken(nameId2, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId2, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -83,10 +83,10 @@ contract("NameTAOVault", function(accounts) {
 		var createTAOEvent = result.logs[0];
 		taoId2 = createTAOEvent.args.taoId;
 
-		await aotoken.setWhitelist(theAO, true, { from: theAO });
-		await aotoken.mintToken(accountWithBalance, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
-		var buyPrice = await aotoken.primordialBuyPrice();
-		await aotoken.buyPrimordialToken({ from: accountWithBalance, value: buyPrice.times(1000).toNumber() }); // Buy 1000 AO+
+		await aoion.setWhitelist(theAO, true, { from: theAO });
+		await aoion.mint(accountWithBalance, 10 ** 9, { from: theAO }); // 1,000,000,000 AO ION
+		var buyPrice = await aoion.primordialBuyPrice();
+		await aoion.buyPrimordial({ from: accountWithBalance, value: buyPrice.times(1000).toNumber() }); // Buy 1000 AO+
 	});
 
 	it("The AO - transferOwnership() - should be able to transfer ownership to a TAO", async function() {
@@ -177,26 +177,26 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
 	});
 
-	it("The AO - setAOTokenAddress() should be able to set AOToken address", async function() {
+	it("The AO - setAOIonAddress() should be able to set AOIon address", async function() {
 		var canSetAddress;
 		try {
-			await nametaovault.setAOTokenAddress(aotoken.address, { from: someAddress });
+			await nametaovault.setAOIonAddress(aoion.address, { from: someAddress });
 			canSetAddress = true;
 		} catch (e) {
 			canSetAddress = false;
 		}
-		assert.equal(canSetAddress, false, "Non-AO can set AOToken address");
+		assert.equal(canSetAddress, false, "Non-AO can set AOIon address");
 
 		try {
-			await nametaovault.setAOTokenAddress(aotoken.address, { from: account1 });
+			await nametaovault.setAOIonAddress(aoion.address, { from: account1 });
 			canSetAddress = true;
 		} catch (e) {
 			canSetAddress = false;
 		}
-		assert.equal(canSetAddress, true, "The AO can't set AOToken address");
+		assert.equal(canSetAddress, true, "The AO can't set AOIon address");
 
-		var aoTokenAddress = await nametaovault.aoTokenAddress();
-		assert.equal(aoTokenAddress, aotoken.address, "Contract has incorrect aoTokenAddress");
+		var aoIonAddress = await nametaovault.aoIonAddress();
+		assert.equal(aoIonAddress, aoion.address, "Contract has incorrect aoIonAddress");
 	});
 
 	it("ethBalanceOf() - should be able to get the ETH balance of a Name/TAO", async function() {
@@ -272,7 +272,7 @@ contract("NameTAOVault", function(accounts) {
 		);
 	});
 
-	it("AOBalanceOf() - should be able to get the AO Token balance of a Name/TAO", async function() {
+	it("AOBalanceOf() - should be able to get the AO Ion balance of a Name/TAO", async function() {
 		var canGetAOBalance;
 		try {
 			await nametaovault.AOBalanceOf(someAddress);
@@ -280,24 +280,24 @@ contract("NameTAOVault", function(accounts) {
 		} catch (e) {
 			canGetAOBalance = false;
 		}
-		assert.equal(canGetAOBalance, false, "Can get AO Token balance of non-Name/TAO");
+		assert.equal(canGetAOBalance, false, "Can get AO Ion balance of non-Name/TAO");
 
 		var AOBalanceBefore = await nametaovault.AOBalanceOf(nameId2);
 
-		await aotoken.transfer(nameId2, 1000, { from: accountWithBalance });
+		await aoion.transfer(nameId2, 1000, { from: accountWithBalance });
 
 		var AOBalanceAfter = await nametaovault.AOBalanceOf(nameId2);
-		assert.equal(AOBalanceAfter.toNumber(), AOBalanceBefore.plus(1000).toNumber(), "Name has incorrect AO Token balance");
+		assert.equal(AOBalanceAfter.toNumber(), AOBalanceBefore.plus(1000).toNumber(), "Name has incorrect AO Ion balance");
 
 		AOBalanceBefore = await nametaovault.AOBalanceOf(taoId2);
 
-		await aotoken.transfer(taoId2, 1000, { from: accountWithBalance });
+		await aoion.transfer(taoId2, 1000, { from: accountWithBalance });
 
 		AOBalanceAfter = await nametaovault.AOBalanceOf(taoId2);
-		assert.equal(AOBalanceAfter.toNumber(), AOBalanceBefore.plus(1000).toNumber(), "TAO has incorrect AO Token balance");
+		assert.equal(AOBalanceAfter.toNumber(), AOBalanceBefore.plus(1000).toNumber(), "TAO has incorrect AO Ion balance");
 	});
 
-	it("primordialAOBalanceOf() - should be able to get the primordial AO Token balance of a Name/TAO", async function() {
+	it("primordialAOBalanceOf() - should be able to get the primordial AO+ Ion balance of a Name/TAO", async function() {
 		var canGetPrimordialAOBalance;
 		try {
 			await nametaovault.primordialAOBalanceOf(someAddress);
@@ -305,28 +305,28 @@ contract("NameTAOVault", function(accounts) {
 		} catch (e) {
 			canGetPrimordialAOBalance = false;
 		}
-		assert.equal(canGetPrimordialAOBalance, false, "Can get primordial AO Token balance of non-Name/TAO");
+		assert.equal(canGetPrimordialAOBalance, false, "Can get primordial AO+ Ion balance of non-Name/TAO");
 
 		var primordialAOBalanceBefore = await nametaovault.primordialAOBalanceOf(nameId2);
 
-		await aotoken.transferPrimordialToken(nameId2, 100, { from: accountWithBalance });
+		await aoion.transferPrimordial(nameId2, 100, { from: accountWithBalance });
 
 		var primordialAOBalanceAfter = await nametaovault.primordialAOBalanceOf(nameId2);
 		assert.equal(
 			primordialAOBalanceAfter.toNumber(),
 			primordialAOBalanceBefore.plus(100).toNumber(),
-			"Name has incorrect primordial AO Token balance"
+			"Name has incorrect primordial AO+ Ion balance"
 		);
 
 		primordialAOBalanceBefore = await nametaovault.primordialAOBalanceOf(taoId2);
 
-		await aotoken.transferPrimordialToken(taoId2, 100, { from: accountWithBalance });
+		await aoion.transferPrimordial(taoId2, 100, { from: accountWithBalance });
 
 		primordialAOBalanceAfter = await nametaovault.primordialAOBalanceOf(taoId2);
 		assert.equal(
 			primordialAOBalanceAfter.toNumber(),
 			primordialAOBalanceBefore.plus(100).toNumber(),
-			"TAO has incorrect primordial AO Token balance"
+			"TAO has incorrect primordial AO+ Ion balance"
 		);
 	});
 
@@ -522,7 +522,7 @@ contract("NameTAOVault", function(accounts) {
 		);
 	});
 
-	it("transferAO() - only Advocate of Name/TAO can transfer AO Token to an address", async function() {
+	it("transferAO() - only Advocate of Name/TAO can transfer AO Ion to an address", async function() {
 		var canTransfer;
 		try {
 			await nametaovault.transferAO(someAddress, recipient.address, 10, { from: account2 });
@@ -530,7 +530,7 @@ contract("NameTAOVault", function(accounts) {
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, false, "Can transfer AO Token from non-Name/TAO");
+		assert.equal(canTransfer, false, "Can transfer AO Ion from non-Name/TAO");
 
 		try {
 			await nametaovault.transferAO(nameId1, recipient.address, 10, { from: account1 });
@@ -538,7 +538,7 @@ contract("NameTAOVault", function(accounts) {
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, false, "Advocate of Name can transfer AO Token from Name with no balance");
+		assert.equal(canTransfer, false, "Advocate of Name can transfer AO Ion from Name with no balance");
 
 		try {
 			await nametaovault.transferAO(nameId2, emptyAddress, 10, { from: account2 });
@@ -546,7 +546,7 @@ contract("NameTAOVault", function(accounts) {
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, false, "Advocate of Name can transfer AO Token to invalid address");
+		assert.equal(canTransfer, false, "Advocate of Name can transfer AO Ion to invalid address");
 
 		try {
 			await nametaovault.transferAO(nameId2, recipient.address, 10 ** 10, { from: account2 });
@@ -554,7 +554,7 @@ contract("NameTAOVault", function(accounts) {
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, false, "Advocate of Name can transfer AO Token more than its owned balance");
+		assert.equal(canTransfer, false, "Advocate of Name can transfer AO Ion more than its owned balance");
 
 		try {
 			await nametaovault.transferAO(nameId2, recipient.address, 10, { from: account1 });
@@ -562,42 +562,42 @@ contract("NameTAOVault", function(accounts) {
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, false, "Non-advocate of Name can transfer AO Token");
+		assert.equal(canTransfer, false, "Non-advocate of Name can transfer AO Ion");
 
 		var senderBalanceBefore = await nametaovault.AOBalanceOf(nameId2);
-		var recipientBalanceBefore = await aotoken.balanceOf(recipient.address);
+		var recipientBalanceBefore = await aoion.balanceOf(recipient.address);
 		try {
 			await nametaovault.transferAO(nameId2, recipient.address, 10, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, true, "Advocate of Name can't transfer AO Token from Name");
+		assert.equal(canTransfer, true, "Advocate of Name can't transfer AO Ion from Name");
 
 		var senderBalanceAfter = await nametaovault.AOBalanceOf(nameId2);
-		var recipientBalanceAfter = await aotoken.balanceOf(recipient.address);
+		var recipientBalanceAfter = await aoion.balanceOf(recipient.address);
 
 		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.minus(10).toNumber(), "Sender has incorrect balance");
 		assert.equal(recipientBalanceAfter.toNumber(), recipientBalanceBefore.plus(10).toNumber(), "Recipient has incorrect balance");
 
 		senderBalanceBefore = await nametaovault.AOBalanceOf(taoId2);
-		recipientBalanceBefore = await aotoken.balanceOf(recipient.address);
+		recipientBalanceBefore = await aoion.balanceOf(recipient.address);
 		try {
 			await nametaovault.transferAO(taoId2, recipient.address, 10, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, true, "Advocate of TAO can't transfer AO Token from TAO");
+		assert.equal(canTransfer, true, "Advocate of TAO can't transfer AO Ion from TAO");
 
 		senderBalanceAfter = await nametaovault.AOBalanceOf(taoId2);
-		recipientBalanceAfter = await aotoken.balanceOf(recipient.address);
+		recipientBalanceAfter = await aoion.balanceOf(recipient.address);
 
 		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.minus(10).toNumber(), "Sender has incorrect balance");
 		assert.equal(recipientBalanceAfter.toNumber(), recipientBalanceBefore.plus(10).toNumber(), "Recipient has incorrect balance");
 	});
 
-	it("transferPrimordialAO() - only Advocate of Name/TAO can transfer Primordial AO Token to an address", async function() {
+	it("transferPrimordialAO() - only Advocate of Name/TAO can transfer Primordial AO+ Ion to an address", async function() {
 		var canTransfer;
 		try {
 			await nametaovault.transferPrimordialAO(someAddress, recipient.address, 10, { from: account2 });
@@ -605,7 +605,7 @@ contract("NameTAOVault", function(accounts) {
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, false, "Can transfer Primordial AO Token from non-Name/TAO");
+		assert.equal(canTransfer, false, "Can transfer Primordial AO+ Ion from non-Name/TAO");
 
 		try {
 			await nametaovault.transferPrimordialAO(nameId1, recipient.address, 10, { from: account1 });
@@ -613,7 +613,7 @@ contract("NameTAOVault", function(accounts) {
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, false, "Advocate of Name can transfer Primordial AO Token from Name with no balance");
+		assert.equal(canTransfer, false, "Advocate of Name can transfer Primordial AO+ Ion from Name with no balance");
 
 		try {
 			await nametaovault.transferPrimordialAO(nameId2, emptyAddress, 10, { from: account2 });
@@ -621,7 +621,7 @@ contract("NameTAOVault", function(accounts) {
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, false, "Advocate of Name can transfer Primordial AO Token to invalid address");
+		assert.equal(canTransfer, false, "Advocate of Name can transfer Primordial AO+ Ion to invalid address");
 
 		try {
 			await nametaovault.transferPrimordialAO(nameId2, recipient.address, 10 ** 10, { from: account2 });
@@ -629,7 +629,7 @@ contract("NameTAOVault", function(accounts) {
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, false, "Advocate of Name can transfer Primordial AO Token more than its owned balance");
+		assert.equal(canTransfer, false, "Advocate of Name can transfer Primordial AO+ Ion more than its owned balance");
 
 		try {
 			await nametaovault.transferPrimordialAO(nameId2, recipient.address, 10, { from: account1 });
@@ -637,36 +637,36 @@ contract("NameTAOVault", function(accounts) {
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, false, "Non-advocate of Name can transfer Primordial AO Token");
+		assert.equal(canTransfer, false, "Non-advocate of Name can transfer Primordial AO+ Ion");
 
 		var senderBalanceBefore = await nametaovault.primordialAOBalanceOf(nameId2);
-		var recipientBalanceBefore = await aotoken.primordialBalanceOf(recipient.address);
+		var recipientBalanceBefore = await aoion.primordialBalanceOf(recipient.address);
 		try {
 			await nametaovault.transferPrimordialAO(nameId2, recipient.address, 10, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, true, "Advocate of Name can't transfer Primordial AO Token from Name");
+		assert.equal(canTransfer, true, "Advocate of Name can't transfer Primordial AO+ Ion from Name");
 
 		var senderBalanceAfter = await nametaovault.primordialAOBalanceOf(nameId2);
-		var recipientBalanceAfter = await aotoken.primordialBalanceOf(recipient.address);
+		var recipientBalanceAfter = await aoion.primordialBalanceOf(recipient.address);
 
 		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.minus(10).toNumber(), "Sender has incorrect balance");
 		assert.equal(recipientBalanceAfter.toNumber(), recipientBalanceBefore.plus(10).toNumber(), "Recipient has incorrect balance");
 
 		senderBalanceBefore = await nametaovault.primordialAOBalanceOf(taoId2);
-		recipientBalanceBefore = await aotoken.primordialBalanceOf(recipient.address);
+		recipientBalanceBefore = await aoion.primordialBalanceOf(recipient.address);
 		try {
 			await nametaovault.transferPrimordialAO(taoId2, recipient.address, 10, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
 		}
-		assert.equal(canTransfer, true, "Advocate of TAO can't transfer Primordial AO Token from TAO");
+		assert.equal(canTransfer, true, "Advocate of TAO can't transfer Primordial AO+ Ion from TAO");
 
 		senderBalanceAfter = await nametaovault.primordialAOBalanceOf(taoId2);
-		recipientBalanceAfter = await aotoken.primordialBalanceOf(recipient.address);
+		recipientBalanceAfter = await aoion.primordialBalanceOf(recipient.address);
 
 		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.minus(10).toNumber(), "Sender has incorrect balance");
 		assert.equal(recipientBalanceAfter.toNumber(), recipientBalanceBefore.plus(10).toNumber(), "Recipient has incorrect balance");

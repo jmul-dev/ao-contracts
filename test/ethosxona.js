@@ -32,8 +32,8 @@ contract("Ethos Xona", function(accounts) {
 
 		// Mint Logos to nameId1 and nameId2
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
-		await logos.mintToken(nameId2, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId2, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -166,48 +166,48 @@ contract("Ethos Xona", function(accounts) {
 		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
 	});
 
-	it("Whitelisted Address - should be able to mint token to a TAO/Name", async function() {
-		var canMintToken;
+	it("Whitelisted Address - should be able to mint EthosXona to a TAO/Name", async function() {
+		var canMint;
 		try {
-			await ethosxona.mintToken(nameId1, 1000, { from: someAddress });
-			canMintToken = true;
+			await ethosxona.mint(nameId1, 1000, { from: someAddress });
+			canMint = true;
 		} catch (e) {
-			canMintToken = false;
+			canMint = false;
 		}
-		assert.equal(canMintToken, false, "Non-whitelisted address can mint token");
+		assert.equal(canMint, false, "Non-whitelisted address can mint EthosXona");
 
 		try {
-			await ethosxona.mintToken(someAddress, 1000, { from: whitelistedAddress });
-			canMintToken = true;
+			await ethosxona.mint(someAddress, 1000, { from: whitelistedAddress });
+			canMint = true;
 		} catch (e) {
-			canMintToken = false;
+			canMint = false;
 		}
-		assert.equal(canMintToken, false, "Whitelisted address can mint token to non Name/TAO");
+		assert.equal(canMint, false, "Whitelisted address can mint EthosXona to non Name/TAO");
 
 		try {
-			await ethosxona.mintToken(nameId1, 1000, { from: whitelistedAddress });
-			canMintToken = true;
+			await ethosxona.mint(nameId1, 1000, { from: whitelistedAddress });
+			canMint = true;
 		} catch (e) {
-			canMintToken = false;
+			canMint = false;
 		}
-		assert.equal(canMintToken, true, "Whitelisted address can't mint token to Name");
+		assert.equal(canMint, true, "Whitelisted address can't mint EthosXona to Name");
 
 		var nameBalance = await ethosxona.balanceOf(nameId1);
 		assert.equal(nameBalance.toNumber(), 1000, "Name has incorrect ethosxona balance");
 
 		try {
-			await ethosxona.mintToken(taoId1, 1000, { from: whitelistedAddress });
-			canMintToken = true;
+			await ethosxona.mint(taoId1, 1000, { from: whitelistedAddress });
+			canMint = true;
 		} catch (e) {
-			canMintToken = false;
+			canMint = false;
 		}
-		assert.equal(canMintToken, true, "Whitelisted address can't mint token to TAO");
+		assert.equal(canMint, true, "Whitelisted address can't mint EthosXona to TAO");
 
 		var taoBalance = await ethosxona.balanceOf(taoId1);
 		assert.equal(taoBalance.toNumber(), 1000, "TAO has incorrect ethosxona balance");
 	});
 
-	it("Whitelisted Address - should be able to transfer token from a Name/TAO to another Name/TAO", async function() {
+	it("Whitelisted Address - should be able to transfer EthosXona from a Name/TAO to another Name/TAO", async function() {
 		var canTransferFrom;
 		try {
 			await ethosxona.transferFrom(nameId1, nameId2, 10, { from: someAddress });
@@ -215,7 +215,7 @@ contract("Ethos Xona", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, false, "Non-whitelisted address can transfer token");
+		assert.equal(canTransferFrom, false, "Non-whitelisted address can transfer EthosXona");
 
 		try {
 			await ethosxona.transferFrom(nameId1, someAddress, 10, { from: whitelistedAddress });
@@ -223,7 +223,7 @@ contract("Ethos Xona", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, false, "Whitelisted address can transfer token to non Name/TAO");
+		assert.equal(canTransferFrom, false, "Whitelisted address can transfer EthosXona to non Name/TAO");
 
 		try {
 			await ethosxona.transferFrom(nameId1, nameId2, 10000, { from: whitelistedAddress });
@@ -231,7 +231,7 @@ contract("Ethos Xona", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, false, "Whitelisted address can transfer token more than owned balance");
+		assert.equal(canTransferFrom, false, "Whitelisted address can transfer EthosXona more than owned balance");
 
 		try {
 			await ethosxona.transferFrom(nameId1, nameId2, 10, { from: whitelistedAddress });
@@ -239,7 +239,7 @@ contract("Ethos Xona", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer token from Name to Name");
+		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer EthosXona from Name to Name");
 
 		var nameId1Balance = await ethosxona.balanceOf(nameId1);
 		assert.equal(nameId1Balance.toNumber(), 990, "Name has incorrect ethosxona balance");
@@ -252,7 +252,7 @@ contract("Ethos Xona", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer token from Name to TAO");
+		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer EthosXona from Name to TAO");
 
 		var nameId1Balance = await ethosxona.balanceOf(nameId1);
 		assert.equal(nameId1Balance.toNumber(), 980, "Name has incorrect ethosxona balance");
@@ -265,7 +265,7 @@ contract("Ethos Xona", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer token from TAO to Name");
+		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer EthosXona from TAO to Name");
 
 		var taoId1Balance = await ethosxona.balanceOf(taoId1);
 		assert.equal(taoId1Balance.toNumber(), 990, "TAO has incorrect ethosxona balance");
@@ -278,7 +278,7 @@ contract("Ethos Xona", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer token from TAO to TAO");
+		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer EthosXona from TAO to TAO");
 
 		var taoId1Balance = await ethosxona.balanceOf(taoId1);
 		assert.equal(taoId1Balance.toNumber(), 980, "TAO has incorrect ethosxona balance");
@@ -286,7 +286,7 @@ contract("Ethos Xona", function(accounts) {
 		assert.equal(taoId2Balance.toNumber(), 20, "TAO has incorrect ethosxona balance");
 	});
 
-	it("Whitelisted Address - should be able to burn token from a TAO/Name", async function() {
+	it("Whitelisted Address - should be able to burn EthosXona from a TAO/Name", async function() {
 		var canWhitelistBurnFrom;
 		try {
 			await ethosxona.whitelistBurnFrom(nameId1, 50, { from: someAddress });
@@ -294,7 +294,7 @@ contract("Ethos Xona", function(accounts) {
 		} catch (e) {
 			canWhitelistBurnFrom = false;
 		}
-		assert.equal(canWhitelistBurnFrom, false, "Non-whitelisted address can burn token");
+		assert.equal(canWhitelistBurnFrom, false, "Non-whitelisted address can burn EthosXona");
 
 		try {
 			await ethosxona.whitelistBurnFrom(someAddress, 50, { from: whitelistedAddress });
@@ -302,7 +302,7 @@ contract("Ethos Xona", function(accounts) {
 		} catch (e) {
 			canWhitelistBurnFrom = false;
 		}
-		assert.equal(canWhitelistBurnFrom, false, "Whitelisted address can burn token from non Name/TAO");
+		assert.equal(canWhitelistBurnFrom, false, "Whitelisted address can burn EthosXona from non Name/TAO");
 
 		try {
 			await ethosxona.whitelistBurnFrom(nameId1, 1000, { from: whitelistedAddress });
@@ -310,7 +310,7 @@ contract("Ethos Xona", function(accounts) {
 		} catch (e) {
 			canWhitelistBurnFrom = false;
 		}
-		assert.equal(canWhitelistBurnFrom, false, "Whitelisted address can burn token more than owned balance");
+		assert.equal(canWhitelistBurnFrom, false, "Whitelisted address can burn EthosXona more than owned balance");
 
 		try {
 			await ethosxona.whitelistBurnFrom(nameId1, 50, { from: whitelistedAddress });
@@ -318,7 +318,7 @@ contract("Ethos Xona", function(accounts) {
 		} catch (e) {
 			canWhitelistBurnFrom = false;
 		}
-		assert.equal(canWhitelistBurnFrom, true, "Whitelisted address can't burn token from Name");
+		assert.equal(canWhitelistBurnFrom, true, "Whitelisted address can't burn EthosXona from Name");
 
 		var nameBalance = await ethosxona.balanceOf(nameId1);
 		assert.equal(nameBalance.toNumber(), 930, "Name has incorrect ethosxona balance");
@@ -329,7 +329,7 @@ contract("Ethos Xona", function(accounts) {
 		} catch (e) {
 			canWhitelistBurnFrom = false;
 		}
-		assert.equal(canWhitelistBurnFrom, true, "Whitelisted address can't burn token from TAO");
+		assert.equal(canWhitelistBurnFrom, true, "Whitelisted address can't burn EthosXona from TAO");
 
 		var taoBalance = await ethosxona.balanceOf(taoId1);
 		assert.equal(taoBalance.toNumber(), 930, "TAO has incorrect ethosxona balance");

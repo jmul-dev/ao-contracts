@@ -74,8 +74,8 @@ contract("Logos", function(accounts) {
 	it("The AO - should be able to transfer ownership to a TAO", async function() {
 		// Mint Logos to nameId1 and nameId2
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
-		await logos.mintToken(nameId2, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId2, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -176,48 +176,48 @@ contract("Logos", function(accounts) {
 		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
 	});
 
-	it("Whitelisted Address - should be able to mint token to a TAO/Name", async function() {
-		var canMintToken;
+	it("Whitelisted Address - should be able to mint Logos to a TAO/Name", async function() {
+		var canMint;
 		try {
-			await logos.mintToken(nameId3, 1000, { from: someAddress });
-			canMintToken = true;
+			await logos.mint(nameId3, 1000, { from: someAddress });
+			canMint = true;
 		} catch (e) {
-			canMintToken = false;
+			canMint = false;
 		}
-		assert.equal(canMintToken, false, "Non-whitelisted address can mint token");
+		assert.equal(canMint, false, "Non-whitelisted address can mint Logos");
 
 		try {
-			await logos.mintToken(someAddress, 1000, { from: whitelistedAddress });
-			canMintToken = true;
+			await logos.mint(someAddress, 1000, { from: whitelistedAddress });
+			canMint = true;
 		} catch (e) {
-			canMintToken = false;
+			canMint = false;
 		}
-		assert.equal(canMintToken, false, "Whitelisted address can mint token to non Name/TAO");
+		assert.equal(canMint, false, "Whitelisted address can mint Logos to non Name/TAO");
 
 		try {
-			await logos.mintToken(nameId3, 1000, { from: whitelistedAddress });
-			canMintToken = true;
+			await logos.mint(nameId3, 1000, { from: whitelistedAddress });
+			canMint = true;
 		} catch (e) {
-			canMintToken = false;
+			canMint = false;
 		}
-		assert.equal(canMintToken, true, "Whitelisted address can't mint token to Name");
+		assert.equal(canMint, true, "Whitelisted address can't mint Logos to Name");
 
 		var nameBalance = await logos.balanceOf(nameId3);
 		assert.equal(nameBalance.toNumber(), 1000, "Name has incorrect logos balance");
 
 		try {
-			await logos.mintToken(taoId1, 1000, { from: whitelistedAddress });
-			canMintToken = true;
+			await logos.mint(taoId1, 1000, { from: whitelistedAddress });
+			canMint = true;
 		} catch (e) {
-			canMintToken = false;
+			canMint = false;
 		}
-		assert.equal(canMintToken, true, "Whitelisted address can't mint token to TAO");
+		assert.equal(canMint, true, "Whitelisted address can't mint Logos to TAO");
 
 		var taoBalance = await logos.balanceOf(taoId1);
 		assert.equal(taoBalance.toNumber(), 1000, "TAO has incorrect logos balance");
 	});
 
-	it("Whitelisted Address - should be able to transfer token from a Name/TAO to another Name/TAO", async function() {
+	it("Whitelisted Address - should be able to transfer Logos from a Name/TAO to another Name/TAO", async function() {
 		var canTransferFrom;
 		try {
 			await logos.transferFrom(nameId3, nameId4, 10, { from: someAddress });
@@ -225,7 +225,7 @@ contract("Logos", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, false, "Non-whitelisted address can transfer token");
+		assert.equal(canTransferFrom, false, "Non-whitelisted address can transfer Logos");
 
 		try {
 			await logos.transferFrom(nameId3, someAddress, 10, { from: whitelistedAddress });
@@ -233,7 +233,7 @@ contract("Logos", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, false, "Whitelisted address can transfer token to non Name/TAO");
+		assert.equal(canTransferFrom, false, "Whitelisted address can transfer Logos to non Name/TAO");
 
 		try {
 			await logos.transferFrom(nameId3, nameId4, 10000, { from: whitelistedAddress });
@@ -241,7 +241,7 @@ contract("Logos", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, false, "Whitelisted address can transfer token more than owned balance");
+		assert.equal(canTransferFrom, false, "Whitelisted address can transfer Logos more than owned balance");
 
 		try {
 			await logos.transferFrom(nameId3, nameId4, 10, { from: whitelistedAddress });
@@ -249,7 +249,7 @@ contract("Logos", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer token from Name to Name");
+		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer Logos from Name to Name");
 
 		var nameId3Balance = await logos.balanceOf(nameId3);
 		assert.equal(nameId3Balance.toNumber(), 990, "Name has incorrect logos balance");
@@ -262,7 +262,7 @@ contract("Logos", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer token from Name to TAO");
+		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer Logos from Name to TAO");
 
 		var nameId3Balance = await logos.balanceOf(nameId3);
 		assert.equal(nameId3Balance.toNumber(), 980, "Name has incorrect logos balance");
@@ -275,7 +275,7 @@ contract("Logos", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer token from TAO to Name");
+		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer Logos from TAO to Name");
 
 		var taoId1Balance = await logos.balanceOf(taoId1);
 		assert.equal(taoId1Balance.toNumber(), 990, "TAO has incorrect logos balance");
@@ -288,7 +288,7 @@ contract("Logos", function(accounts) {
 		} catch (e) {
 			canTransferFrom = false;
 		}
-		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer token from TAO to TAO");
+		assert.equal(canTransferFrom, true, "Whitelisted address can't transfer Logos from TAO to TAO");
 
 		var taoId1Balance = await logos.balanceOf(taoId1);
 		assert.equal(taoId1Balance.toNumber(), 980, "TAO has incorrect logos balance");
@@ -296,7 +296,7 @@ contract("Logos", function(accounts) {
 		assert.equal(taoId2Balance.toNumber(), 20, "TAO has incorrect logos balance");
 	});
 
-	it("Whitelisted Address - should be able to burn token from a TAO/Name", async function() {
+	it("Whitelisted Address - should be able to burn Logos from a TAO/Name", async function() {
 		var canWhitelistBurnFrom;
 		try {
 			await logos.whitelistBurnFrom(nameId3, 50, { from: someAddress });
@@ -304,7 +304,7 @@ contract("Logos", function(accounts) {
 		} catch (e) {
 			canWhitelistBurnFrom = false;
 		}
-		assert.equal(canWhitelistBurnFrom, false, "Non-whitelisted address can burn token");
+		assert.equal(canWhitelistBurnFrom, false, "Non-whitelisted address can burn Logos");
 
 		try {
 			await logos.whitelistBurnFrom(someAddress, 50, { from: whitelistedAddress });
@@ -312,7 +312,7 @@ contract("Logos", function(accounts) {
 		} catch (e) {
 			canWhitelistBurnFrom = false;
 		}
-		assert.equal(canWhitelistBurnFrom, false, "Whitelisted address can burn token from non Name/TAO");
+		assert.equal(canWhitelistBurnFrom, false, "Whitelisted address can burn Logos from non Name/TAO");
 
 		try {
 			await logos.whitelistBurnFrom(nameId3, 1000, { from: whitelistedAddress });
@@ -320,7 +320,7 @@ contract("Logos", function(accounts) {
 		} catch (e) {
 			canWhitelistBurnFrom = false;
 		}
-		assert.equal(canWhitelistBurnFrom, false, "Whitelisted address can burn token more than owned balance");
+		assert.equal(canWhitelistBurnFrom, false, "Whitelisted address can burn Logos more than owned balance");
 
 		try {
 			await logos.whitelistBurnFrom(nameId3, 50, { from: whitelistedAddress });
@@ -328,7 +328,7 @@ contract("Logos", function(accounts) {
 		} catch (e) {
 			canWhitelistBurnFrom = false;
 		}
-		assert.equal(canWhitelistBurnFrom, true, "Whitelisted address can't burn token from Name");
+		assert.equal(canWhitelistBurnFrom, true, "Whitelisted address can't burn Logos from Name");
 
 		var nameBalance = await logos.balanceOf(nameId3);
 		assert.equal(nameBalance.toNumber(), 930, "Name has incorrect logos balance");
@@ -339,7 +339,7 @@ contract("Logos", function(accounts) {
 		} catch (e) {
 			canWhitelistBurnFrom = false;
 		}
-		assert.equal(canWhitelistBurnFrom, true, "Whitelisted address can't burn token from TAO");
+		assert.equal(canWhitelistBurnFrom, true, "Whitelisted address can't burn Logos from TAO");
 
 		var taoBalance = await logos.balanceOf(taoId1);
 		assert.equal(taoBalance.toNumber(), 930, "TAO has incorrect logos balance");

@@ -4,7 +4,7 @@ var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var Logos = artifacts.require("./Logos.sol");
 
 var AOPool = artifacts.require("./AOPool.sol");
-var AOToken = artifacts.require("./AOToken.sol");
+var AOIon = artifacts.require("./AOIon.sol");
 var TokenOne = artifacts.require("./TokenOne.sol");
 
 var BigNumber = require("bignumber.js");
@@ -18,7 +18,7 @@ contract("AOPool", function(accounts) {
 		nameId,
 		taoId,
 		aopool,
-		aotoken,
+		aoion,
 		tokenone,
 		poolId1,
 		poolId2,
@@ -64,7 +64,7 @@ contract("AOPool", function(accounts) {
 		logos = await Logos.deployed();
 
 		aopool = await AOPool.deployed();
-		aotoken = await AOToken.deployed();
+		aoion = await AOIon.deployed();
 		tokenone = await TokenOne.deployed();
 
 		// Create Name
@@ -75,7 +75,7 @@ contract("AOPool", function(accounts) {
 
 		// Mint Logos to nameId
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId, 10 ** 12, { from: theAO });
+		await logos.mint(nameId, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -94,12 +94,12 @@ contract("AOPool", function(accounts) {
 		var createTAOEvent = result.logs[0];
 		taoId = createTAOEvent.args.taoId;
 
-		await aotoken.setWhitelist(theAO, true, { from: theAO });
-		await aotoken.mintToken(account1, 1000000, { from: theAO });
-		await aotoken.mintToken(account2, 1000000, { from: theAO });
-		await aotoken.mintToken(account3, 1000000, { from: theAO });
-		await aotoken.mintToken(account4, 1000000, { from: theAO });
-		await aotoken.mintToken(account5, 1000000, { from: theAO });
+		await aoion.setWhitelist(theAO, true, { from: theAO });
+		await aoion.mint(account1, 1000000, { from: theAO });
+		await aoion.mint(account2, 1000000, { from: theAO });
+		await aoion.mint(account3, 1000000, { from: theAO });
+		await aoion.mint(account4, 1000000, { from: theAO });
+		await aoion.mint(account5, 1000000, { from: theAO });
 	});
 
 	var createPool = async function(
@@ -181,8 +181,8 @@ contract("AOPool", function(accounts) {
 		var totalPutOnSaleBefore = await aopool.totalPutOnSale(account);
 		var contractTotalQuantityBefore = await aopool.contractTotalQuantity();
 		var contractTotalSellBefore = await aopool.contractTotalSell();
-		var accountNetworkTokenBalanceBefore = await aotoken.balanceOf(account);
-		var poolNetworkTokenBalanceBefore = await aotoken.balanceOf(aopool.address);
+		var accountNetworkBalanceBefore = await aoion.balanceOf(account);
+		var poolNetworkBalanceBefore = await aoion.balanceOf(aopool.address);
 
 		var canSell, lotCreationEvent, lotId;
 		try {
@@ -195,7 +195,7 @@ contract("AOPool", function(accounts) {
 			lotId = null;
 			canSell = false;
 		}
-		assert.equal(canSell, true, "Account can't sell tokens on a Pool");
+		assert.equal(canSell, true, "Account can't sell ions on a Pool");
 
 		var contractTotalLotAfter = await aopool.contractTotalLot();
 		var poolTotalLotAfter = await aopool.poolTotalLot(poolId);
@@ -205,8 +205,8 @@ contract("AOPool", function(accounts) {
 		var totalPutOnSaleAfter = await aopool.totalPutOnSale(account);
 		var contractTotalQuantityAfter = await aopool.contractTotalQuantity();
 		var contractTotalSellAfter = await aopool.contractTotalSell();
-		var accountNetworkTokenBalanceAfter = await aotoken.balanceOf(account);
-		var poolNetworkTokenBalanceAfter = await aotoken.balanceOf(aopool.address);
+		var accountNetworkBalanceAfter = await aoion.balanceOf(account);
+		var poolNetworkBalanceAfter = await aoion.balanceOf(aopool.address);
 
 		assert.equal(contractTotalLotAfter.toString(), contractTotalLotBefore.plus(1).toString(), "Contract has incorrect total Lot");
 		assert.equal(poolTotalLotAfter.toString(), poolTotalLotBefore.plus(1).toString(), "Pool has incorrect total Lot");
@@ -233,14 +233,14 @@ contract("AOPool", function(accounts) {
 			"Contract has incorrect total sell"
 		);
 		assert.equal(
-			accountNetworkTokenBalanceAfter.toString(),
-			accountNetworkTokenBalanceBefore.minus(quantity).toString(),
-			"Account has incorrect network token balance"
+			accountNetworkBalanceAfter.toString(),
+			accountNetworkBalanceBefore.minus(quantity).toString(),
+			"Account has incorrect network ion balance"
 		);
 		assert.equal(
-			poolNetworkTokenBalanceAfter.toString(),
-			poolNetworkTokenBalanceBefore.plus(quantity).toString(),
-			"Pool has incorrect network token balance"
+			poolNetworkBalanceAfter.toString(),
+			poolNetworkBalanceBefore.plus(quantity).toString(),
+			"Pool has incorrect network ion balance"
 		);
 
 		var lot = await aopool.lots(lotId);
@@ -252,7 +252,7 @@ contract("AOPool", function(accounts) {
 		assert.equal(lot[5].toString(), poolTotalSellBefore.plus(quantity).toString(), "Lot has incorrect poolSellLotSnapshot");
 		assert.equal(lot[6].toString(), new BigNumber(quantity).times(price).toString(), "Lot has incorrect lotValueInCounterAsset");
 		assert.equal(lot[7].toString(), 0, "Lot has incorrect counterAssetWithdrawn");
-		assert.equal(lot[8].toString(), 0, "Lot has incorrect tokenWithdrawn");
+		assert.equal(lot[8].toString(), 0, "Lot has incorrect ionWithdrawn");
 		assert.isAbove(lot[9].toNumber(), 0, "Lot has incorrect timestamp");
 
 		accountLots.push(lotId);
@@ -267,8 +267,8 @@ contract("AOPool", function(accounts) {
 		var contractTotalBuyBefore = await aopool.contractTotalBuy();
 		var contractEthereumBalanceBefore = await aopool.contractEthereumBalance();
 		var totalBoughtBefore = await aopool.totalBought(account);
-		var accountNetworkTokenBalanceBefore = await aotoken.balanceOf(account);
-		var poolNetworkTokenBalanceBefore = await aotoken.balanceOf(aopool.address);
+		var accountNetworkBalanceBefore = await aoion.balanceOf(account);
+		var poolNetworkBalanceBefore = await aoion.balanceOf(aopool.address);
 
 		var canBuy, buyWithEthEvent;
 		try {
@@ -279,7 +279,7 @@ contract("AOPool", function(accounts) {
 			buyWithEthEvent = null;
 			canBuy = false;
 		}
-		assert.equal(canBuy, true, "Account can't buy token with Eth");
+		assert.equal(canBuy, true, "Account can't buy ion with Eth");
 
 		var poolTotalQuantityAfter = await aopool.poolTotalQuantity(poolId);
 		var poolTotalBuyAfter = await aopool.poolTotalBuy(poolId);
@@ -288,8 +288,8 @@ contract("AOPool", function(accounts) {
 		var contractTotalBuyAfter = await aopool.contractTotalBuy();
 		var contractEthereumBalanceAfter = await aopool.contractEthereumBalance();
 		var totalBoughtAfter = await aopool.totalBought(account);
-		var accountNetworkTokenBalanceAfter = await aotoken.balanceOf(account);
-		var poolNetworkTokenBalanceAfter = await aotoken.balanceOf(aopool.address);
+		var accountNetworkBalanceAfter = await aoion.balanceOf(account);
+		var poolNetworkBalanceAfter = await aoion.balanceOf(aopool.address);
 
 		assert.equal(
 			poolTotalQuantityAfter.toString(),
@@ -319,14 +319,14 @@ contract("AOPool", function(accounts) {
 		);
 		assert.equal(totalBoughtAfter.toString(), totalBoughtBefore.plus(quantity).toString(), "Account has incorrect totalBought");
 		assert.equal(
-			accountNetworkTokenBalanceAfter.toString(),
-			accountNetworkTokenBalanceBefore.plus(quantity).toString(),
-			"Account has incorrect network token balance"
+			accountNetworkBalanceAfter.toString(),
+			accountNetworkBalanceBefore.plus(quantity).toString(),
+			"Account has incorrect network ion balance"
 		);
 		assert.equal(
-			poolNetworkTokenBalanceAfter.toString(),
-			poolNetworkTokenBalanceBefore.minus(quantity).toString(),
-			"Pool has incorrect network token balance"
+			poolNetworkBalanceAfter.toString(),
+			poolNetworkBalanceBefore.minus(quantity).toString(),
+			"Pool has incorrect network ion balance"
 		);
 	};
 
@@ -412,7 +412,7 @@ contract("AOPool", function(accounts) {
 		);
 	};
 
-	var withdrawToken = async function(lotId, quantity, account) {
+	var withdrawIon = async function(lotId, quantity, account) {
 		var lotBefore = await aopool.lots(lotId);
 
 		var poolId = lotBefore[3];
@@ -424,19 +424,19 @@ contract("AOPool", function(accounts) {
 		var poolTotalWithdrawnBefore = await aopool.poolTotalWithdrawn(poolId.toString());
 		var contractTotalWithdrawnBefore = await aopool.contractTotalWithdrawn();
 		var totalPutOnSaleBefore = await aopool.totalPutOnSale(account);
-		var accountNetworkTokenBalanceBefore = await aotoken.balanceOf(account);
-		var poolNetworkTokenBalanceBefore = await aotoken.balanceOf(aopool.address);
+		var accountNetworkBalanceBefore = await aoion.balanceOf(account);
+		var poolNetworkBalanceBefore = await aoion.balanceOf(aopool.address);
 
-		var canWithdrawToken, withdrawTokenEvent;
+		var canWithdrawIon, withdrawIonEvent;
 		try {
-			var result = await aopool.withdrawToken(lotId, quantity, { from: account });
-			withdrawTokenEvent = result.logs[0];
-			canWithdrawToken = true;
+			var result = await aopool.withdrawIon(lotId, quantity, { from: account });
+			withdrawIonEvent = result.logs[0];
+			canWithdrawIon = true;
 		} catch (e) {
-			withdrawTokenEvent = null;
-			canWithdrawToken = false;
+			withdrawIonEvent = null;
+			canWithdrawIon = false;
 		}
-		assert.equal(canWithdrawToken, true, "Account can't withdraw token from Lot");
+		assert.equal(canWithdrawIon, true, "Account can't withdraw ion from Lot");
 
 		var lotAfter = await aopool.lots(lotId);
 		var poolTotalQuantityAfter = await aopool.poolTotalQuantity(poolId.toString());
@@ -444,8 +444,8 @@ contract("AOPool", function(accounts) {
 		var poolTotalWithdrawnAfter = await aopool.poolTotalWithdrawn(poolId.toString());
 		var contractTotalWithdrawnAfter = await aopool.contractTotalWithdrawn();
 		var totalPutOnSaleAfter = await aopool.totalPutOnSale(account);
-		var accountNetworkTokenBalanceAfter = await aotoken.balanceOf(account);
-		var poolNetworkTokenBalanceAfter = await aotoken.balanceOf(aopool.address);
+		var accountNetworkBalanceAfter = await aoion.balanceOf(account);
+		var poolNetworkBalanceAfter = await aoion.balanceOf(aopool.address);
 
 		assert.equal(lotAfter[5].toString(), lotBefore[5].minus(quantity).toString(), "Lot has incorrect poolSellLotSnapshot");
 		assert.equal(
@@ -453,7 +453,7 @@ contract("AOPool", function(accounts) {
 			lotBefore[6].minus(new BigNumber(quantity).times(price)).toString(),
 			"Lot has incorrect lotValueInCounterAsset"
 		);
-		assert.equal(lotAfter[8].toString(), lotBefore[8].plus(quantity).toString(), "Lot has incorrect tokenWithdrawn");
+		assert.equal(lotAfter[8].toString(), lotBefore[8].plus(quantity).toString(), "Lot has incorrect ionWithdrawn");
 
 		assert.equal(
 			poolTotalQuantityAfter.toString(),
@@ -481,14 +481,14 @@ contract("AOPool", function(accounts) {
 			"Account has incorrect total put on sale"
 		);
 		assert.equal(
-			accountNetworkTokenBalanceAfter.toString(),
-			accountNetworkTokenBalanceBefore.plus(quantity).toString(),
-			"Account has incorrect network token balance"
+			accountNetworkBalanceAfter.toString(),
+			accountNetworkBalanceBefore.plus(quantity).toString(),
+			"Account has incorrect network ion balance"
 		);
 		assert.equal(
-			poolNetworkTokenBalanceAfter.toString(),
-			poolNetworkTokenBalanceBefore.minus(quantity).toString(),
-			"Pool has incorrect network token balance"
+			poolNetworkBalanceAfter.toString(),
+			poolNetworkBalanceBefore.minus(quantity).toString(),
+			"Pool has incorrect network ion balance"
 		);
 	};
 
@@ -536,26 +536,26 @@ contract("AOPool", function(accounts) {
 		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
 	});
 
-	it("The AO - setAOTokenAddress() should be able to set AOToken address", async function() {
+	it("The AO - setAOIonAddress() should be able to set AOIon address", async function() {
 		var canSetAddress;
 		try {
-			await aopool.setAOTokenAddress(aotoken.address, { from: someAddress });
+			await aopool.setAOIonAddress(aoion.address, { from: someAddress });
 			canSetAddress = true;
 		} catch (e) {
 			canSetAddress = false;
 		}
-		assert.equal(canSetAddress, false, "Non-AO can set AOToken address");
+		assert.equal(canSetAddress, false, "Non-AO can set AOIon address");
 
 		try {
-			await aopool.setAOTokenAddress(aotoken.address, { from: account1 });
+			await aopool.setAOIonAddress(aoion.address, { from: account1 });
 			canSetAddress = true;
 		} catch (e) {
 			canSetAddress = false;
 		}
-		assert.equal(canSetAddress, true, "The AO can't set AOToken address");
+		assert.equal(canSetAddress, true, "The AO can't set AOIon address");
 
-		var aoTokenAddress = await aopool.aoTokenAddress();
-		assert.equal(aoTokenAddress, aotoken.address, "Contract has incorrect aoTokenAddress");
+		var aoIonAddress = await aopool.aoIonAddress();
+		assert.equal(aoIonAddress, aoion.address, "Contract has incorrect aoIonAddress");
 	});
 
 	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
@@ -626,7 +626,7 @@ contract("AOPool", function(accounts) {
 		var quantityCapStatus = true;
 		var quantityCapAmount = 50;
 		var erc20CounterAsset = true;
-		var erc20TokenAddress = aotoken.address;
+		var erc20TokenAddress = aoion.address;
 		var erc20TokenMultiplier = 1;
 		var canCreatePool, createPoolEvent;
 		try {
@@ -962,7 +962,7 @@ contract("AOPool", function(accounts) {
 		assert.equal(pool[9], account1, "Pool has incorrect admin address after update");
 	});
 
-	it("sell() - should be able to sell AO tokens in a Pool", async function() {
+	it("sell() - should be able to sell AO ions in a Pool", async function() {
 		var canSell, lotCreationEvent;
 		try {
 			var result = await aopool.sell(100, 10, 10000, { from: account1 });
@@ -982,7 +982,7 @@ contract("AOPool", function(accounts) {
 			lotCreationEvent = null;
 			canSell = false;
 		}
-		assert.equal(canSell, false, "Account with no token balance can sell AO on a Pool");
+		assert.equal(canSell, false, "Account with no ion balance can sell AO on a Pool");
 
 		try {
 			var result = await aopool.sell(poolId1.toString(), 10, 1000, { from: account1 });
@@ -1127,7 +1127,7 @@ contract("AOPool", function(accounts) {
 		assert.equal(isEqual, true, "ownerLotIds() return incorrect Lot IDs");
 	});
 
-	it("buyWithEth() - should buy token from Pool with Eth", async function() {
+	it("buyWithEth() - should buy ion from Pool with Eth", async function() {
 		var canBuy, buyWithEthEvent;
 		try {
 			var result = await aopool.buyWithEth(100, 15, 10000, { from: account1, value: 15 * 10000 });
@@ -1137,7 +1137,7 @@ contract("AOPool", function(accounts) {
 			buyWithEthEvent = false;
 			canBuy = false;
 		}
-		assert.equal(canBuy, false, "Account can buy token from non-existing Pool");
+		assert.equal(canBuy, false, "Account can buy ion from non-existing Pool");
 
 		var poolTotalQuantity = await aopool.poolTotalQuantity(poolId6.toString());
 		try {
@@ -1154,7 +1154,7 @@ contract("AOPool", function(accounts) {
 			buyWithEthEvent = false;
 			canBuy = false;
 		}
-		assert.equal(canBuy, false, "Account can buy token more than Pool's total quantity");
+		assert.equal(canBuy, false, "Account can buy ion more than Pool's total quantity");
 
 		try {
 			var result = await aopool.buyWithEth(poolId6.toString(), 15, 1000, { from: account1, value: 15 * 1000 });
@@ -1164,7 +1164,7 @@ contract("AOPool", function(accounts) {
 			buyWithEthEvent = false;
 			canBuy = false;
 		}
-		assert.equal(canBuy, false, "Account can buy token from Pool even though entered price doesn't match Pool's price");
+		assert.equal(canBuy, false, "Account can buy ion from Pool even though entered price doesn't match Pool's price");
 
 		try {
 			var result = await aopool.buyWithEth(poolId6.toString(), 15, 10000, { from: account1, value: 15 * 1000 });
@@ -1174,11 +1174,7 @@ contract("AOPool", function(accounts) {
 			buyWithEthEvent = false;
 			canBuy = false;
 		}
-		assert.equal(
-			canBuy,
-			false,
-			"Account can buy token from Pool even though sent Eth is not the exact total price for the transaction"
-		);
+		assert.equal(canBuy, false, "Account can buy ion from Pool even though sent Eth is not the exact total price for the transaction");
 
 		try {
 			var result = await aopool.buyWithEth(poolId1.toString(), 5, 10000, { from: account1, value: 5 * 10000 });
@@ -1188,7 +1184,7 @@ contract("AOPool", function(accounts) {
 			buyWithEthEvent = false;
 			canBuy = false;
 		}
-		assert.equal(canBuy, false, "Account can buy token with Eth from Pool that is not priced in Eth");
+		assert.equal(canBuy, false, "Account can buy ion with Eth from Pool that is not priced in Eth");
 
 		// Stop the pool
 		await aopool.updatePoolStatus(poolId6.toString(), false, { from: account1 });
@@ -1201,7 +1197,7 @@ contract("AOPool", function(accounts) {
 			buyWithEthEvent = false;
 			canBuy = false;
 		}
-		assert.equal(canBuy, false, "Account can buy token from Pool even though Pool is currently inactive");
+		assert.equal(canBuy, false, "Account can buy ion from Pool even though Pool is currently inactive");
 
 		// Start the pool
 		await aopool.updatePoolStatus(poolId6.toString(), true, { from: account1 });
@@ -1209,9 +1205,9 @@ contract("AOPool", function(accounts) {
 		await buyWithEth(poolId6.toString(), 15, 10000, buyer1);
 	});
 
-	it("lotEthAvailableToWithdraw() - should return the amount of token sold, ethereum available to withdraw, and current ethereum withdrawn from the Lot that is priced in Eth", async function() {
+	it("lotEthAvailableToWithdraw() - should return the amount of ion sold, ethereum available to withdraw, and current ethereum withdrawn from the Lot that is priced in Eth", async function() {
 		// lotId1 has 10 lotQuantity
-		// buyer1 bought 15 tokens
+		// buyer1 bought 15 ions
 		// lotId1 is sold entirely
 		var availableToWithdraw = await aopool.lotEthAvailableToWithdraw(lotId1);
 		assert.equal(availableToWithdraw[0].toString(), 10, "lotEthAvailableToWithdraw() returns incorrect sold quantity");
@@ -1223,7 +1219,7 @@ contract("AOPool", function(accounts) {
 		assert.equal(availableToWithdraw[2].toString(), 0, "lotEthAvailableToWithdraw() returns incorrect current ETH withdrawn from Lot");
 
 		// lotId2 has 25 lotQuantity
-		// buyer1 bought 15 tokens
+		// buyer1 bought 15 ions
 		// lotId2 is sold partially
 		var availableToWithdraw = await aopool.lotEthAvailableToWithdraw(lotId2);
 		assert.equal(availableToWithdraw[0].toString(), 5, "lotEthAvailableToWithdraw() returns incorrect sold quantity");
@@ -1271,82 +1267,82 @@ contract("AOPool", function(accounts) {
 		await withdrawEth(lotId2, account2);
 	});
 
-	it("withdrawToken() - should able to withdraw token from Lot", async function() {
-		var canWithdrawToken, withdrawTokenEvent;
+	it("withdrawIon() - should able to withdraw ion from Lot", async function() {
+		var canWithdrawIon, withdrawIonEvent;
 		try {
-			var result = await aopool.withdrawToken("someid", 10, { from: account1 });
-			withdrawTokenEvent = result.logs[0];
-			canWithdrawToken = true;
+			var result = await aopool.withdrawIon("someid", 10, { from: account1 });
+			withdrawIonEvent = result.logs[0];
+			canWithdrawIon = true;
 		} catch (e) {
-			withdrawTokenEvent = null;
-			canWithdrawToken = false;
+			withdrawIonEvent = null;
+			canWithdrawIon = false;
 		}
-		assert.equal(canWithdrawToken, false, "Account can withdraw token from non-existing Lot");
+		assert.equal(canWithdrawIon, false, "Account can withdraw ion from non-existing Lot");
 
 		try {
-			var result = await aopool.withdrawToken(lotId1, 10, { from: account1 });
-			withdrawTokenEvent = result.logs[0];
-			canWithdrawToken = true;
+			var result = await aopool.withdrawIon(lotId1, 10, { from: account1 });
+			withdrawIonEvent = result.logs[0];
+			canWithdrawIon = true;
 		} catch (e) {
-			withdrawTokenEvent = null;
-			canWithdrawToken = false;
+			withdrawIonEvent = null;
+			canWithdrawIon = false;
 		}
-		assert.equal(canWithdrawToken, false, "Account can withdraw token from Lot that has been sold entirely");
+		assert.equal(canWithdrawIon, false, "Account can withdraw ion from Lot that has been sold entirely");
 
 		try {
-			var result = await aopool.withdrawToken(lotId2, 5, { from: account1 });
-			withdrawTokenEvent = result.logs[0];
-			canWithdrawToken = true;
+			var result = await aopool.withdrawIon(lotId2, 5, { from: account1 });
+			withdrawIonEvent = result.logs[0];
+			canWithdrawIon = true;
 		} catch (e) {
-			withdrawTokenEvent = null;
-			canWithdrawToken = false;
+			withdrawIonEvent = null;
+			canWithdrawIon = false;
 		}
-		assert.equal(canWithdrawToken, false, "Non-Lot owner can withdraw token from Lot");
+		assert.equal(canWithdrawIon, false, "Non-Lot owner can withdraw ion from Lot");
 
 		try {
-			var result = await aopool.withdrawToken(lotId2, 21, { from: account1 });
-			withdrawTokenEvent = result.logs[0];
-			canWithdrawToken = true;
+			var result = await aopool.withdrawIon(lotId2, 21, { from: account1 });
+			withdrawIonEvent = result.logs[0];
+			canWithdrawIon = true;
 		} catch (e) {
-			withdrawTokenEvent = null;
-			canWithdrawToken = false;
+			withdrawIonEvent = null;
+			canWithdrawIon = false;
 		}
-		assert.equal(canWithdrawToken, false, "Account can withdraw token more than Lot's available amount");
+		assert.equal(canWithdrawIon, false, "Account can withdraw ion more than Lot's available amount");
 
-		await withdrawToken(lotId2, 5, account2);
-		await withdrawToken(lotId4, 20, account4);
-		await withdrawToken(lotId5, 4, account5);
-		await withdrawToken(lotId6, 3, account1);
+		await withdrawIon(lotId2, 5, account2);
+		await withdrawIon(lotId4, 20, account4);
+		await withdrawIon(lotId5, 4, account5);
+		await withdrawIon(lotId6, 3, account1);
 	});
 
-	it("totalTokenWithdrawnBeforeLot() - should return correct total token withdrawn from all Lots before certain Lot ID", async function() {
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId1);
-		assert.equal(totalTokenWithdrawn.toString(), 0, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+	it("totalIonWithdrawnBeforeLot() - should return correct total ion withdrawn from all Lots before certain Lot ID", async function() {
+		var totalIonWithdrawn = await aopool.totalIonWithdrawnBeforeLot(lotId1);
+		assert.equal(totalIonWithdrawn.toString(), 0, "totalIonWithdrawnBeforeLot() return incorrect total ion withdrawn");
 
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId2);
-		assert.equal(totalTokenWithdrawn.toString(), 0, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+		var totalIonWithdrawn = await aopool.totalIonWithdrawnBeforeLot(lotId2);
+		assert.equal(totalIonWithdrawn.toString(), 0, "totalIonWithdrawnBeforeLot() return incorrect total ion withdrawn");
 
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId3);
-		assert.equal(totalTokenWithdrawn.toString(), 5, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+		var totalIonWithdrawn = await aopool.totalIonWithdrawnBeforeLot(lotId3);
+		assert.equal(totalIonWithdrawn.toString(), 5, "totalIonWithdrawnBeforeLot() return incorrect total ion withdrawn");
 
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId4);
-		assert.equal(totalTokenWithdrawn.toString(), 5, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+		var totalIonWithdrawn = await aopool.totalIonWithdrawnBeforeLot(lotId4);
+		assert.equal(totalIonWithdrawn.toString(), 5, "totalIonWithdrawnBeforeLot() return incorrect total ion withdrawn");
 
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId5);
-		assert.equal(totalTokenWithdrawn.toString(), 25, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+		var totalIonWithdrawn = await aopool.totalIonWithdrawnBeforeLot(lotId5);
+		assert.equal(totalIonWithdrawn.toString(), 25, "totalIonWithdrawnBeforeLot() return incorrect total ion withdrawn");
 
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId6);
-		assert.equal(totalTokenWithdrawn.toString(), 29, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+		var totalIonWithdrawn = await aopool.totalIonWithdrawnBeforeLot(lotId6);
+		assert.equal(totalIonWithdrawn.toString(), 29, "totalIonWithdrawnBeforeLot() return incorrect total ion withdrawn");
 
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId7);
-		assert.equal(totalTokenWithdrawn.toString(), 32, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+		var totalIonWithdrawn = await aopool.totalIonWithdrawnBeforeLot(lotId7);
+		assert.equal(totalIonWithdrawn.toString(), 32, "totalIonWithdrawnBeforeLot() return incorrect total ion withdrawn");
 
-		var totalTokenWithdrawn = await aopool.totalTokenWithdrawnBeforeLot(lotId8);
-		assert.equal(totalTokenWithdrawn.toString(), 32, "totalTokenWithdrawnBeforeLot() return incorrect total token withdrawn");
+		var totalIonWithdrawn = await aopool.totalIonWithdrawnBeforeLot(lotId8);
+		assert.equal(totalIonWithdrawn.toString(), 32, "totalIonWithdrawnBeforeLot() return incorrect total ion withdrawn");
 	});
 
-	it("should be able to buy token and reward the lot accordingly after some accounts withdraw tokens from their lots", async function() {
-		// Should buy 15 tokens from lotId2 and 5 tokens from lotId3
+	it("should be able to buy ion and reward the lot accordingly after some accounts withdraw ions from their lots", async function() {
+		// Should buy 15 ions from lotId2 and 5 ions from lotId3
 		await buyWithEth(poolId6.toString(), 20, 10000, buyer2);
 		var lotId2AvailableToWithdraw = await aopool.lotEthAvailableToWithdraw(lotId2);
 		assert.equal(lotId2AvailableToWithdraw[0].toString(), 15, "lotEthAvailableToWithdraw() returns incorrect sold quantity");
@@ -1358,7 +1354,7 @@ contract("AOPool", function(accounts) {
 
 		assert.equal(lot[6].toString(), 0, "Lot has incorrect lotValueInCounterAsset");
 		assert.equal(lot[7].toString(), lot[2].times(price).minus(lot[8].times(price)), "Lot has incorrect counterAssetWithdrawn");
-		assert.equal(lot[8].toString(), 5, "Lot has incorrect tokenWithdrawn");
+		assert.equal(lot[8].toString(), 5, "Lot has incorrect ionWithdrawn");
 
 		var lotId3AvailableToWithdraw = await aopool.lotEthAvailableToWithdraw(lotId3);
 		assert.equal(lotId3AvailableToWithdraw[0].toString(), 5, "lotEthAvailableToWithdraw() returns incorrect sold quantity");
@@ -1374,10 +1370,10 @@ contract("AOPool", function(accounts) {
 			"Lot has incorrect counterAssetWithdrawn"
 		);
 
-		// Should buy 95 tokens from lotId3
-		// Should buy 53 tokens from lotId4
-		// Should buy 24 tokens from lotId5
-		// Should buy 28 tokens from lotId7
+		// Should buy 95 ions from lotId3
+		// Should buy 53 ions from lotId4
+		// Should buy 24 ions from lotId5
+		// Should buy 28 ions from lotId7
 		await buyWithEth(poolId6.toString(), 200, 10000, buyer3);
 
 		var lotId3AvailableToWithdraw = await aopool.lotEthAvailableToWithdraw(lotId3);
@@ -1390,7 +1386,7 @@ contract("AOPool", function(accounts) {
 
 		assert.equal(lot[6].toString(), 0, "Lot has incorrect lotValueInCounterAsset");
 		assert.equal(lot[7].toString(), lot[2].times(price).minus(lot[8].times(price)), "Lot has incorrect counterAssetWithdrawn");
-		assert.equal(lot[8].toString(), 0, "Lot has incorrect tokenWithdrawn");
+		assert.equal(lot[8].toString(), 0, "Lot has incorrect ionWithdrawn");
 
 		var lotId4AvailableToWithdraw = await aopool.lotEthAvailableToWithdraw(lotId4);
 		assert.equal(lotId4AvailableToWithdraw[0].toString(), 53, "lotEthAvailableToWithdraw() returns incorrect sold quantity");
@@ -1402,7 +1398,7 @@ contract("AOPool", function(accounts) {
 
 		assert.equal(lot[6].toString(), 0, "Lot has incorrect lotValueInCounterAsset");
 		assert.equal(lot[7].toString(), lot[2].times(price).minus(lot[8].times(price)), "Lot has incorrect counterAssetWithdrawn");
-		assert.equal(lot[8].toString(), 20, "Lot has incorrect tokenWithdrawn");
+		assert.equal(lot[8].toString(), 20, "Lot has incorrect ionWithdrawn");
 
 		var lotId5AvailableToWithdraw = await aopool.lotEthAvailableToWithdraw(lotId5);
 		assert.equal(lotId5AvailableToWithdraw[0].toString(), 24, "lotEthAvailableToWithdraw() returns incorrect sold quantity");
@@ -1414,7 +1410,7 @@ contract("AOPool", function(accounts) {
 
 		assert.equal(lot[6].toString(), 0, "Lot has incorrect lotValueInCounterAsset");
 		assert.equal(lot[7].toString(), lot[2].times(price).minus(lot[8].times(price)), "Lot has incorrect counterAssetWithdrawn");
-		assert.equal(lot[8].toString(), 4, "Lot has incorrect tokenWithdrawn");
+		assert.equal(lot[8].toString(), 4, "Lot has incorrect ionWithdrawn");
 
 		var lotId7AvailableToWithdraw = await aopool.lotEthAvailableToWithdraw(lotId7);
 		assert.equal(lotId7AvailableToWithdraw[0].toString(), 28, "lotEthAvailableToWithdraw() returns incorrect sold quantity");
@@ -1431,7 +1427,7 @@ contract("AOPool", function(accounts) {
 		);
 	});
 
-	it("stress testing to calculate gas cost for withdrawing Eth on last Lot especially when there is token withdrawn from the Lots before the last Lot", async function() {
+	it("stress testing to calculate gas cost for withdrawing Eth on last Lot especially when there is ion withdrawn from the Lots before the last Lot", async function() {
 		var poolId = await createPool(1000, true, false, "", false, "", false, "", "", account1);
 		var pool = await aopool.pools(poolId.toString());
 
@@ -1441,9 +1437,9 @@ contract("AOPool", function(accounts) {
 			console.log("Creating Lot " + i + " out of " + totalLot);
 			lotId = await sell(poolId.toString(), 10, 1000, account1, account1Lots);
 			lots.push(lotId);
-			// Every "even" lot, withdraw 5 tokens
+			// Every "even" lot, withdraw 5 ions
 			if (i % 2 == 0) {
-				await withdrawToken(lotId, 5, account1);
+				await withdrawIon(lotId, 5, account1);
 			}
 		}
 		var poolTotalQuantity = await aopool.poolTotalQuantity(poolId.toString());

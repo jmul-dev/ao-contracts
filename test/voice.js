@@ -30,7 +30,7 @@ contract("Voice", function(accounts) {
 
 		// Mint Logos to nameId
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -135,15 +135,15 @@ contract("Voice", function(accounts) {
 		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
 	});
 
-	it("mintToken() - only whitelisted address can mintToken", async function() {
-		var canMintToken;
+	it("mint() - only whitelisted address can mint", async function() {
+		var canMint;
 		try {
-			await voice.mintToken(someAddress, { from: whitelistedAddress });
-			canMintToken = true;
+			await voice.mint(someAddress, { from: whitelistedAddress });
+			canMint = true;
 		} catch (e) {
-			canMintToken = false;
+			canMint = false;
 		}
-		assert.equal(canMintToken, false, "Whitelisted address can mint token to non-Name");
+		assert.equal(canMint, false, "Whitelisted address can mint Voice to non-Name");
 
 		var totalSupplyBefore = await voice.totalSupply();
 
@@ -159,16 +159,16 @@ contract("Voice", function(accounts) {
 		var nameBalance = await voice.balanceOf(nameId2);
 		assert.equal(nameBalance.toNumber(), maxSupplyPerName.toNumber(), "Name has incorrect balance");
 
-		var receivedToken = await voice.receivedToken(nameId2);
-		assert.equal(receivedToken, true, "Contract has incorrect receivedToken value");
+		var hasReceived = await voice.hasReceived(nameId2);
+		assert.equal(hasReceived, true, "Contract has incorrect hasReceived value");
 
 		try {
-			await voice.mintToken(nameId2, { from: whitelistedAddress });
-			canMintToken = true;
+			await voice.mint(nameId2, { from: whitelistedAddress });
+			canMint = true;
 		} catch (e) {
-			canMintToken = false;
+			canMint = false;
 		}
-		assert.equal(canMintToken, false, "Whitelisted address can mint token to Name more than once");
+		assert.equal(canMint, false, "Whitelisted address can mint Voice to Name more than once");
 	});
 
 	it("Whitelisted address - stake() should be able to stake Name's Voice on a TAO", async function() {

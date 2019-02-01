@@ -10,7 +10,7 @@ import './TheAO.sol';
 contract Voice is TheAO {
 	using SafeMath for uint256;
 
-	// Public variables of the token
+	// Public variables of the contract
 	string public name;
 	string public symbol;
 	uint8 public decimals = 4;
@@ -19,8 +19,8 @@ contract Voice is TheAO {
 
 	uint256 public totalSupply;
 
-	// Mapping from Name ID to bool value whether or not it has received Voice Token
-	mapping (address => bool) public receivedToken;
+	// Mapping from Name ID to bool value whether or not it has received Voice
+	mapping (address => bool) public hasReceived;
 
 	// Mapping from Name/TAO ID to its total available balance
 	mapping (address => uint256) public balanceOf;
@@ -35,14 +35,10 @@ contract Voice is TheAO {
 
 	/**
 	 * Constructor function
-	 *
-	 * Initializes contract with initial supply tokens to the creator of the contract
 	 */
-	constructor (uint256 initialSupply, string tokenName, string tokenSymbol) public {
-		totalSupply = initialSupply;			// Update total supply
-		balanceOf[msg.sender] = totalSupply;	// Give the creator all initial tokens
-		name = tokenName;						// Set the name for display purposes
-		symbol = tokenSymbol;					// Set the symbol for display purposes
+	constructor (string _name, string _symbol) public {
+		name = _name;						// Set the name for display purposes
+		symbol = _symbol;					// Set the symbol for display purposes
 	}
 
 	/**
@@ -102,15 +98,15 @@ contract Voice is TheAO {
 
 	/***** PUBLIC METHODS *****/
 	/**
-	 * @dev Create `MAX_SUPPLY_PER_NAME` tokens and send it to `_nameId`
-	 * @param _nameId Address to receive the tokens
+	 * @dev Create `MAX_SUPPLY_PER_NAME` Voice and send it to `_nameId`
+	 * @param _nameId Address to receive Voice
 	 * @return true on success
 	 */
-	function mintToken(address _nameId) public inWhitelist isName(_nameId) returns (bool) {
-		// Make sure _nameId has not received Voice Token
-		require (receivedToken[_nameId] == false);
+	function mint(address _nameId) public inWhitelist isName(_nameId) returns (bool) {
+		// Make sure _nameId has not received Voice
+		require (hasReceived[_nameId] == false);
 
-		receivedToken[_nameId] = true;
+		hasReceived[_nameId] = true;
 		balanceOf[_nameId] = balanceOf[_nameId].add(MAX_SUPPLY_PER_NAME);
 		totalSupply = totalSupply.add(MAX_SUPPLY_PER_NAME);
 		emit Mint(_nameId, MAX_SUPPLY_PER_NAME);
@@ -127,7 +123,7 @@ contract Voice is TheAO {
 	}
 
 	/**
-	 * @dev Stake `_value` tokens on `_taoId` from `_nameId`
+	 * @dev Stake `_value` Voice on `_taoId` from `_nameId`
 	 * @param _nameId The Name ID that wants to stake
 	 * @param _taoId The TAO ID to stake
 	 * @param _value The amount to stake
@@ -144,7 +140,7 @@ contract Voice is TheAO {
 	}
 
 	/**
-	 * @dev Unstake `_value` tokens from `_nameId`'s `_taoId`
+	 * @dev Unstake `_value` Voice from `_nameId`'s `_taoId`
 	 * @param _nameId The Name ID that wants to unstake
 	 * @param _taoId The TAO ID to unstake
 	 * @param _value The amount to unstake

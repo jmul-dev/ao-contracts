@@ -65,7 +65,7 @@ contract("EthosTreasury", function(accounts) {
 
 		// Mint Logos to nameId1 and nameId2
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -341,11 +341,11 @@ contract("EthosTreasury", function(accounts) {
 
 	it("toBase() should return correct amount", async function() {
 		var kiloToBase = await ethostreasury.toBase(9, 1, "kilo");
-		assert.equal(kiloToBase.toNumber(), 9001, "toBase kilo return wrong amount of token");
+		assert.equal(kiloToBase.toNumber(), 9001, "toBase kilo return wrong amount of Ethos");
 		kiloToBase = await ethostreasury.toBase(9, 20, "kilo");
-		assert.equal(kiloToBase.toNumber(), 9020, "toBase kilo return wrong amount of token");
+		assert.equal(kiloToBase.toNumber(), 9020, "toBase kilo return wrong amount of Ethos");
 		kiloToBase = await ethostreasury.toBase(9, 100, "kilo");
-		assert.equal(kiloToBase.toNumber(), 9100, "toBase kilo return wrong amount of token");
+		assert.equal(kiloToBase.toNumber(), 9100, "toBase kilo return wrong amount of Ethos");
 
 		var megaToBase = await ethostreasury.toBase(9, 123, "mega");
 		var gigaToBase = await ethostreasury.toBase(9, 123, "giga");
@@ -356,14 +356,14 @@ contract("EthosTreasury", function(accounts) {
 		var yottaToBase = await ethostreasury.toBase(9, 123, "yotta");
 		var xonaToBase = await ethostreasury.toBase(9, 123, "xona");
 
-		assert.equal(megaToBase.toNumber(), 9000123, "toBase mega return wrong amount of token");
-		assert.equal(gigaToBase.toNumber(), 9000000123, "toBase giga return wrong amount of token");
-		assert.equal(teraToBase.toNumber(), 9000000000123, "toBase tera return wrong amount of token");
-		assert.equal(petaToBase.toNumber(), "9000000000000123", "toBase peta return wrong amount of token");
-		assert.equal(exaToBase.toNumber(), "9000000000000000123", "toBase exa return wrong amount of token");
-		assert.equal(zettaToBase.toNumber(), "9000000000000000000123", "toBase zetta return wrong amount of token");
-		assert.equal(yottaToBase.toNumber(), "9000000000000000000000123", "toBase yotta return wrong amount of token");
-		assert.equal(xonaToBase.toNumber(), "9000000000000000000000000123", "toBase xona return wrong amount of token");
+		assert.equal(megaToBase.toNumber(), 9000123, "toBase mega return wrong amount of Ethos");
+		assert.equal(gigaToBase.toNumber(), 9000000123, "toBase giga return wrong amount of Ethos");
+		assert.equal(teraToBase.toNumber(), 9000000000123, "toBase tera return wrong amount of Ethos");
+		assert.equal(petaToBase.toNumber(), "9000000000000123", "toBase peta return wrong amount of Ethos");
+		assert.equal(exaToBase.toNumber(), "9000000000000000123", "toBase exa return wrong amount of Ethos");
+		assert.equal(zettaToBase.toNumber(), "9000000000000000000123", "toBase zetta return wrong amount of Ethos");
+		assert.equal(yottaToBase.toNumber(), "9000000000000000000000123", "toBase yotta return wrong amount of Ethos");
+		assert.equal(xonaToBase.toNumber(), "9000000000000000000000000123", "toBase xona return wrong amount of Ethos");
 	});
 
 	it("fromBase() should return correct amount", async function() {
@@ -438,9 +438,9 @@ contract("EthosTreasury", function(accounts) {
 		);
 	});
 
-	it("exchangeDenomination() - should exchange token from `fromDenominationName` to `toDenominationName` correctly", async function() {
+	it("exchangeDenomination() - should exchange Ethos from `fromDenominationName` to `toDenominationName` correctly", async function() {
 		await ethos.setWhitelist(theAO, true, { from: theAO });
-		await ethos.mintToken(nameId1, 100, { from: theAO });
+		await ethos.mint(nameId1, 100, { from: theAO });
 
 		var canExchange, exchangeDenominationEvent, exchangeId;
 		try {
@@ -453,7 +453,7 @@ contract("EthosTreasury", function(accounts) {
 			exchangeDenominationEvent = null;
 			exchangeId = null;
 		}
-		assert.notEqual(canExchange, true, "Contract can exchange token from invalid origin denomination");
+		assert.notEqual(canExchange, true, "Contract can exchange Ethos from invalid origin denomination");
 
 		try {
 			var result = await ethostreasury.exchangeDenomination(50, "ethos", "deca", { from: account1 });
@@ -465,7 +465,7 @@ contract("EthosTreasury", function(accounts) {
 			exchangeDenominationEvent = null;
 			exchangeId = null;
 		}
-		assert.notEqual(canExchange, true, "Contract can exchange token to invalid target denomination");
+		assert.notEqual(canExchange, true, "Contract can exchange Ethos to invalid target denomination");
 
 		try {
 			var result = await ethostreasury.exchangeDenomination(1000, "ethos", "kilo", { from: account1 });
@@ -477,7 +477,7 @@ contract("EthosTreasury", function(accounts) {
 			exchangeDenominationEvent = null;
 			exchangeId = null;
 		}
-		assert.notEqual(canExchange, true, "Account1 can exchange token more than he/she has");
+		assert.notEqual(canExchange, true, "Account1 can exchange Ethos more than he/she has");
 
 		var nameId1EthosBalanceBefore = await ethos.balanceOf(nameId1);
 		var nameId1KiloBalanceBefore = await ethoskilo.balanceOf(nameId1);
@@ -504,7 +504,7 @@ contract("EthosTreasury", function(accounts) {
 		assert.equal(
 			nameId1KiloBalanceAfter.toNumber(),
 			nameId1KiloBalanceBefore.plus(50).toNumber(),
-			"NameId1 has incorrect Ethos Kilo Token balance after exchanging"
+			"NameId1 has incorrect Ethos Kilo  balance after exchanging"
 		);
 
 		var denominationExchange = await ethostreasury.getDenominationExchangeById(exchangeId);

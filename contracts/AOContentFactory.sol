@@ -14,7 +14,7 @@ import './INameTAOPosition.sol';
 /**
  * @title AOContentFactory
  *
- * The purpose of this contract is to allow content creator to stake network ERC20 AO tokens and/or primordial AO Tokens
+ * The purpose of this contract is to allow content creator to stake network AO ions and/or primordial AO+ ions
  * on his/her content
  */
 contract AOContentFactory is TheAO {
@@ -177,11 +177,11 @@ contract AOContentFactory is TheAO {
 
 	/***** PUBLIC METHODS *****/
 	/**
-	 * @dev Stake `_networkIntegerAmount` + `_networkFractionAmount` of network token in `_denomination` and/or `_primordialAmount` primordial Tokens for an AO Content
-	 * @param _networkIntegerAmount The integer amount of network token to stake
-	 * @param _networkFractionAmount The fraction amount of network token to stake
-	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
-	 * @param _primordialAmount The amount of primordial Token to stake
+	 * @dev Stake `_networkIntegerAmount` + `_networkFractionAmount` of network ion in `_denomination` and/or `_primordialAmount` primordial ion for an AO Content
+	 * @param _networkIntegerAmount The integer amount of network ion to stake
+	 * @param _networkFractionAmount The fraction amount of network ion to stake
+	 * @param _denomination The denomination of the network ion, i.e ao, kilo, mega, etc.
+	 * @param _primordialAmount The amount of primordial ion to stake
 	 * @param _baseChallenge The base challenge string (PUBLIC KEY) of the content
 	 * @param _encChallenge The encrypted challenge string (PUBLIC KEY) of the content unique to the host
 	 * @param _contentDatKey The dat key of the content
@@ -203,7 +203,7 @@ contract AOContentFactory is TheAO {
 		) public {
 		/**
 		 * 1. Store this content
-		 * 2. Stake the network/primordial token on content
+		 * 2. Stake the network/primordial ion on content
 		 * 3. Add the node info that hosts this content (in this case the creator himself)
 		 */
 		require (
@@ -232,11 +232,11 @@ contract AOContentFactory is TheAO {
 	}
 
 	/**
-	 * @dev Stake `_networkIntegerAmount` + `_networkFractionAmount` of network token in `_denomination` and/or `_primordialAmount` primordial Tokens for a Creative Commons Content
-	 * @param _networkIntegerAmount The integer amount of network token to stake
-	 * @param _networkFractionAmount The fraction amount of network token to stake
-	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
-	 * @param _primordialAmount The amount of primordial Token to stake
+	 * @dev Stake `_networkIntegerAmount` + `_networkFractionAmount` of network ion in `_denomination` and/or `_primordialAmount` primordial ion for a Creative Commons Content
+	 * @param _networkIntegerAmount The integer amount of network on to stake
+	 * @param _networkFractionAmount The fraction amount of network ion to stake
+	 * @param _denomination The denomination of the network ion, i.e ao, kilo, mega, etc.
+	 * @param _primordialAmount The amount of primordial ion to stake
 	 * @param _baseChallenge The base challenge string (PUBLIC KEY) of the content
 	 * @param _encChallenge The encrypted challenge string (PUBLIC KEY) of the content unique to the host
 	 * @param _contentDatKey The dat key of the content
@@ -256,7 +256,7 @@ contract AOContentFactory is TheAO {
 		) public {
 		/**
 		 * 1. Store this content
-		 * 2. Stake the network/primordial token on content
+		 * 2. Stake the network/primordial ion on content
 		 * 3. Add the node info that hosts this content (in this case the creator himself)
 		 */
 		require (
@@ -285,11 +285,11 @@ contract AOContentFactory is TheAO {
 	}
 
 	/**
-	 * @dev Stake `_networkIntegerAmount` + `_networkFractionAmount` of network token in `_denomination` and/or `_primordialAmount` primordial Tokens for a T(AO) Content
-	 * @param _networkIntegerAmount The integer amount of network token to stake
-	 * @param _networkFractionAmount The fraction amount of network token to stake
-	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
-	 * @param _primordialAmount The amount of primordial Token to stake
+	 * @dev Stake `_networkIntegerAmount` + `_networkFractionAmount` of network ion in `_denomination` and/or `_primordialAmount` primordial ion for a T(AO) Content
+	 * @param _networkIntegerAmount The integer amount of network ion to stake
+	 * @param _networkFractionAmount The fraction amount of network ion to stake
+	 * @param _denomination The denomination of the network ion, i.e ao, kilo, mega, etc.
+	 * @param _primordialAmount The amount of primordial ion to stake
 	 * @param _baseChallenge The base challenge string (PUBLIC KEY) of the content
 	 * @param _encChallenge The encrypted challenge string (PUBLIC KEY) of the content unique to the host
 	 * @param _contentDatKey The dat key of the content
@@ -311,7 +311,7 @@ contract AOContentFactory is TheAO {
 		) public {
 		/**
 		 * 1. Store this content
-		 * 2. Stake the network/primordial token on content
+		 * 2. Stake the network/primordial ion on content
 		 * 3. Add the node info that hosts this content (in this case the creator himself)
 		 */
 		require (
@@ -342,8 +342,8 @@ contract AOContentFactory is TheAO {
 	/**
 	 * @dev Return the staking information of a StakedContent ID
 	 * @param _stakedContentId The ID of the staked content
-	 * @return the network base token amount staked for this content
-	 * @return the primordial token amount staked for this content
+	 * @return the network base ion amount staked for this content
+	 * @return the primordial ion amount staked for this content
 	 * @return the primordial weighted multiplier of the staked content
 	 */
 	function getStakingMetrics(bytes32 _stakedContentId) public view returns (uint256, uint256, uint256) {
@@ -369,8 +369,8 @@ contract AOContentFactory is TheAO {
 	/**
 	 * @dev Return the staking and earning information of a StakedContent ID
 	 * @param _stakedContentId The ID of the staked content
-	 * @return the network base token amount staked for this content
-	 * @return the primordial token amount staked for this content
+	 * @return the network base ion amount staked for this content
+	 * @return the primordial ion amount staked for this content
 	 * @return the primordial weighted multiplier of the staked content
 	 * @return the total earning from staking this content
 	 * @return the total earning from hosting this content
@@ -439,10 +439,10 @@ contract AOContentFactory is TheAO {
 	 * @dev Actual staking the content
 	 * @param _stakeOwner the address that stake the content
 	 * @param _contentId The ID of the content
-	 * @param _networkIntegerAmount The integer amount of network token to stake
-	 * @param _networkFractionAmount The fraction amount of network token to stake
-	 * @param _denomination The denomination of the network token, i.e ao, kilo, mega, etc.
-	 * @param _primordialAmount The amount of primordial Token to stake
+	 * @param _networkIntegerAmount The integer amount of network ion to stake
+	 * @param _networkFractionAmount The fraction amount of network ion to stake
+	 * @param _denomination The denomination of the network ion, i.e ao, kilo, mega, etc.
+	 * @param _primordialAmount The amount of primordial ion to stake
 	 * @param _profitPercentage The percentage of profit the stake owner's media will charge
 	 * @return the newly created staked content ID
 	 */

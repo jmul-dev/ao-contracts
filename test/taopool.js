@@ -90,19 +90,19 @@ contract("TAOPool", function(accounts) {
 
 		// Mint Logos to nameId
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
-		await logos.mintToken(nameId2, 10 ** 12, { from: theAO });
-		await logos.mintToken(nameId3, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId2, 10 ** 12, { from: theAO });
+		await logos.mint(nameId3, 10 ** 12, { from: theAO });
 
 		await pathos.setWhitelist(theAO, true, { from: theAO });
-		await pathos.mintToken(nameId4, 10 ** 6, { from: theAO });
-		await pathos.mintToken(nameId5, 10 ** 6, { from: theAO });
-		await pathos.mintToken(nameId6, 10 ** 6, { from: theAO });
+		await pathos.mint(nameId4, 10 ** 6, { from: theAO });
+		await pathos.mint(nameId5, 10 ** 6, { from: theAO });
+		await pathos.mint(nameId6, 10 ** 6, { from: theAO });
 
 		await ethos.setWhitelist(theAO, true, { from: theAO });
-		await ethos.mintToken(nameId4, 10 ** 6, { from: theAO });
-		await ethos.mintToken(nameId5, 10 ** 6, { from: theAO });
-		await ethos.mintToken(nameId6, 10 ** 6, { from: theAO });
+		await ethos.mint(nameId4, 10 ** 6, { from: theAO });
+		await ethos.mint(nameId5, 10 ** 6, { from: theAO });
+		await ethos.mint(nameId6, 10 ** 6, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -646,7 +646,7 @@ contract("TAOPool", function(accounts) {
 		}
 		assert.equal(canUpdate, false, "Advocate of TAO can update Pool's Ethos cap with cap on but no cap amount");
 
-		await pathos.mintToken(taoId2, 10, { from: theAO });
+		await pathos.mint(taoId2, 10, { from: theAO });
 		try {
 			await taopool.updatePoolEthosCap(taoId2, true, 5, { from: account2 });
 			canUpdate = true;
@@ -880,9 +880,6 @@ contract("TAOPool", function(accounts) {
 		// nameId4 staked 400 Pathos
 		// nameId5 staked 300 Pathos
 		// lotId2 is sold partially
-
-		// buyer1 bought 15 tokens
-		// lotId2 is filled partially
 		availableToWithdraw = await taopool.lotLogosAvailableToWithdraw(lotId2);
 		assert.equal(availableToWithdraw.toNumber(), 200, "lotLogosAvailableToWithdraw() returns incorrect value");
 	});

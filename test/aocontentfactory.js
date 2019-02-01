@@ -2,7 +2,7 @@ var AOLibrary = artifacts.require("./AOLibrary.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
-var AOToken = artifacts.require("./AOToken.sol");
+var AOIon = artifacts.require("./AOIon.sol");
 var AOTreasury = artifacts.require("./AOTreasury.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
 var AOContent = artifacts.require("./AOContent.sol");
@@ -23,7 +23,7 @@ contract("AOContentFactory", function(accounts) {
 		namefactory,
 		taofactory,
 		nametaoposition,
-		aotoken,
+		aoion,
 		aotreasury,
 		aosetting,
 		aocontent,
@@ -103,7 +103,7 @@ contract("AOContentFactory", function(accounts) {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
 		nametaoposition = await NameTAOPosition.deployed();
-		aotoken = await AOToken.deployed();
+		aoion = await AOIon.deployed();
 		aotreasury = await AOTreasury.deployed();
 		aosetting = await AOSetting.deployed();
 		aocontent = await AOContent.deployed();
@@ -146,8 +146,8 @@ contract("AOContentFactory", function(accounts) {
 
 		// Mint Logos to nameId1 and nameId2
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
-		await logos.mintToken(nameId2, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId2, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -189,19 +189,19 @@ contract("AOContentFactory", function(accounts) {
 		await aocontenthost.setWhitelist(whitelistedAddress, true, { from: theAO });
 		await aopurchasereceipt.setWhitelist(whitelistedAddress, true, { from: theAO });
 
-		// Let's give accounts some tokens
-		await aotoken.setWhitelist(theAO, true, { from: theAO });
-		await aotoken.mintToken(account1, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
+		// Let's give accounts some ions
+		await aoion.setWhitelist(theAO, true, { from: theAO });
+		await aoion.mint(account1, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 		// Buy 2 lots so that we can test avg weighted multiplier
-		await aotoken.buyPrimordialToken({ from: account1, value: 500000000000 });
-		await aotoken.buyPrimordialToken({ from: account1, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account1, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account1, value: 500000000000 });
 
-		await aotoken.mintToken(account2, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
+		await aoion.mint(account2, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 		// Buy 2 lots so that we can test avg weighted multiplier
-		await aotoken.buyPrimordialToken({ from: account2, value: 500000000000 });
-		await aotoken.buyPrimordialToken({ from: account2, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account2, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account2, value: 500000000000 });
 
-		await aotoken.mintToken(account3, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Token
+		await aoion.mint(account3, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 	});
 
 	var createBecomeHostSignature = function(privateKey, _baseChallenge) {
@@ -447,7 +447,7 @@ contract("AOContentFactory", function(accounts) {
 		var denomination = "mega";
 		var primordialAmount = 1000;
 		var networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
-		var accountWeightedMultiplier = await aotoken.weightedMultiplierByAddress(account1);
+		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(account1);
 		var profitPercentage = 100000;
 
 		var _event = aocontenthost.HostContent();
@@ -519,7 +519,7 @@ contract("AOContentFactory", function(accounts) {
 		var denomination = "mega";
 		var primordialAmount = 0;
 		var networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
-		var accountWeightedMultiplier = await aotoken.weightedMultiplierByAddress(account1);
+		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(account1);
 		var profitPercentage = 0;
 
 		var _event = aocontenthost.HostContent();
@@ -590,7 +590,7 @@ contract("AOContentFactory", function(accounts) {
 		var denomination = "";
 		var primordialAmount = 1000000;
 		var networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
-		var accountWeightedMultiplier = await aotoken.weightedMultiplierByAddress(account1);
+		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(account1);
 		var profitPercentage = 0;
 
 		var _event = aocontenthost.HostContent();

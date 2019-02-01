@@ -81,7 +81,7 @@ contract("TAOFactory", function(accounts) {
 
 		// Mint Logos to nameId
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -481,7 +481,7 @@ contract("TAOFactory", function(accounts) {
 		}
 		assert.equal(canCreateTAO, false, "Name with not enough logos can create TAO - logos < parent TAO's childMinLogos");
 
-		await logos.mintToken(nameId2, 10 ** 12, { from: theAO });
+		await logos.mint(nameId2, 10 ** 12, { from: theAO });
 
 		// Add a TAO
 		var totalTAOsCountBefore = await taofactory.getTotalTAOsCount();

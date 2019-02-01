@@ -29,7 +29,7 @@ contract("NameTAOLookup", function(accounts) {
 
 		// Mint Logos to nameId
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mintToken(nameId1, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -167,7 +167,7 @@ contract("NameTAOLookup", function(accounts) {
 			from: account2
 		});
 		nameId2 = await namefactory.ethAddressToNameId(account2);
-		await logos.mintToken(nameId2, 10 ** 12, { from: theAO });
+		await logos.mint(nameId2, 10 ** 12, { from: theAO });
 
 		var isExist = await nametaolookup.isExist("delta");
 		assert.equal(isExist, true, "isExist() returns incorrect value");

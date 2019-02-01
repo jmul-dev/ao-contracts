@@ -4,12 +4,12 @@ import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
 import './IAOTreasury.sol';
-import './AOTokenInterface.sol';
+import './AOIonInterface.sol';
 
 /**
  * @title AOTreasury
  *
- * The purpose of this contract is to list all of the valid denominations of AO Token and do the conversion between denominations
+ * The purpose of this contract is to list all of the valid denominations of AOIon and do the conversion between denominations
  */
 contract AOTreasury is TheAO, IAOTreasury {
 	using SafeMath for uint256;
@@ -102,7 +102,7 @@ contract AOTreasury is TheAO, IAOTreasury {
 	/**
 	 * @dev The AO adds denomination and the contract address associated with it
 	 * @param denominationName The name of the denomination, i.e ao, kilo, mega, etc.
-	 * @param denominationAddress The address of the denomination token
+	 * @param denominationAddress The address of the denomination ion
 	 * @return true on success
 	 */
 	function addDenomination(bytes8 denominationName, address denominationAddress) public onlyTheAO returns (bool) {
@@ -113,9 +113,9 @@ contract AOTreasury is TheAO, IAOTreasury {
 		totalDenominations++;
 		// Make sure the new denomination is higher than the previous
 		if (totalDenominations > 1) {
-			AOTokenInterface _lastDenominationToken = AOTokenInterface(denominations[totalDenominations - 1].denominationAddress);
-			AOTokenInterface _newDenominationToken = AOTokenInterface(denominationAddress);
-			require (_newDenominationToken.powerOfTen() > _lastDenominationToken.powerOfTen());
+			AOIonInterface _lastDenominationIon = AOIonInterface(denominations[totalDenominations - 1].denominationAddress);
+			AOIonInterface _newDenominationIon = AOIonInterface(denominationAddress);
+			require (_newDenominationIon.powerOfTen() > _lastDenominationIon.powerOfTen());
 		}
 		denominations[totalDenominations].name = denominationName;
 		denominations[totalDenominations].denominationAddress = denominationAddress;
@@ -126,20 +126,20 @@ contract AOTreasury is TheAO, IAOTreasury {
 	/**
 	 * @dev The AO updates denomination address or activates/deactivates the denomination
 	 * @param denominationName The name of the denomination, i.e ao, kilo, mega, etc.
-	 * @param denominationAddress The address of the denomination token
+	 * @param denominationAddress The address of the denomination ion
 	 * @return true on success
 	 */
 	function updateDenomination(bytes8 denominationName, address denominationAddress) public onlyTheAO isValidDenomination(denominationName) returns (bool) {
 		require (denominationAddress != address(0));
 		uint256 _denominationNameIndex = denominationIndex[denominationName];
-		AOTokenInterface _newDenominationToken = AOTokenInterface(denominationAddress);
+		AOIonInterface _newDenominationIon = AOIonInterface(denominationAddress);
 		if (_denominationNameIndex > 1) {
-			AOTokenInterface _prevDenominationToken = AOTokenInterface(denominations[_denominationNameIndex - 1].denominationAddress);
-			require (_newDenominationToken.powerOfTen() > _prevDenominationToken.powerOfTen());
+			AOIonInterface _prevDenominationIon = AOIonInterface(denominations[_denominationNameIndex - 1].denominationAddress);
+			require (_newDenominationIon.powerOfTen() > _prevDenominationIon.powerOfTen());
 		}
 		if (_denominationNameIndex < totalDenominations) {
-			AOTokenInterface _lastDenominationToken = AOTokenInterface(denominations[totalDenominations].denominationAddress);
-			require (_newDenominationToken.powerOfTen() < _lastDenominationToken.powerOfTen());
+			AOIonInterface _lastDenominationIon = AOIonInterface(denominations[totalDenominations].denominationAddress);
+			require (_newDenominationIon.powerOfTen() < _lastDenominationIon.powerOfTen());
 		}
 		denominations[denominationIndex[denominationName]].denominationAddress = denominationAddress;
 		return true;
@@ -170,7 +170,7 @@ contract AOTreasury is TheAO, IAOTreasury {
 	 * @return the denomination multiplier (power of ten)
 	 */
 	function getDenominationByName(bytes8 denominationName) public isValidDenomination(denominationName) view returns (bytes8, address, string, string, uint8, uint256) {
-		AOTokenInterface _ao = AOTokenInterface(denominations[denominationIndex[denominationName]].denominationAddress);
+		AOIonInterface _ao = AOIonInterface(denominations[denominationIndex[denominationName]].denominationAddress);
 		return (
 			denominations[denominationIndex[denominationName]].name,
 			denominations[denominationIndex[denominationName]].denominationAddress,
@@ -194,7 +194,7 @@ contract AOTreasury is TheAO, IAOTreasury {
 	function getDenominationByIndex(uint256 index) public view returns (bytes8, address, string, string, uint8, uint256) {
 		require (index > 0 && index <= totalDenominations);
 		require (denominations[index].denominationAddress != address(0));
-		AOTokenInterface _ao = AOTokenInterface(denominations[index].denominationAddress);
+		AOIonInterface _ao = AOIonInterface(denominations[index].denominationAddress);
 		return (
 			denominations[index].name,
 			denominations[index].denominationAddress,
@@ -220,7 +220,7 @@ contract AOTreasury is TheAO, IAOTreasury {
 	}
 
 	/**
-	 * @dev convert token from `denominationName` denomination to base denomination,
+	 * @dev convert ion from `denominationName` denomination to base denomination,
 	 *		in this case it's similar to web3.toWei() functionality
 	 *
 	 * Example:
@@ -230,18 +230,18 @@ contract AOTreasury is TheAO, IAOTreasury {
 	 *
 	 * @param integerAmount uint256 of the integer amount to be converted
 	 * @param fractionAmount uint256 of the frational amount to be converted
-	 * @param denominationName bytes8 name of the token denomination
+	 * @param denominationName bytes8 name of the ion denomination
 	 * @return uint256 converted amount in base denomination from target denomination
 	 */
 	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) external view returns (uint256) {
 		uint256 _fractionAmount = fractionAmount;
 		if (this.isDenominationExist(denominationName) && (integerAmount > 0 || _fractionAmount > 0)) {
 			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
-			AOTokenInterface _denominationToken = AOTokenInterface(_denomination.denominationAddress);
+			AOIonInterface _denominationIon = AOIonInterface(_denomination.denominationAddress);
 			uint8 fractionNumDigits = AOLibrary.numDigits(_fractionAmount);
-			require (fractionNumDigits <= _denominationToken.decimals());
-			uint256 baseInteger = integerAmount.mul(10 ** _denominationToken.powerOfTen());
-			if (_denominationToken.decimals() == 0) {
+			require (fractionNumDigits <= _denominationIon.decimals());
+			uint256 baseInteger = integerAmount.mul(10 ** _denominationIon.powerOfTen());
+			if (_denominationIon.decimals() == 0) {
 				_fractionAmount = 0;
 			}
 			return baseInteger.add(_fractionAmount);
@@ -251,19 +251,19 @@ contract AOTreasury is TheAO, IAOTreasury {
 	}
 
 	/**
-	 * @dev convert token from base denomination to `denominationName` denomination,
+	 * @dev convert ion from base denomination to `denominationName` denomination,
 	 *		in this case it's similar to web3.fromWei() functionality
 	 * @param integerAmount uint256 of the base amount to be converted
-	 * @param denominationName bytes8 name of the target token denomination
+	 * @param denominationName bytes8 name of the target ion denomination
 	 * @return uint256 of the converted integer amount in target denomination
 	 * @return uint256 of the converted fraction amount in target denomination
 	 */
 	function fromBase(uint256 integerAmount, bytes8 denominationName) public view returns (uint256, uint256) {
 		if (this.isDenominationExist(denominationName)) {
 			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
-			AOTokenInterface _denominationToken = AOTokenInterface(_denomination.denominationAddress);
-			uint256 denominationInteger = integerAmount.div(10 ** _denominationToken.powerOfTen());
-			uint256 denominationFraction = integerAmount.sub(denominationInteger.mul(10 ** _denominationToken.powerOfTen()));
+			AOIonInterface _denominationIon = AOIonInterface(_denomination.denominationAddress);
+			uint256 denominationInteger = integerAmount.div(10 ** _denominationIon.powerOfTen());
+			uint256 denominationFraction = integerAmount.sub(denominationInteger.mul(10 ** _denominationIon.powerOfTen()));
 			return (denominationInteger, denominationFraction);
 		} else {
 			return (0, 0);
@@ -271,8 +271,8 @@ contract AOTreasury is TheAO, IAOTreasury {
 	}
 
 	/**
-	 * @dev exchange `amount` token from `fromDenominationName` denomination to token in `toDenominationName` denomination
-	 * @param amount The amount of token to exchange
+	 * @dev exchange `amount` ion from `fromDenominationName` denomination to ion in `toDenominationName` denomination
+	 * @param amount The amount of ion to exchange
 	 * @param fromDenominationName The origin denomination
 	 * @param toDenominationName The target denomination
 	 */
@@ -280,10 +280,10 @@ contract AOTreasury is TheAO, IAOTreasury {
 		require (amount > 0);
 		Denomination memory _fromDenomination = denominations[denominationIndex[fromDenominationName]];
 		Denomination memory _toDenomination = denominations[denominationIndex[toDenominationName]];
-		AOTokenInterface _fromDenominationToken = AOTokenInterface(_fromDenomination.denominationAddress);
-		AOTokenInterface _toDenominationToken = AOTokenInterface(_toDenomination.denominationAddress);
-		require (_fromDenominationToken.whitelistBurnFrom(msg.sender, amount));
-		require (_toDenominationToken.mintToken(msg.sender, amount));
+		AOIonInterface _fromDenominationIon = AOIonInterface(_fromDenomination.denominationAddress);
+		AOIonInterface _toDenominationIon = AOIonInterface(_toDenomination.denominationAddress);
+		require (_fromDenominationIon.whitelistBurnFrom(msg.sender, amount));
+		require (_toDenominationIon.mint(msg.sender, amount));
 
 		// Store the DenominationExchange information
 		totalDenominationExchanges++;
@@ -297,7 +297,7 @@ contract AOTreasury is TheAO, IAOTreasury {
 		_denominationExchange.toDenominationAddress = _toDenomination.denominationAddress;
 		_denominationExchange.amount = amount;
 
-		emit ExchangeDenomination(msg.sender, _exchangeId, amount, _fromDenomination.denominationAddress, AOTokenInterface(_fromDenomination.denominationAddress).symbol(), _toDenomination.denominationAddress, AOTokenInterface(_toDenomination.denominationAddress).symbol());
+		emit ExchangeDenomination(msg.sender, _exchangeId, amount, _fromDenomination.denominationAddress, AOIonInterface(_fromDenomination.denominationAddress).symbol(), _toDenomination.denominationAddress, AOIonInterface(_toDenomination.denominationAddress).symbol());
 	}
 
 	/**
@@ -317,8 +317,8 @@ contract AOTreasury is TheAO, IAOTreasury {
 			_denominationExchange.sender,
 			_denominationExchange.fromDenominationAddress,
 			_denominationExchange.toDenominationAddress,
-			AOTokenInterface(_denominationExchange.fromDenominationAddress).symbol(),
-			AOTokenInterface(_denominationExchange.toDenominationAddress).symbol(),
+			AOIonInterface(_denominationExchange.fromDenominationAddress).symbol(),
+			AOIonInterface(_denominationExchange.toDenominationAddress).symbol(),
 			_denominationExchange.amount
 		);
 	}
@@ -350,7 +350,7 @@ contract AOTreasury is TheAO, IAOTreasury {
 		require (index > 0 && index <= totalDenominations);
 		require (integerAmount > 0 || fractionAmount > 0);
 		require (denominations[index].denominationAddress != address(0));
-		AOTokenInterface _ao = AOTokenInterface(denominations[index].denominationAddress);
+		AOIonInterface _ao = AOIonInterface(denominations[index].denominationAddress);
 		return (
 			denominations[index].name,
 			denominations[index].denominationAddress,

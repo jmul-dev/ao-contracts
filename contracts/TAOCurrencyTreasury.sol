@@ -118,7 +118,7 @@ contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 	/**
 	 * @dev The AO adds denomination and the contract address associated with it
 	 * @param denominationName The name of the denomination, i.e ao, kilo, mega, etc.
-	 * @param denominationAddress The address of the denomination token
+	 * @param denominationAddress The address of the denomination TAOCurrency
 	 * @return true on success
 	 */
 	function addDenomination(bytes8 denominationName, address denominationAddress) public onlyTheAO returns (bool) {
@@ -129,9 +129,9 @@ contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 		totalDenominations++;
 		// Make sure the new denomination is higher than the previous
 		if (totalDenominations > 1) {
-			TAOCurrency _lastDenominationToken = TAOCurrency(denominations[totalDenominations - 1].denominationAddress);
-			TAOCurrency _newDenominationToken = TAOCurrency(denominationAddress);
-			require (_newDenominationToken.powerOfTen() > _lastDenominationToken.powerOfTen());
+			TAOCurrency _lastDenominationTAOCurrency = TAOCurrency(denominations[totalDenominations - 1].denominationAddress);
+			TAOCurrency _newDenominationTAOCurrency = TAOCurrency(denominationAddress);
+			require (_newDenominationTAOCurrency.powerOfTen() > _lastDenominationTAOCurrency.powerOfTen());
 		}
 		denominations[totalDenominations].name = denominationName;
 		denominations[totalDenominations].denominationAddress = denominationAddress;
@@ -142,20 +142,20 @@ contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 	/**
 	 * @dev The AO updates denomination address or activates/deactivates the denomination
 	 * @param denominationName The name of the denomination, i.e ao, kilo, mega, etc.
-	 * @param denominationAddress The address of the denomination token
+	 * @param denominationAddress The address of the denomination TAOCurrency
 	 * @return true on success
 	 */
 	function updateDenomination(bytes8 denominationName, address denominationAddress) public onlyTheAO isValidDenomination(denominationName) returns (bool) {
 		require (denominationAddress != address(0));
 		uint256 _denominationNameIndex = denominationIndex[denominationName];
-		TAOCurrency _newDenominationToken = TAOCurrency(denominationAddress);
+		TAOCurrency _newDenominationTAOCurrency = TAOCurrency(denominationAddress);
 		if (_denominationNameIndex > 1) {
-			TAOCurrency _prevDenominationToken = TAOCurrency(denominations[_denominationNameIndex - 1].denominationAddress);
-			require (_newDenominationToken.powerOfTen() > _prevDenominationToken.powerOfTen());
+			TAOCurrency _prevDenominationTAOCurrency = TAOCurrency(denominations[_denominationNameIndex - 1].denominationAddress);
+			require (_newDenominationTAOCurrency.powerOfTen() > _prevDenominationTAOCurrency.powerOfTen());
 		}
 		if (_denominationNameIndex < totalDenominations) {
-			TAOCurrency _lastDenominationToken = TAOCurrency(denominations[totalDenominations].denominationAddress);
-			require (_newDenominationToken.powerOfTen() < _lastDenominationToken.powerOfTen());
+			TAOCurrency _lastDenominationTAOCurrency = TAOCurrency(denominations[totalDenominations].denominationAddress);
+			require (_newDenominationTAOCurrency.powerOfTen() < _lastDenominationTAOCurrency.powerOfTen());
 		}
 		denominations[denominationIndex[denominationName]].denominationAddress = denominationAddress;
 		return true;
@@ -236,7 +236,7 @@ contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 	}
 
 	/**
-	 * @dev convert token from `denominationName` denomination to base denomination,
+	 * @dev convert TAOCurrency from `denominationName` denomination to base denomination,
 	 *		in this case it's similar to web3.toWei() functionality
 	 *
 	 * Example:
@@ -246,18 +246,18 @@ contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 	 *
 	 * @param integerAmount uint256 of the integer amount to be converted
 	 * @param fractionAmount uint256 of the frational amount to be converted
-	 * @param denominationName bytes8 name of the token denomination
+	 * @param denominationName bytes8 name of the TAOCurrency denomination
 	 * @return uint256 converted amount in base denomination from target denomination
 	 */
 	function toBase(uint256 integerAmount, uint256 fractionAmount, bytes8 denominationName) external view returns (uint256) {
 		uint256 _fractionAmount = fractionAmount;
 		if (this.isDenominationExist(denominationName) && (integerAmount > 0 || _fractionAmount > 0)) {
 			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
-			TAOCurrency _denominationToken = TAOCurrency(_denomination.denominationAddress);
+			TAOCurrency _denominationTAOCurrency = TAOCurrency(_denomination.denominationAddress);
 			uint8 fractionNumDigits = AOLibrary.numDigits(_fractionAmount);
-			require (fractionNumDigits <= _denominationToken.decimals());
-			uint256 baseInteger = integerAmount.mul(10 ** _denominationToken.powerOfTen());
-			if (_denominationToken.decimals() == 0) {
+			require (fractionNumDigits <= _denominationTAOCurrency.decimals());
+			uint256 baseInteger = integerAmount.mul(10 ** _denominationTAOCurrency.powerOfTen());
+			if (_denominationTAOCurrency.decimals() == 0) {
 				_fractionAmount = 0;
 			}
 			return baseInteger.add(_fractionAmount);
@@ -267,19 +267,19 @@ contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 	}
 
 	/**
-	 * @dev convert token from base denomination to `denominationName` denomination,
+	 * @dev convert TAOCurrency from base denomination to `denominationName` denomination,
 	 *		in this case it's similar to web3.fromWei() functionality
 	 * @param integerAmount uint256 of the base amount to be converted
-	 * @param denominationName bytes8 name of the target token denomination
+	 * @param denominationName bytes8 name of the target TAOCurrency denomination
 	 * @return uint256 of the converted integer amount in target denomination
 	 * @return uint256 of the converted fraction amount in target denomination
 	 */
 	function fromBase(uint256 integerAmount, bytes8 denominationName) public view returns (uint256, uint256) {
 		if (this.isDenominationExist(denominationName)) {
 			Denomination memory _denomination = denominations[denominationIndex[denominationName]];
-			TAOCurrency _denominationToken = TAOCurrency(_denomination.denominationAddress);
-			uint256 denominationInteger = integerAmount.div(10 ** _denominationToken.powerOfTen());
-			uint256 denominationFraction = integerAmount.sub(denominationInteger.mul(10 ** _denominationToken.powerOfTen()));
+			TAOCurrency _denominationTAOCurrency = TAOCurrency(_denomination.denominationAddress);
+			uint256 denominationInteger = integerAmount.div(10 ** _denominationTAOCurrency.powerOfTen());
+			uint256 denominationFraction = integerAmount.sub(denominationInteger.mul(10 ** _denominationTAOCurrency.powerOfTen()));
 			return (denominationInteger, denominationFraction);
 		} else {
 			return (0, 0);
@@ -287,8 +287,8 @@ contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 	}
 
 	/**
-	 * @dev exchange `amount` token from `fromDenominationName` denomination to token in `toDenominationName` denomination
-	 * @param amount The amount of token to exchange
+	 * @dev exchange `amount` TAOCurrency from `fromDenominationName` denomination to TAOCurrency in `toDenominationName` denomination
+	 * @param amount The amount of TAOCurrency to exchange
 	 * @param fromDenominationName The origin denomination
 	 * @param toDenominationName The target denomination
 	 */
@@ -301,7 +301,7 @@ contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 		TAOCurrency _fromDenominationCurrency = TAOCurrency(_fromDenomination.denominationAddress);
 		TAOCurrency _toDenominationCurrency = TAOCurrency(_toDenomination.denominationAddress);
 		require (_fromDenominationCurrency.whitelistBurnFrom(_nameId, amount));
-		require (_toDenominationCurrency.mintToken(_nameId, amount));
+		require (_toDenominationCurrency.mint(_nameId, amount));
 
 		// Store the DenominationExchange information
 		totalDenominationExchanges++;

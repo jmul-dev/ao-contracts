@@ -62,7 +62,7 @@ var AOSetting = artifacts.require("./AOSetting.sol");
 var TAOPool = artifacts.require("./TAOPool.sol");
 
 // AO and its denominations
-var AOToken = artifacts.require("./AOToken.sol");
+var AOIon = artifacts.require("./AOIon.sol");
 var AOKilo = artifacts.require("./AOKilo.sol");
 var AOMega = artifacts.require("./AOMega.sol");
 var AOGiga = artifacts.require("./AOGiga.sol");
@@ -151,7 +151,7 @@ module.exports = function(deployer, network, accounts) {
 		pathosxona,
 		pathostreasury,
 		taopool,
-		aotoken,
+		aoion,
 		aokilo,
 		aomega,
 		aogiga,
@@ -222,7 +222,7 @@ module.exports = function(deployer, network, accounts) {
 		PathosXona,
 		PathosTreasury,
 		TAOPool,
-		AOToken,
+		AOIon,
 		AOKilo,
 		AOMega,
 		AOGiga,
@@ -253,7 +253,7 @@ module.exports = function(deployer, network, accounts) {
 	}
 
 	deployer
-		.deploy([[Epiphany, { overwrite: false }], [Voice, 0, "Voice", "VOICE"]])
+		.deploy([[Epiphany, { overwrite: false }], [Voice, "Voice", "VOICE"]])
 		.then(async function() {
 			epiphany = await Epiphany.deployed();
 			voice = await Voice.deployed();
@@ -296,38 +296,38 @@ module.exports = function(deployer, network, accounts) {
 				[TAOVoice, namefactory.address, voice.address, nametaoposition.address],
 				[AOSettingAttribute, nametaoposition.address],
 				[AOSettingValue, nametaoposition.address],
-				[Logos, 0, "Logos", "LOGOS", nametaoposition.address],
-				[LogosKilo, 0, "Logos Kilo", "LOGOSKILO", nametaoposition.address],
-				[LogosMega, 0, "Logos Mega", "LOGOSMEGA", nametaoposition.address],
-				[LogosGiga, 0, "Logos Giga", "LOGOSGIGA", nametaoposition.address],
-				[LogosTera, 0, "Logos Tera", "LOGOSTERA", nametaoposition.address],
-				[LogosPeta, 0, "Logos Peta", "LOGOSPETA", nametaoposition.address],
-				[LogosExa, 0, "Logos Exa", "LOGOSEXA", nametaoposition.address],
-				[LogosZetta, 0, "Logos Zetta", "LOGOSZETTA", nametaoposition.address],
-				[LogosYotta, 0, "Logos Yotta", "LOGOSYOTTA", nametaoposition.address],
-				[LogosXona, 0, "Logos Xona", "LOGOSXONA", nametaoposition.address],
+				[Logos, "Logos", "LOGOS", nametaoposition.address],
+				[LogosKilo, "Logos Kilo", "LOGOSKILO", nametaoposition.address],
+				[LogosMega, "Logos Mega", "LOGOSMEGA", nametaoposition.address],
+				[LogosGiga, "Logos Giga", "LOGOSGIGA", nametaoposition.address],
+				[LogosTera, "Logos Tera", "LOGOSTERA", nametaoposition.address],
+				[LogosPeta, "Logos Peta", "LOGOSPETA", nametaoposition.address],
+				[LogosExa, "Logos Exa", "LOGOSEXA", nametaoposition.address],
+				[LogosZetta, "Logos Zetta", "LOGOSZETTA", nametaoposition.address],
+				[LogosYotta, "Logos Yotta", "LOGOSYOTTA", nametaoposition.address],
+				[LogosXona, "Logos Xona", "LOGOSXONA", nametaoposition.address],
 				[LogosTreasury, namefactory.address, nametaoposition.address],
-				[Ethos, 0, "Ethos", "ETHOS", nametaoposition.address],
-				[EthosKilo, 0, "Ethos Kilo", "ETHOSKILO", nametaoposition.address],
-				[EthosMega, 0, "Ethos Mega", "ETHOSMEGA", nametaoposition.address],
-				[EthosGiga, 0, "Ethos Giga", "ETHOSGIGA", nametaoposition.address],
-				[EthosTera, 0, "Ethos Tera", "ETHOSTERA", nametaoposition.address],
-				[EthosPeta, 0, "Ethos Peta", "ETHOSPETA", nametaoposition.address],
-				[EthosExa, 0, "Ethos Exa", "ETHOSEXA", nametaoposition.address],
-				[EthosZetta, 0, "Ethos Zetta", "ETHOSZETTA", nametaoposition.address],
-				[EthosYotta, 0, "Ethos Yotta", "ETHOSYOTTA", nametaoposition.address],
-				[EthosXona, 0, "Ethos Xona", "ETHOSXONA", nametaoposition.address],
+				[Ethos, "Ethos", "ETHOS", nametaoposition.address],
+				[EthosKilo, "Ethos Kilo", "ETHOSKILO", nametaoposition.address],
+				[EthosMega, "Ethos Mega", "ETHOSMEGA", nametaoposition.address],
+				[EthosGiga, "Ethos Giga", "ETHOSGIGA", nametaoposition.address],
+				[EthosTera, "Ethos Tera", "ETHOSTERA", nametaoposition.address],
+				[EthosPeta, "Ethos Peta", "ETHOSPETA", nametaoposition.address],
+				[EthosExa, "Ethos Exa", "ETHOSEXA", nametaoposition.address],
+				[EthosZetta, "Ethos Zetta", "ETHOSZETTA", nametaoposition.address],
+				[EthosYotta, "Ethos Yotta", "ETHOSYOTTA", nametaoposition.address],
+				[EthosXona, "Ethos Xona", "ETHOSXONA", nametaoposition.address],
 				[EthosTreasury, namefactory.address, nametaoposition.address],
-				[Pathos, 0, "Pathos", "PATHOS", nametaoposition.address],
-				[PathosKilo, 0, "Pathos Kilo", "PATHOSKILO", nametaoposition.address],
-				[PathosMega, 0, "Pathos Mega", "PATHOSMEGA", nametaoposition.address],
-				[PathosGiga, 0, "Pathos Giga", "PATHOSGIGA", nametaoposition.address],
-				[PathosTera, 0, "Pathos Tera", "PATHOSTERA", nametaoposition.address],
-				[PathosPeta, 0, "Pathos Peta", "PATHOSPETA", nametaoposition.address],
-				[PathosExa, 0, "Pathos Exa", "PATHOSEXA", nametaoposition.address],
-				[PathosZetta, 0, "Pathos Zetta", "PATHOSZETTA", nametaoposition.address],
-				[PathosYotta, 0, "Pathos Yotta", "PATHOSYOTTA", nametaoposition.address],
-				[PathosXona, 0, "Pathos Xona", "PATHOSXONA", nametaoposition.address],
+				[Pathos, "Pathos", "PATHOS", nametaoposition.address],
+				[PathosKilo, "Pathos Kilo", "PATHOSKILO", nametaoposition.address],
+				[PathosMega, "Pathos Mega", "PATHOSMEGA", nametaoposition.address],
+				[PathosGiga, "Pathos Giga", "PATHOSGIGA", nametaoposition.address],
+				[PathosTera, "Pathos Tera", "PATHOSTERA", nametaoposition.address],
+				[PathosPeta, "Pathos Peta", "PATHOSPETA", nametaoposition.address],
+				[PathosExa, "Pathos Exa", "PATHOSEXA", nametaoposition.address],
+				[PathosZetta, "Pathos Zetta", "PATHOSZETTA", nametaoposition.address],
+				[PathosYotta, "Pathos Yotta", "PATHOSYOTTA", nametaoposition.address],
+				[PathosXona, "Pathos Xona", "PATHOSXONA", nametaoposition.address],
 				[PathosTreasury, namefactory.address, nametaoposition.address]
 			]);
 		})
@@ -598,47 +598,33 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			/**
-			 * startingNetworkTokenBonusMultiplier 1000000 = 100%
+			 * startingNetworkBonusMultiplier 1000000 = 100%
 			 */
 			try {
-				var result = await aosetting.addUintSetting(
-					"startingNetworkTokenBonusMultiplier",
-					10 ** 6,
-					primordialTAOId,
-					settingTAOId,
-					"",
-					{
-						from: primordialAccount
-					}
-				);
+				var result = await aosetting.addUintSetting("startingNetworkBonusMultiplier", 10 ** 6, primordialTAOId, settingTAOId, "", {
+					from: primordialAccount
+				});
 				var settingId = result.logs[0].args.settingId;
 
 				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
 				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
 			} catch (e) {
-				console.log("Unable to add startingNetworkTokenBonusMultiplier setting", e);
+				console.log("Unable to add startingNetworkBonusMultiplier setting", e);
 			}
 
 			/**
-			 * endingNetworkTokenBonusMultiplier 250000 = 25%
+			 * endingNetworkBonusMultiplier 250000 = 25%
 			 */
 			try {
-				var result = await aosetting.addUintSetting(
-					"endingNetworkTokenBonusMultiplier",
-					250000,
-					primordialTAOId,
-					settingTAOId,
-					"",
-					{
-						from: primordialAccount
-					}
-				);
+				var result = await aosetting.addUintSetting("endingNetworkBonusMultiplier", 250000, primordialTAOId, settingTAOId, "", {
+					from: primordialAccount
+				});
 				var settingId = result.logs[0].args.settingId;
 
 				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
 				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
 			} catch (e) {
-				console.log("Unable to add endingNetworkTokenBonusMultiplier setting", e);
+				console.log("Unable to add endingNetworkBonusMultiplier setting", e);
 			}
 
 			/**
@@ -1028,21 +1014,21 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			return deployer.deploy([
-				[AOToken, 0, "AO Token", "AOTKN", settingTAOId, aosetting.address, nametaoposition.address],
-				[AOKilo, 0, "AO Kilo", "AOKILO", nametaoposition.address],
-				[AOMega, 0, "AO Mega", "AOMEGA", nametaoposition.address],
-				[AOGiga, 0, "AO Giga", "AOGIGA", nametaoposition.address],
-				[AOTera, 0, "AO Tera", "AOTERA", nametaoposition.address],
-				[AOPeta, 0, "AO Peta", "AOPETA", nametaoposition.address],
-				[AOExa, 0, "AO Exa", "AOEXA", nametaoposition.address],
-				[AOZetta, 0, "AO Zetta", "AOZETTA", nametaoposition.address],
-				[AOYotta, 0, "AO Yotta", "AOYOTTA", nametaoposition.address],
-				[AOXona, 0, "AO Xona", "AOXONA", nametaoposition.address],
+				[AOIon, "AO Ion", "AOION", settingTAOId, aosetting.address, nametaoposition.address],
+				[AOKilo, "AO Kilo", "AOKILO", nametaoposition.address],
+				[AOMega, "AO Mega", "AOMEGA", nametaoposition.address],
+				[AOGiga, "AO Giga", "AOGIGA", nametaoposition.address],
+				[AOTera, "AO Tera", "AOTERA", nametaoposition.address],
+				[AOPeta, "AO Peta", "AOPETA", nametaoposition.address],
+				[AOExa, "AO Exa", "AOEXA", nametaoposition.address],
+				[AOZetta, "AO Zetta", "AOZETTA", nametaoposition.address],
+				[AOYotta, "AO Yotta", "AOYOTTA", nametaoposition.address],
+				[AOXona, "AO Xona", "AOXONA", nametaoposition.address],
 				[AOTreasury, nametaoposition.address]
 			]);
 		})
 		.then(async function() {
-			aotoken = await AOToken.deployed();
+			aoion = await AOIon.deployed();
 			aokilo = await AOKilo.deployed();
 			aomega = await AOMega.deployed();
 			aogiga = await AOGiga.deployed();
@@ -1054,14 +1040,14 @@ module.exports = function(deployer, network, accounts) {
 			aoxona = await AOXona.deployed();
 			aotreasury = await AOTreasury.deployed();
 
-			// Link AOToken to NameTAOVault
-			await nametaovault.setAOTokenAddress(aotoken.address, { from: primordialAccount });
+			// Link AOIon to NameTAOVault
+			await nametaovault.setAOIonAddress(aoion.address, { from: primordialAccount });
 
-			// AOToken Grant access to NameTAOVault
-			await aotoken.setWhitelist(nametaovault.address, true, { from: primordialAccount });
+			// AOIon Grant access to NameTAOVault
+			await aoion.setWhitelist(nametaovault.address, true, { from: primordialAccount });
 
 			// Store AO denominations in AOTreasury
-			await aotreasury.addDenomination("ao", aotoken.address, { from: primordialAccount });
+			await aotreasury.addDenomination("ao", aoion.address, { from: primordialAccount });
 			await aotreasury.addDenomination("kilo", aokilo.address, { from: primordialAccount });
 			await aotreasury.addDenomination("mega", aomega.address, { from: primordialAccount });
 			await aotreasury.addDenomination("giga", aogiga.address, { from: primordialAccount });
@@ -1073,7 +1059,7 @@ module.exports = function(deployer, network, accounts) {
 			await aotreasury.addDenomination("xona", aoxona.address, { from: primordialAccount });
 
 			// AO denominations grant access to AOTreasury
-			await aotoken.setWhitelist(aotreasury.address, true, { from: primordialAccount });
+			await aoion.setWhitelist(aotreasury.address, true, { from: primordialAccount });
 			await aokilo.setWhitelist(aotreasury.address, true, { from: primordialAccount });
 			await aomega.setWhitelist(aotreasury.address, true, { from: primordialAccount });
 			await aogiga.setWhitelist(aotreasury.address, true, { from: primordialAccount });
@@ -1085,8 +1071,8 @@ module.exports = function(deployer, network, accounts) {
 			await aoxona.setWhitelist(aotreasury.address, true, { from: primordialAccount });
 
 			return deployer.deploy([
-				[AOPool, aotoken.address, nametaoposition.address],
-				[AOETH, 0, "AO ETH", "AOETH", aotoken.address, nametaoposition.address],
+				[AOPool, aoion.address, nametaoposition.address],
+				[AOETH, 0, "AO ETH", "AOETH", aoion.address, nametaoposition.address],
 				[AOContent, settingTAOId, aosetting.address, nametaoposition.address]
 			]);
 		})
@@ -1096,7 +1082,7 @@ module.exports = function(deployer, network, accounts) {
 			aocontent = await AOContent.deployed();
 
 			// Grant access to aopool to transact on behalf of others on base denomination
-			await aotoken.setWhitelist(aopool.address, true, { from: primordialAccount });
+			await aoion.setWhitelist(aopool.address, true, { from: primordialAccount });
 
 			// Create test pools for testing exchanges
 			// Pool #1
@@ -1145,19 +1131,19 @@ module.exports = function(deployer, network, accounts) {
 			// erc20CounterAsset: false (priced in Eth)
 			await aopool.createPool(10000, false, true, 10000000, true, 5000, false, "", "", { from: primordialAccount });
 
-			// Link AOETH to AOToken
-			await aotoken.setAOETHAddress(aoeth.address, { from: primordialAccount });
+			// Link AOETH to AOIon
+			await aoion.setAOETHAddress(aoeth.address, { from: primordialAccount });
 
-			// AOETH grant access to AOToken
-			await aoeth.setWhitelist(aotoken.address, true, { from: primordialAccount });
+			// AOETH grant access to AOIon
+			await aoeth.setWhitelist(aoion.address, true, { from: primordialAccount });
 
 			return deployer.deploy([
-				[AOStakedContent, aotoken.address, aotreasury.address, aocontent.address, nametaoposition.address],
+				[AOStakedContent, aoion.address, aotreasury.address, aocontent.address, nametaoposition.address],
 				[
 					AOEarning,
 					settingTAOId,
 					aosetting.address,
-					aotoken.address,
+					aoion.address,
 					namefactory.address,
 					pathos.address,
 					ethos.address,
@@ -1170,11 +1156,11 @@ module.exports = function(deployer, network, accounts) {
 			aostakedcontent = await AOStakedContent.deployed();
 			aoearning = await AOEarning.deployed();
 
-			// AOToken grant access to AOStakedContent
-			await aotoken.setWhitelist(aostakedcontent.address, true, { from: primordialAccount });
+			// AOIon grant access to AOStakedContent
+			await aoion.setWhitelist(aostakedcontent.address, true, { from: primordialAccount });
 
-			// AOToken grant access to AOEarning
-			await aotoken.setWhitelist(aoearning.address, true, { from: primordialAccount });
+			// AOIon grant access to AOEarning
+			await aoion.setWhitelist(aoearning.address, true, { from: primordialAccount });
 
 			// Pathos grant access to AOEarning
 			await pathos.setWhitelist(aoearning.address, true, { from: primordialAccount });
