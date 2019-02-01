@@ -3,12 +3,11 @@ var TAOFactory = artifacts.require("./TAOFactory.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var Logos = artifacts.require("./Logos.sol");
 var AOZetta = artifacts.require("./AOZetta.sol");
-var TokenOne = artifacts.require("./TokenOne.sol");
 
 var EthCrypto = require("eth-crypto");
 
 contract("AOZetta", function(accounts) {
-	var namefactory, taofactory, nametaoposition, logos, aozetta, tokenone, nameId, taoId;
+	var namefactory, taofactory, nametaoposition, logos, aozetta, nameId, taoId;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
@@ -24,7 +23,6 @@ contract("AOZetta", function(accounts) {
 		nametaoposition = await NameTAOPosition.deployed();
 		logos = await Logos.deployed();
 		aozetta = await AOZetta.deployed();
-		tokenone = await TokenOne.deployed();
 	});
 
 	contract("Variable settings", function() {
@@ -148,44 +146,6 @@ contract("AOZetta", function(accounts) {
 
 			var nameTAOPositionAddress = await aozetta.nameTAOPositionAddress();
 			assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
-		});
-
-		it("The AO - transferERC20() should be able to transfer ERC20 to an address", async function() {
-			await tokenone.transfer(aozetta.address, 100, { from: theAO });
-
-			var accountBalanceBefore = await tokenone.balanceOf(account1);
-			var aozettaBalanceBefore = await tokenone.balanceOf(aozetta.address);
-
-			var canTransfer;
-			try {
-				await aozetta.transferERC20(tokenone.address, account1, 10, { from: someAddress });
-				canTransfer = true;
-			} catch (e) {
-				canTransfer = false;
-			}
-			assert.equal(canTransfer, false, "Non-AO can transfer ERC20 token from aozetta");
-
-			try {
-				await aozetta.transferERC20(tokenone.address, account1, 1000, { from: account1 });
-				canTransfer = true;
-			} catch (e) {
-				canTransfer = false;
-			}
-			assert.equal(canTransfer, false, "The AO can transfer ERC20 token more than owned balance");
-
-			try {
-				await aozetta.transferERC20(tokenone.address, account1, 100, { from: account1 });
-				canTransfer = true;
-			} catch (e) {
-				canTransfer = false;
-			}
-			assert.equal(canTransfer, true, "The AO can't transfer ERC20 token from aozetta to another recipient");
-
-			var accountBalanceAfter = await tokenone.balanceOf(account1);
-			var aozettaBalanceAfter = await tokenone.balanceOf(aozetta.address);
-
-			assert.equal(accountBalanceAfter.toNumber(), accountBalanceBefore.plus(100).toNumber(), "Account has incorrect ERC20 balance");
-			assert.equal(aozettaBalanceAfter.toNumber(), aozettaBalanceBefore.minus(100).toNumber(), "aozetta has incorrect ERC20 balance");
 		});
 
 		it("The AO - freezeAccount() can freeze account", async function() {

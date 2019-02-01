@@ -3,14 +3,22 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
-import './TokenERC20.sol';
-import './tokenRecipient.sol';
+
+interface ionRecipient {
+	function receiveApproval(address _from, uint256 _value, address _token, bytes _extraData) external;
+}
 
 /**
  * @title AOIonInterface
  */
-contract AOIonInterface is TheAO, TokenERC20 {
+contract AOIonInterface is TheAO {
 	using SafeMath for uint256;
+
+	// Public variables of the contract
+	string public name;
+	string public symbol;
+	uint8 public decimals;
+	uint256 public totalSupply;
 
 	// To differentiate denomination of AO
 	uint256 public powerOfTen;
@@ -19,6 +27,9 @@ contract AOIonInterface is TheAO, TokenERC20 {
 	uint256 public sellPrice;
 	uint256 public buyPrice;
 
+	// This creates an array with all balances
+	mapping (address => uint256) public balanceOf;
+	mapping (address => mapping (address => uint256)) public allowance;
 	mapping (address => bool) public frozenAccount;
 	mapping (address => uint256) public stakedBalance;
 	mapping (address => uint256) public escrowedBalance;
@@ -30,12 +41,22 @@ contract AOIonInterface is TheAO, TokenERC20 {
 	event Escrow(address indexed from, address indexed to, uint256 value);
 	event Unescrow(address indexed from, uint256 value);
 
+	// This generates a public event on the blockchain that will notify clients
+	event Transfer(address indexed from, address indexed to, uint256 value);
+
+	// This generates a public event on the blockchain that will notify clients
+	event Approval(address indexed _owner, address indexed _spender, uint256 _value);
+
+	// This notifies clients about the amount burnt
+	event Burn(address indexed from, uint256 value);
+
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(string _name, string _symbol, address _nameTAOPositionAddress)
-		TokenERC20(0, _name, _symbol) public {
+	constructor(string _name, string _symbol, address _nameTAOPositionAddress) public {
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
+		name = _name;           // Set the name for display purposes
+		symbol = _symbol;       // Set the symbol for display purposes
 		powerOfTen = 0;
 		decimals = 0;
 	}
@@ -87,18 +108,6 @@ contract AOIonInterface is TheAO, TokenERC20 {
 	function transferEth(address _recipient, uint256 _amount) public onlyTheAO {
 		require (_recipient != address(0));
 		_recipient.transfer(_amount);
-	}
-
-	/**
-	 * @dev Allows TheAO to transfer `_amount` of ERC20 Token from this address to `_recipient`
-	 * @param _erc20TokenAddress The address of ERC20 Token
-	 * @param _recipient The recipient address
-	 * @param _amount The amount to transfer
-	 */
-	function transferERC20(address _erc20TokenAddress, address _recipient, uint256 _amount) public onlyTheAO {
-		require (_recipient != address(0));
-		TokenERC20 _erc20 = TokenERC20(_erc20TokenAddress);
-		require (_erc20.transfer(_recipient, _amount));
 	}
 
 	/**
@@ -232,6 +241,99 @@ contract AOIonInterface is TheAO, TokenERC20 {
 	}
 
 	/***** PUBLIC METHODS *****/
+	/**
+	 * Transfer ions
+	 *
+	 * Send `_value` ions to `_to` from your account
+	 *
+	 * @param _to The address of the recipient
+	 * @param _value the amount to send
+	 */
+	function transfer(address _to, uint256 _value) public returns (bool success) {
+		_transfer(msg.sender, _to, _value);
+		return true;
+	}
+
+	/**
+	 * Transfer ions from other address
+	 *
+	 * Send `_value` ions to `_to` in behalf of `_from`
+	 *
+	 * @param _from The address of the sender
+	 * @param _to The address of the recipient
+	 * @param _value the amount to send
+	 */
+	function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
+		require(_value <= allowance[_from][msg.sender]);     // Check allowance
+		allowance[_from][msg.sender] -= _value;
+		_transfer(_from, _to, _value);
+		return true;
+	}
+
+	/**
+	 * Set allowance for other address
+	 *
+	 * Allows `_spender` to spend no more than `_value` ions in your behalf
+	 *
+	 * @param _spender The address authorized to spend
+	 * @param _value the max amount they can spend
+	 */
+	function approve(address _spender, uint256 _value) public returns (bool success) {
+		allowance[msg.sender][_spender] = _value;
+		emit Approval(msg.sender, _spender, _value);
+		return true;
+	}
+
+	/**
+	 * Set allowance for other address and notify
+	 *
+	 * Allows `_spender` to spend no more than `_value` ions in your behalf, and then ping the contract about it
+	 *
+	 * @param _spender The address authorized to spend
+	 * @param _value the max amount they can spend
+	 * @param _extraData some extra information to send to the approved contract
+	 */
+	function approveAndCall(address _spender, uint256 _value, bytes _extraData) public returns (bool success) {
+		ionRecipient spender = ionRecipient(_spender);
+		if (approve(_spender, _value)) {
+			spender.receiveApproval(msg.sender, _value, this, _extraData);
+			return true;
+		}
+	}
+
+	/**
+	 * Destroy ions
+	 *
+	 * Remove `_value` ions from the system irreversibly
+	 *
+	 * @param _value the amount of money to burn
+	 */
+	function burn(uint256 _value) public returns (bool success) {
+		require(balanceOf[msg.sender] >= _value);   // Check if the sender has enough
+		balanceOf[msg.sender] -= _value;            // Subtract from the sender
+		totalSupply -= _value;                      // Updates totalSupply
+		emit Burn(msg.sender, _value);
+		return true;
+	}
+
+	/**
+	 * Destroy ions from other account
+	 *
+	 * Remove `_value` ions from the system irreversibly on behalf of `_from`.
+	 *
+	 * @param _from the address of the sender
+	 * @param _value the amount of money to burn
+	 */
+	function burnFrom(address _from, uint256 _value) public returns (bool success) {
+		require(balanceOf[_from] >= _value);                // Check if the targeted balance is enough
+		require(_value <= allowance[_from][msg.sender]);    // Check allowance
+		balanceOf[_from] -= _value;                         // Subtract from the targeted balance
+		allowance[_from][msg.sender] -= _value;             // Subtract from the sender's allowance
+		totalSupply -= _value;                              // Update totalSupply
+		emit Burn(_from, _value);
+		return true;
+	}
+
 	/**
 	 * @dev Buy ions from contract by sending ether
 	 */

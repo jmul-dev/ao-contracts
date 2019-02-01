@@ -9,8 +9,6 @@ var AOSetting = artifacts.require("./AOSetting.sol");
 var AOETH = artifacts.require("./AOETH.sol");
 
 var TokenOne = artifacts.require("./TokenOne.sol");
-var TokenTwo = artifacts.require("./TokenTwo.sol");
-var TokenThree = artifacts.require("./TokenThree.sol");
 
 var EthCrypto = require("eth-crypto");
 var BigNumber = require("bignumber.js");
@@ -26,8 +24,6 @@ contract("AOIon", function(accounts) {
 		aosetting,
 		aoeth,
 		tokenone,
-		tokentwo,
-		tokenthree,
 		settingTAOId,
 		nameId,
 		taoId,
@@ -63,8 +59,6 @@ contract("AOIon", function(accounts) {
 		aosetting = await AOSetting.deployed();
 		aoeth = await AOETH.deployed();
 		tokenone = await TokenOne.deployed();
-		tokentwo = await TokenTwo.deployed();
-		tokenthree = await TokenThree.deployed();
 
 		settingTAOId = await aoion.settingTAOId();
 		percentageDivisor = await library.PERCENTAGE_DIVISOR();
@@ -230,44 +224,6 @@ contract("AOIon", function(accounts) {
 
 			var nameTAOPositionAddress = await aoion.nameTAOPositionAddress();
 			assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
-		});
-
-		it("The AO - transferERC20() should be able to transfer ERC20 to an address", async function() {
-			await tokenone.transfer(aoion.address, 100, { from: theAO });
-
-			var accountBalanceBefore = await tokenone.balanceOf(account1);
-			var aoionBalanceBefore = await tokenone.balanceOf(aoion.address);
-
-			var canTransfer;
-			try {
-				await aoion.transferERC20(tokenone.address, account1, 10, { from: someAddress });
-				canTransfer = true;
-			} catch (e) {
-				canTransfer = false;
-			}
-			assert.equal(canTransfer, false, "Non-AO can transfer ERC20 token from AOIon");
-
-			try {
-				await aoion.transferERC20(tokenone.address, account1, 1000, { from: account1 });
-				canTransfer = true;
-			} catch (e) {
-				canTransfer = false;
-			}
-			assert.equal(canTransfer, false, "The AO can transfer ERC20 token more than owned balance");
-
-			try {
-				await aoion.transferERC20(tokenone.address, account1, 100, { from: account1 });
-				canTransfer = true;
-			} catch (e) {
-				canTransfer = false;
-			}
-			assert.equal(canTransfer, true, "The AO can't transfer ERC20 token from AOIon to another recipient");
-
-			var accountBalanceAfter = await tokenone.balanceOf(account1);
-			var aoionBalanceAfter = await tokenone.balanceOf(aoion.address);
-
-			assert.equal(accountBalanceAfter.toNumber(), accountBalanceBefore.plus(100).toNumber(), "Account has incorrect ERC20 balance");
-			assert.equal(aoionBalanceAfter.toNumber(), aoionBalanceBefore.minus(100).toNumber(), "AOIon has incorrect ERC20 balance");
 		});
 
 		it("The AO - freezeAccount() can freeze account", async function() {
