@@ -3,6 +3,9 @@ pragma solidity ^0.4.24;
 import './SafeMath.sol';
 import './AOLibrary.sol';
 import './TheAO.sol';
+import './INameTAOPosition.sol';
+import './INamePublicKey.sol';
+import './INameAccountRecovery.sol';
 
 interface ionRecipient {
 	function receiveApproval(address _from, uint256 _value, address _token, bytes _extraData) external;
@@ -13,6 +16,13 @@ interface ionRecipient {
  */
 contract AOIonInterface is TheAO {
 	using SafeMath for uint256;
+
+	address public namePublicKeyAddress;
+	address public nameAccountRecoveryAddress;
+
+	INameTAOPosition internal _nameTAOPosition;
+	INamePublicKey internal _namePublicKey;
+	INameAccountRecovery internal _nameAccountRecovery;
 
 	// Public variables of the contract
 	string public name;
@@ -53,8 +63,10 @@ contract AOIonInterface is TheAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(string _name, string _symbol, address _nameTAOPositionAddress) public {
+	constructor(string _name, string _symbol, address _nameTAOPositionAddress, address _namePublicKeyAddress, address _nameAccountRecoveryAddress) public {
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
+		setNamePublicKeyAddress(_namePublicKeyAddress);
+		setNameAccountRecoveryAddress(_nameAccountRecoveryAddress);
 		name = _name;           // Set the name for display purposes
 		symbol = _symbol;       // Set the symbol for display purposes
 		powerOfTen = 0;
@@ -98,6 +110,27 @@ contract AOIonInterface is TheAO {
 	function setNameTAOPositionAddress(address _nameTAOPositionAddress) public onlyTheAO {
 		require (_nameTAOPositionAddress != address(0));
 		nameTAOPositionAddress = _nameTAOPositionAddress;
+		_nameTAOPosition = INameTAOPosition(nameTAOPositionAddress);
+	}
+
+	/**
+	 * @dev The AO set the NamePublicKey Address
+	 * @param _namePublicKeyAddress The address of NamePublicKey
+	 */
+	function setNamePublicKeyAddress(address _namePublicKeyAddress) public onlyTheAO {
+		require (_namePublicKeyAddress != address(0));
+		namePublicKeyAddress = _namePublicKeyAddress;
+		_namePublicKey = INamePublicKey(namePublicKeyAddress);
+	}
+
+	/**
+	 * @dev The AO set the NameAccountRecovery Address
+	 * @param _nameAccountRecoveryAddress The address of NameAccountRecovery
+	 */
+	function setNameAccountRecoveryAddress(address _nameAccountRecoveryAddress) public onlyTheAO {
+		require (_nameAccountRecoveryAddress != address(0));
+		nameAccountRecoveryAddress = _nameAccountRecoveryAddress;
+		_nameAccountRecovery = INameAccountRecovery(nameAccountRecoveryAddress);
 	}
 
 	/**
@@ -266,6 +299,25 @@ contract AOIonInterface is TheAO {
 	function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
 		require(_value <= allowance[_from][msg.sender]);     // Check allowance
 		allowance[_from][msg.sender] -= _value;
+		_transfer(_from, _to, _value);
+		return true;
+	}
+
+	/**
+	 * Transfer ions between public key addresses in a Name
+	 * @param _nameId The ID of the Name
+	 * @param _from The address of the sender
+	 * @param _to The address of the recipient
+	 * @param _value the amount to send
+	 */
+	function transferBetweenPublicKeys(address _nameId, address _from, address _to, uint256 _value) public returns (bool success) {
+		require (AOLibrary.isName(_nameId));
+		require (_nameTAOPosition.senderIsAdvocate(msg.sender, _nameId));
+		require (!_nameAccountRecovery.isCompromised(_nameId));
+		// Make sure _from exist in the Name's Public Keys
+		require (_namePublicKey.isKeyExist(_nameId, _from));
+		// Make sure _to exist in the Name's Public Keys
+		require (_namePublicKey.isKeyExist(_nameId, _to));
 		_transfer(_from, _to, _value);
 		return true;
 	}

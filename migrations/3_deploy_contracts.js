@@ -75,6 +75,7 @@ var AOYotta = artifacts.require("./AOYotta.sol");
 var AOXona = artifacts.require("./AOXona.sol");
 
 // Contracts that interact with AO and its denominations contracts
+var AOIonLot = artifacts.require("./AOIonLot.sol");
 var AOPool = artifacts.require("./AOPool.sol");
 var AOETH = artifacts.require("./AOETH.sol");
 var AOTreasury = artifacts.require("./AOTreasury.sol");
@@ -163,6 +164,7 @@ module.exports = function(deployer, network, accounts) {
 		aozetta,
 		aoyotta,
 		aoxona,
+		aoionlot,
 		aopool,
 		aoeth,
 		aotreasury,
@@ -235,6 +237,7 @@ module.exports = function(deployer, network, accounts) {
 		AOZetta,
 		AOYotta,
 		AOXona,
+		AOIonLot,
 		AOPool,
 		AOETH,
 		AOTreasury,
@@ -1074,16 +1077,25 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			return deployer.deploy([
-				[AOIon, "AO Ion", "AOION", settingTAOId, aosetting.address, nametaoposition.address],
-				[AOKilo, "AO Kilo", "AOKILO", nametaoposition.address],
-				[AOMega, "AO Mega", "AOMEGA", nametaoposition.address],
-				[AOGiga, "AO Giga", "AOGIGA", nametaoposition.address],
-				[AOTera, "AO Tera", "AOTERA", nametaoposition.address],
-				[AOPeta, "AO Peta", "AOPETA", nametaoposition.address],
-				[AOExa, "AO Exa", "AOEXA", nametaoposition.address],
-				[AOZetta, "AO Zetta", "AOZETTA", nametaoposition.address],
-				[AOYotta, "AO Yotta", "AOYOTTA", nametaoposition.address],
-				[AOXona, "AO Xona", "AOXONA", nametaoposition.address],
+				[
+					AOIon,
+					"AO Ion",
+					"AOION",
+					settingTAOId,
+					aosetting.address,
+					nametaoposition.address,
+					namepublickey.address,
+					nameaccountrecovery.address
+				],
+				[AOKilo, "AO Kilo", "AOKILO", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
+				[AOMega, "AO Mega", "AOMEGA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
+				[AOGiga, "AO Giga", "AOGIGA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
+				[AOTera, "AO Tera", "AOTERA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
+				[AOPeta, "AO Peta", "AOPETA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
+				[AOExa, "AO Exa", "AOEXA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
+				[AOZetta, "AO Zetta", "AOZETTA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
+				[AOYotta, "AO Yotta", "AOYOTTA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
+				[AOXona, "AO Xona", "AOXONA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
 				[AOTreasury, nametaoposition.address]
 			]);
 		})
@@ -1131,15 +1143,20 @@ module.exports = function(deployer, network, accounts) {
 			await aoxona.setWhitelist(aotreasury.address, true, { from: primordialAccount });
 
 			return deployer.deploy([
+				[AOIonLot, aoion.address, nametaoposition.address],
 				[AOPool, aoion.address, nametaoposition.address],
 				[AOETH, 0, "AO ETH", "AOETH", aoion.address, nametaoposition.address],
 				[AOContent, settingTAOId, aosetting.address, nametaoposition.address]
 			]);
 		})
 		.then(async function() {
+			aoionlot = await AOIonLot.deployed();
 			aopool = await AOPool.deployed();
 			aoeth = await AOETH.deployed();
 			aocontent = await AOContent.deployed();
+
+			// Link AOIonLot to AOIon
+			await aoion.setAOIonLotAddress(aoionlot.address, { from: primordialAccount });
 
 			// Grant access to aopool to transact on behalf of others on base denomination
 			await aoion.setWhitelist(aopool.address, true, { from: primordialAccount });
