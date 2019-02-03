@@ -303,7 +303,7 @@ module.exports = function(deployer, network, accounts) {
 				[TAOVoice, namefactory.address, voice.address, nametaoposition.address],
 				[AOSettingAttribute, nametaoposition.address],
 				[AOSettingValue, nametaoposition.address],
-				[Logos, "Logos", "LOGOS", nametaoposition.address],
+				[Logos, "Logos", "LOGOS", namefactory.address, nametaoposition.address],
 				[LogosKilo, "Logos Kilo", "LOGOSKILO", nametaoposition.address],
 				[LogosMega, "Logos Mega", "LOGOSMEGA", nametaoposition.address],
 				[LogosGiga, "Logos Giga", "LOGOSGIGA", nametaoposition.address],

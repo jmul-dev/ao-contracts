@@ -74,6 +74,14 @@ contract NameTAOVault is TheAO {
 		_;
 	}
 
+	/**
+	 * @dev Only allowed if sender's Name is not compromised
+	 */
+	modifier senderNameNotCompromised() {
+		require (!_nameAccountRecovery.isCompromised(_nameFactory.ethAddressToNameId(msg.sender)));
+		_;
+	}
+
 	/***** THE AO ONLY METHODS *****/
 	/**
 	 * @dev Transfer ownership of The AO to new address
@@ -178,7 +186,7 @@ contract NameTAOVault is TheAO {
 	 * @param _to The recipient address
 	 * @param _amount The amount to transfer
 	 */
-	function transferEth(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) {
+	function transferEth(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) senderNameNotCompromised {
 		require (_amount > 0 && address(_from).balance >= _amount);
 		require (_to != address(0) && _from != _to);
 		if (AOLibrary.isName(_from)) {
@@ -198,7 +206,7 @@ contract NameTAOVault is TheAO {
 	 * @param _to The recipient address
 	 * @param _amount The amount to transfer
 	 */
-	function transferERC20(address _erc20TokenAddress, address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) {
+	function transferERC20(address _erc20TokenAddress, address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) senderNameNotCompromised {
 		require (AOLibrary.isValidERC20TokenAddress(_erc20TokenAddress));
 		TokenERC20 _erc20 = TokenERC20(_erc20TokenAddress);
 		require (_amount > 0 && _erc20.balanceOf(_from) >= _amount);
@@ -219,7 +227,7 @@ contract NameTAOVault is TheAO {
 	 * @param _to The recipient address
 	 * @param _amount The amount to transfer
 	 */
-	function transferAO(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) {
+	function transferAO(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) senderNameNotCompromised {
 		require (_amount > 0 && _aoIon.balanceOf(_from) >= _amount);
 		require (_to != address(0) && _from != _to);
 		if (AOLibrary.isName(_from)) {
@@ -238,7 +246,7 @@ contract NameTAOVault is TheAO {
 	 * @param _to The recipient address
 	 * @param _amount The amount to transfer
 	 */
-	function transferPrimordialAO(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) {
+	function transferPrimordialAO(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) senderNameNotCompromised {
 		require (_amount > 0 && _aoIon.primordialBalanceOf(_from) >= _amount);
 		require (_to != address(0) && _from != _to);
 		if (AOLibrary.isName(_from)) {

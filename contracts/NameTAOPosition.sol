@@ -140,6 +140,14 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		_;
 	}
 
+	/**
+	 * @dev Only allowed if sender's Name is not compromised
+	 */
+	modifier senderNameNotCompromised() {
+		require (!_nameAccountRecovery.isCompromised(_nameFactory.ethAddressToNameId(msg.sender)));
+		_;
+	}
+
 	/***** The AO ONLY METHODS *****/
 	/**
 	 * @dev Transfer ownership of The AO to new address
@@ -413,9 +421,11 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		public
 		isTAO(_taoId)
 		isName(_newAdvocateId)
+		onlyAdvocate(_taoId)
 		senderIsName
-		onlyAdvocate(_taoId) {
+		senderNameNotCompromised {
 		require (isExist(_taoId));
+		// Make sure the newAdvocate is not compromised
 		require (!_nameAccountRecovery.isCompromised(_newAdvocateId));
 		_setAdvocate(_taoId, _newAdvocateId);
 	}
@@ -427,14 +437,12 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	function parentReplaceChildAdvocate(address _taoId)
 		public
 		isTAO(_taoId)
-		senderIsName {
+		senderIsName
+		senderNameNotCompromised {
 		require (isExist(_taoId));
 		require (senderIsAdvocateOfParent(msg.sender, _taoId));
 		address _parentNameId = _nameFactory.ethAddressToNameId(msg.sender);
 		address _currentAdvocateId = this.getAdvocate(_taoId);
-
-		// Make sure parentId currently is not compromised
-		require (!_nameAccountRecovery.isCompromised(_parentNameId));
 
 		// Make sure it's not replacing itself
 		require (_parentNameId != _currentAdvocateId);
@@ -452,13 +460,11 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	function challengeTAOAdvocate(address _taoId)
 		public
 		isTAO(_taoId)
-		senderIsName {
+		senderIsName
+		senderNameNotCompromised {
 		require (isExist(_taoId));
 		address _newAdvocateId = _nameFactory.ethAddressToNameId(msg.sender);
 		address _currentAdvocateId = this.getAdvocate(_taoId);
-
-		// Make sure newAdvocateId is not currently compromised
-		require (!_nameAccountRecovery.isCompromised(_newAdvocateId));
 
 		// Make sure it's not challenging itself
 		require (_newAdvocateId != _currentAdvocateId);
@@ -524,11 +530,9 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	 */
 	function completeTAOAdvocateChallenge(bytes32 _challengeId)
 		public
-		senderIsName {
+		senderIsName
+		senderNameNotCompromised {
 		TAOAdvocateChallenge storage _taoAdvocateChallenge = taoAdvocateChallenges[_challengeId];
-
-		// Make sure newAdvocateId is not compromised
-		require (!_nameAccountRecovery.isCompromised(_taoAdvocateChallenge.newAdvocateId));
 
 		// Make sure the challenger can complete this challenge
 		require (getChallengeStatus(_challengeId, msg.sender) == 1);
@@ -573,6 +577,7 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		isNameOrTAO(_id)
 		isNameOrTAO(_newListenerId)
 		senderIsName
+		senderNameNotCompromised
 		onlyAdvocate(_id) {
 		require (isExist(_id));
 
@@ -608,6 +613,7 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		isNameOrTAO(_id)
 		isNameOrTAO(_newSpeakerId)
 		senderIsName
+		senderNameNotCompromised
 		onlyAdvocate(_id) {
 		require (isExist(_id));
 

@@ -75,9 +75,9 @@ contract TAOController is TheAO {
 	}
 
 	/**
-	 * @dev Only allowed if Name is not compromised
+	 * @dev Only allowed if sender's Name is not compromised
 	 */
-	modifier nameNotCompromised() {
+	modifier senderNameNotCompromised() {
 		require (!_nameAccountRecovery.isCompromised(_nameFactory.ethAddressToNameId(msg.sender)));
 		_;
 	}

@@ -131,7 +131,7 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 		public
 		isTAO(_id)
 		senderIsName
-		nameNotCompromised
+		senderNameNotCompromised
 		onlyAdvocate(_id) {
 		require (isExist(_id));
 
@@ -221,7 +221,7 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 		isTAO(_taoId)
 		isTAO(_childId)
 		senderIsName
-		nameNotCompromised
+		senderNameNotCompromised
 		onlyAdvocate(_taoId) {
 		require (isExist(_taoId) && isExist(_childId));
 		require (isNotApprovedChild(_taoId, _childId));
@@ -238,7 +238,7 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 		isTAO(_taoId)
 		isTAO(_childId)
 		senderIsName
-		nameNotCompromised
+		senderNameNotCompromised
 		onlyAdvocate(_taoId) {
 		require (this.isChild(_taoId, _childId));
 

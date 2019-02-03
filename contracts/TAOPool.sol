@@ -203,7 +203,7 @@ contract TAOPool is TAOController, ITAOPool {
 	 * @param _taoId The TAO ID of the Pool
 	 * @param _status The status to set. true = start. false = stop
 	 */
-	function updatePoolStatus(address _taoId, bool _status) public isTAO(_taoId) nameNotCompromised onlyAdvocate(_taoId) {
+	function updatePoolStatus(address _taoId, bool _status) public isTAO(_taoId) onlyAdvocate(_taoId) senderNameNotCompromised {
 		require (pools[_taoId].taoId != address(0));
 		pools[_taoId].status = _status;
 
@@ -219,7 +219,7 @@ contract TAOPool is TAOController, ITAOPool {
 	 * @param _ethosCapStatus The ethos cap status to set
 	 * @param _ethosCapAmount The ethos cap amount to set
 	 */
-	function updatePoolEthosCap(address _taoId, bool _ethosCapStatus, uint256 _ethosCapAmount) public isTAO(_taoId) nameNotCompromised onlyAdvocate(_taoId) {
+	function updatePoolEthosCap(address _taoId, bool _ethosCapStatus, uint256 _ethosCapAmount) public isTAO(_taoId) onlyAdvocate(_taoId) senderNameNotCompromised {
 		require (pools[_taoId].taoId != address(0));
 		// If there is an ethos cap
 		if (_ethosCapStatus) {
@@ -242,7 +242,7 @@ contract TAOPool is TAOController, ITAOPool {
 	 * @param _taoId The TAO ID of the Pool
 	 * @param _quantity The amount of Ethos to be staked
 	 */
-	function stakeEthos(address _taoId, uint256 _quantity) public isTAO(_taoId) senderIsName nameNotCompromised {
+	function stakeEthos(address _taoId, uint256 _quantity) public isTAO(_taoId) senderIsName senderNameNotCompromised {
 		Pool memory _pool = pools[_taoId];
 		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
 		require (_pool.status == true && _quantity > 0 && _ethos.balanceOf(_nameId) >= _quantity);
@@ -323,7 +323,7 @@ contract TAOPool is TAOController, ITAOPool {
 	 * @param _taoId The TAO ID of the Pool
 	 * @param _quantity The amount of Pathos to stake
 	 */
-	function stakePathos(address _taoId, uint256 _quantity) public isTAO(_taoId) senderIsName nameNotCompromised {
+	function stakePathos(address _taoId, uint256 _quantity) public isTAO(_taoId) senderIsName senderNameNotCompromised {
 		Pool memory _pool = pools[_taoId];
 		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
 		require (_pool.status == true && _quantity > 0 && _pathos.balanceOf(_nameId) >= _quantity && _quantity <= availablePathosToStake(_taoId));
@@ -344,7 +344,7 @@ contract TAOPool is TAOController, ITAOPool {
 	 * @dev Name that staked Ethos withdraw Logos from Lot `_lotId`
 	 * @param _lotId The ID of the Lot
 	 */
-	function withdrawLogos(bytes32 _lotId) public senderIsName nameNotCompromised {
+	function withdrawLogos(bytes32 _lotId) public senderIsName senderNameNotCompromised {
 		Lot storage _lot = lots[_lotId];
 		address _nameId = _nameFactory.ethAddressToNameId(msg.sender);
 		require (_lot.nameId == _nameId && _lot.lotValueInLogos > 0);

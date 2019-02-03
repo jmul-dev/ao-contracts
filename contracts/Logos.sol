@@ -1,12 +1,15 @@
 pragma solidity ^0.4.24;
 
 import "./TAOCurrency.sol";
+import "./INameFactory.sol";
 import "./INameTAOPosition.sol";
 import './INameAccountRecovery.sol';
 
 contract Logos is TAOCurrency {
+	address public nameFactoryAddress;
 	address public nameAccountRecoveryAddress;
 
+	INameFactory internal _nameFactory;
 	INameTAOPosition internal _nameTAOPosition;
 	INameAccountRecovery internal _nameAccountRecovery;
 
@@ -41,8 +44,9 @@ contract Logos is TAOCurrency {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(string _name, string _symbol, address _nameTAOPositionAddress)
+	constructor(string _name, string _symbol, address _nameFactoryAddress, address _nameTAOPositionAddress)
 		TAOCurrency(_name, _symbol, _nameTAOPositionAddress) public {
+		setNameFactoryAddress(_nameFactoryAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
@@ -78,7 +82,25 @@ contract Logos is TAOCurrency {
 		_;
 	}
 
+	/**
+	 * @dev Only allowed if sender's Name is not compromised
+	 */
+	modifier senderNameNotCompromised() {
+		require (!_nameAccountRecovery.isCompromised(_nameFactory.ethAddressToNameId(msg.sender)));
+		_;
+	}
+
 	/***** THE AO ONLY METHODS *****/
+	/**
+	 * @dev The AO sets NameFactory address
+	 * @param _nameFactoryAddress The address of NameFactory
+	 */
+	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
+		require (_nameFactoryAddress != address(0));
+		nameFactoryAddress = _nameFactoryAddress;
+		_nameFactory = INameFactory(_nameFactoryAddress);
+	}
+
 	/**
 	 * @dev The AO set the NameTAOPosition Address
 	 * @param _nameTAOPositionAddress The address of NameTAOPosition
@@ -126,7 +148,7 @@ contract Logos is TAOCurrency {
 	 * @param _value the amount to position
 	 * @return true on success
 	 */
-	function positionFrom(address _from, address _to, uint256 _value) public isName(_from) isName(_to) onlyAdvocate(_from) nameNotCompromised(_from) nameNotCompromised(_to) returns (bool) {
+	function positionFrom(address _from, address _to, uint256 _value) public isName(_from) isName(_to) nameNotCompromised(_from) nameNotCompromised(_to) onlyAdvocate(_from) senderNameNotCompromised returns (bool) {
 		require (_from != _to);	// Can't position Logos to itself
 		require (availableToPositionAmount(_from) >= _value); // should have enough balance to position
 		require (positionFromOthers[_to].add(_value) >= positionFromOthers[_to]); // check for overflows
@@ -147,7 +169,7 @@ contract Logos is TAOCurrency {
 	 * @param _value the amount to unposition
 	 * @return true on success
 	 */
-	function unpositionFrom(address _from, address _to, uint256 _value) public isName(_from) isName(_to) onlyAdvocate(_from) nameNotCompromised(_from) nameNotCompromised(_to) returns (bool) {
+	function unpositionFrom(address _from, address _to, uint256 _value) public isName(_from) isName(_to) nameNotCompromised(_from) nameNotCompromised(_to) onlyAdvocate(_from) senderNameNotCompromised returns (bool) {
 		require (_from != _to);	// Can't unposition Logos to itself
 		require (positionOnOthers[_from][_to] >= _value);
 

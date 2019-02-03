@@ -155,7 +155,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 		uint256 _childMinLogos,
 		bool _ethosCapStatus,
 		uint256 _ethosCapAmount
-	) public senderIsName nameNotCompromised isNameOrTAO(_parentId) {
+	) public senderIsName senderNameNotCompromised isNameOrTAO(_parentId) {
 		require (bytes(_name).length > 0);
 		require (!_nameTAOLookup.isExist(_name));
 
