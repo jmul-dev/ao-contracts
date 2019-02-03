@@ -5,6 +5,7 @@ import './AOLibrary.sol';
 import './TheAO.sol';
 import './INameFactory.sol';
 import './INameTAOPosition.sol';
+import './INameAccountRecovery.sol';
 import './TokenERC20.sol';
 import './AOIon.sol';
 
@@ -15,10 +16,12 @@ contract NameTAOVault is TheAO {
 	using SafeMath for uint256;
 
 	address public nameFactoryAddress;
+	address public nameAccountRecoveryAddress;
 	address public aoIonAddress;
 
 	INameFactory internal _nameFactory;
 	INameTAOPosition internal _nameTAOPosition;
+	INameAccountRecovery internal _nameAccountRecovery;
 	AOIon internal _aoIon;
 
 	// Event to be broadcasted to public when Advocate of `from` Name/TAO transfer ETH
@@ -112,6 +115,16 @@ contract NameTAOVault is TheAO {
 	}
 
 	/**
+	 * @dev The AO set the NameAccountRecovery Address
+	 * @param _nameAccountRecoveryAddress The address of NameAccountRecovery
+	 */
+	function setNameAccountRecoveryAddress(address _nameAccountRecoveryAddress) public onlyTheAO {
+		require (_nameAccountRecoveryAddress != address(0));
+		nameAccountRecoveryAddress = _nameAccountRecoveryAddress;
+		_nameAccountRecovery = INameAccountRecovery(nameAccountRecoveryAddress);
+	}
+
+	/**
 	 * @dev The AO sets AOIon (base denomination of AO) address
 	 * @param _aoIonAddress The address of AOIon
 	 */
@@ -168,6 +181,12 @@ contract NameTAOVault is TheAO {
 	function transferEth(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) {
 		require (_amount > 0 && address(_from).balance >= _amount);
 		require (_to != address(0) && _from != _to);
+		if (AOLibrary.isName(_from)) {
+			require (!_nameAccountRecovery.isCompromised(_from));
+		}
+		if (AOLibrary.isName(_to)) {
+			require (!_nameAccountRecovery.isCompromised(_to));
+		}
 		require (TAO(_from).transferEth(_to, _amount));
 		emit TransferEth(_nameFactory.ethAddressToNameId(msg.sender), _from, _to, _amount);
 	}
@@ -184,6 +203,12 @@ contract NameTAOVault is TheAO {
 		TokenERC20 _erc20 = TokenERC20(_erc20TokenAddress);
 		require (_amount > 0 && _erc20.balanceOf(_from) >= _amount);
 		require (_to != address(0) && _from != _to);
+		if (AOLibrary.isName(_from)) {
+			require (!_nameAccountRecovery.isCompromised(_from));
+		}
+		if (AOLibrary.isName(_to)) {
+			require (!_nameAccountRecovery.isCompromised(_to));
+		}
 		require (TAO(_from).transferERC20(_erc20TokenAddress, _to, _amount));
 		emit TransferERC20(_nameFactory.ethAddressToNameId(msg.sender), _from, _to, _amount, _erc20TokenAddress, _erc20.name(), _erc20.symbol());
 	}
@@ -197,6 +222,12 @@ contract NameTAOVault is TheAO {
 	function transferAO(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) {
 		require (_amount > 0 && _aoIon.balanceOf(_from) >= _amount);
 		require (_to != address(0) && _from != _to);
+		if (AOLibrary.isName(_from)) {
+			require (!_nameAccountRecovery.isCompromised(_from));
+		}
+		if (AOLibrary.isName(_to)) {
+			require (!_nameAccountRecovery.isCompromised(_to));
+		}
 		require (_aoIon.whitelistTransferFrom(_from, _to, _amount));
 		emit TransferAO(_nameFactory.ethAddressToNameId(msg.sender), _from, _to, _amount);
 	}
@@ -210,6 +241,12 @@ contract NameTAOVault is TheAO {
 	function transferPrimordialAO(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) {
 		require (_amount > 0 && _aoIon.primordialBalanceOf(_from) >= _amount);
 		require (_to != address(0) && _from != _to);
+		if (AOLibrary.isName(_from)) {
+			require (!_nameAccountRecovery.isCompromised(_from));
+		}
+		if (AOLibrary.isName(_to)) {
+			require (!_nameAccountRecovery.isCompromised(_to));
+		}
 		require (_aoIon.whitelistTransferPrimordialFrom(_from, _to, _amount));
 		emit TransferPrimordialAO(_nameFactory.ethAddressToNameId(msg.sender), _from, _to, _amount);
 	}

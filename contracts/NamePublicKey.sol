@@ -6,6 +6,7 @@ import './TheAO.sol';
 import './INamePublicKey.sol';
 import './INameFactory.sol';
 import './INameTAOPosition.sol';
+import './INameAccountRecovery.sol';
 
 /**
  * @title NamePublicKey
@@ -14,9 +15,11 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	using SafeMath for uint256;
 
 	address public nameFactoryAddress;
+	address public nameAccountRecoveryAddress;
 
 	INameFactory internal _nameFactory;
 	INameTAOPosition internal _nameTAOPosition;
+	INameAccountRecovery internal _nameAccountRecovery;
 
 	struct PublicKey {
 		bool created;
@@ -78,6 +81,14 @@ contract NamePublicKey is TheAO, INamePublicKey {
 		_;
 	}
 
+	/**
+	 * @dev Only allowed if Name is not compromised
+	 */
+	modifier nameNotCompromised(address _id) {
+		require (!_nameAccountRecovery.isCompromised(_id));
+		_;
+	}
+
 	/***** The AO ONLY METHODS *****/
 	/**
 	 * @dev Transfer ownership of The AO to new address
@@ -116,6 +127,27 @@ contract NamePublicKey is TheAO, INamePublicKey {
 		require (_nameTAOPositionAddress != address(0));
 		nameTAOPositionAddress = _nameTAOPositionAddress;
 		_nameTAOPosition = INameTAOPosition(_nameTAOPositionAddress);
+	}
+
+	/**
+	 * @dev The AO set the NameAccountRecovery Address
+	 * @param _nameAccountRecoveryAddress The address of NameAccountRecovery
+	 */
+	function setNameAccountRecoveryAddress(address _nameAccountRecoveryAddress) public onlyTheAO {
+		require (_nameAccountRecoveryAddress != address(0));
+		nameAccountRecoveryAddress = _nameAccountRecoveryAddress;
+		_nameAccountRecovery = INameAccountRecovery(nameAccountRecoveryAddress);
+	}
+
+	/**
+	 * @dev Whitelisted address add publicKey to list for a Name
+	 * @param _id The ID of the Name
+	 * @param _key The publicKey to be added
+	 * @return true on success
+	 */
+	function whitelistAddKey(address _id, address _key) external isName(_id) inWhitelist returns (bool) {
+		_addKey(_id, _key);
+		return true;
 	}
 
 	/***** PUBLIC METHODS *****/
@@ -182,17 +214,8 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @param _id The ID of the Name
 	 * @param _key The publicKey to be added
 	 */
-	function addKey(address _id, address _key) public isName(_id) onlyAdvocate(_id) {
-		require (!this.isKeyExist(_id, _key));
-		require (_key != address(0));
-
-		PublicKey storage _publicKey = publicKeys[_id];
-		_publicKey.keys.push(_key);
-
-		uint256 _nonce = _nameFactory.incrementNonce(_id);
-		require (_nonce > 0);
-
-		emit AddKey(_id, _key, _nonce);
+	function addKey(address _id, address _key) public isName(_id) onlyAdvocate(_id) nameNotCompromised(_id) {
+		_addKey(_id, _key);
 	}
 
 	/**
@@ -234,7 +257,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @param _id The ID of the Name
 	 * @param _key The publicKey to be removed
 	 */
-	function removeKey(address _id, address _key) public isName(_id) onlyAdvocate(_id) {
+	function removeKey(address _id, address _key) public isName(_id) onlyAdvocate(_id) nameNotCompromised(_id) {
 		require (isExist(_id));
 		require (this.isKeyExist(_id, _key));
 
@@ -266,7 +289,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @param _signatureR The R part of the signature for this update
 	 * @param _signatureS The S part of the signature for this update
 	 */
-	function setDefaultKey(address _id, address _defaultKey, uint8 _signatureV, bytes32 _signatureR, bytes32 _signatureS) public isName(_id) onlyAdvocate(_id) {
+	function setDefaultKey(address _id, address _defaultKey, uint8 _signatureV, bytes32 _signatureR, bytes32 _signatureS) public isName(_id) onlyAdvocate(_id) nameNotCompromised(_id) {
 		require (isExist(_id));
 		require (this.isKeyExist(_id, _defaultKey));
 
@@ -279,5 +302,24 @@ contract NamePublicKey is TheAO, INamePublicKey {
 		uint256 _nonce = _nameFactory.incrementNonce(_id);
 		require (_nonce > 0);
 		emit SetDefaultKey(_id, _defaultKey, _nonce);
+	}
+
+	/***** INTERNAL METHOD *****/
+	/**
+	 * @dev Actual adding the publicKey to list for a Name
+	 * @param _id The ID of the Name
+	 * @param _key The publicKey to be added
+	 */
+	function _addKey(address _id, address _key) internal {
+		require (!this.isKeyExist(_id, _key));
+		require (_key != address(0));
+
+		PublicKey storage _publicKey = publicKeys[_id];
+		_publicKey.keys.push(_key);
+
+		uint256 _nonce = _nameFactory.incrementNonce(_id);
+		require (_nonce > 0);
+
+		emit AddKey(_id, _key, _nonce);
 	}
 }

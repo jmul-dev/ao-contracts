@@ -9,6 +9,7 @@ import './Voice.sol';
 import './INameTAOLookup.sol';
 import './INameTAOPosition.sol';
 import './INamePublicKey.sol';
+import './INameAccountRecovery.sol';
 
 /**
  * @title NameFactory
@@ -22,16 +23,21 @@ contract NameFactory is TheAO, INameFactory {
 	address public nameTAOVaultAddress;
 	address public nameTAOLookupAddress;
 	address public namePublicKeyAddress;
+	address public nameAccountRecoveryAddress;
 
 	Voice internal _voice;
 	INameTAOLookup internal _nameTAOLookup;
 	INameTAOPosition internal _nameTAOPosition;
 	INamePublicKey internal _namePublicKey;
+	INameAccountRecovery internal _nameAccountRecovery;
 
 	address[] internal names;
 
 	// Mapping from eth address to Name ID
 	mapping (address => address) internal _ethAddressToNameId;
+
+	// Mapping from Name ID to eth address
+	mapping (address => address) public nameIdToEthAddress;
 
 	// Mapping from Name ID to its nonce
 	mapping (address => uint256) public nonces;
@@ -60,7 +66,7 @@ contract NameFactory is TheAO, INameFactory {
 	 * @dev Checks if calling address can update Name's nonce
 	 */
 	modifier canUpdateNonce {
-		require (msg.sender == nameTAOPositionAddress || msg.sender == namePublicKeyAddress);
+		require (msg.sender == nameTAOPositionAddress || msg.sender == namePublicKeyAddress || msg.sender == nameAccountRecoveryAddress);
 		_;
 	}
 
@@ -133,6 +139,37 @@ contract NameFactory is TheAO, INameFactory {
 		_namePublicKey = INamePublicKey(namePublicKeyAddress);
 	}
 
+	/**
+	 * @dev The AO set the NameAccountRecovery Address
+	 * @param _nameAccountRecoveryAddress The address of NameAccountRecovery
+	 */
+	function setNameAccountRecoveryAddress(address _nameAccountRecoveryAddress) public onlyTheAO {
+		require (_nameAccountRecoveryAddress != address(0));
+		nameAccountRecoveryAddress = _nameAccountRecoveryAddress;
+		_nameAccountRecovery = INameAccountRecovery(nameAccountRecoveryAddress);
+	}
+
+	/**
+	 * @dev NameAccountRecovery contract replaces eth address associated with a Name
+	 * @param _id The ID of the Name
+	 * @param _newAddress The new eth address
+	 * @return true on success
+	 */
+	function setNameNewAddress(address _id, address _newAddress) external returns (bool) {
+		require (msg.sender == nameAccountRecoveryAddress);
+		require (_nameAccountRecovery.isCompromised(_id));
+		require (AOLibrary.isName(_id));
+		require (_newAddress != address(0));
+		require (_ethAddressToNameId[_newAddress] == address(0));
+		require (nameIdToEthAddress[_id] != address(0));
+
+		address _currentEthAddress = nameIdToEthAddress[_id];
+		_ethAddressToNameId[_currentEthAddress] = address(0);
+		_ethAddressToNameId[_newAddress] = _id;
+		nameIdToEthAddress[_id] = _newAddress;
+		return true;
+	}
+
 	/***** PUBLIC METHODS *****/
 	/**
 	 * @dev Increment the nonce of a Name
@@ -164,10 +201,14 @@ contract NameFactory is TheAO, INameFactory {
 		// The address is the Name ID (which is also a TAO ID)
 		address nameId = AOLibrary.deployName(_name, msg.sender, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
 
+		// Only one ETH address per Name
+		require (nameIdToEthAddress[nameId] == address(0));
+
 		// Increment the nonce
 		nonces[nameId]++;
 
 		_ethAddressToNameId[msg.sender] = nameId;
+		nameIdToEthAddress[nameId] = msg.sender;
 
 		// Store the name lookup information
 		require (_nameTAOLookup.initialize(_name, nameId, 1, 'human', msg.sender, 2));

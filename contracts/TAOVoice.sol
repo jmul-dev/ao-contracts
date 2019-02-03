@@ -39,7 +39,7 @@ contract TAOVoice is TAOController {
 	 * @param _taoId The ID of the TAO
 	 * @param _voiceAmount The amount of Voice to stake
 	 */
-	function stakeVoice(address _taoId, uint256 _voiceAmount) public isTAO(_taoId) senderIsName() {
+	function stakeVoice(address _taoId, uint256 _voiceAmount) public isTAO(_taoId) senderIsName nameNotCompromised {
 		require (_voice.stake(_nameFactory.ethAddressToNameId(msg.sender), _taoId, _voiceAmount));
 	}
 
@@ -48,7 +48,7 @@ contract TAOVoice is TAOController {
 	 * @param _taoId The ID of the TAO
 	 * @param _voiceAmount The amount of Voice to unstake
 	 */
-	function unstakeVoice(address _taoId, uint256 _voiceAmount) public isTAO(_taoId) senderIsName() {
+	function unstakeVoice(address _taoId, uint256 _voiceAmount) public isTAO(_taoId) senderIsName nameNotCompromised {
 		require (_voice.unstake(_nameFactory.ethAddressToNameId(msg.sender), _taoId, _voiceAmount));
 	}
 }

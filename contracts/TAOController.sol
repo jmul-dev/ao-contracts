@@ -4,15 +4,18 @@ import './TheAO.sol';
 import './AOLibrary.sol';
 import './INameFactory.sol';
 import './INameTAOPosition.sol';
+import './INameAccountRecovery.sol';
 
 /**
  * @title TAOController
  */
 contract TAOController is TheAO {
 	address public nameFactoryAddress;
+	address public nameAccountRecoveryAddress;
 
 	INameFactory internal _nameFactory;
 	INameTAOPosition internal _nameTAOPosition;
+	INameAccountRecovery internal _nameAccountRecovery;
 
 	/**
 	 * @dev Constructor function
@@ -71,6 +74,14 @@ contract TAOController is TheAO {
 		_;
 	}
 
+	/**
+	 * @dev Only allowed if Name is not compromised
+	 */
+	modifier nameNotCompromised() {
+		require (!_nameAccountRecovery.isCompromised(_nameFactory.ethAddressToNameId(msg.sender)));
+		_;
+	}
+
 	/***** The AO ONLY METHODS *****/
 	/**
 	 * @dev Transfer ownership of The AO to new address
@@ -109,5 +120,15 @@ contract TAOController is TheAO {
 		require (_nameTAOPositionAddress != address(0));
 		nameTAOPositionAddress = _nameTAOPositionAddress;
 		_nameTAOPosition = INameTAOPosition(_nameTAOPositionAddress);
+	}
+
+	/**
+	 * @dev The AO set the NameAccountRecovery Address
+	 * @param _nameAccountRecoveryAddress The address of NameAccountRecovery
+	 */
+	function setNameAccountRecoveryAddress(address _nameAccountRecoveryAddress) public onlyTheAO {
+		require (_nameAccountRecoveryAddress != address(0));
+		nameAccountRecoveryAddress = _nameAccountRecoveryAddress;
+		_nameAccountRecovery = INameAccountRecovery(nameAccountRecoveryAddress);
 	}
 }

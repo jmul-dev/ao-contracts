@@ -5,6 +5,7 @@ import './AOLibrary.sol';
 import './TheAO.sol';
 import './INameTAOPosition.sol';
 import './INameFactory.sol';
+import './INameAccountRecovery.sol';
 import './ITAOFactory.sol';
 import './ITAOAncestry.sol';
 import './IAOSetting.sol';
@@ -18,6 +19,7 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 
 	address public settingTAOId;
 	address public nameFactoryAddress;
+	address public nameAccountRecoveryAddress;
 	address public taoFactoryAddress;
 	address public aoSettingAddress;
 	address public taoAncestryAddress;
@@ -26,6 +28,7 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	uint256 public totalTAOAdvocateChallenges;
 
 	INameFactory internal _nameFactory;
+	INameAccountRecovery internal _nameAccountRecovery;
 	ITAOFactory internal _taoFactory;
 	IAOSetting internal _aoSetting;
 	ITAOAncestry internal _taoAncestry;
@@ -168,6 +171,16 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	}
 
 	/**
+	 * @dev The AO set the NameAccountRecovery Address
+	 * @param _nameAccountRecoveryAddress The address of NameAccountRecovery
+	 */
+	function setNameAccountRecoveryAddress(address _nameAccountRecoveryAddress) public onlyTheAO {
+		require (_nameAccountRecoveryAddress != address(0));
+		nameAccountRecoveryAddress = _nameAccountRecoveryAddress;
+		_nameAccountRecovery = INameAccountRecovery(nameAccountRecoveryAddress);
+	}
+
+	/**
 	 * @dev The AO set the TAOFactory Address
 	 * @param _taoFactoryAddress The address of TAOFactory
 	 */
@@ -234,6 +247,26 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	 */
 	function senderIsAdvocate(address _sender, address _id) external view returns (bool) {
 		return (positionDetails[_id].created && positionDetails[_id].advocateId == _nameFactory.ethAddressToNameId(_sender));
+	}
+
+	/**
+	 * @dev Check whether or not `_sender` eth address is Listener of _id
+	 * @param _sender The eth address to check
+	 * @param _id The ID to be checked
+	 * @return true if yes, false otherwise
+	 */
+	function senderIsListener(address _sender, address _id) external view returns (bool) {
+		return (positionDetails[_id].created && positionDetails[_id].listenerId == _nameFactory.ethAddressToNameId(_sender));
+	}
+
+	/**
+	 * @dev Check whether or not `_sender` eth address is Speaker of _id
+	 * @param _sender The eth address to check
+	 * @param _id The ID to be checked
+	 * @return true if yes, false otherwise
+	 */
+	function senderIsSpeaker(address _sender, address _id) external view returns (bool) {
+		return (positionDetails[_id].created && positionDetails[_id].speakerId == _nameFactory.ethAddressToNameId(_sender));
 	}
 
 	/**
@@ -383,6 +416,7 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		senderIsName
 		onlyAdvocate(_taoId) {
 		require (isExist(_taoId));
+		require (!_nameAccountRecovery.isCompromised(_newAdvocateId));
 		_setAdvocate(_taoId, _newAdvocateId);
 	}
 
@@ -398,6 +432,9 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		require (senderIsAdvocateOfParent(msg.sender, _taoId));
 		address _parentNameId = _nameFactory.ethAddressToNameId(msg.sender);
 		address _currentAdvocateId = this.getAdvocate(_taoId);
+
+		// Make sure parentId currently is not compromised
+		require (!_nameAccountRecovery.isCompromised(_parentNameId));
 
 		// Make sure it's not replacing itself
 		require (_parentNameId != _currentAdvocateId);
@@ -419,6 +456,9 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		require (isExist(_taoId));
 		address _newAdvocateId = _nameFactory.ethAddressToNameId(msg.sender);
 		address _currentAdvocateId = this.getAdvocate(_taoId);
+
+		// Make sure newAdvocateId is not currently compromised
+		require (!_nameAccountRecovery.isCompromised(_newAdvocateId));
 
 		// Make sure it's not challenging itself
 		require (_newAdvocateId != _currentAdvocateId);
@@ -487,6 +527,9 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		senderIsName {
 		TAOAdvocateChallenge storage _taoAdvocateChallenge = taoAdvocateChallenges[_challengeId];
 
+		// Make sure newAdvocateId is not compromised
+		require (!_nameAccountRecovery.isCompromised(_taoAdvocateChallenge.newAdvocateId));
+
 		// Make sure the challenger can complete this challenge
 		require (getChallengeStatus(_challengeId, msg.sender) == 1);
 
@@ -539,6 +582,8 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		if (AOLibrary.isName(_id)) {
 			_isName = true;
 			require (AOLibrary.isName(_newListenerId));
+			require (!_nameAccountRecovery.isCompromised(_id));
+			require (!_nameAccountRecovery.isCompromised(_newListenerId));
 		}
 
 		PositionDetail storage _positionDetail = positionDetails[_id];
@@ -572,6 +617,8 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		if (AOLibrary.isName(_id)) {
 			_isName = true;
 			require (AOLibrary.isName(_newSpeakerId));
+			require (!_nameAccountRecovery.isCompromised(_id));
+			require (!_nameAccountRecovery.isCompromised(_newSpeakerId));
 		}
 
 		PositionDetail storage _positionDetail = positionDetails[_id];

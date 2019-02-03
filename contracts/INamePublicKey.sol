@@ -6,4 +6,6 @@ interface INamePublicKey {
 	function isKeyExist(address _id, address _key) external view returns (bool);
 
 	function getDefaultKey(address _id) external view returns (address);
+
+	function whitelistAddKey(address _id, address _key) external returns (bool);
 }

@@ -9,6 +9,7 @@ var TAOFactory = artifacts.require("./TAOFactory.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var NameTAOLookup = artifacts.require("./NameTAOLookup.sol");
 var NamePublicKey = artifacts.require("./NamePublicKey.sol");
+var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
 var TAOAncestry = artifacts.require("./TAOAncestry.sol");
 var TAOVoice = artifacts.require("./TAOVoice.sol");
 
@@ -112,6 +113,7 @@ module.exports = function(deployer, network, accounts) {
 		nametaoposition,
 		nametaolookup,
 		namepublickey,
+		nameaccountrecovery,
 		taoancestry,
 		taovoice,
 		aosettingattribute,
@@ -183,6 +185,7 @@ module.exports = function(deployer, network, accounts) {
 		NameTAOPosition,
 		NameTAOLookup,
 		NamePublicKey,
+		NameAccountRecovery,
 		TAOAncestry,
 		TAOVoice,
 		AOSettingAttribute,
@@ -292,6 +295,7 @@ module.exports = function(deployer, network, accounts) {
 				[NameTAOVault, namefactory.address, nametaoposition.address],
 				[NameTAOLookup, namefactory.address, taofactory.address, nametaoposition.address],
 				[NamePublicKey, namefactory.address, nametaoposition.address],
+				[NameAccountRecovery, namefactory.address, nametaoposition.address],
 				[TAOAncestry, namefactory.address, taofactory.address, nametaoposition.address],
 				[TAOVoice, namefactory.address, voice.address, nametaoposition.address],
 				[AOSettingAttribute, nametaoposition.address],
@@ -335,6 +339,7 @@ module.exports = function(deployer, network, accounts) {
 			nametaovault = await NameTAOVault.deployed();
 			nametaolookup = await NameTAOLookup.deployed();
 			namepublickey = await NamePublicKey.deployed();
+			nameaccountrecovery = await NameAccountRecovery.deployed();
 			taoancestry = await TAOAncestry.deployed();
 			taovoice = await TAOVoice.deployed();
 			aosettingattribute = await AOSettingAttribute.deployed();
@@ -388,11 +393,32 @@ module.exports = function(deployer, network, accounts) {
 			// Link NamePublicKey to NameFactory
 			await namefactory.setNamePublicKeyAddress(namepublickey.address, { from: primordialAccount });
 
+			// Link NamePublicKey to NameAccountRecovery
+			await nameaccountrecovery.setNamePublicKeyAddress(namepublickey.address, { from: primordialAccount });
+
+			// Link NameAccountRecovery to NameFactory
+			await namefactory.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: primordialAccount });
+
+			// Link NameAccountRecovery to NameTAOPosition
+			await nametaoposition.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: primordialAccount });
+
+			// Link NameAccountRecovery to NamePublicKey
+			await namepublickey.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: primordialAccount });
+
+			// Link NameAccountRecovery to NameTAOVault
+			await nametaovault.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: primordialAccount });
+
 			// Link TAOAncestry to TAOFactory
 			await taofactory.setTAOAncestryAddress(taoancestry.address, { from: primordialAccount });
 
 			// Link TAOAncestry to NameTAOPosition
 			await nametaoposition.setTAOAncestryAddress(taoancestry.address, { from: primordialAccount });
+
+			// Link NameAccountRecovery to TAOFactory
+			await taofactory.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: primordialAccount });
+
+			// Link NameAccountRecovery to TAOAncestry
+			await taoancestry.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: primordialAccount });
 
 			// Voice grants access to TAOVoice
 			await voice.setWhitelist(taovoice.address, true, { from: primordialAccount });
@@ -402,6 +428,15 @@ module.exports = function(deployer, network, accounts) {
 
 			// Link Logos to NameTAOPosition
 			await nametaoposition.setLogosAddress(logos.address, { from: primordialAccount });
+
+			// NamePublicKey grant access to NameAccountRecovery
+			await namepublickey.setWhitelist(nameaccountrecovery.address, true, { from: primordialAccount });
+
+			// Link NameAccountRecovery to Logos
+			await logos.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: primordialAccount });
+
+			// Link NameAccountRecovery to TAOVoice
+			await taovoice.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: primordialAccount });
 
 			// Logos grant access to NameTAOPosition
 			await logos.setWhitelist(nametaoposition.address, true, { from: primordialAccount });
@@ -493,8 +528,14 @@ module.exports = function(deployer, network, accounts) {
 			// Link AOSetting to NameTAOPosition
 			await nametaoposition.setAOSettingAddress(aosetting.address, { from: primordialAccount });
 
+			// Link AOSetting to NameAccountRecovery
+			await nameaccountrecovery.setAOSettingAddress(aosetting.address, { from: primordialAccount });
+
 			// Link TAOPool to TAOFactory
 			await taofactory.setTAOPoolAddress(taopool.address, { from: primordialAccount });
+
+			// Link NameAccountRecovery to TAOPool
+			await taopool.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: primordialAccount });
 
 			// Other type of settings grant access to AOSetting
 			await aosettingattribute.setWhitelist(aosetting.address, true, { from: primordialAccount });
@@ -558,6 +599,9 @@ module.exports = function(deployer, network, accounts) {
 
 			// Set settingTAOId in NameTAOPosition
 			await nametaoposition.setSettingTAOId(settingTAOId, { from: primordialAccount });
+
+			// Set settingTAOId in NameAccountRecovery
+			await nameaccountrecovery.setSettingTAOId(settingTAOId, { from: primordialAccount });
 
 			/***** Add Settings *****/
 			/**
@@ -709,6 +753,22 @@ module.exports = function(deployer, network, accounts) {
 				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
 			} catch (e) {
 				console.log("Unable to add challengeTAOAdvocateCompleteDuration setting", e);
+			}
+
+			/**
+			 * accountRecoveryLockDuration = 7 days = 7 * 86400 = 604800
+			 * The amount of time for Speaker of Name to replace the eth address associated with the Name
+			 */
+			try {
+				var result = await aosetting.addUintSetting("accountRecoveryLockDuration", 604800, primordialTAOId, settingTAOId, "", {
+					from: primordialAccount
+				});
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add accountRecoveryLockDuration setting", e);
 			}
 
 			/**

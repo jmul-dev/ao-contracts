@@ -130,7 +130,8 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 	function updateChildMinLogos(address _id, uint256 _childMinLogos)
 		public
 		isTAO(_id)
-		senderIsName()
+		senderIsName
+		nameNotCompromised
 		onlyAdvocate(_id) {
 		require (isExist(_id));
 
@@ -219,7 +220,8 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 		public
 		isTAO(_taoId)
 		isTAO(_childId)
-		senderIsName()
+		senderIsName
+		nameNotCompromised
 		onlyAdvocate(_taoId) {
 		require (isExist(_taoId) && isExist(_childId));
 		require (isNotApprovedChild(_taoId, _childId));
@@ -235,7 +237,8 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 		public
 		isTAO(_taoId)
 		isTAO(_childId)
-		senderIsName()
+		senderIsName
+		nameNotCompromised
 		onlyAdvocate(_taoId) {
 		require (this.isChild(_taoId, _childId));
 

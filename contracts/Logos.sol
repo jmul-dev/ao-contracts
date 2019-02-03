@@ -2,9 +2,13 @@ pragma solidity ^0.4.24;
 
 import "./TAOCurrency.sol";
 import "./INameTAOPosition.sol";
+import './INameAccountRecovery.sol';
 
 contract Logos is TAOCurrency {
+	address public nameAccountRecoveryAddress;
+
 	INameTAOPosition internal _nameTAOPosition;
+	INameAccountRecovery internal _nameAccountRecovery;
 
 	// Mapping of a Name ID to the amount of Logos positioned by others to itself
 	// address is the address of nameId, not the eth public address
@@ -66,6 +70,14 @@ contract Logos is TAOCurrency {
 		_;
 	}
 
+	/**
+	 * @dev Only allowed if Name is not compromised
+	 */
+	modifier nameNotCompromised(address _id) {
+		require (!_nameAccountRecovery.isCompromised(_id));
+		_;
+	}
+
 	/***** THE AO ONLY METHODS *****/
 	/**
 	 * @dev The AO set the NameTAOPosition Address
@@ -77,13 +89,23 @@ contract Logos is TAOCurrency {
 		_nameTAOPosition = INameTAOPosition(_nameTAOPositionAddress);
 	}
 
+	/**
+	 * @dev The AO set the NameAccountRecovery Address
+	 * @param _nameAccountRecoveryAddress The address of NameAccountRecovery
+	 */
+	function setNameAccountRecoveryAddress(address _nameAccountRecoveryAddress) public onlyTheAO {
+		require (_nameAccountRecoveryAddress != address(0));
+		nameAccountRecoveryAddress = _nameAccountRecoveryAddress;
+		_nameAccountRecovery = INameAccountRecovery(nameAccountRecoveryAddress);
+	}
+
 	/***** PUBLIC METHODS *****/
 	/**
 	 * @dev Get the total sum of Logos for an address
 	 * @param _target The address to check
 	 * @return The total sum of Logos (own + positioned + advocated TAOs)
 	 */
-	function sumBalanceOf(address _target) public isNameOrTAO(_target) view returns (uint256) {
+	function sumBalanceOf(address _target) public isName(_target) view returns (uint256) {
 		return balanceOf[_target].add(positionFromOthers[_target]).add(totalAdvocatedTAOLogos[_target]);
 	}
 
@@ -92,7 +114,7 @@ contract Logos is TAOCurrency {
 	 * @param _sender The sender address to check
 	 * @return The amount of Logos that are available to be positioned on other
 	 */
-	function availableToPositionAmount(address _sender) public view returns (uint256) {
+	function availableToPositionAmount(address _sender) public isName(_sender) view returns (uint256) {
 		return balanceOf[_sender].sub(totalPositionOnOthers[_sender]);
 	}
 
@@ -104,23 +126,16 @@ contract Logos is TAOCurrency {
 	 * @param _value the amount to position
 	 * @return true on success
 	 */
-	function positionFrom(address _from, address _to, uint256 _value) public isName(_from) isName(_to) onlyAdvocate(_from) returns (bool) {
+	function positionFrom(address _from, address _to, uint256 _value) public isName(_from) isName(_to) onlyAdvocate(_from) nameNotCompromised(_from) nameNotCompromised(_to) returns (bool) {
 		require (_from != _to);	// Can't position Logos to itself
 		require (availableToPositionAmount(_from) >= _value); // should have enough balance to position
 		require (positionFromOthers[_to].add(_value) >= positionFromOthers[_to]); // check for overflows
-
-		uint256 previousPositionToOthers = totalPositionOnOthers[_from];
-		uint256 previousPositionFromOthers = positionFromOthers[_to];
-		uint256 previousAvailPositionBalance = balanceOf[_from].sub(totalPositionOnOthers[_from]);
 
 		positionOnOthers[_from][_to] = positionOnOthers[_from][_to].add(_value);
 		totalPositionOnOthers[_from] = totalPositionOnOthers[_from].add(_value);
 		positionFromOthers[_to] = positionFromOthers[_to].add(_value);
 
 		emit PositionFrom(_from, _to, _value);
-		assert(totalPositionOnOthers[_from].sub(_value) == previousPositionToOthers);
-		assert(positionFromOthers[_to].sub(_value) == previousPositionFromOthers);
-		assert(balanceOf[_from].sub(totalPositionOnOthers[_from]) <= previousAvailPositionBalance);
 		return true;
 	}
 
@@ -132,22 +147,15 @@ contract Logos is TAOCurrency {
 	 * @param _value the amount to unposition
 	 * @return true on success
 	 */
-	function unpositionFrom(address _from, address _to, uint256 _value) public isName(_from) isName(_to) onlyAdvocate(_from) returns (bool) {
+	function unpositionFrom(address _from, address _to, uint256 _value) public isName(_from) isName(_to) onlyAdvocate(_from) nameNotCompromised(_from) nameNotCompromised(_to) returns (bool) {
 		require (_from != _to);	// Can't unposition Logos to itself
 		require (positionOnOthers[_from][_to] >= _value);
-
-		uint256 previousPositionToOthers = totalPositionOnOthers[_from];
-		uint256 previousPositionFromOthers = positionFromOthers[_to];
-		uint256 previousAvailPositionBalance = balanceOf[_from].sub(totalPositionOnOthers[_from]);
 
 		positionOnOthers[_from][_to] = positionOnOthers[_from][_to].sub(_value);
 		totalPositionOnOthers[_from] = totalPositionOnOthers[_from].sub(_value);
 		positionFromOthers[_to] = positionFromOthers[_to].sub(_value);
 
 		emit UnpositionFrom(_from, _to, _value);
-		assert(totalPositionOnOthers[_from].add(_value) == previousPositionToOthers);
-		assert(positionFromOthers[_to].add(_value) == previousPositionFromOthers);
-		assert(balanceOf[_from].sub(totalPositionOnOthers[_from]) >= previousAvailPositionBalance);
 		return true;
 	}
 

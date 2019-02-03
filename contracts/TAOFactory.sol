@@ -4,8 +4,8 @@ import './SafeMath.sol';
 import './TAOController.sol';
 import './ITAOFactory.sol';
 import './Name.sol';
-import './INameTAOLookup.sol';		// Store the name lookup for a Name/TAO
-import './ITAOAncestry.sol';			// Store TAO's child information
+import './INameTAOLookup.sol';
+import './ITAOAncestry.sol';
 import './IAOSetting.sol';
 import './Logos.sol';
 import './ITAOPool.sol';
@@ -155,7 +155,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 		uint256 _childMinLogos,
 		bool _ethosCapStatus,
 		uint256 _ethosCapAmount
-	) public senderIsName() isNameOrTAO(_parentId) {
+	) public senderIsName nameNotCompromised isNameOrTAO(_parentId) {
 		require (bytes(_name).length > 0);
 		require (!_nameTAOLookup.isExist(_name));
 
