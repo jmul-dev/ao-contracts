@@ -9,6 +9,8 @@ var Ethos = artifacts.require("./Ethos.sol");
 var TAOPool = artifacts.require("./TAOPool.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
 
+var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
+
 var helper = require("./helpers/truffleTestHelper");
 
 contract("NameTAOPosition", function(accounts) {
@@ -21,9 +23,11 @@ contract("NameTAOPosition", function(accounts) {
 		ethos,
 		taopool,
 		aosetting,
+		nameaccountrecovery,
 		settingTAOId,
 		challengeTAOAdvocateLockDuration,
 		challengeTAOAdvocateCompleteDuration,
+		accountRecoveryLockDuration,
 		nameId1,
 		nameId2,
 		nameId3,
@@ -57,6 +61,7 @@ contract("NameTAOPosition", function(accounts) {
 		ethos = await Ethos.deployed();
 		taopool = await TAOPool.deployed();
 		aosetting = await AOSetting.deployed();
+		nameaccountrecovery = await NameAccountRecovery.deployed();
 
 		settingTAOId = await nametaoposition.settingTAOId();
 
@@ -65,6 +70,9 @@ contract("NameTAOPosition", function(accounts) {
 
 		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "challengeTAOAdvocateCompleteDuration");
 		challengeTAOAdvocateCompleteDuration = settingValues[0];
+
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "accountRecoveryLockDuration");
+		accountRecoveryLockDuration = settingValues[0];
 
 		// Create Name
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
@@ -343,6 +351,28 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(logosAddress, logos.address, "Contract has incorrect logosAddress");
 	});
 
+	it("The AO - setNameAccountRecoveryAddress() should be able to set NameAccountRecovery address", async function() {
+		var canSetAddress;
+		try {
+			await nametaoposition.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameAccountRecovery address");
+
+		try {
+			await nametaoposition.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameAccountRecovery address");
+
+		var nameAccountRecoveryAddress = await nametaoposition.nameAccountRecoveryAddress();
+		assert.equal(nameAccountRecoveryAddress, nameaccountrecovery.address, "Contract has incorrect nameAccountRecoveryAddress");
+	});
+
 	it("initialize() - only NameFactory/TAOFactory can initialize NameTAOPosition for a Name/TAO", async function() {
 		// Create Name
 		var result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
@@ -588,6 +618,42 @@ contract("NameTAOPosition", function(accounts) {
 		var nameId3_totalAdvocatedTAOLogosBefore = await logos.totalAdvocatedTAOLogos(nameId3);
 		var nameId3_advocatedTAOLogosBefore = await logos.advocatedTAOLogos(nameId3, taoId2);
 
+		// Listener submit account recovery for nameId3
+		await nametaoposition.setListener(nameId3, nameId1, { from: account3 });
+		await nameaccountrecovery.submitAccountRecovery(nameId3, { from: account1 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			var result = await nametaoposition.setAdvocate(taoId2, nameId3, { from: account2 });
+			canSetAdvocate = true;
+		} catch (e) {
+			canSetAdvocate = false;
+		}
+		assert.equal(canSetAdvocate, false, "Advocate can set new Advocate using a compromised Name");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		// Listener submit account recovery for nameId2
+		await nametaoposition.setListener(nameId2, nameId1, { from: account2 });
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account1 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			var result = await nametaoposition.setAdvocate(taoId2, nameId3, { from: account2 });
+			canSetAdvocate = true;
+		} catch (e) {
+			canSetAdvocate = false;
+		}
+		assert.equal(canSetAdvocate, false, "Compromised Advocate can set new Advocate");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
 		var nonceBefore = await taofactory.nonces(taoId2);
 		try {
 			var result = await nametaoposition.setAdvocate(taoId2, nameId3, { from: account2 });
@@ -686,6 +752,23 @@ contract("NameTAOPosition", function(accounts) {
 		var nameId3_totalAdvocatedTAOLogosBefore = await logos.totalAdvocatedTAOLogos(nameId3);
 		var nameId3_advocatedTAOLogosBefore = await logos.advocatedTAOLogos(nameId3, taoId2);
 
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account1 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaoposition.parentReplaceChildAdvocate(taoId4, { from: account2 });
+			canReplace = true;
+		} catch (e) {
+			canReplace = false;
+		}
+		assert.equal(canReplace, false, "Compromised Parent can replace child TAO's Advocate with himself");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
 		var nonceBefore = await taofactory.nonces(taoId4);
 		try {
 			await nametaoposition.parentReplaceChildAdvocate(taoId4, { from: account2 });
@@ -768,6 +851,23 @@ contract("NameTAOPosition", function(accounts) {
 		var currentAdvocateLogosBalance = await logos.balanceOf(nameId3);
 		await logos.mint(nameId2, currentAdvocateLogosBalance.plus(10 ** 3).toNumber(), { from: theAO });
 
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account1 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			var result = await nametaoposition.challengeTAOAdvocate(taoId1, { from: account2 });
+			canChallenge = true;
+		} catch (e) {
+			canChallenge = false;
+		}
+		assert.equal(canChallenge, false, "Compromised Name can challenge current TAO's Advocate");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
 		challengeId1 = await challengeTAOAdvocate(taoId1, account2);
 		challengeId2 = await challengeTAOAdvocate(taoId4, account2);
 		challengeId3 = await challengeTAOAdvocate(taoId5, account2);
@@ -806,8 +906,27 @@ contract("NameTAOPosition", function(accounts) {
 		}
 		assert.equal(canComplete, false, "Challenger can complete challenge before it's time");
 
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account1 });
+
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(challengeTAOAdvocateLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaoposition.completeTAOAdvocateChallenge(challengeId1, { from: account2 });
+			canComplete = true;
+		} catch (e) {
+			canComplete = false;
+		}
+		assert.equal(canComplete, false, "Compromsied challenger can complete challenge");
+
+		if (accountRecoveryLockDuration.gt(challengeTAOAdvocateLockDuration)) {
+			// Fast forward the time
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		} else {
+			// Fast forward the time
+			await helper.advanceTimeAndBlock(challengeTAOAdvocateLockDuration.plus(100).toNumber());
+		}
 
 		getChallengeStatus = await nametaoposition.getChallengeStatus(challengeId1, account2);
 		assert.equal(getChallengeStatus.toNumber(), 1, "getChallengeStatus() returns incorrect value");
@@ -937,6 +1056,40 @@ contract("NameTAOPosition", function(accounts) {
 		var getListener = await nametaoposition.getListener(nameId1);
 		assert.equal(getListener, nameId2, "Name has incorrect Advocate");
 
+		// Listener submit account recovery for nameId1
+		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaoposition.setListener(nameId1, nameId2, { from: account1 });
+			canSet = true;
+		} catch (e) {
+			canSet = false;
+		}
+		assert.equal(canSet, false, "Compromised Advocate can set Listener");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account1 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaoposition.setListener(nameId1, nameId2, { from: account1 });
+			canSet = true;
+		} catch (e) {
+			canSet = false;
+		}
+		assert.equal(canSet, false, "Advocate can set Listener that is currently compromised");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
 		nonceBefore = await taofactory.nonces(taoId1);
 		try {
 			await nametaoposition.setListener(taoId1, nameId2, { from: account1 });
@@ -966,6 +1119,17 @@ contract("NameTAOPosition", function(accounts) {
 
 		getListener = await nametaoposition.getListener(taoId1);
 		assert.equal(getListener, taoId2, "TAO has incorrect Advocate");
+	});
+
+	it("senderIsListener() - should check whether or not the sender address is Listener of a Name/TAO ID", async function() {
+		var senderIsListener = await nametaoposition.senderIsListener(account1, nameId1);
+		assert.equal(senderIsListener, false, "senderIsListener() returns incorrect value");
+
+		senderIsListener = await nametaoposition.senderIsListener(account2, nameId1);
+		assert.equal(senderIsListener, true, "senderIsListener() returns incorrect value");
+
+		senderIsListener = await nametaoposition.senderIsListener(account1, taoId1);
+		assert.equal(senderIsListener, false, "senderIsListener() returns incorrect value");
 	});
 
 	it("setSpeaker() - should be able to set a Name/TAO as listener of a Name/TAO", async function() {
@@ -1001,6 +1165,40 @@ contract("NameTAOPosition", function(accounts) {
 			canSet = false;
 		}
 		assert.equal(canSet, false, "Advocate can set TAO as a Speaker of a Name");
+
+		// Listener submit account recovery for nameId1
+		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaoposition.setSpeaker(nameId1, nameId2, { from: account1 });
+			canSet = true;
+		} catch (e) {
+			canSet = false;
+		}
+		assert.equal(canSet, false, "Compromised Advocate can set Speaker");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account1 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaoposition.setSpeaker(nameId1, nameId2, { from: account1 });
+			canSet = true;
+		} catch (e) {
+			canSet = false;
+		}
+		assert.equal(canSet, false, "Advocate can set Speaker that is currently compromised");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
 		var nonceBefore = await namefactory.nonces(nameId1);
 		try {
@@ -1046,6 +1244,17 @@ contract("NameTAOPosition", function(accounts) {
 
 		getSpeaker = await nametaoposition.getSpeaker(taoId1);
 		assert.equal(getSpeaker, taoId2, "TAO has incorrect Advocate");
+	});
+
+	it("senderIsSpeaker() - should check whether or not the sender address is Speaker of a Name/TAO ID", async function() {
+		var senderIsSpeaker = await nametaoposition.senderIsSpeaker(account1, nameId1);
+		assert.equal(senderIsSpeaker, false, "senderIsSpeaker() returns incorrect value");
+
+		senderIsSpeaker = await nametaoposition.senderIsSpeaker(account2, nameId2);
+		assert.equal(senderIsSpeaker, true, "senderIsSpeaker() returns incorrect value");
+
+		senderIsSpeaker = await nametaoposition.senderIsSpeaker(account1, taoId1);
+		assert.equal(senderIsSpeaker, false, "senderIsSpeaker() returns incorrect value");
 	});
 
 	it("senderIsPosition() - should check whether or not sender eth address is either Advocate/Listener/Speaker of a Name/TAO", async function() {
