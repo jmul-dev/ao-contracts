@@ -6,17 +6,33 @@ var Voice = artifacts.require("./Voice.sol");
 var NameTAOLookup = artifacts.require("./NameTAOLookup.sol");
 var NamePublicKey = artifacts.require("./NamePublicKey.sol");
 var NameTAOVault = artifacts.require("./NameTAOVault.sol");
+var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
 
 var EthCrypto = require("eth-crypto");
+var helper = require("./helpers/truffleTestHelper");
 
 contract("NameFactory", function(accounts) {
-	var namefactory, taofactory, nametaoposition, logos, voice, nametaolookup, namepublickey, nametaovault, nameId1, nameId2, taoId;
+	var namefactory,
+		taofactory,
+		nametaoposition,
+		logos,
+		voice,
+		nametaolookup,
+		namepublickey,
+		nametaovault,
+		nameaccountrecovery,
+		nameId1,
+		nameId2,
+		nameId3,
+		taoId;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
-	var someAddress = accounts[3];
-	var whitelistedAddress = accounts[4];
+	var account3 = accounts[3];
+	var account4 = accounts[4];
+	var someAddress = accounts[5];
+	var whitelistedAddress = accounts[6];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 
 	// Retrieve private key from ganache
@@ -32,12 +48,18 @@ contract("NameFactory", function(accounts) {
 		nametaolookup = await NameTAOLookup.deployed();
 		namepublickey = await NamePublicKey.deployed();
 		nametaovault = await NameTAOVault.deployed();
+		nameaccountrecovery = await NameAccountRecovery.deployed();
 
 		// Create Name
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
 			from: account1
 		});
 		nameId1 = await namefactory.ethAddressToNameId(account1);
+
+		var result = await namefactory.createName("echo", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+			from: account3
+		});
+		nameId3 = await namefactory.ethAddressToNameId(account3);
 
 		// Mint Logos to nameId
 		await logos.setWhitelist(theAO, true, { from: theAO });
@@ -235,6 +257,28 @@ contract("NameFactory", function(accounts) {
 		assert.equal(namePublicKeyAddress, namepublickey.address, "Contract has incorrect namePublicKeyAddress");
 	});
 
+	it("The AO - should be able to set NameAccountRecovery address", async function() {
+		var canSetAddress;
+		try {
+			await namefactory.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameAccountRecovery address");
+
+		try {
+			await namefactory.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameAccountRecovery address");
+
+		var nameAccountRecoveryAddress = await namefactory.nameAccountRecoveryAddress();
+		assert.equal(nameAccountRecoveryAddress, nameaccountrecovery.address, "Contract has incorrect nameAccountRecoveryAddress");
+	});
+
 	it("incrementNonce() - only allowed address can update Name's nonce", async function() {
 		var canIncrementNonce;
 		try {
@@ -291,6 +335,8 @@ contract("NameFactory", function(accounts) {
 		assert.equal(canCreateName, true, "Address can't create a Name");
 
 		nameId2 = await namefactory.ethAddressToNameId(account2);
+		var ethAddress = await namefactory.nameIdToEthAddress(nameId2);
+		assert.equal(ethAddress, account2, "nameIdToEthAddress() returns incorrect value");
 
 		var isExist = await nametaolookup.isExist("delta");
 		assert.equal(isExist, true, "Name creation is missing NameTAOLookup initialization");
@@ -422,5 +468,28 @@ contract("NameFactory", function(accounts) {
 			canValidate = false;
 		}
 		assert.equal(isValid, true, "validateNameSignature() returns incorrect value - validateAddress is in Name's Public Key list");
+	});
+
+	it("setNameNewAddress() - only NameAccountRecovery can set Name's new address", async function() {
+		await nametaoposition.setListener(nameId1, nameId2, { from: account1 });
+		await nametaoposition.setSpeaker(nameId1, nameId3, { from: account1 });
+
+		// Listener submit account recovery for nameId1
+		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		// Speaker set new address for nameId1
+		await nameaccountrecovery.setNameNewAddress(nameId1, account4, { from: account3 });
+
+		var ethAddressToNameId = await namefactory.ethAddressToNameId(account4);
+		assert.equal(ethAddressToNameId, nameId1, "ethAddressToNameId() returns incorrect value");
+
+		ethAddressToNameId = await namefactory.ethAddressToNameId(account1);
+		assert.equal(ethAddressToNameId, emptyAddress, "ethAddressToNameId() returns incorrect value");
+
+		var nameIdToEthAddress = await namefactory.nameIdToEthAddress(nameId1);
+		assert.equal(nameIdToEthAddress, account4, "nameIdToEthAddress() returns incorrect value");
 	});
 });
