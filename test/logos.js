@@ -2,9 +2,26 @@ var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var Logos = artifacts.require("./Logos.sol");
+var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
+var AOSetting = artifacts.require("./AOSetting.sol");
+
+var helper = require("./helpers/truffleTestHelper");
 
 contract("Logos", function(accounts) {
-	var namefactory, taofactory, nametaoposition, logos, nameId1, nameId2, nameId3, nameId4, taoId1, taoId2, taoId3;
+	var namefactory,
+		taofactory,
+		nametaoposition,
+		logos,
+		nameaccountrecovery,
+		aosetting,
+		accountRecoveryLockDuration,
+		nameId1,
+		nameId2,
+		nameId3,
+		nameId4,
+		taoId1,
+		taoId2,
+		taoId3;
 	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
@@ -18,6 +35,13 @@ contract("Logos", function(accounts) {
 		taofactory = await TAOFactory.deployed();
 		nametaoposition = await NameTAOPosition.deployed();
 		logos = await Logos.deployed();
+		nameaccountrecovery = await NameAccountRecovery.deployed();
+		aosetting = await AOSetting.deployed();
+
+		var settingTAOId = await nameaccountrecovery.settingTAOId();
+
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "accountRecoveryLockDuration");
+		accountRecoveryLockDuration = settingValues[0];
 
 		// Create Name
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
@@ -39,6 +63,9 @@ contract("Logos", function(accounts) {
 			from: account4
 		});
 		nameId4 = await namefactory.ethAddressToNameId(account4);
+
+		await nametaoposition.setListener(nameId1, nameId2, { from: account1 });
+		await nametaoposition.setListener(nameId2, nameId3, { from: account2 });
 	});
 
 	it("should have the correct totalSupply", async function() {
@@ -154,6 +181,28 @@ contract("Logos", function(accounts) {
 		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
 	});
 
+	it("The AO - should be able to set NameFactory address", async function() {
+		var canSetAddress;
+		try {
+			await logos.setNameFactoryAddress(namefactory.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameFactory address");
+
+		try {
+			await logos.setNameFactoryAddress(namefactory.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameFactory address");
+
+		var nameFactoryAddress = await logos.nameFactoryAddress();
+		assert.equal(nameFactoryAddress, namefactory.address, "Contract has incorrect nameFactoryAddress");
+	});
+
 	it("The AO - should be able to set NameTAOPosition address", async function() {
 		var canSetAddress;
 		try {
@@ -174,6 +223,28 @@ contract("Logos", function(accounts) {
 
 		var nameTAOPositionAddress = await logos.nameTAOPositionAddress();
 		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
+	});
+
+	it("The AO - should be able to set NameAccountRecovery address", async function() {
+		var canSetAddress;
+		try {
+			await logos.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameAccountRecovery address");
+
+		try {
+			await logos.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameAccountRecovery address");
+
+		var nameAccountRecoveryAddress = await logos.nameAccountRecoveryAddress();
+		assert.equal(nameAccountRecoveryAddress, nameaccountrecovery.address, "Contract has incorrect nameAccountRecoveryAddress");
 	});
 
 	it("Whitelisted Address - should be able to mint Logos to a TAO/Name", async function() {
@@ -379,6 +450,40 @@ contract("Logos", function(accounts) {
 		}
 		assert.equal(canPositionFrom, false, "Advocate of Name can position more than owned Logos on other Name");
 
+		// Listener submit account recovery for nameId1
+		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await logos.positionFrom(nameId1, nameId2, 100, { from: account1 });
+			canPositionFrom = true;
+		} catch (e) {
+			canPositionFrom = false;
+		}
+		assert.equal(canPositionFrom, false, "Advocate of Name can position Logos on other Name even though the from Name is compromised");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await logos.positionFrom(nameId1, nameId2, 100, { from: account1 });
+			canPositionFrom = true;
+		} catch (e) {
+			canPositionFrom = false;
+		}
+		assert.equal(canPositionFrom, false, "Advocate of Name can position Logos on other Name even though the to Name is compromised");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
 		var nameId1AvailableToPositionAmountBefore = await logos.availableToPositionAmount(nameId1);
 		var nameId2SumBalanceBefore = await logos.sumBalanceOf(nameId2);
 
@@ -447,6 +552,48 @@ contract("Logos", function(accounts) {
 			canUnpositionFrom = false;
 		}
 		assert.equal(canUnpositionFrom, false, "Advocate of Name can unposition more than positioned Logos from other Name");
+
+		// Listener submit account recovery for nameId1
+		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await logos.unpositionFrom(nameId1, nameId2, 100, { from: account1 });
+			canUnpositionFrom = true;
+		} catch (e) {
+			canUnpositionFrom = false;
+		}
+		assert.equal(
+			canUnpositionFrom,
+			false,
+			"Advocate of Name can unposition Logos on other Name even though the from Name is compromised"
+		);
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await logos.unpositionFrom(nameId1, nameId2, 100, { from: account1 });
+			canUnpositionFrom = true;
+		} catch (e) {
+			canUnpositionFrom = false;
+		}
+		assert.equal(
+			canUnpositionFrom,
+			false,
+			"Advocate of Name can unposition Logos on other Name even though the to Name is compromised"
+		);
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
 		var nameId1AvailableToPositionAmountBefore = await logos.availableToPositionAmount(nameId1);
 		var nameId2SumBalanceBefore = await logos.sumBalanceOf(nameId2);
