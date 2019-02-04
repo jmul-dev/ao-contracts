@@ -37,7 +37,7 @@ contract NameFactory is TheAO, INameFactory {
 	mapping (address => address) internal _ethAddressToNameId;
 
 	// Mapping from Name ID to eth address
-	mapping (address => address) public nameIdToEthAddress;
+	mapping (address => address) internal _nameIdToEthAddress;
 
 	// Mapping from Name ID to its nonce
 	mapping (address => uint256) public nonces;
@@ -160,12 +160,12 @@ contract NameFactory is TheAO, INameFactory {
 		require (AOLibrary.isName(_id));
 		require (_newAddress != address(0));
 		require (_ethAddressToNameId[_newAddress] == address(0));
-		require (nameIdToEthAddress[_id] != address(0));
+		require (_nameIdToEthAddress[_id] != address(0));
 
-		address _currentEthAddress = nameIdToEthAddress[_id];
+		address _currentEthAddress = _nameIdToEthAddress[_id];
 		_ethAddressToNameId[_currentEthAddress] = address(0);
 		_ethAddressToNameId[_newAddress] = _id;
-		nameIdToEthAddress[_id] = _newAddress;
+		_nameIdToEthAddress[_id] = _newAddress;
 		return true;
 	}
 
@@ -201,13 +201,13 @@ contract NameFactory is TheAO, INameFactory {
 		address nameId = AOLibrary.deployName(_name, msg.sender, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
 
 		// Only one ETH address per Name
-		require (nameIdToEthAddress[nameId] == address(0));
+		require (_nameIdToEthAddress[nameId] == address(0));
 
 		// Increment the nonce
 		nonces[nameId]++;
 
 		_ethAddressToNameId[msg.sender] = nameId;
-		nameIdToEthAddress[nameId] = msg.sender;
+		_nameIdToEthAddress[nameId] = msg.sender;
 
 		// Store the name lookup information
 		require (_nameTAOLookup.initialize(_name, nameId, 1, 'human', msg.sender, 2));
@@ -233,6 +233,15 @@ contract NameFactory is TheAO, INameFactory {
 	 */
 	function ethAddressToNameId(address _ethAddress) external view returns (address) {
 		return _ethAddressToNameId[_ethAddress];
+	}
+
+	/**
+	 * @dev Get the ETH address given a Name ID
+	 * @param _nameId The Name ID to check
+	 * @return The ETH address
+	 */
+	function nameIdToEthAddress(address _nameId) external view returns (address) {
+		return _nameIdToEthAddress[_nameId];
 	}
 
 	/**

@@ -7,13 +7,30 @@ var NameTAOVault = artifacts.require("./NameTAOVault.sol");
 var AOIon = artifacts.require("./AOIon.sol");
 var TokenOne = artifacts.require("./TokenOne.sol");
 
+var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
+var AOSetting = artifacts.require("./AOSetting.sol");
+
 var BigNumber = require("bignumber.js");
 var EthCrypto = require("eth-crypto");
+var helper = require("./helpers/truffleTestHelper");
 
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
 contract("NameTAOVault", function(accounts) {
-	var namefactory, taofactory, nametaoposition, logos, nameId1, nameId2, taoId1, taoId2, nametaovault, aoion, tokenone;
+	var namefactory,
+		taofactory,
+		nametaoposition,
+		logos,
+		nameId1,
+		nameId2,
+		taoId1,
+		taoId2,
+		nametaovault,
+		aoion,
+		tokenone,
+		nameaccountrecovery,
+		aosetting,
+		accountRecoveryLockDuration;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
@@ -32,6 +49,13 @@ contract("NameTAOVault", function(accounts) {
 		nametaovault = await NameTAOVault.deployed();
 		aoion = await AOIon.deployed();
 		tokenone = await TokenOne.deployed();
+		nameaccountrecovery = await NameAccountRecovery.deployed();
+		aosetting = await AOSetting.deployed();
+
+		var settingTAOId = await nameaccountrecovery.settingTAOId();
+
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "accountRecoveryLockDuration");
+		accountRecoveryLockDuration = settingValues[0];
 
 		// Create Name
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
@@ -87,6 +111,9 @@ contract("NameTAOVault", function(accounts) {
 		await aoion.mint(accountWithBalance, 10 ** 9, { from: theAO }); // 1,000,000,000 AO ION
 		var buyPrice = await aoion.primordialBuyPrice();
 		await aoion.buyPrimordial({ from: accountWithBalance, value: buyPrice.times(1000).toNumber() }); // Buy 1000 AO+
+
+		await nametaoposition.setListener(nameId1, nameId2, { from: account1 });
+		await nametaoposition.setListener(nameId2, nameId1, { from: account2 });
 	});
 
 	it("The AO - transferOwnership() - should be able to transfer ownership to a TAO", async function() {
@@ -197,6 +224,28 @@ contract("NameTAOVault", function(accounts) {
 
 		var aoIonAddress = await nametaovault.aoIonAddress();
 		assert.equal(aoIonAddress, aoion.address, "Contract has incorrect aoIonAddress");
+	});
+
+	it("The AO - setNameAccountRecoveryAddress() should be able to set NameAccountRecovery address", async function() {
+		var canSetAddress;
+		try {
+			await nametaovault.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameAccountRecovery address");
+
+		try {
+			await nametaovault.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameAccountRecovery address");
+
+		var nameAccountRecoveryAddress = await nametaovault.nameAccountRecoveryAddress();
+		assert.equal(nameAccountRecoveryAddress, nameaccountrecovery.address, "Contract has incorrect nameAccountRecoveryAddress");
 	});
 
 	it("ethBalanceOf() - should be able to get the ETH balance of a Name/TAO", async function() {
@@ -372,6 +421,40 @@ contract("NameTAOVault", function(accounts) {
 		}
 		assert.equal(canTransfer, false, "Non-advocate of Name can transfer ETH");
 
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account1 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaovault.transferEth(nameId2, recipient.address, web3.toWei(0.1, "ether"), { from: account2 });
+			canTransfer = true;
+		} catch (e) {
+			canTransfer = false;
+		}
+		assert.equal(canTransfer, false, "Compromised Advocate of Name can transfer ETH from Name");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		// Listener submit account recovery for nameId1
+		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaovault.transferEth(nameId2, nameId1, web3.toWei(0.1, "ether"), { from: account2 });
+			canTransfer = true;
+		} catch (e) {
+			canTransfer = false;
+		}
+		assert.equal(canTransfer, false, "Advocate of Name can transfer ETH to compromised Name");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
 		var senderBalanceBefore = await nametaovault.ethBalanceOf(nameId2);
 		var recipientBalanceBefore = await web3.eth.getBalance(recipient.address);
 		try {
@@ -473,6 +556,40 @@ contract("NameTAOVault", function(accounts) {
 		}
 		assert.equal(canTransfer, false, "Non-advocate of Name can transfer ERC20 Token");
 
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account1 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaovault.transferERC20(tokenone.address, nameId2, recipient.address, web3.toWei(0.1, "ether"), { from: account2 });
+			canTransfer = true;
+		} catch (e) {
+			canTransfer = false;
+		}
+		assert.equal(canTransfer, false, "Compromised Advocate of Name can transfer ERC 20");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		// Listener submit account recovery for nameId1
+		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaovault.transferERC20(tokenone.address, nameId2, nameId1, web3.toWei(0.1, "ether"), { from: account2 });
+			canTransfer = true;
+		} catch (e) {
+			canTransfer = false;
+		}
+		assert.equal(canTransfer, false, "Advocate of Name can transfer ERC20 to compromised Name");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
 		var senderBalanceBefore = await nametaovault.erc20BalanceOf(tokenone.address, nameId2);
 		var recipientBalanceBefore = await tokenone.balanceOf(recipient.address);
 		try {
@@ -564,6 +681,40 @@ contract("NameTAOVault", function(accounts) {
 		}
 		assert.equal(canTransfer, false, "Non-advocate of Name can transfer AO Ion");
 
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account1 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaovault.transferAO(nameId2, recipient.address, 10, { from: account2 });
+			canTransfer = true;
+		} catch (e) {
+			canTransfer = false;
+		}
+		assert.equal(canTransfer, false, "Compromised Advocate of Name can transfer AO");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		// Listener submit account recovery for nameId1
+		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaovault.transferAO(nameId2, nameId1, 10, { from: account2 });
+			canTransfer = true;
+		} catch (e) {
+			canTransfer = false;
+		}
+		assert.equal(canTransfer, false, "Advocate of Name can transfer AO to compromised Name");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
 		var senderBalanceBefore = await nametaovault.AOBalanceOf(nameId2);
 		var recipientBalanceBefore = await aoion.balanceOf(recipient.address);
 		try {
@@ -638,6 +789,40 @@ contract("NameTAOVault", function(accounts) {
 			canTransfer = false;
 		}
 		assert.equal(canTransfer, false, "Non-advocate of Name can transfer Primordial AO+ Ion");
+
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account1 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaovault.transferPrimordialAO(nameId2, recipient.address, 10, { from: account2 });
+			canTransfer = true;
+		} catch (e) {
+			canTransfer = false;
+		}
+		assert.equal(canTransfer, false, "Compromised Advocate of Name can transfer primordial AO+");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		// Listener submit account recovery for nameId1
+		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await nametaovault.transferPrimordialAO(nameId2, nameId1, 10, { from: account2 });
+			canTransfer = true;
+		} catch (e) {
+			canTransfer = false;
+		}
+		assert.equal(canTransfer, false, "Advocate of Name can transfer primordial AO+ to compromised Name");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
 		var senderBalanceBefore = await nametaovault.primordialAOBalanceOf(nameId2);
 		var recipientBalanceBefore = await aoion.primordialBalanceOf(recipient.address);

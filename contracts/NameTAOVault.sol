@@ -189,10 +189,10 @@ contract NameTAOVault is TheAO {
 	function transferEth(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) senderNameNotCompromised {
 		require (_amount > 0 && address(_from).balance >= _amount);
 		require (_to != address(0) && _from != _to);
-		if (AOLibrary.isName(_from)) {
+		if (_nameFactory.nameIdToEthAddress(_from) != address(0)) {
 			require (!_nameAccountRecovery.isCompromised(_from));
 		}
-		if (AOLibrary.isName(_to)) {
+		if (_nameFactory.nameIdToEthAddress(_to) != address(0)) {
 			require (!_nameAccountRecovery.isCompromised(_to));
 		}
 		require (TAO(_from).transferEth(_to, _amount));
@@ -211,10 +211,10 @@ contract NameTAOVault is TheAO {
 		TokenERC20 _erc20 = TokenERC20(_erc20TokenAddress);
 		require (_amount > 0 && _erc20.balanceOf(_from) >= _amount);
 		require (_to != address(0) && _from != _to);
-		if (AOLibrary.isName(_from)) {
+		if (_nameFactory.nameIdToEthAddress(_from) != address(0)) {
 			require (!_nameAccountRecovery.isCompromised(_from));
 		}
-		if (AOLibrary.isName(_to)) {
+		if (_nameFactory.nameIdToEthAddress(_to) != address(0)) {
 			require (!_nameAccountRecovery.isCompromised(_to));
 		}
 		require (TAO(_from).transferERC20(_erc20TokenAddress, _to, _amount));
@@ -230,10 +230,10 @@ contract NameTAOVault is TheAO {
 	function transferAO(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) senderNameNotCompromised {
 		require (_amount > 0 && _aoIon.balanceOf(_from) >= _amount);
 		require (_to != address(0) && _from != _to);
-		if (AOLibrary.isName(_from)) {
+		if (_nameFactory.nameIdToEthAddress(_from) != address(0)) {
 			require (!_nameAccountRecovery.isCompromised(_from));
 		}
-		if (AOLibrary.isName(_to)) {
+		if (_nameFactory.nameIdToEthAddress(_to) != address(0)) {
 			require (!_nameAccountRecovery.isCompromised(_to));
 		}
 		require (_aoIon.whitelistTransferFrom(_from, _to, _amount));
@@ -249,10 +249,10 @@ contract NameTAOVault is TheAO {
 	function transferPrimordialAO(address _from, address _to, uint256 _amount) public isNameOrTAO(_from) onlyAdvocate(_from) senderNameNotCompromised {
 		require (_amount > 0 && _aoIon.primordialBalanceOf(_from) >= _amount);
 		require (_to != address(0) && _from != _to);
-		if (AOLibrary.isName(_from)) {
+		if (_nameFactory.nameIdToEthAddress(_from) != address(0)) {
 			require (!_nameAccountRecovery.isCompromised(_from));
 		}
-		if (AOLibrary.isName(_to)) {
+		if (_nameFactory.nameIdToEthAddress(_to) != address(0)) {
 			require (!_nameAccountRecovery.isCompromised(_to));
 		}
 		require (_aoIon.whitelistTransferPrimordialFrom(_from, _to, _amount));
