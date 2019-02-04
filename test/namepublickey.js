@@ -4,18 +4,33 @@ var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var Logos = artifacts.require("./Logos.sol");
 
 var NamePublicKey = artifacts.require("./NamePublicKey.sol");
+var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
+var AOSetting = artifacts.require("./AOSetting.sol");
 
 var EthCrypto = require("eth-crypto");
+var helper = require("./helpers/truffleTestHelper");
 
 contract("NamePublicKey", function(accounts) {
-	var namefactory, taofactory, nametaoposition, logos, nameId1, nameId2, taoId1, namepublickey;
+	var namefactory,
+		taofactory,
+		nametaoposition,
+		logos,
+		nameaccountrecovery,
+		aosetting,
+		accountRecoveryLockDuration,
+		nameId1,
+		nameId2,
+		nameId3,
+		taoId1,
+		namepublickey;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
-	var someAddress = accounts[3];
-	var whitelistedAddress = accounts[4];
-	var newKey = accounts[5];
+	var account3 = accounts[3];
+	var someAddress = accounts[4];
+	var whitelistedAddress = accounts[5];
+	var newKey = accounts[6];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 
 	// Retrieve private key from ganache
@@ -48,12 +63,24 @@ contract("NamePublicKey", function(accounts) {
 		nametaoposition = await NameTAOPosition.deployed();
 		logos = await Logos.deployed();
 		namepublickey = await NamePublicKey.deployed();
+		nameaccountrecovery = await NameAccountRecovery.deployed();
+		aosetting = await AOSetting.deployed();
+
+		var settingTAOId = await nameaccountrecovery.settingTAOId();
+
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "accountRecoveryLockDuration");
+		accountRecoveryLockDuration = settingValues[0];
 
 		// Create Name
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
 			from: account1
 		});
 		nameId1 = await namefactory.ethAddressToNameId(account1);
+
+		result = await namefactory.createName("echo", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+			from: account3
+		});
+		nameId3 = await namefactory.ethAddressToNameId(account3);
 
 		// Mint Logos to nameId
 		await logos.setWhitelist(theAO, true, { from: theAO });
@@ -165,6 +192,50 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
 	});
 
+	it("The AO - setNameAccountRecoveryAddress() should be able to set NameAccountRecovery address", async function() {
+		var canSetAddress;
+		try {
+			await namepublickey.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameAccountRecovery address");
+
+		try {
+			await namepublickey.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameAccountRecovery address");
+
+		var nameAccountRecoveryAddress = await namepublickey.nameAccountRecoveryAddress();
+		assert.equal(nameAccountRecoveryAddress, nameaccountrecovery.address, "Contract has incorrect nameAccountRecoveryAddress");
+	});
+
+	it("Whitelisted address - only whitelisted address can add key on behalf of a Name", async function() {
+		var canAdd;
+		try {
+			await namepublickey.whitelistAddKey(nameId1, someAddress, { from: someAddress });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Non-whitelisted address can add key on behalf of a Name");
+
+		try {
+			await namepublickey.whitelistAddKey(nameId1, someAddress, { from: whitelistedAddress });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, true, "Whitelisted address can't add key on behalf of a Name");
+
+		var isKeyExist = await namepublickey.isKeyExist(nameId1, someAddress);
+		assert.equal(isKeyExist, true, "isKeyExist() returns incorrect value");
+	});
+
 	it("initialize() - only NameFactory can initialize PublicKey for a Name", async function() {
 		// Create Name
 		var result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
@@ -186,6 +257,8 @@ contract("NamePublicKey", function(accounts) {
 
 		var nonce = await namefactory.nonces(nameId2);
 		assert.equal(nonce.toNumber(), 1, "Name has incorrect nonce");
+
+		await nametaoposition.setListener(nameId2, nameId3, { from: account2 });
 	});
 
 	it("addKey() - Advocate of Name should be able to add public key to list", async function() {
@@ -221,6 +294,23 @@ contract("NamePublicKey", function(accounts) {
 			canAdd = false;
 		}
 		assert.equal(canAdd, false, "Advocate of Name can add duplicate public key");
+
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await namepublickey.addKey(nameId2, newKey, { from: account2 });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Compromised Advocate of Name can add public key");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
 		var nonceBefore = await namefactory.nonces(nameId2);
 		var getTotalPublicKeysCountBefore = await namepublickey.getTotalPublicKeysCount(nameId2);
@@ -284,6 +374,23 @@ contract("NamePublicKey", function(accounts) {
 			canRemove = false;
 		}
 		assert.equal(canRemove, false, "Advocate of Name can remove default public key");
+
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await namepublickey.removeKey(nameId2, newKey, { from: account2 });
+			canRemove = true;
+		} catch (e) {
+			canRemove = false;
+		}
+		assert.equal(canRemove, false, "Compromised Advocate of Name can remove public key");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
 		var nonceBefore = await namefactory.nonces(nameId2);
 		var getTotalPublicKeysCountBefore = await namepublickey.getTotalPublicKeysCount(nameId2);
@@ -367,6 +474,23 @@ contract("NamePublicKey", function(accounts) {
 			canSetDefault = false;
 		}
 		assert.equal(canSetDefault, false, "Advocate of Name can set default public key with invalid s part of signature");
+
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await namepublickey.setDefaultKey(nameId2, newKey, vrs.v, vrs.r, vrs.s, { from: account2 });
+			canSetDefault = true;
+		} catch (e) {
+			canSetDefault = false;
+		}
+		assert.equal(canSetDefault, false, "Compromised Advocate of Name can set default public key");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
 		var nonceBefore = await namefactory.nonces(nameId2);
 

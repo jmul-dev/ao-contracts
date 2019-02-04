@@ -82,14 +82,6 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	}
 
 	/**
-	 * @dev Only allowed if Name is not compromised
-	 */
-	modifier nameNotCompromised(address _id) {
-		require (!_nameAccountRecovery.isCompromised(_id));
-		_;
-	}
-
-	/**
 	 * @dev Only allowed if sender's Name is not compromised
 	 */
 	modifier senderNameNotCompromised() {
@@ -222,7 +214,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @param _id The ID of the Name
 	 * @param _key The publicKey to be added
 	 */
-	function addKey(address _id, address _key) public isName(_id) nameNotCompromised(_id) onlyAdvocate(_id) senderNameNotCompromised {
+	function addKey(address _id, address _key) public isName(_id) onlyAdvocate(_id) senderNameNotCompromised {
 		_addKey(_id, _key);
 	}
 
@@ -265,7 +257,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @param _id The ID of the Name
 	 * @param _key The publicKey to be removed
 	 */
-	function removeKey(address _id, address _key) public isName(_id) nameNotCompromised(_id) onlyAdvocate(_id) senderNameNotCompromised {
+	function removeKey(address _id, address _key) public isName(_id) onlyAdvocate(_id) senderNameNotCompromised {
 		require (isExist(_id));
 		require (this.isKeyExist(_id, _key));
 
@@ -297,7 +289,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @param _signatureR The R part of the signature for this update
 	 * @param _signatureS The S part of the signature for this update
 	 */
-	function setDefaultKey(address _id, address _defaultKey, uint8 _signatureV, bytes32 _signatureR, bytes32 _signatureS) public isName(_id) nameNotCompromised(_id) onlyAdvocate(_id) senderNameNotCompromised {
+	function setDefaultKey(address _id, address _defaultKey, uint8 _signatureV, bytes32 _signatureR, bytes32 _signatureS) public isName(_id) onlyAdvocate(_id) senderNameNotCompromised {
 		require (isExist(_id));
 		require (this.isKeyExist(_id, _defaultKey));
 
