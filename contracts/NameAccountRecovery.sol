@@ -178,6 +178,12 @@ contract NameAccountRecovery is TheAO {
 	function submitAccountRecovery(address _id) public isName(_id) senderIsName {
 		require (_nameTAOPosition.senderIsListener(msg.sender, _id));
 
+		// Can't submit account recovery for itself
+		require (!_nameTAOPosition.senderIsAdvocate(msg.sender, _id));
+
+		// Make sure Listener is not currenty compromised
+		require (!this.isCompromised(_nameFactory.ethAddressToNameId(msg.sender)));
+
 		AccountRecovery storage _accountRecovery = accountRecoveries[_id];
 
 		// Make sure currently it's not currently locked
@@ -215,6 +221,9 @@ contract NameAccountRecovery is TheAO {
 
 		// Only Speaker can do this action
 		require (_nameTAOPosition.senderIsSpeaker(msg.sender, _id));
+
+		// Make sure Speaker is not currenty compromised
+		require (!this.isCompromised(_nameFactory.ethAddressToNameId(msg.sender)));
 
 		// Make sure this Name is currently compromised and needs action
 		require (this.isCompromised(_id));

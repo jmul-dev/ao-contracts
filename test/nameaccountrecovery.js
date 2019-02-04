@@ -91,6 +91,12 @@ contract("NameAccountRecovery", function(accounts) {
 
 		// Set nameId3 as nameId1's Speaker
 		await nametaoposition.setSpeaker(nameId1, nameId3, { from: account1 });
+
+		// Set nameId3 as nameId2's Listener
+		await nametaoposition.setListener(nameId2, nameId3, { from: account2 });
+
+		// Set nameId2 as nameId3's Listener
+		await nametaoposition.setListener(nameId3, nameId2, { from: account3 });
 	});
 
 	it("The AO - transferOwnership() - should be able to transfer ownership to a TAO", async function() {
@@ -265,6 +271,28 @@ contract("NameAccountRecovery", function(accounts) {
 		}
 		assert.equal(canSubmit, false, "Non-Listener can submit account recovery");
 
+		try {
+			var result = await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account2 });
+			canSubmit = true;
+		} catch (e) {
+			canSubmit = false;
+		}
+		assert.equal(canSubmit, false, "Advocate can submit account recovery for itself (Advocate == Listener)");
+
+		// Set Listener as compromised
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		try {
+			var result = await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+			canSubmit = true;
+		} catch (e) {
+			canSubmit = false;
+		}
+		assert.equal(canSubmit, false, "Compromised Listener of Name can submit account recovery");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
 		var nonceBefore = await namefactory.nonces(nameId1);
 		try {
 			var result = await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
@@ -334,6 +362,24 @@ contract("NameAccountRecovery", function(accounts) {
 			canSet = false;
 		}
 		assert.equal(canSet, false, "Speaker of Name can set Name's new address when account recovery has passed lockedUntilTimestamp");
+
+		//Re-submit account recovery again for the next test
+		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+
+		await helper.advanceTimeAndBlock(1000);
+
+		// Set Speaker as compromised
+		await nameaccountrecovery.submitAccountRecovery(nameId3, { from: account2 });
+		try {
+			await nameaccountrecovery.setNameNewAddress(nameId1, account4, { from: account3 });
+			canSet = true;
+		} catch (e) {
+			canSet = false;
+		}
+		assert.equal(canSet, false, "Compromised Speaker of Name can set Name's new address");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
 		//Re-submit account recovery again for the next test
 		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
