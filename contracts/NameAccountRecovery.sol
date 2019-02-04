@@ -180,8 +180,8 @@ contract NameAccountRecovery is TheAO {
 
 		AccountRecovery storage _accountRecovery = accountRecoveries[_id];
 
-		// Make sure currently it's not at submitted state
-		require (!_accountRecovery.submitted && now > _accountRecovery.lockedUntilTimestamp);
+		// Make sure currently it's not currently locked
+		require (now > _accountRecovery.lockedUntilTimestamp);
 
 		_accountRecovery.submitted = true;
 		_accountRecovery.submittedTimestamp = now;
@@ -238,7 +238,7 @@ contract NameAccountRecovery is TheAO {
 		uint256 _nonce = _nameFactory.incrementNonce(_id);
 		require (_nonce > 0);
 
-		emit SetNameNewAddress(_id, _nameFactory.ethAddressToNameId(msg.sender), _newAddress, now, _nonce);
+		emit SetNameNewAddress(_id, _nameFactory.ethAddressToNameId(msg.sender), _newAddress, now, 1);
 	}
 
 	/***** INTERNAL METHOD *****/

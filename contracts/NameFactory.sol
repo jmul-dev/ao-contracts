@@ -157,7 +157,6 @@ contract NameFactory is TheAO, INameFactory {
 	 */
 	function setNameNewAddress(address _id, address _newAddress) external returns (bool) {
 		require (msg.sender == nameAccountRecoveryAddress);
-		require (_nameAccountRecovery.isCompromised(_id));
 		require (AOLibrary.isName(_id));
 		require (_newAddress != address(0));
 		require (_ethAddressToNameId[_newAddress] == address(0));
