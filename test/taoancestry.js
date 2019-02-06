@@ -4,9 +4,28 @@ var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var Logos = artifacts.require("./Logos.sol");
 
 var TAOAncestry = artifacts.require("./TAOAncestry.sol");
+var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
+var AOSetting = artifacts.require("./AOSetting.sol");
+
+var helper = require("./helpers/truffleTestHelper");
 
 contract("TAOAncestry", function(accounts) {
-	var namefactory, taofactory, nametaoposition, logos, nameId1, nameId2, nameId3, taoId1, taoId2, taoId3, taoId4, taoId5, taoancestry;
+	var namefactory,
+		taofactory,
+		nametaoposition,
+		logos,
+		nameId1,
+		nameId2,
+		nameId3,
+		taoId1,
+		taoId2,
+		taoId3,
+		taoId4,
+		taoId5,
+		taoancestry,
+		nameaccountrecovery,
+		aosetting,
+		accountRecoveryLockDuration;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
@@ -22,6 +41,13 @@ contract("TAOAncestry", function(accounts) {
 		nametaoposition = await NameTAOPosition.deployed();
 		logos = await Logos.deployed();
 		taoancestry = await TAOAncestry.deployed();
+		nameaccountrecovery = await NameAccountRecovery.deployed();
+		aosetting = await AOSetting.deployed();
+
+		var settingTAOId = await nameaccountrecovery.settingTAOId();
+
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "accountRecoveryLockDuration");
+		accountRecoveryLockDuration = settingValues[0];
 
 		// Create Name
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
@@ -60,6 +86,8 @@ contract("TAOAncestry", function(accounts) {
 		);
 		var createTAOEvent = result.logs[0];
 		taoId1 = createTAOEvent.args.taoId;
+
+		await nametaoposition.setListener(nameId2, nameId3, { from: account2 });
 	});
 
 	it("The AO - transferOwnership() - should be able to transfer ownership to a TAO", async function() {
@@ -230,6 +258,23 @@ contract("TAOAncestry", function(accounts) {
 			canUpdateChildMinLogos = false;
 		}
 		assert.equal(canUpdateChildMinLogos, false, "Non-advocate of TAO can update childMinLogos of a TAO");
+
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await taoancestry.updateChildMinLogos(taoId2, childMinLogos, { from: account2 });
+			canUpdateChildMinLogos = true;
+		} catch (e) {
+			canUpdateChildMinLogos = false;
+		}
+		assert.equal(canUpdateChildMinLogos, false, "Compormised Advocate of TAO can update childMinLogos");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
 		var nonceBefore = await taofactory.nonces(taoId2);
 		try {
@@ -424,6 +469,23 @@ contract("TAOAncestry", function(accounts) {
 		}
 		assert.equal(canApprove, false, "Advocate of parent TAO can approve child TAO that does not need approval");
 
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await taoancestry.approveChild(taoId2, taoId4, { from: account2 });
+			canApprove = true;
+		} catch (e) {
+			canApprove = false;
+		}
+		assert.equal(canApprove, false, "Compromised Advocate of parent TAO can approve child TAO");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
 		var ancestryBefore = await taoancestry.getAncestryById(taoId2);
 		var nonceBefore = await taofactory.nonces(taoId2);
 
@@ -517,6 +579,23 @@ contract("TAOAncestry", function(accounts) {
 			canRemove = false;
 		}
 		assert.equal(canRemove, false, "Advocate of parent TAO can remove child TAO that is not yet approved");
+
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await taoancestry.removeChild(taoId2, taoId4, { from: account2 });
+			canRemove = true;
+		} catch (e) {
+			canRemove = false;
+		}
+		assert.equal(canRemove, false, "Compromised Advocate of parent TAO can remove child TAO");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
 		var ancestryBefore = await taoancestry.getAncestryById(taoId2);
 		var nonceBefore = await taofactory.nonces(taoId2);
