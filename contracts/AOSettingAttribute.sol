@@ -19,14 +19,6 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 		address creatorTAOId;		// The taoId that created the setting
 		address associatedTAOId;	// The taoId that the setting affects
 		string settingName;				// The human-readable name of the setting
-		/**
-		 * 1 => uint256
-		 * 2 => bool
-		 * 3 => address
-		 * 4 => bytes32
-		 * 5 => string (catch all)
-		 */
-		uint8 settingType;
 		bool pendingCreate;				// State when associatedTAOId has not accepted setting
 		bool locked;					// State when pending anything (cannot change if locked)
 		bool rejected;					// State when associatedTAOId rejected this setting
@@ -45,12 +37,6 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 		 * setting is accepted or rejected.
 		 */
 		address proposalTAOId;
-
-		/**
-		 * Signature of the proposalTAOId and update value by the associatedTAOId
-		 * Advocate's Name's address.
-		 */
-		string updateSignature;
 
 		/**
 		 * The proposalTAOId moves here when setting value changes successfully
@@ -180,7 +166,6 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 	 * @dev Add setting data/state
 	 * @param _settingId The ID of the setting
 	 * @param _creatorNameId The nameId that created the setting
-	 * @param _settingType The type of this setting. 1 => uint256, 2 => bool, 3 => address, 4 => bytes32, 5 => string
 	 * @param _settingName The human-readable name of the setting
 	 * @param _creatorTAOId The taoId that created the setting
 	 * @param _associatedTAOId The taoId that the setting affects
@@ -188,9 +173,9 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 	 * @return The ID of the "Associated" setting
 	 * @return The ID of the "Creator" setting
 	 */
-	function add(uint256 _settingId, address _creatorNameId, uint8 _settingType, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) external inWhitelist returns (bytes32, bytes32) {
+	function add(uint256 _settingId, address _creatorNameId, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) external inWhitelist returns (bytes32, bytes32) {
 		// Store setting data/state
-		require (_storeSettingDataState(_settingId, _creatorNameId, _settingType, _settingName, _creatorTAOId, _associatedTAOId, _extraData));
+		require (_storeSettingDataState(_settingId, _creatorNameId, _settingName, _creatorTAOId, _associatedTAOId, _extraData));
 
 		// Store the associatedTAOSetting/creatorTAOSetting info
 		return (
@@ -203,7 +188,7 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 	 * @dev Get Setting Data of a setting ID
 	 * @param _settingId The ID of the setting
 	 */
-	function getSettingData(uint256 _settingId) external view returns (uint256, address, address, address, string, uint8, bool, bool, bool, string) {
+	function getSettingData(uint256 _settingId) external view returns (uint256, address, address, address, string, bool, bool, bool, string) {
 		SettingData memory _settingData = settingDatas[_settingId];
 		return (
 			_settingData.settingId,
@@ -211,7 +196,6 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 			_settingData.creatorTAOId,
 			_settingData.associatedTAOId,
 			_settingData.settingName,
-			_settingData.settingType,
 			_settingData.pendingCreate,
 			_settingData.locked,
 			_settingData.rejected,
@@ -302,24 +286,20 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 	/**
 	 * @dev Store setting update data
 	 * @param _settingId The ID of the setting to be updated
-	 * @param _settingType The type of this setting
 	 * @param _associatedTAOAdvocate The setting's associatedTAOId's advocate's name address
 	 * @param _proposalTAOId The child of the associatedTAOId with the update Logos
-	 * @param _updateSignature A signature of the proposalTAOId and update value by _associatedTAOAdvocate
 	 * @param _extraData Catch-all string value to be stored if exist
 	 * @return true on success
 	 */
-	function update(uint256 _settingId, uint8 _settingType, address _associatedTAOAdvocate, address _proposalTAOId, string _updateSignature, string _extraData) external inWhitelist returns (bool) {
+	function update(uint256 _settingId, address _associatedTAOAdvocate, address _proposalTAOId, string _extraData) external inWhitelist returns (bool) {
 		// Make sure setting is created
 		SettingData memory _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId &&
-			_settingData.settingType == _settingType &&
 			_settingData.pendingCreate == false &&
 			_settingData.locked == true &&
 			_settingData.rejected == false &&
 			_associatedTAOAdvocate != address(0) &&
-			_associatedTAOAdvocate == _nameTAOPosition.getAdvocate(_settingData.associatedTAOId) &&
-			bytes(_updateSignature).length > 0
+			_associatedTAOAdvocate == _nameTAOPosition.getAdvocate(_settingData.associatedTAOId)
 		);
 
 		// Make sure setting is not in the middle of updating
@@ -336,7 +316,6 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 		_settingState.pendingUpdate = true;
 		_settingState.updateAdvocateNameId = _associatedTAOAdvocate;
 		_settingState.proposalTAOId = _proposalTAOId;
-		_settingState.updateSignature = _updateSignature;
 		_settingState.settingStateJSON = _extraData;
 
 		return true;
@@ -346,14 +325,13 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 	 * @dev Get setting state
 	 * @param _settingId The ID of the setting
 	 */
-	function getSettingState(uint256 _settingId) external view returns (uint256, bool, address, address, string, address, string) {
+	function getSettingState(uint256 _settingId) external view returns (uint256, bool, address, address, address, string) {
 		SettingState memory _settingState = settingStates[_settingId];
 		return (
 			_settingState.settingId,
 			_settingState.pendingUpdate,
 			_settingState.updateAdvocateNameId,
 			_settingState.proposalTAOId,
-			_settingState.updateSignature,
 			_settingState.lastUpdateTAOId,
 			_settingState.settingStateJSON
 		);
@@ -595,14 +573,13 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 	 * @dev Store setting data/state
 	 * @param _settingId The ID of the setting
 	 * @param _creatorNameId The nameId that created the setting
-	 * @param _settingType The type of this setting. 1 => uint256, 2 => bool, 3 => address, 4 => bytes32, 5 => string
 	 * @param _settingName The human-readable name of the setting
 	 * @param _creatorTAOId The taoId that created the setting
 	 * @param _associatedTAOId The taoId that the setting affects
 	 * @param _extraData Catch-all string value to be stored if exist
 	 * @return true on success
 	 */
-	function _storeSettingDataState(uint256 _settingId, address _creatorNameId, uint8 _settingType, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) internal returns (bool) {
+	function _storeSettingDataState(uint256 _settingId, address _creatorNameId, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) internal returns (bool) {
 		// Store setting data
 		SettingData storage _settingData = settingDatas[_settingId];
 		_settingData.settingId = _settingId;
@@ -610,7 +587,6 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 		_settingData.creatorTAOId = _creatorTAOId;
 		_settingData.associatedTAOId = _associatedTAOId;
 		_settingData.settingName = _settingName;
-		_settingData.settingType = _settingType;
 		_settingData.pendingCreate = true;
 		_settingData.locked = true;
 		_settingData.settingDataJSON = _extraData;
@@ -640,9 +616,6 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 
 		// Make sure newSettingId exists
 		require (settingDatas[_newSettingId].creatorNameId != address(0) && settingDatas[_newSettingId].rejected == false && settingDatas[_newSettingId].pendingCreate == false);
-
-		// Make sure the settingType matches
-		require (settingDatas[_settingId].settingType == settingDatas[_newSettingId].settingType);
 
 		// Store setting deprecation info
 		SettingDeprecation storage _settingDeprecation = settingDeprecations[_settingId];

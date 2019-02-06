@@ -1,17 +1,17 @@
 pragma solidity ^0.4.24;
 
 interface IAOSettingAttribute {
-	function add(uint256 _settingId, address _creatorNameId, uint8 _settingType, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) external returns (bytes32, bytes32);
+	function add(uint256 _settingId, address _creatorNameId, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) external returns (bytes32, bytes32);
 
-	function getSettingData(uint256 _settingId) external view returns (uint256, address, address, address, string, uint8, bool, bool, bool, string);
+	function getSettingData(uint256 _settingId) external view returns (uint256, address, address, address, string, bool, bool, bool, string);
 
 	function approveAdd(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) external returns (bool);
 
 	function finalizeAdd(uint256 _settingId, address _creatorTAOAdvocate) external returns (bool);
 
-	function update(uint256 _settingId, uint8 _settingType, address _associatedTAOAdvocate, address _proposalTAOId, string _updateSignature, string _extraData) external returns (bool);
+	function update(uint256 _settingId, address _associatedTAOAdvocate, address _proposalTAOId, string _extraData) external returns (bool);
 
-	function getSettingState(uint256 _settingId) external view returns (uint256, bool, address, address, string, address, string);
+	function getSettingState(uint256 _settingId) external view returns (uint256, bool, address, address, address, string);
 
 	function approveUpdate(uint256 _settingId, address _proposalTAOAdvocate, bool _approved) external returns (bool);
 
