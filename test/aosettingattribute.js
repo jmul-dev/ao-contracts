@@ -15,11 +15,9 @@ contract("AOSettingAttribute", function(accounts) {
 	var settingId2 = 2;
 	var settingId3 = 3;
 	var creatorTAONameId, creatorTAOId, associatedTAONameId, associatedTAOId, proposalTAONameId, proposalTAOId;
-	var settingType = 1;
 	var settingName = "someSettingName";
 	var extraData = JSON.stringify({ extraVariable: "someValue" });
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
-	var updateSignature = "somesignature";
 	var newSettingId = 4;
 	var newSettingContractAddress = accounts[4];
 
@@ -173,16 +171,9 @@ contract("AOSettingAttribute", function(accounts) {
 	it("Whitelisted address - add() can add setting attribute (Data/State)", async function() {
 		var canAdd;
 		try {
-			var result = await aosettingattribute.add(
-				settingId1,
-				creatorTAONameId,
-				settingType,
-				settingName,
-				creatorTAOId,
-				associatedTAOId,
-				extraData,
-				{ from: account1 }
-			);
+			var result = await aosettingattribute.add(settingId1, creatorTAONameId, settingName, creatorTAOId, associatedTAOId, extraData, {
+				from: account1
+			});
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -190,16 +181,9 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canAdd, false, "Non-whitelisted address can add setting attribute");
 
 		try {
-			var result = await aosettingattribute.add(
-				settingId1,
-				creatorTAONameId,
-				settingType,
-				settingName,
-				creatorTAOId,
-				associatedTAOId,
-				extraData,
-				{ from: whitelistedAddress }
-			);
+			var result = await aosettingattribute.add(settingId1, creatorTAONameId, settingName, creatorTAOId, associatedTAOId, extraData, {
+				from: whitelistedAddress
+			});
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -212,32 +196,23 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(settingData[2], creatorTAOId, "SettingData has incorrect creatorTAOId");
 		assert.equal(settingData[3], associatedTAOId, "SettingData has incorrect associatedTAOId");
 		assert.equal(settingData[4], settingName, "SettingData has incorrect settingName");
-		assert.equal(settingData[5].toNumber(), settingType, "SettingData has incorrect settingType");
-		assert.equal(settingData[6], true, "SettingData has incorrect pendingCreate");
-		assert.equal(settingData[7], true, "SettingData has incorrect locked");
-		assert.equal(settingData[8], false, "SettingData has incorrect rejected");
-		assert.equal(settingData[9], extraData, "SettingData has incorrect extraData");
+		assert.equal(settingData[5], true, "SettingData has incorrect pendingCreate");
+		assert.equal(settingData[6], true, "SettingData has incorrect locked");
+		assert.equal(settingData[7], false, "SettingData has incorrect rejected");
+		assert.equal(settingData[8], extraData, "SettingData has incorrect extraData");
 
 		var settingState = await aosettingattribute.getSettingState(settingId1);
 		assert.equal(settingState[0].toNumber(), settingId1, "SettingState has incorrect settingId1");
 		assert.equal(settingState[1], false, "SettingState has incorrect pendingUpdate");
 		assert.equal(settingState[2], emptyAddress, "SettingState has incorrect updateAdvocateNameId");
 		assert.equal(settingState[3], emptyAddress, "SettingState has incorrect proposalTAOId");
-		assert.equal(settingState[4], "", "SettingState has incorrect updateSignature");
-		assert.equal(settingState[5], emptyAddress, "SettingState has incorrect lastUpdateTAOId");
-		assert.equal(settingState[6], "", "SettingState has incorrect settingStateJSON");
+		assert.equal(settingState[4], emptyAddress, "SettingState has incorrect lastUpdateTAOId");
+		assert.equal(settingState[5], "", "SettingState has incorrect settingStateJSON");
 
 		// Add another setting
-		var result = await aosettingattribute.add(
-			settingId2,
-			creatorTAONameId,
-			settingType,
-			settingName,
-			creatorTAOId,
-			associatedTAOId,
-			extraData,
-			{ from: whitelistedAddress }
-		);
+		var result = await aosettingattribute.add(settingId2, creatorTAONameId, settingName, creatorTAOId, associatedTAOId, extraData, {
+			from: whitelistedAddress
+		});
 	});
 
 	it("Whitelisted address - finalizeAdd() non-approved setting creation can not be finalized", async function() {
@@ -291,8 +266,8 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canApprove, true, "Setting's Associated TAO's Advocate can't approve setting creation");
 
 		settingData = await aosettingattribute.getSettingData(settingId2);
-		assert.equal(settingData[6], false, "SettingData has incorrect pendingCreate");
-		assert.equal(settingData[8], true, "SettingData has incorrect rejected");
+		assert.equal(settingData[5], false, "SettingData has incorrect pendingCreate");
+		assert.equal(settingData[7], true, "SettingData has incorrect rejected");
 	});
 
 	it("Whitelisted address - finalizeAdd() setting's Creator TAO's Advocate can finalize setting creation", async function() {
@@ -322,8 +297,8 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canFinalize, true, "Setting's Creator TAO's Advocate can't finalize setting creation");
 
 		var settingData = await aosettingattribute.getSettingData(settingId1);
-		assert.equal(settingData[6], false, "SettingData has incorrect pendingCreate");
-		assert.equal(settingData[7], true, "SettingData has incorrect locked");
+		assert.equal(settingData[5], false, "SettingData has incorrect pendingCreate");
+		assert.equal(settingData[6], true, "SettingData has incorrect locked");
 
 		try {
 			await aosettingattribute.finalizeAdd(settingId2, creatorTAONameId, { from: whitelistedAddress });
@@ -337,7 +312,7 @@ contract("AOSettingAttribute", function(accounts) {
 	it("Whitelisted address - update() can update setting", async function() {
 		var canUpdate;
 		try {
-			await aosettingattribute.update(settingId1, settingType, associatedTAONameId, proposalTAOId, updateSignature, extraData, {
+			await aosettingattribute.update(settingId1, associatedTAONameId, proposalTAOId, extraData, {
 				from: account1
 			});
 			canUpdate = true;
@@ -347,7 +322,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canUpdate, false, "Non-whitelisted address can update setting");
 
 		try {
-			await aosettingattribute.update(settingId1, settingType, associatedTAONameId, proposalTAOId, updateSignature, extraData, {
+			await aosettingattribute.update(settingId1, associatedTAONameId, proposalTAOId, extraData, {
 				from: whitelistedAddress
 			});
 			canUpdate = true;
@@ -360,11 +335,10 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(settingState[1], true, "SettingState has incorrect pendingUpdate");
 		assert.equal(settingState[2], associatedTAONameId, "SettingState has incorrect updateAdvocateNameId");
 		assert.equal(settingState[3], proposalTAOId, "SettingState has incorrect proposalTAOId");
-		assert.equal(settingState[4], updateSignature, "SettingState has incorrect updateSignature");
-		assert.equal(settingState[6], extraData, "SettingState has incorrect settingStateJSON");
+		assert.equal(settingState[5], extraData, "SettingState has incorrect settingStateJSON");
 
 		try {
-			await aosettingattribute.update(settingId1, settingType, associatedTAONameId, proposalTAOId, updateSignature, extraData, {
+			await aosettingattribute.update(settingId1, associatedTAONameId, proposalTAOId, extraData, {
 				from: whitelistedAddress
 			});
 			canUpdate = true;
@@ -374,7 +348,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canUpdate, false, "Whitelisted address can update setting that is pending update");
 
 		try {
-			await aosettingattribute.update(settingId2, settingType, associatedTAONameId, proposalTAOId, updateSignature, extraData, {
+			await aosettingattribute.update(settingId2, associatedTAONameId, proposalTAOId, extraData, {
 				from: whitelistedAddress
 			});
 			canUpdate = true;
@@ -453,19 +427,19 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(canFinalize, true, "Setting's Associated TAO's Advocate can't finalize setting update");
 
 		var settingData = await aosettingattribute.getSettingData(settingId1);
-		assert.equal(settingData[7], true, "SettingData has incorrect locked");
+		assert.equal(settingData[6], true, "SettingData has incorrect locked");
 
 		var settingState = await aosettingattribute.getSettingState(settingId1);
 		assert.equal(settingState[1], false, "SettingState has incorrect pendingUpdate");
 		assert.equal(settingState[2], associatedTAONameId, "SettingState has incorrect updateAdvocateNameId");
 		assert.equal(settingState[3], emptyAddress, "SettingState has incorrect proposalTAOId");
-		assert.equal(settingState[5], proposalTAOId, "SettingState has incorrect lastUpdateTAOId");
+		assert.equal(settingState[4], proposalTAOId, "SettingState has incorrect lastUpdateTAOId");
 	});
 
 	it("rejected setting update can not be finalized", async function() {
 		// Update setting again
 		try {
-			await aosettingattribute.update(settingId1, settingType, associatedTAONameId, proposalTAOId, updateSignature, extraData, {
+			await aosettingattribute.update(settingId1, associatedTAONameId, proposalTAOId, extraData, {
 				from: whitelistedAddress
 			});
 			canUpdate = true;
@@ -478,8 +452,7 @@ contract("AOSettingAttribute", function(accounts) {
 		assert.equal(settingState[1], true, "SettingState has incorrect pendingUpdate");
 		assert.equal(settingState[2], associatedTAONameId, "SettingState has incorrect updateAdvocateNameId");
 		assert.equal(settingState[3], proposalTAOId, "SettingState has incorrect proposalTAOId");
-		assert.equal(settingState[4], updateSignature, "SettingState has incorrect updateSignature");
-		assert.equal(settingState[6], extraData, "SettingState has incorrect settingStateJSON");
+		assert.equal(settingState[5], extraData, "SettingState has incorrect settingStateJSON");
 
 		// Reject the setting update
 		try {
@@ -558,7 +531,6 @@ contract("AOSettingAttribute", function(accounts) {
 			var result = await aosettingattribute.add(
 				newSettingId,
 				creatorTAONameId,
-				settingType,
 				settingName,
 				creatorTAOId,
 				associatedTAOId,
@@ -720,16 +692,9 @@ contract("AOSettingAttribute", function(accounts) {
 	it("rejected deprecation can not be finalized", async function() {
 		// Add new setting
 		try {
-			var result = await aosettingattribute.add(
-				settingId3,
-				creatorTAONameId,
-				settingType,
-				settingName,
-				creatorTAOId,
-				associatedTAOId,
-				extraData,
-				{ from: whitelistedAddress }
-			);
+			var result = await aosettingattribute.add(settingId3, creatorTAONameId, settingName, creatorTAOId, associatedTAOId, extraData, {
+				from: whitelistedAddress
+			});
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -793,7 +758,7 @@ contract("AOSettingAttribute", function(accounts) {
 	it("deprecated setting can't be updated", async function() {
 		var canUpdate;
 		try {
-			await aosettingattribute.update(settingId1, associatedTAONameId, proposalTAOId, updateSignature, extraData, {
+			await aosettingattribute.update(settingId1, associatedTAONameId, proposalTAOId, extraData, {
 				from: whitelistedAddress
 			});
 			canUpdate = true;

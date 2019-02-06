@@ -4,16 +4,33 @@ var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var Logos = artifacts.require("./Logos.sol");
 var AOGiga = artifacts.require("./AOGiga.sol");
 
+var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
+var AOSetting = artifacts.require("./AOSetting.sol");
+var NamePublicKey = artifacts.require("./NamePublicKey.sol");
+
 var EthCrypto = require("eth-crypto");
+var helper = require("./helpers/truffleTestHelper");
 
 contract("AOGiga", function(accounts) {
-	var namefactory, taofactory, nametaoposition, logos, aogiga, nameId, taoId;
+	var namefactory,
+		taofactory,
+		nametaoposition,
+		logos,
+		aogiga,
+		nameaccountrecovery,
+		aosetting,
+		namepublickey,
+		accountRecoveryLockDuration,
+		nameId1,
+		nameId2,
+		taoId;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var account2 = accounts[2];
-	var whitelistedAddress = accounts[3];
-	var someAddress = accounts[4];
+	var account3 = accounts[3];
+	var whitelistedAddress = accounts[4];
+	var someAddress = accounts[5];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 	var recipient = EthCrypto.createIdentity();
 
@@ -23,6 +40,14 @@ contract("AOGiga", function(accounts) {
 		nametaoposition = await NameTAOPosition.deployed();
 		logos = await Logos.deployed();
 		aogiga = await AOGiga.deployed();
+		nameaccountrecovery = await NameAccountRecovery.deployed();
+		aosetting = await AOSetting.deployed();
+		namepublickey = await NamePublicKey.deployed();
+
+		var settingTAOId = await nameaccountrecovery.settingTAOId();
+
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "accountRecoveryLockDuration");
+		accountRecoveryLockDuration = settingValues[0];
 	});
 
 	contract("Variable settings", function() {
@@ -58,11 +83,11 @@ contract("AOGiga", function(accounts) {
 			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
 				from: account1
 			});
-			nameId = await namefactory.ethAddressToNameId(account1);
+			nameId1 = await namefactory.ethAddressToNameId(account1);
 
-			// Mint Logos to nameId
+			// Mint Logos to nameId1
 			await logos.setWhitelist(theAO, true, { from: theAO });
-			await logos.mint(nameId, 10 ** 12, { from: theAO });
+			await logos.mint(nameId1, 10 ** 12, { from: theAO });
 
 			result = await taofactory.createTAO(
 				"Charlie's TAO",
@@ -70,7 +95,7 @@ contract("AOGiga", function(accounts) {
 				"somedatabase",
 				"somekeyvalue",
 				"somecontentid",
-				nameId,
+				nameId1,
 				0,
 				false,
 				0,
@@ -196,6 +221,21 @@ contract("AOGiga", function(accounts) {
 	contract("Network Ion Function Tests", function() {
 		before(async function() {
 			await aogiga.setWhitelist(whitelistedAddress, true, { from: theAO });
+
+			// Create Name
+			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+				from: account1
+			});
+			nameId1 = await namefactory.ethAddressToNameId(account1);
+
+			result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+				from: account2
+			});
+			nameId2 = await namefactory.ethAddressToNameId(account2);
+
+			await nametaoposition.setListener(nameId1, nameId2, { from: account1 });
+
+			await namepublickey.addKey(nameId1, account3, { from: account1 });
 		});
 
 		it("Whitelisted address - mint()  can mint", async function() {
@@ -759,6 +799,94 @@ contract("AOGiga", function(accounts) {
 
 			// Unfreeze account1
 			await aogiga.freezeAccount(account1, false, { from: theAO });
+		});
+
+		it("transferBetweenPublicKeys() - should be able to transfer ions between public keys in a Name", async function() {
+			var canTransfer;
+			var transferAmount = 10;
+
+			try {
+				await aogiga.transferBetweenPublicKeys(someAddress, account1, account3, transferAmount, { from: account1 });
+				canTransfer = true;
+			} catch (e) {
+				canTransfer = false;
+			}
+			assert.equal(canTransfer, false, "Can transfer AO Ion between public keys for a non-Name");
+
+			try {
+				await aogiga.transferBetweenPublicKeys(nameId1, account1, account3, transferAmount, { from: account2 });
+				canTransfer = true;
+			} catch (e) {
+				canTransfer = false;
+			}
+			assert.equal(canTransfer, false, "Non-Advocate of Name transfer AO Ion between public keys");
+
+			try {
+				await aogiga.transferBetweenPublicKeys(nameId1, account2, account3, transferAmount, { from: account1 });
+				canTransfer = true;
+			} catch (e) {
+				canTransfer = false;
+			}
+			assert.equal(canTransfer, false, "Advocate of Name transfer AO Ion from an address that is not listed as public key");
+
+			try {
+				await aogiga.transferBetweenPublicKeys(nameId1, account1, account2, transferAmount, { from: account1 });
+				canTransfer = true;
+			} catch (e) {
+				canTransfer = false;
+			}
+			assert.equal(canTransfer, false, "Advocate of Name transfer AO Ion to an address that is not listed as public key");
+
+			var account1Balance = await aogiga.balanceOf(account1);
+
+			try {
+				await aogiga.transferBetweenPublicKeys(nameId1, account1, account3, account1Balance.plus(1).toNumber(), { from: account1 });
+				canTransfer = true;
+			} catch (e) {
+				canTransfer = false;
+			}
+			assert.equal(canTransfer, false, "Advocate of Name transfer AO Ion more than from address' owned balance");
+
+			// Listener submit account recovery for nameId1
+			await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+
+			// Fast forward the time
+			await helper.advanceTimeAndBlock(1000);
+
+			try {
+				await aogiga.transferBetweenPublicKeys(nameId1, account1, account3, transferAmount, { from: account1 });
+				canTransfer = true;
+			} catch (e) {
+				canTransfer = false;
+			}
+			assert.equal(canTransfer, false, "Compromised Advocate of Name can transfer AO Ion between public keys");
+
+			// Fast forward the time
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+			var account1BalanceBefore = await aogiga.balanceOf(account1);
+			var account3BalanceBefore = await aogiga.balanceOf(account3);
+
+			try {
+				await aogiga.transferBetweenPublicKeys(nameId1, account1, account3, transferAmount, { from: account1 });
+				canTransfer = true;
+			} catch (e) {
+				canTransfer = false;
+			}
+			assert.equal(canTransfer, true, "Advocate of Name can't transfer AO Ion between public keys");
+
+			var account1BalanceAfter = await aogiga.balanceOf(account1);
+			var account3BalanceAfter = await aogiga.balanceOf(account3);
+			assert.equal(
+				account1BalanceAfter.toNumber(),
+				account1BalanceBefore.minus(transferAmount).toNumber(),
+				"Account has incorrect balance"
+			);
+			assert.equal(
+				account3BalanceAfter.toNumber(),
+				account3BalanceBefore.plus(transferAmount).toNumber(),
+				"Account has incorrect balance"
+			);
 		});
 
 		it("The AO - transferETH() should be able to transfer ETH to an address", async function() {
