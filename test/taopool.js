@@ -7,7 +7,12 @@ var TAOPool = artifacts.require("./TAOPool.sol");
 var Pathos = artifacts.require("./Pathos.sol");
 var Ethos = artifacts.require("./Ethos.sol");
 
+var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
+var AOSetting = artifacts.require("./AOSetting.sol");
+
 var BigNumber = require("bignumber.js");
+var helper = require("./helpers/truffleTestHelper");
+
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
 contract("TAOPool", function(accounts) {
@@ -31,7 +36,10 @@ contract("TAOPool", function(accounts) {
 		lotId2,
 		lotId4,
 		lotId5,
-		lotId6;
+		lotId6,
+		nameaccountrecovery,
+		aosetting,
+		accountRecoveryLockDuration;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
@@ -56,6 +64,13 @@ contract("TAOPool", function(accounts) {
 		taopool = await TAOPool.deployed();
 		pathos = await Pathos.deployed();
 		ethos = await Ethos.deployed();
+		nameaccountrecovery = await NameAccountRecovery.deployed();
+		aosetting = await AOSetting.deployed();
+
+		var settingTAOId = await nameaccountrecovery.settingTAOId();
+
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "accountRecoveryLockDuration");
+		accountRecoveryLockDuration = settingValues[0];
 
 		// Create Name
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
@@ -120,6 +135,9 @@ contract("TAOPool", function(accounts) {
 		);
 		var createTAOEvent = result.logs[0];
 		taoId1 = createTAOEvent.args.taoId;
+
+		await nametaoposition.setListener(nameId2, nameId3, { from: account2 });
+		await nametaoposition.setListener(nameId4, nameId3, { from: account4 });
 	});
 
 	var stakeEthos = async function(taoId, quantity, account, nameLots) {
@@ -496,6 +514,28 @@ contract("TAOPool", function(accounts) {
 		assert.equal(logosAddress, logos.address, "Contract has incorrect logosAddress");
 	});
 
+	it("The AO - setNameAccountRecoveryAddress() should be able to set NameAccountRecovery address", async function() {
+		var canSetAddress;
+		try {
+			await taopool.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameAccountRecovery address");
+
+		try {
+			await taopool.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameAccountRecovery address");
+
+		var nameAccountRecoveryAddress = await taopool.nameAccountRecoveryAddress();
+		assert.equal(nameAccountRecoveryAddress, nameaccountrecovery.address, "Contract has incorrect nameAccountRecoveryAddress");
+	});
+
 	it("initialize() - only TAOFactory can create a pool for a TAO", async function() {
 		var canCreate;
 		try {
@@ -600,6 +640,23 @@ contract("TAOPool", function(accounts) {
 		}
 		assert.equal(canUpdatePoolStatus, false, "Non-advocate of TAO can update Pool status");
 
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await taopool.updatePoolStatus(taoId2, false, { from: account2 });
+			canUpdatePoolStatus = true;
+		} catch (e) {
+			canUpdatePoolStatus = false;
+		}
+		assert.equal(canUpdatePoolStatus, false, "Compromised Advocate of TAO can update Pool status");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
 		var nonceBefore = await taofactory.nonces(taoId2);
 
 		try {
@@ -661,6 +718,23 @@ contract("TAOPool", function(accounts) {
 
 		await pathos.whitelistBurnFrom(taoId2, 10, { from: theAO });
 
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await taopool.updatePoolEthosCap(taoId2, true, 1500, { from: account2 });
+			canUpdate = true;
+		} catch (e) {
+			canUpdate = false;
+		}
+		assert.equal(canUpdate, false, "Compromised Advocate of TAO can update Pool's Ethos cap");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
 		var nonceBefore = await taofactory.nonces(taoId2);
 		try {
 			await taopool.updatePoolEthosCap(taoId2, true, 1500, { from: account2 });
@@ -717,6 +791,23 @@ contract("TAOPool", function(accounts) {
 
 		// Start the pool
 		await taopool.updatePoolStatus(taoId2, true, { from: account2 });
+
+		// Listener submit account recovery for nameId4
+		await nameaccountrecovery.submitAccountRecovery(nameId4, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			var result = await taopool.stakeEthos(taoId2, 500, { from: account4 });
+			canStakeEthos = true;
+		} catch (e) {
+			canStakeEthos = false;
+		}
+		assert.equal(canStakeEthos, false, "Compromised Name can stake Ethos on a TAO");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
 		lotId1 = await stakeEthos(taoId2, 500, account4, nameId4Lots);
 		lotId2 = await stakeEthos(taoId2, 500, account5, nameId5Lots);
@@ -845,6 +936,23 @@ contract("TAOPool", function(accounts) {
 		// Start the pool
 		await taopool.updatePoolStatus(taoId2, true, { from: account2 });
 
+		// Listener submit account recovery for nameId4
+		await nameaccountrecovery.submitAccountRecovery(nameId4, { from: account3 });
+
+		try {
+			var result = await taopool.stakePathos(taoId2, 400, { from: account4 });
+			canStakePathos = true;
+		} catch (e) {
+			canStakePathos = false;
+		}
+		assert.equal(canStakePathos, false, "Compromised Name can stake Pathos on a TAO");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
 		await stakePathos(taoId2, 400, nameId2, account4);
 		await stakePathos(taoId2, 300, nameId2, account5);
 
@@ -909,6 +1017,23 @@ contract("TAOPool", function(accounts) {
 			canWithdrawLogos = false;
 		}
 		assert.equal(canWithdrawLogos, false, "Name can withdraw Logos from Lot that is not yet filled");
+
+		// Listener submit account recovery for nameId4
+		await nameaccountrecovery.submitAccountRecovery(nameId4, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			var result = await taopool.withdrawLogos(lotId1, { from: account4 });
+			canWithdrawLogos = true;
+		} catch (e) {
+			canWithdrawLogos = false;
+		}
+		assert.equal(canWithdrawLogos, false, "Compromised Name can withdraw Logos from Lot");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
 		await withdrawLogos(lotId1, account4);
 		await withdrawLogos(lotId2, account5);
