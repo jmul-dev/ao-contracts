@@ -58,6 +58,8 @@ var PathosTreasury = artifacts.require("./PathosTreasury.sol");
 
 // AO Setting
 var AOSetting = artifacts.require("./AOSetting.sol");
+var AOSettingUpdate = artifacts.require("./AOSettingUpdate.sol");
+var AOSettingDeprecation = artifacts.require("./AOSettingDeprecation.sol");
 
 // TAO Pool
 var TAOPool = artifacts.require("./TAOPool.sol");
@@ -120,6 +122,8 @@ module.exports = function(deployer, network, accounts) {
 		aosettingattribute,
 		aosettingvalue,
 		aosetting,
+		aosettingupdate,
+		aosettingdeprecation,
 		logos,
 		logoskilo,
 		logosmega,
@@ -193,6 +197,8 @@ module.exports = function(deployer, network, accounts) {
 		AOSettingAttribute,
 		AOSettingValue,
 		AOSetting,
+		AOSettingUpdate,
+		AOSettingDeprecation,
 		Logos,
 		LogosKilo,
 		LogosMega,
@@ -517,7 +523,14 @@ module.exports = function(deployer, network, accounts) {
 			await pathosxona.setWhitelist(pathostreasury.address, true, { from: primordialAccount });
 
 			return deployer.deploy([
-				[AOSetting, namefactory.address, nametaoposition.address, aosettingattribute.address, aosettingvalue.address],
+				[
+					AOSetting,
+					namefactory.address,
+					nametaoposition.address,
+					nameaccountrecovery.address,
+					aosettingattribute.address,
+					aosettingvalue.address
+				],
 				[TAOPool, namefactory.address, taofactory.address, nametaoposition.address, pathos.address, ethos.address, logos.address]
 			]);
 		})
@@ -548,6 +561,37 @@ module.exports = function(deployer, network, accounts) {
 			await pathos.setWhitelist(taopool.address, true, { from: primordialAccount });
 			await ethos.setWhitelist(taopool.address, true, { from: primordialAccount });
 			await logos.setWhitelist(taopool.address, true, { from: primordialAccount });
+
+			return deployer.deploy([
+				[
+					AOSettingUpdate,
+					namefactory.address,
+					nametaoposition.address,
+					nameaccountrecovery.address,
+					aosettingattribute.address,
+					aosettingvalue.address,
+					aosetting.address
+				],
+				[
+					AOSettingDeprecation,
+					namefactory.address,
+					nametaoposition.address,
+					nameaccountrecovery.address,
+					aosettingattribute.address,
+					aosetting.address
+				]
+			]);
+		})
+		.then(async function() {
+			aosettingupdate = await AOSettingUpdate.deployed();
+			aosettingdeprecation = await AOSettingDeprecation.deployed();
+
+			// AOSettingAttribute grant accesss to AOSettingUpdate/AOSettingDeprecation
+			await aosettingattribute.setWhitelist(aosettingupdate.address, true, { from: primordialAccount });
+			await aosettingattribute.setWhitelist(aosettingdeprecation.address, true, { from: primordialAccount });
+
+			// AOSettingValue grant accesss to AOSettingUpdate
+			await aosettingvalue.setWhitelist(aosettingupdate.address, true, { from: primordialAccount });
 
 			/**
 			 * Create Primordial Name and Associated Name
