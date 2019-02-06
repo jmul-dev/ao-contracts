@@ -7,8 +7,10 @@ var TAOAncestry = artifacts.require("./TAOAncestry.sol");
 var TAOPool = artifacts.require("./TAOPool.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
 var NameTAOVault = artifacts.require("./NameTAOVault.sol");
+var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
 
 var EthCrypto = require("eth-crypto");
+var helper = require("./helpers/truffleTestHelper");
 
 contract("TAOFactory", function(accounts) {
 	var namefactory,
@@ -20,6 +22,7 @@ contract("TAOFactory", function(accounts) {
 		taopool,
 		aosetting,
 		nametaovault,
+		nameaccountrecovery,
 		settingTAOId,
 		nameId1,
 		nameId2,
@@ -28,7 +31,8 @@ contract("TAOFactory", function(accounts) {
 		taoId1,
 		taoId2,
 		taoId3,
-		taoId4;
+		taoId4,
+		accountRecoveryLockDuration;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
@@ -55,8 +59,12 @@ contract("TAOFactory", function(accounts) {
 		taopool = await TAOPool.deployed();
 		aosetting = await AOSetting.deployed();
 		nametaovault = await NameTAOVault.deployed();
+		nameaccountrecovery = await NameAccountRecovery.deployed();
 
 		settingTAOId = await taofactory.settingTAOId();
+
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "accountRecoveryLockDuration");
+		accountRecoveryLockDuration = settingValues[0];
 
 		// Create Name
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
@@ -99,6 +107,8 @@ contract("TAOFactory", function(accounts) {
 		);
 		var createTAOEvent = result.logs[0];
 		taoId1 = createTAOEvent.args.taoId;
+
+		await nametaoposition.setListener(nameId2, nameId3, { from: account2 });
 	});
 
 	var createSignature = function(privateKey, data, nonce) {
@@ -121,7 +131,7 @@ contract("TAOFactory", function(accounts) {
 		return signature;
 	};
 
-	it("The AO - transferOwnership() - should be able to transfer ownership to a TAO", async function() {
+	it("The AO - transferOwnership() should be able to transfer ownership to a TAO", async function() {
 		var canTransferOwnership;
 		try {
 			await taofactory.transferOwnership(taoId1, { from: someAddress });
@@ -209,7 +219,7 @@ contract("TAOFactory", function(accounts) {
 		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
 	});
 
-	it("The AO - should be able to set NameTAOLookup address", async function() {
+	it("The AO - setNameTAOLookupAddress() should be able to set NameTAOLookup address", async function() {
 		var canSetAddress;
 		try {
 			await taofactory.setNameTAOLookupAddress(nametaolookup.address, { from: someAddress });
@@ -231,7 +241,7 @@ contract("TAOFactory", function(accounts) {
 		assert.equal(nameTAOLookupAddress, nametaolookup.address, "Contract has incorrect nameTAOLookupAddress");
 	});
 
-	it("The AO - should be able to set AOSetting address", async function() {
+	it("The AO - setAOSettingAddress() should be able to set AOSetting address", async function() {
 		var canSetAddress;
 		try {
 			await taofactory.setAOSettingAddress(aosetting.address, { from: someAddress });
@@ -253,7 +263,7 @@ contract("TAOFactory", function(accounts) {
 		assert.equal(aoSettingAddress, aosetting.address, "Contract has incorrect aoSettingAddress");
 	});
 
-	it("The AO - should be able to set Logos address", async function() {
+	it("The AO - setLogosAddress() should be able to set Logos address", async function() {
 		var canSetAddress;
 		try {
 			await taofactory.setLogosAddress(logos.address, { from: someAddress });
@@ -275,7 +285,7 @@ contract("TAOFactory", function(accounts) {
 		assert.equal(logosAddress, logos.address, "Contract has incorrect logosAddress");
 	});
 
-	it("The AO - should be able to set NameTAOVault address", async function() {
+	it("The AO - setNameTAOVaultAddress() should be able to set NameTAOVault address", async function() {
 		var canSetAddress;
 		try {
 			await taofactory.setNameTAOVaultAddress(nametaovault.address, { from: someAddress });
@@ -297,7 +307,7 @@ contract("TAOFactory", function(accounts) {
 		assert.equal(nameTAOVaultAddress, nametaovault.address, "Contract has incorrect nameTAOVaultAddress");
 	});
 
-	it("The AO - should be able to set TAOAncestry address", async function() {
+	it("The AO - setTAOAncestryAddress() should be able to set TAOAncestry address", async function() {
 		var canSetAddress;
 		try {
 			await taofactory.setTAOAncestryAddress(taoancestry.address, { from: someAddress });
@@ -319,7 +329,7 @@ contract("TAOFactory", function(accounts) {
 		assert.equal(taoAncestryAddress, taoancestry.address, "Contract has incorrect taoAncestryAddress");
 	});
 
-	it("The AO - should be able to set settingTAOId", async function() {
+	it("The AO - setSettingTAOId() should be able to set settingTAOId", async function() {
 		var canSet;
 		try {
 			await taofactory.setSettingTAOId(settingTAOId, { from: someAddress });
@@ -341,7 +351,7 @@ contract("TAOFactory", function(accounts) {
 		assert.equal(_settingTAOId, settingTAOId, "Contract has incorrect settingTAOId");
 	});
 
-	it("The AO - should be able to set TAOPool address", async function() {
+	it("The AO - setTAOPoolAddress() should be able to set TAOPool address", async function() {
 		var canSetAddress;
 		try {
 			await taofactory.setTAOPoolAddress(taopool.address, { from: someAddress });
@@ -361,6 +371,28 @@ contract("TAOFactory", function(accounts) {
 
 		var taoPoolAddress = await taofactory.taoPoolAddress();
 		assert.equal(taoPoolAddress, taopool.address, "Contract has incorrect taoPoolAddress");
+	});
+
+	it("The AO - setNameAccountRecoveryAddress() should be able to set NameAccountRecovery address", async function() {
+		var canSetAddress;
+		try {
+			await taofactory.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameAccountRecovery address");
+
+		try {
+			await taofactory.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameAccountRecovery address");
+
+		var nameAccountRecoveryAddress = await taofactory.nameAccountRecoveryAddress();
+		assert.equal(nameAccountRecoveryAddress, nameaccountrecovery.address, "Contract has incorrect nameAccountRecoveryAddress");
 	});
 
 	it("incrementNonce() - only allowed address can update TAO's nonce", async function() {
@@ -482,6 +514,40 @@ contract("TAOFactory", function(accounts) {
 		assert.equal(canCreateTAO, false, "Name with not enough logos can create TAO - logos < parent TAO's childMinLogos");
 
 		await logos.mint(nameId2, 10 ** 12, { from: theAO });
+
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			var result = await taofactory.createTAO(
+				"Delta's TAO #1",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId2,
+				0,
+				false,
+				0,
+				{
+					from: account2
+				}
+			);
+			createTAOEvent = result.logs[0];
+			taoId2 = createTAOEvent.args.taoId;
+			canCreateTAO = true;
+		} catch (e) {
+			createTAOEvent = null;
+			taoId2 = null;
+			canCreateTAO = false;
+		}
+		assert.equal(canCreateTAO, false, "Compromised Name can create TAO");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
 		// Add a TAO
 		var totalTAOsCountBefore = await taofactory.getTotalTAOsCount();

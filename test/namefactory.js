@@ -147,7 +147,7 @@ contract("NameFactory", function(accounts) {
 		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
 	});
 
-	it("The AO - should be able to set Voice address", async function() {
+	it("The AO - setVoiceAddress() should be able to set Voice address", async function() {
 		var canSetAddress;
 		try {
 			await namefactory.setVoiceAddress(voice.address, { from: someAddress });
@@ -169,7 +169,7 @@ contract("NameFactory", function(accounts) {
 		assert.equal(voiceAddress, voice.address, "Contract has incorrect voiceAddress");
 	});
 
-	it("The AO - should be able to set NameTAOVault address", async function() {
+	it("The AO - setNameTAOVaultAddress() should be able to set NameTAOVault address", async function() {
 		var canSetAddress;
 		try {
 			await namefactory.setNameTAOVaultAddress(nametaovault.address, { from: someAddress });
@@ -191,7 +191,7 @@ contract("NameFactory", function(accounts) {
 		assert.equal(nameTAOVaultAddress, nametaovault.address, "Contract has incorrect nameTAOVaultAddress");
 	});
 
-	it("The AO - should be able to set NameTAOLookup address", async function() {
+	it("The AO - setNameTAOLookupAddress() should be able to set NameTAOLookup address", async function() {
 		var canSetAddress;
 		try {
 			await namefactory.setNameTAOLookupAddress(nametaolookup.address, { from: someAddress });
@@ -213,7 +213,7 @@ contract("NameFactory", function(accounts) {
 		assert.equal(nameTAOLookupAddress, nametaolookup.address, "Contract has incorrect nameTAOLookupAddress");
 	});
 
-	it("The AO - should be able to set NameTAOPosition address", async function() {
+	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
 		var canSetAddress;
 		try {
 			await namefactory.setNameTAOPositionAddress(nametaoposition.address, { from: someAddress });
@@ -235,7 +235,7 @@ contract("NameFactory", function(accounts) {
 		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
 	});
 
-	it("The AO - should be able to set NamePublicKey address", async function() {
+	it("The AO - setNamePublicKeyAddress() should be able to set NamePublicKey address", async function() {
 		var canSetAddress;
 		try {
 			await namefactory.setNamePublicKeyAddress(namepublickey.address, { from: someAddress });
@@ -257,7 +257,7 @@ contract("NameFactory", function(accounts) {
 		assert.equal(namePublicKeyAddress, namepublickey.address, "Contract has incorrect namePublicKeyAddress");
 	});
 
-	it("The AO - should be able to set NameAccountRecovery address", async function() {
+	it("The AO - setNameAccountRecoveryAddress() should be able to set NameAccountRecovery address", async function() {
 		var canSetAddress;
 		try {
 			await namefactory.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: someAddress });

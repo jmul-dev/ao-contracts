@@ -98,7 +98,7 @@ contract("Logos", function(accounts) {
 		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
 	});
 
-	it("The AO - should be able to transfer ownership to a TAO", async function() {
+	it("The AO - transferOwnership() should be able to transfer ownership to a TAO", async function() {
 		// Mint Logos to nameId1 and nameId2
 		await logos.setWhitelist(theAO, true, { from: theAO });
 		await logos.mint(nameId1, 10 ** 12, { from: theAO });
@@ -159,7 +159,7 @@ contract("Logos", function(accounts) {
 		assert.equal(newTheAO, taoId1, "Contract has incorrect TheAO address after transferring ownership");
 	});
 
-	it("The AO - should be able to whitelist an address", async function() {
+	it("The AO - setWhitelist() should be able to whitelist an address", async function() {
 		var canSetWhitelist;
 		try {
 			await logos.setWhitelist(whitelistedAddress, true, { from: someAddress });
@@ -181,7 +181,7 @@ contract("Logos", function(accounts) {
 		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
 	});
 
-	it("The AO - should be able to set NameFactory address", async function() {
+	it("The AO - setNameFactoryAddress() should be able to set NameFactory address", async function() {
 		var canSetAddress;
 		try {
 			await logos.setNameFactoryAddress(namefactory.address, { from: someAddress });
@@ -203,7 +203,7 @@ contract("Logos", function(accounts) {
 		assert.equal(nameFactoryAddress, namefactory.address, "Contract has incorrect nameFactoryAddress");
 	});
 
-	it("The AO - should be able to set NameTAOPosition address", async function() {
+	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
 		var canSetAddress;
 		try {
 			await logos.setNameTAOPositionAddress(nametaoposition.address, { from: someAddress });
@@ -225,7 +225,7 @@ contract("Logos", function(accounts) {
 		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
 	});
 
-	it("The AO - should be able to set NameAccountRecovery address", async function() {
+	it("The AO - setNameAccountRecoveryAddress() should be able to set NameAccountRecovery address", async function() {
 		var canSetAddress;
 		try {
 			await logos.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: someAddress });

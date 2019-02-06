@@ -221,7 +221,7 @@ contract("AOContentFactory", function(accounts) {
 		return vrs;
 	};
 
-	it("The AO - should be able to transfer ownership to a TAO", async function() {
+	it("The AO - transferOwnership() should be able to transfer ownership to a TAO", async function() {
 		var canTransferOwnership;
 		try {
 			await aocontentfactory.transferOwnership(taoId1, { from: someAddress });
@@ -243,7 +243,7 @@ contract("AOContentFactory", function(accounts) {
 		assert.equal(newTheAO, taoId1, "Contract has incorrect TheAO address after transferring ownership");
 	});
 
-	it("The AO - should be able to whitelist an address", async function() {
+	it("The AO - setWhitelist() should be able to whitelist an address", async function() {
 		var canSetWhitelist;
 		try {
 			await aocontentfactory.setWhitelist(whitelistedAddress, true, { from: someAddress });
@@ -265,7 +265,7 @@ contract("AOContentFactory", function(accounts) {
 		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
 	});
 
-	it("The AO - should be able to set settingTAOId", async function() {
+	it("The AO - setSettingTAOId() should be able to set settingTAOId", async function() {
 		var canSetSettingTAOId;
 		try {
 			await aocontentfactory.setSettingTAOId(settingTAOId, { from: someAddress });
@@ -287,7 +287,7 @@ contract("AOContentFactory", function(accounts) {
 		assert.equal(_settingTAOId, settingTAOId, "Contract has incorrect settingTAOId");
 	});
 
-	it("The AO - should be able to set AOSetting address", async function() {
+	it("The AO - setAOSettingAddress() should be able to set AOSetting address", async function() {
 		var canSetAddress;
 		try {
 			await aocontentfactory.setAOSettingAddress(aosetting.address, { from: someAddress });
@@ -309,7 +309,7 @@ contract("AOContentFactory", function(accounts) {
 		assert.equal(aoSettingAddress, aosetting.address, "Contract has incorrect aoSettingAddress");
 	});
 
-	it("The AO - should be able to set AOTreasury address", async function() {
+	it("The AO - setAOTreasuryAddress() should be able to set AOTreasury address", async function() {
 		var canSetAddress;
 		try {
 			await aocontentfactory.setAOTreasuryAddress(aotreasury.address, { from: someAddress });
@@ -331,7 +331,7 @@ contract("AOContentFactory", function(accounts) {
 		assert.equal(aoTreasuryAddress, aotreasury.address, "Contract has incorrect aoTreasuryAddress");
 	});
 
-	it("The AO - should be able to set AOContent address", async function() {
+	it("The AO - setAOContentAddress() should be able to set AOContent address", async function() {
 		var canSetAddress;
 		try {
 			await aocontentfactory.setAOContentAddress(aocontent.address, { from: someAddress });
@@ -353,7 +353,7 @@ contract("AOContentFactory", function(accounts) {
 		assert.equal(aoContentAddress, aocontent.address, "Contract has incorrect aoContentAddress");
 	});
 
-	it("The AO - should be able to set AOStakedContent address", async function() {
+	it("The AO - setAOStakedContentAddress() should be able to set AOStakedContent address", async function() {
 		var canSetAddress;
 		try {
 			await aocontentfactory.setAOStakedContentAddress(aostakedcontent.address, { from: someAddress });
@@ -375,7 +375,7 @@ contract("AOContentFactory", function(accounts) {
 		assert.equal(aoStakedContentAddress, aostakedcontent.address, "Contract has incorrect aoStakedContentAddress");
 	});
 
-	it("The AO - should be able to set AOContentHost address", async function() {
+	it("The AO - setAOContentHostAddress() should be able to set AOContentHost address", async function() {
 		var canSetAddress;
 		try {
 			await aocontentfactory.setAOContentHostAddress(aocontenthost.address, { from: someAddress });
@@ -397,7 +397,7 @@ contract("AOContentFactory", function(accounts) {
 		assert.equal(aoContentHostAddress, aocontenthost.address, "Contract has incorrect aoContentHostAddress");
 	});
 
-	it("The AO - should be able to set AOEarning address", async function() {
+	it("The AO - setAOEarningAddress() should be able to set AOEarning address", async function() {
 		var canSetAddress;
 		try {
 			await aocontentfactory.setAOEarningAddress(aoearning.address, { from: someAddress });
@@ -419,7 +419,7 @@ contract("AOContentFactory", function(accounts) {
 		assert.equal(aoEarningAddress, aoearning.address, "Contract has incorrect aoEarningAddress");
 	});
 
-	it("The AO - should be able to set NameTAOPosition address", async function() {
+	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
 		var canSetAddress;
 		try {
 			await aocontentfactory.setNameTAOPositionAddress(nametaoposition.address, { from: someAddress });

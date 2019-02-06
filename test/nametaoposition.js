@@ -263,7 +263,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(taoFactoryAddress, taofactory.address, "Contract has incorrect taoFactoryAddress");
 	});
 
-	it("The AO - should be able to set settingTAOId", async function() {
+	it("The AO - setSettingTAOId() should be able to set settingTAOId", async function() {
 		var canSetSettingTAOId;
 		try {
 			await nametaoposition.setSettingTAOId(settingTAOId, { from: someAddress });
@@ -285,7 +285,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(_settingTAOId, settingTAOId, "Contract has incorrect settingTAOId");
 	});
 
-	it("The AO - should be able to set AOSetting address", async function() {
+	it("The AO - setAOSettingAddress() should be able to set AOSetting address", async function() {
 		var canSetAddress;
 		try {
 			await nametaoposition.setAOSettingAddress(aosetting.address, { from: someAddress });

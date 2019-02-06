@@ -100,7 +100,7 @@ contract("Pathos Yotta", function(accounts) {
 		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
 	});
 
-	it("The AO - should be able to transfer ownership to a TAO", async function() {
+	it("The AO - transferOwnership() should be able to transfer ownership to a TAO", async function() {
 		var canTransferOwnership;
 		try {
 			await pathosyotta.transferOwnership(taoId1, { from: someAddress });
@@ -122,7 +122,7 @@ contract("Pathos Yotta", function(accounts) {
 		assert.equal(newTheAO, taoId1, "Contract has incorrect TheAO address after transferring ownership");
 	});
 
-	it("The AO - should be able to whitelist an address", async function() {
+	it("The AO - setWhitelist() should be able to whitelist an address", async function() {
 		var canSetWhitelist;
 		try {
 			await pathosyotta.setWhitelist(whitelistedAddress, true, { from: someAddress });
@@ -144,7 +144,7 @@ contract("Pathos Yotta", function(accounts) {
 		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
 	});
 
-	it("The AO - should be able to set NameTAOPosition address", async function() {
+	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
 		var canSetAddress;
 		try {
 			await pathosyotta.setNameTAOPositionAddress(nametaoposition.address, { from: someAddress });

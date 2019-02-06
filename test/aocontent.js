@@ -207,7 +207,7 @@ contract("AOContent", function(accounts) {
 		return signature;
 	};
 
-	it("The AO - should be able to transfer ownership to a TAO", async function() {
+	it("The AO - transferOwnership() should be able to transfer ownership to a TAO", async function() {
 		var canTransferOwnership;
 		try {
 			await aocontent.transferOwnership(taoId1, { from: someAddress });
@@ -229,7 +229,7 @@ contract("AOContent", function(accounts) {
 		assert.equal(newTheAO, taoId1, "Contract has incorrect TheAO address after transferring ownership");
 	});
 
-	it("The AO - should be able to whitelist an address", async function() {
+	it("The AO - setWhitelist() should be able to whitelist an address", async function() {
 		var canSetWhitelist;
 		try {
 			await aocontent.setWhitelist(whitelistedAddress, true, { from: someAddress });
@@ -251,7 +251,7 @@ contract("AOContent", function(accounts) {
 		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
 	});
 
-	it("The AO - should be able to set settingTAOId", async function() {
+	it("The AO - setSettingTAOId() should be able to set settingTAOId", async function() {
 		var canSetSettingTAOId;
 		try {
 			await aocontent.setSettingTAOId(settingTAOId, { from: someAddress });
@@ -273,7 +273,7 @@ contract("AOContent", function(accounts) {
 		assert.equal(_settingTAOId, settingTAOId, "Contract has incorrect settingTAOId");
 	});
 
-	it("The AO - should be able to set AOSetting address", async function() {
+	it("The AO - setAOSettingAddress() should be able to set AOSetting address", async function() {
 		var canSetAddress;
 		try {
 			await aocontent.setAOSettingAddress(aosetting.address, { from: someAddress });
@@ -295,7 +295,7 @@ contract("AOContent", function(accounts) {
 		assert.equal(aoSettingAddress, aosetting.address, "Contract has incorrect aoSettingAddress");
 	});
 
-	it("The AO - should be able to set NameTAOPosition address", async function() {
+	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
 		var canSetAddress;
 		try {
 			await aocontent.setNameTAOPositionAddress(nametaoposition.address, { from: someAddress });

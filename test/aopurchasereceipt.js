@@ -259,7 +259,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		return purchaseReceiptId;
 	};
 
-	it("The AO - should be able to transfer ownership to a TAO", async function() {
+	it("The AO - transferOwnership() should be able to transfer ownership to a TAO", async function() {
 		var canTransferOwnership;
 		try {
 			await aopurchasereceipt.transferOwnership(taoId1, { from: someAddress });
@@ -281,7 +281,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		assert.equal(newTheAO, taoId1, "Contract has incorrect TheAO address after transferring ownership");
 	});
 
-	it("The AO - should be able to whitelist an address", async function() {
+	it("The AO - setWhitelist() should be able to whitelist an address", async function() {
 		var canSetWhitelist;
 		try {
 			await aopurchasereceipt.setWhitelist(whitelistedAddress, true, { from: someAddress });
@@ -373,7 +373,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		contentHostId3 = hostContentEvent.args.contentHostId;
 	});
 
-	it("The AO - should be able to set AOContent address", async function() {
+	it("The AO - setAOContentAddress() should be able to set AOContent address", async function() {
 		var canSetAddress;
 		try {
 			await aopurchasereceipt.setAOContentAddress(aocontent.address, { from: someAddress });
@@ -395,7 +395,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		assert.equal(aoContentAddress, aocontent.address, "Contract has incorrect aoContentAddress");
 	});
 
-	it("The AO - should be able to set AOStakedContent address", async function() {
+	it("The AO - setAOStakedContentAddress() should be able to set AOStakedContent address", async function() {
 		var canSetAddress;
 		try {
 			await aopurchasereceipt.setAOStakedContentAddress(aostakedcontent.address, { from: someAddress });
@@ -417,7 +417,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		assert.equal(aoStakedContentAddress, aostakedcontent.address, "Contract has incorrect aoStakedContentAddress");
 	});
 
-	it("The AO - should be able to set AOContentHost address", async function() {
+	it("The AO - setAOContentHostAddress() should be able to set AOContentHost address", async function() {
 		var canSetAddress;
 		try {
 			await aopurchasereceipt.setAOContentHostAddress(aocontenthost.address, { from: someAddress });
@@ -439,7 +439,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		assert.equal(aoContentHostAddress, aocontenthost.address, "Contract has incorrect aoContentHostAddress");
 	});
 
-	it("The AO - should be able to set AOTreasury address", async function() {
+	it("The AO - setAOTreasuryAddress() should be able to set AOTreasury address", async function() {
 		var canSetAddress;
 		try {
 			await aopurchasereceipt.setAOTreasuryAddress(aotreasury.address, { from: someAddress });
@@ -461,7 +461,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		assert.equal(aoTreasuryAddress, aotreasury.address, "Contract has incorrect aoTreasuryAddress");
 	});
 
-	it("The AO - should be able to set AOEarning address", async function() {
+	it("The AO - setAOEarningAddress() should be able to set AOEarning address", async function() {
 		var canSetAddress;
 		try {
 			await aopurchasereceipt.setAOEarningAddress(aoearning.address, { from: someAddress });
@@ -483,7 +483,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		assert.equal(aoEarningAddress, aoearning.address, "Contract has incorrect aoEarningAddress");
 	});
 
-	it("The AO - should be able to set NameTAOPosition address", async function() {
+	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
 		var canSetAddress;
 		try {
 			await aopurchasereceipt.setNameTAOPositionAddress(nametaoposition.address, { from: someAddress });

@@ -209,7 +209,7 @@ contract("NameAccountRecovery", function(accounts) {
 		assert.equal(namePublicKeyAddress, namepublickey.address, "Contract has incorrect namePublicKeyAddress");
 	});
 
-	it("The AO - should be able to set settingTAOId", async function() {
+	it("The AO - setSettingTAOId() should be able to set settingTAOId", async function() {
 		var canSetSettingTAOId;
 		try {
 			await nameaccountrecovery.setSettingTAOId(settingTAOId, { from: someAddress });
@@ -231,7 +231,7 @@ contract("NameAccountRecovery", function(accounts) {
 		assert.equal(_settingTAOId, settingTAOId, "Contract has incorrect settingTAOId");
 	});
 
-	it("The AO - should be able to set AOSetting address", async function() {
+	it("The AO - setAOSettingAddress() should be able to set AOSetting address", async function() {
 		var canSetAddress;
 		try {
 			await nameaccountrecovery.setAOSettingAddress(aosetting.address, { from: someAddress });

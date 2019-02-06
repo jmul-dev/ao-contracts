@@ -270,7 +270,7 @@ contract("AOIon", function(accounts) {
 			assert.equal(buyPrice.toNumber(), 2, "Incorrect buy price");
 		});
 
-		it("The AO - should be able to set settingTAOId", async function() {
+		it("The AO - setSettingTAOId() should be able to set settingTAOId", async function() {
 			var canSetSettingTAOId;
 			try {
 				await aoion.setSettingTAOId(settingTAOId, { from: someAddress });
@@ -292,7 +292,7 @@ contract("AOIon", function(accounts) {
 			assert.equal(_settingTAOId, settingTAOId, "Contract has incorrect settingTAOId");
 		});
 
-		it("The AO - should be able to set AOSetting address", async function() {
+		it("The AO - setAOSettingAddress() should be able to set AOSetting address", async function() {
 			var canSetAddress;
 			try {
 				await aoion.setAOSettingAddress(aosetting.address, { from: someAddress });
@@ -339,7 +339,7 @@ contract("AOIon", function(accounts) {
 			assert.equal(_aoDevTeam2, aoDevTeam2, "Contract has incorrect aoDevTeam2");
 		});
 
-		it("The AO - should be able to set AOETH address", async function() {
+		it("The AO - setAOETHAddress() should be able to set AOETH address", async function() {
 			var canSetAddress;
 			try {
 				await aoion.setAOETHAddress(aoeth.address, { from: someAddress });

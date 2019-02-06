@@ -109,7 +109,7 @@ contract("AOTreasury", function(accounts) {
 		assert.equal(xona[1], aoxona.address, "Contract is missing xona from list of denominations");
 	});
 
-	it("The AO - should be able to transfer ownership to a TAO", async function() {
+	it("The AO - transferOwnership() should be able to transfer ownership to a TAO", async function() {
 		var canTransferOwnership;
 		try {
 			await aotreasury.transferOwnership(taoId1, { from: someAddress });
@@ -131,7 +131,7 @@ contract("AOTreasury", function(accounts) {
 		assert.equal(newTheAO, taoId1, "Contract has incorrect TheAO address after transferring ownership");
 	});
 
-	it("The AO - should be able to whitelist an address", async function() {
+	it("The AO - setWhitelist() should be able to whitelist an address", async function() {
 		var canSetWhitelist;
 		try {
 			await aotreasury.setWhitelist(whitelistedAddress, true, { from: someAddress });
@@ -153,7 +153,7 @@ contract("AOTreasury", function(accounts) {
 		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
 	});
 
-	it("The AO - should be able to set NameTAOPosition address", async function() {
+	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
 		var canSetAddress;
 		try {
 			await aotreasury.setNameTAOPositionAddress(nametaoposition.address, { from: someAddress });
@@ -175,7 +175,7 @@ contract("AOTreasury", function(accounts) {
 		assert.equal(nameTAOPositionAddress, nametaoposition.address, "Contract has incorrect nameTAOPositionAddress");
 	});
 
-	it("The AO - should be able to can add denomination", async function() {
+	it("The AO - addDenomination() should be able to can add denomination", async function() {
 		var canAdd;
 		try {
 			await aotreasury.addDenomination("deno", someAddress, { from: account2 });
@@ -200,7 +200,7 @@ contract("AOTreasury", function(accounts) {
 		assert.notEqual(canAdd, true, "The AO can add invalid denomination");
 	});
 
-	it("The AO - should be able to update denomination", async function() {
+	it("The AO - updateDenomination() should be able to update denomination", async function() {
 		var canUpdate;
 		try {
 			await aotreasury.updateDenomination("kilo", aokilo.address, { from: account2 });

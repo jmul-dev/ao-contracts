@@ -90,7 +90,7 @@ contract("TAOAncestry", function(accounts) {
 		await nametaoposition.setListener(nameId2, nameId3, { from: account2 });
 	});
 
-	it("The AO - transferOwnership() - should be able to transfer ownership to a TAO", async function() {
+	it("The AO - transferOwnership() should be able to transfer ownership to a TAO", async function() {
 		var canTransferOwnership;
 		try {
 			await taoancestry.transferOwnership(taoId1, { from: someAddress });
@@ -198,6 +198,28 @@ contract("TAOAncestry", function(accounts) {
 
 		var taoFactoryAddress = await taoancestry.taoFactoryAddress();
 		assert.equal(taoFactoryAddress, taofactory.address, "Contract has incorrect taoFactoryAddress");
+	});
+
+	it("The AO - setNameAccountRecoveryAddress() should be able to set NameAccountRecovery address", async function() {
+		var canSetAddress;
+		try {
+			await taoancestry.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameAccountRecovery address");
+
+		try {
+			await taoancestry.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameAccountRecovery address");
+
+		var nameAccountRecoveryAddress = await taoancestry.nameAccountRecoveryAddress();
+		assert.equal(nameAccountRecoveryAddress, nameaccountrecovery.address, "Contract has incorrect nameAccountRecoveryAddress");
 	});
 
 	it("initialize() - only TAOFactory can initialize Ancestry for a TAO", async function() {
