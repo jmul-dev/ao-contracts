@@ -6,8 +6,24 @@ var Logos = artifacts.require("./Logos.sol");
 var Voice = artifacts.require("./Voice.sol");
 var TAOVoice = artifacts.require("./TAOVoice.sol");
 
+var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
+var AOSetting = artifacts.require("./AOSetting.sol");
+
+var helper = require("./helpers/truffleTestHelper");
+
 contract("TAOVoice", function(accounts) {
-	var namefactory, taofactory, nametaoposition, logos, nameId, taoId, voice, taovoice;
+	var namefactory,
+		taofactory,
+		nametaoposition,
+		logos,
+		nameId1,
+		nameId2,
+		taoId,
+		voice,
+		taovoice,
+		nameaccountrecovery,
+		aosetting,
+		accountRecoveryLockDuration;
 
 	var theAO = accounts[0];
 	var account1 = accounts[1];
@@ -23,15 +39,28 @@ contract("TAOVoice", function(accounts) {
 		voice = await Voice.deployed();
 		taovoice = await TAOVoice.deployed();
 
+		nameaccountrecovery = await NameAccountRecovery.deployed();
+		aosetting = await AOSetting.deployed();
+
+		var settingTAOId = await nameaccountrecovery.settingTAOId();
+
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "accountRecoveryLockDuration");
+		accountRecoveryLockDuration = settingValues[0];
+
 		// Create Name
 		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
 			from: account1
 		});
-		nameId = await namefactory.ethAddressToNameId(account1);
+		nameId1 = await namefactory.ethAddressToNameId(account1);
 
-		// Mint Logos to nameId
+		result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+			from: account2
+		});
+		nameId2 = await namefactory.ethAddressToNameId(account2);
+
+		// Mint Logos to nameId1
 		await logos.setWhitelist(theAO, true, { from: theAO });
-		await logos.mint(nameId, 10 ** 12, { from: theAO });
+		await logos.mint(nameId1, 10 ** 12, { from: theAO });
 
 		result = await taofactory.createTAO(
 			"Charlie's TAO",
@@ -39,7 +68,7 @@ contract("TAOVoice", function(accounts) {
 			"somedatabase",
 			"somekeyvalue",
 			"somecontentid",
-			nameId,
+			nameId1,
 			0,
 			false,
 			0,
@@ -49,6 +78,8 @@ contract("TAOVoice", function(accounts) {
 		);
 		var createTAOEvent = result.logs[0];
 		taoId = createTAOEvent.args.taoId;
+
+		await nametaoposition.setListener(nameId1, nameId2, { from: account1 });
 	});
 
 	it("The AO - transferOwnership() - should be able to transfer ownership to a TAO", async function() {
@@ -161,6 +192,28 @@ contract("TAOVoice", function(accounts) {
 		assert.equal(voiceAddress, voice.address, "Contract has incorrect voiceAddress");
 	});
 
+	it("The AO - setNameAccountRecoveryAddress() should be able to set NameAccountRecovery address", async function() {
+		var canSetAddress;
+		try {
+			await taovoice.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameAccountRecovery address");
+
+		try {
+			await taovoice.setNameAccountRecoveryAddress(nameaccountrecovery.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameAccountRecovery address");
+
+		var nameAccountRecoveryAddress = await taovoice.nameAccountRecoveryAddress();
+		assert.equal(nameAccountRecoveryAddress, nameaccountrecovery.address, "Contract has incorrect nameAccountRecoveryAddress");
+	});
+
 	it("stakeVoice() should be able to stake Voice on a TAO", async function() {
 		var canStake;
 		try {
@@ -187,10 +240,27 @@ contract("TAOVoice", function(accounts) {
 		}
 		assert.equal(canStake, false, "Name can stake Voice on a TAO more than its owned balance");
 
-		var nameBalanceBefore = await voice.balanceOf(nameId);
+		// Listener submit account recovery for nameId1
+		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await taovoice.stakeVoice(taoId, 800000, { from: account1 });
+			canStake = true;
+		} catch (e) {
+			canStake = false;
+		}
+		assert.equal(canStake, false, "Compromised Name can stake Voice on a TAO");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		var nameBalanceBefore = await voice.balanceOf(nameId1);
 		var taoBalanceBefore = await voice.balanceOf(taoId);
-		var taoStakedBalanceBefore = await voice.taoStakedBalance(nameId, taoId);
-		var nameStakedBalanceBefore = await voice.stakedBalance(nameId);
+		var taoStakedBalanceBefore = await voice.taoStakedBalance(nameId1, taoId);
+		var nameStakedBalanceBefore = await voice.stakedBalance(nameId1);
 		try {
 			await taovoice.stakeVoice(taoId, 800000, { from: account1 });
 			canStake = true;
@@ -199,10 +269,10 @@ contract("TAOVoice", function(accounts) {
 		}
 		assert.equal(canStake, true, "Name can't stake Voice on a TAO");
 
-		var nameBalanceAfter = await voice.balanceOf(nameId);
+		var nameBalanceAfter = await voice.balanceOf(nameId1);
 		var taoBalanceAfter = await voice.balanceOf(taoId);
-		var taoStakedBalanceAfter = await voice.taoStakedBalance(nameId, taoId);
-		var nameStakedBalanceAfter = await voice.stakedBalance(nameId);
+		var taoStakedBalanceAfter = await voice.taoStakedBalance(nameId1, taoId);
+		var nameStakedBalanceAfter = await voice.stakedBalance(nameId1);
 
 		assert.equal(nameBalanceAfter.toNumber(), nameBalanceBefore.minus(800000).toNumber(), "Name has incorrect balance");
 		assert.equal(taoBalanceAfter.toNumber(), taoBalanceBefore.plus(800000).toNumber(), "TAO has incorrect balance");
@@ -252,10 +322,27 @@ contract("TAOVoice", function(accounts) {
 		}
 		assert.equal(canUnstake, false, "Name can unstake Voice from a TAO more than its staked balance");
 
-		var nameBalanceBefore = await voice.balanceOf(nameId);
+		// Listener submit account recovery for nameId1
+		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await taovoice.unstakeVoice(taoId, 600000, { from: account1 });
+			canUnstake = true;
+		} catch (e) {
+			canUnstake = false;
+		}
+		assert.equal(canUnstake, false, "Compromised Name can unstake Voice from a TAO");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		var nameBalanceBefore = await voice.balanceOf(nameId1);
 		var taoBalanceBefore = await voice.balanceOf(taoId);
-		var taoStakedBalanceBefore = await voice.taoStakedBalance(nameId, taoId);
-		var nameStakedBalanceBefore = await voice.stakedBalance(nameId);
+		var taoStakedBalanceBefore = await voice.taoStakedBalance(nameId1, taoId);
+		var nameStakedBalanceBefore = await voice.stakedBalance(nameId1);
 		try {
 			await taovoice.unstakeVoice(taoId, 600000, { from: account1 });
 			canUnstake = true;
@@ -264,10 +351,10 @@ contract("TAOVoice", function(accounts) {
 		}
 		assert.equal(canUnstake, true, "Name can't unstake Voice from a TAO");
 
-		var nameBalanceAfter = await voice.balanceOf(nameId);
+		var nameBalanceAfter = await voice.balanceOf(nameId1);
 		var taoBalanceAfter = await voice.balanceOf(taoId);
-		var taoStakedBalanceAfter = await voice.taoStakedBalance(nameId, taoId);
-		var nameStakedBalanceAfter = await voice.stakedBalance(nameId);
+		var taoStakedBalanceAfter = await voice.taoStakedBalance(nameId1, taoId);
+		var nameStakedBalanceAfter = await voice.stakedBalance(nameId1);
 
 		assert.equal(nameBalanceAfter.toNumber(), nameBalanceBefore.plus(600000).toNumber(), "Name has incorrect balance");
 		assert.equal(taoBalanceAfter.toNumber(), taoBalanceBefore.minus(600000).toNumber(), "TAO has incorrect balance");
