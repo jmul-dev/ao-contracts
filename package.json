@@ -1,37 +1,37 @@
 {
-  "name": "ao-contracts",
-  "version": "1.0.9",
-  "main": "index.js",
-  "author": "Johan <johan@paramation.com>",
-  "license": "MIT",
-  "publishConfig": {
-    "registry": "https://npm.y-designs.com"
-  },
-  "files": [
-    "build"
-  ],
-  "dependencies": {
-    "bignumber.js": "^7.2.1",
-    "eth-crypto": "^1.2.3",
-    "gitlab-ci-releaser": "^1.5.0"
-  },
-  "scripts": {
-    "chain": "ganache-cli -p 8545 -m 'stomach six rural battle middle jazz chalk camera grain render feed job' -g 10000000000 -e 1000 -l 6900000",
-    "compile": "truffle compile",
-    "migrate": "truffle migrate",
-    "deploy": "yarn compile && yarn migrate",
-    "test": "truffle test"
-  },
-  "devDependencies": {
-    "ganache-cli": "^6.1.6",
-    "husky": "^1.2.0",
-    "prettier": "1.15.2",
-    "pretty-quick": "^1.8.0",
-    "truffle": "^4.1.13"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged"
-    }
-  }
+	"name": "ao-contracts",
+	"version": "1.0.9",
+	"main": "index.js",
+	"author": "Johan <johan@paramation.com>",
+	"license": "MIT",
+	"publishConfig": {
+		"registry": "https://npm.y-designs.com"
+	},
+	"files": [
+		"build"
+	],
+	"dependencies": {
+		"bignumber.js": "^7.2.1",
+		"eth-crypto": "^1.2.3",
+		"gitlab-ci-releaser": "^1.5.0"
+	},
+	"scripts": {
+		"chain": "ganache-cli -p 8545 -m 'stomach six rural battle middle jazz chalk camera grain render feed job' -g 10000000000 -e 1000 -l 6900000 -i 1985",
+		"compile": "truffle compile",
+		"migrate": "truffle migrate",
+		"deploy": "yarn compile && yarn migrate",
+		"test": "truffle test"
+	},
+	"devDependencies": {
+		"ganache-cli": "^6.1.6",
+		"husky": "^1.2.0",
+		"prettier": "1.15.2",
+		"pretty-quick": "^1.8.0",
+		"truffle": "^4.1.13"
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "pretty-quick --staged"
+		}
+	}
 }
