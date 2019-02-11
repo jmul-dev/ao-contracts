@@ -385,9 +385,9 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(isExist, true, "isExist() returns incorrect value");
 
 		var getPositionById = await nametaoposition.getPositionById(nameId2);
-		assert.equal(getPositionById[0], nameId2, "getPositionById() returns incorrect Advocate");
-		assert.equal(getPositionById[1], nameId2, "getPositionById() returns incorrect Listener");
-		assert.equal(getPositionById[2], nameId2, "getPositionById() returns incorrect Speaker");
+		assert.equal(getPositionById[1], nameId2, "getPositionById() returns incorrect Advocate");
+		assert.equal(getPositionById[3], nameId2, "getPositionById() returns incorrect Listener");
+		assert.equal(getPositionById[5], nameId2, "getPositionById() returns incorrect Speaker");
 
 		result = await taofactory.createTAO(
 			"Delta's TAO #1",
@@ -410,9 +410,9 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(isExist, true, "isExist() returns incorrect value");
 
 		var getPositionById = await nametaoposition.getPositionById(taoId2);
-		assert.equal(getPositionById[0], nameId2, "getPositionById() returns incorrect Advocate");
-		assert.equal(getPositionById[1], nameId2, "getPositionById() returns incorrect Listener");
-		assert.equal(getPositionById[2], nameId2, "getPositionById() returns incorrect Speaker");
+		assert.equal(getPositionById[1], nameId2, "getPositionById() returns incorrect Advocate");
+		assert.equal(getPositionById[3], nameId2, "getPositionById() returns incorrect Listener");
+		assert.equal(getPositionById[5], nameId2, "getPositionById() returns incorrect Speaker");
 	});
 
 	it("senderIsAdvocate() - should check whether or not the sender address is Advocate of a Name/TAO ID", async function() {

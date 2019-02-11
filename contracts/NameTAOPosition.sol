@@ -10,6 +10,7 @@ import './ITAOFactory.sol';
 import './ITAOAncestry.sol';
 import './IAOSetting.sol';
 import './Logos.sol';
+import './TAO.sol';
 
 /**
  * @title NameTAOPosition
@@ -365,16 +366,22 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	/**
 	 * @dev Get Name/TAO's Position info
 	 * @param _id The ID of the Name/TAO
+	 * @return the Advocate name
 	 * @return the Advocate ID of Name/TAO
+	 * @return the Listener name
 	 * @return the Listener ID of Name/TAO
+	 * @return the Speaker name
 	 * @return the Speaker ID of Name/TAO
 	 */
-	function getPositionById(address _id) public view returns (address, address, address) {
+	function getPositionById(address _id) public view returns (string, address, string, address, string, address) {
 		require (isExist(_id));
 		PositionDetail memory _positionDetail = positionDetails[_id];
 		return (
+			TAO(_positionDetail.advocateId).name(),
 			_positionDetail.advocateId,
+			TAO(_positionDetail.listenerId).name(),
 			_positionDetail.listenerId,
+			TAO(_positionDetail.speakerId).name(),
 			_positionDetail.speakerId
 		);
 	}
