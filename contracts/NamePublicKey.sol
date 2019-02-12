@@ -242,10 +242,11 @@ contract NamePublicKey is TheAO, INamePublicKey {
 		PublicKey memory _publicKey = publicKeys[_id];
 		require (_publicKey.keys.length > 0);
 
-		address[] memory _keys = new address[](_to.sub(_from).add(1));
-		if (_to > _publicKey.keys.length.sub(1)) {
+		if (_to >  _publicKey.keys.length.sub(1)) {
 			_to = _publicKey.keys.length.sub(1);
 		}
+		address[] memory _keys = new address[](_to.sub(_from).add(1));
+
 		for (uint256 i = _from; i <= _to; i++) {
 			_keys[i.sub(_from)] = _publicKey.keys[i];
 		}
