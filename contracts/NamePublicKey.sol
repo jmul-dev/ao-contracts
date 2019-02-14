@@ -268,15 +268,20 @@ contract NamePublicKey is TheAO, INamePublicKey {
 		require (_key != _publicKey.defaultKey);
 		require (_publicKey.keys.length > 1);
 
+		uint256 index;
 		for (uint256 i = 0; i < _publicKey.keys.length; i++) {
 			if (_publicKey.keys[i] == _key) {
-				delete _publicKey.keys[i];
-				_publicKey.keys.length--;
-
-				uint256 _nonce = _nameFactory.incrementNonce(_id);
+				index = i;
 				break;
 			}
 		}
+
+		for (i = index; i < _publicKey.keys.length.sub(1); i++) {
+			_publicKey.keys[i] = _publicKey.keys[i+1];
+		}
+		_publicKey.keys.length--;
+
+		uint256 _nonce = _nameFactory.incrementNonce(_id);
 		require (_nonce > 0);
 
 		emit RemoveKey(_id, _key, _nonce);
