@@ -33,6 +33,7 @@ contract("AOXona", function(accounts) {
 	var someAddress = accounts[5];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 	var recipient = EthCrypto.createIdentity();
+	var account3PrivateKey = "0xf4bab2d2f0c5119cc6aad0735bbf0a017d229cbf430c0041af382b93e713a1c3";
 
 	before(async function() {
 		namefactory = await NameFactory.deployed();
@@ -235,7 +236,30 @@ contract("AOXona", function(accounts) {
 
 			await nametaoposition.setListener(nameId1, nameId2, { from: account1 });
 
-			await namepublickey.addKey(nameId1, account3, { from: account1 });
+			var nonce = await namefactory.nonces(nameId1);
+			var signHash = EthCrypto.hash.keccak256([
+				{
+					type: "address",
+					value: namepublickey.address
+				},
+				{
+					type: "address",
+					value: nameId1
+				},
+				{
+					type: "address",
+					value: account3
+				},
+				{
+					type: "uint256",
+					value: nonce.plus(1).toNumber()
+				}
+			]);
+
+			var signature = EthCrypto.sign(account3PrivateKey, signHash);
+			var vrs = EthCrypto.vrs.fromString(signature);
+
+			await namepublickey.addKey(nameId1, account3, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
 		});
 
 		it("Whitelisted address - mint()  can mint", async function() {

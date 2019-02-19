@@ -213,8 +213,21 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @dev Add publicKey to list for a Name
 	 * @param _id The ID of the Name
 	 * @param _key The publicKey to be added
+	 * @param _nonce The signed uint256 nonce (should be Name's current nonce + 1)
+	 * @param _signatureV The V part of the signature
+	 * @param _signatureR The R part of the signature
+	 * @param _signatureS The S part of the signature
 	 */
-	function addKey(address _id, address _key) public isName(_id) onlyAdvocate(_id) senderNameNotCompromised {
+	function addKey(address _id,
+		address _key,
+		uint256 _nonce,
+		uint8 _signatureV,
+		bytes32 _signatureR,
+		bytes32 _signatureS
+	) public isName(_id) onlyAdvocate(_id) senderNameNotCompromised {
+		require (_nonce == _nameFactory.nonces(_id).add(1));
+		bytes32 _hash = keccak256(abi.encodePacked(address(this), _id, _key, _nonce));
+		require (ecrecover(_hash, _signatureV, _signatureR, _signatureS) == _key);
 		_addKey(_id, _key);
 	}
 

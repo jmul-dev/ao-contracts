@@ -56,6 +56,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 	var aoDevTeam2 = accounts[9];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 	var recipient = EthCrypto.createIdentity();
+	var account4PrivateKey = "0xfc164bb116857e2b7e5bafb6f515c61cc2cddae22a052c3988c8ff5de598ede0";
 
 	var account1Lots = [];
 	var account2Lots = [];
@@ -560,7 +561,30 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			await nametaoposition.setListener(nameId1, nameId2, { from: account1 });
 
-			await namepublickey.addKey(nameId1, account4, { from: account1 });
+			var nonce = await namefactory.nonces(nameId1);
+			var signHash = EthCrypto.hash.keccak256([
+				{
+					type: "address",
+					value: namepublickey.address
+				},
+				{
+					type: "address",
+					value: nameId1
+				},
+				{
+					type: "address",
+					value: account4
+				},
+				{
+					type: "uint256",
+					value: nonce.plus(1).toNumber()
+				}
+			]);
+
+			var signature = EthCrypto.sign(account4PrivateKey, signHash);
+			var vrs = EthCrypto.vrs.fromString(signature);
+
+			await namepublickey.addKey(nameId1, account4, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
 		});
 
 		it("Whitelisted address - mint()  can mint", async function() {
@@ -1635,7 +1659,30 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			await nametaoposition.setListener(nameId1, nameId2, { from: account1 });
 
-			await namepublickey.addKey(nameId1, account4, { from: account1 });
+			var nonce = await namefactory.nonces(nameId1);
+			var signHash = EthCrypto.hash.keccak256([
+				{
+					type: "address",
+					value: namepublickey.address
+				},
+				{
+					type: "address",
+					value: nameId1
+				},
+				{
+					type: "address",
+					value: account4
+				},
+				{
+					type: "uint256",
+					value: nonce.plus(1).toNumber()
+				}
+			]);
+
+			var signature = EthCrypto.sign(account4PrivateKey, signHash);
+			var vrs = EthCrypto.vrs.fromString(signature);
+
+			await namepublickey.addKey(nameId1, account4, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
 
 			// Give account 1 some aoeth tokens
 			await aoeth.addERC20Token(tokenone.address, 1, 10 ** 6, { from: theAO });

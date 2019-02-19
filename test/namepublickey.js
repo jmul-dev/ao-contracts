@@ -31,13 +31,14 @@ contract("NamePublicKey", function(accounts) {
 	var someAddress = accounts[4];
 	var whitelistedAddress = accounts[5];
 	var newKey = accounts[6];
+	var newKeyPrivateKey = "0x673ff34510bd676f1e95482fc39732257b866577acb0c6d88b26aa22ca51a612";
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 
 	// Retrieve private key from ganache
 	var account1PrivateKey = "0xfa372b56eac0e71de587267f0a59989719b2325aeb4579912379641cf93ccaab";
 	var account2PrivateKey = "0x6a35c58d0acad0ceca9c03d37aa2d2288d70afe0690f5e5f5e05aeab93b95dad";
 
-	var createSignature = function(privateKey, nameId, publicKey) {
+	var createSetDefaultKeySignature = function(privateKey, nameId, publicKey) {
 		var signHash = EthCrypto.hash.keccak256([
 			{
 				type: "address",
@@ -50,6 +51,30 @@ contract("NamePublicKey", function(accounts) {
 			{
 				type: "address",
 				value: publicKey
+			}
+		]);
+
+		var signature = EthCrypto.sign(privateKey, signHash);
+		return signature;
+	};
+
+	var createAddKeySignature = function(privateKey, nameId, publicKey, nonce) {
+		var signHash = EthCrypto.hash.keccak256([
+			{
+				type: "address",
+				value: namepublickey.address
+			},
+			{
+				type: "address",
+				value: nameId
+			},
+			{
+				type: "address",
+				value: publicKey
+			},
+			{
+				type: "uint256",
+				value: nonce
 			}
 		]);
 
@@ -262,9 +287,13 @@ contract("NamePublicKey", function(accounts) {
 	});
 
 	it("addKey() - Advocate of Name should be able to add public key to list", async function() {
+		var nonce = await namefactory.nonces(nameId2);
+		var signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonce.plus(1).toNumber());
+		var vrs = EthCrypto.vrs.fromString(signature);
+
 		var canAdd;
 		try {
-			await namepublickey.addKey(someAddress, newKey, { from: account1 });
+			await namepublickey.addKey(someAddress, newKey, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -272,7 +301,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Can add public key to a non-existing Name");
 
 		try {
-			await namepublickey.addKey(nameId2, newKey, { from: account1 });
+			await namepublickey.addKey(nameId2, newKey, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -280,7 +309,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Non-Advocate of Name can add new public key");
 
 		try {
-			await namepublickey.addKey(nameId2, emptyAddress, { from: account2 });
+			await namepublickey.addKey(nameId2, emptyAddress, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -288,12 +317,49 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Advocate of Name can add invalid public key");
 
 		try {
-			await namepublickey.addKey(nameId2, account2, { from: account2 });
+			await namepublickey.addKey(nameId2, newKey, nonce.toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Advocate of Name can add public key with invalid nonce");
+
+		try {
+			await namepublickey.addKey(nameId2, newKey, nonce.plus(1).toNumber(), "", vrs.r, vrs.s, { from: account2 });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Advocate of Name can add public key with invalid v part of signature");
+
+		try {
+			await namepublickey.addKey(nameId2, newKey, nonce.plus(1).toNumber(), vrs.v, "", vrs.s, { from: account2 });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Advocate of Name can add public key with invalid r part of signature");
+
+		try {
+			await namepublickey.addKey(nameId2, newKey, nonce.plus(1).toNumber(), vrs.v, vrs.r, "", { from: account2 });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Advocate of Name can add public key with invalid s part of signature");
+
+		try {
+			signature = createAddKeySignature(account2PrivateKey, nameId2, account2, nonce.plus(1).toNumber());
+			vrs = EthCrypto.vrs.fromString(signature);
+			await namepublickey.addKey(nameId2, account2, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
 		assert.equal(canAdd, false, "Advocate of Name can add duplicate public key");
+
+		var signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonce.plus(1).toNumber());
+		var vrs = EthCrypto.vrs.fromString(signature);
 
 		// Listener submit account recovery for nameId2
 		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
@@ -302,7 +368,10 @@ contract("NamePublicKey", function(accounts) {
 		await helper.advanceTimeAndBlock(1000);
 
 		try {
-			await namepublickey.addKey(nameId2, newKey, { from: account2 });
+			nonce = await namefactory.nonces(nameId2);
+			signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonce.plus(1).toNumber());
+			vrs = EthCrypto.vrs.fromString(signature);
+			await namepublickey.addKey(nameId2, newKey, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -316,7 +385,10 @@ contract("NamePublicKey", function(accounts) {
 		var getTotalPublicKeysCountBefore = await namepublickey.getTotalPublicKeysCount(nameId2);
 
 		try {
-			await namepublickey.addKey(nameId2, newKey, { from: account2 });
+			signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonceBefore.plus(1).toNumber());
+			vrs = EthCrypto.vrs.fromString(signature);
+
+			await namepublickey.addKey(nameId2, newKey, nonceBefore.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -421,9 +493,13 @@ contract("NamePublicKey", function(accounts) {
 	});
 
 	it("setDefaultKey() - should be able to set a default public key from existing public key list", async function() {
-		await namepublickey.addKey(nameId2, newKey, { from: account2 });
+		var nonce = await namefactory.nonces(nameId2);
+		var signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonce.plus(1).toNumber());
+		var vrs = EthCrypto.vrs.fromString(signature);
 
-		var signature = createSignature(account2PrivateKey, nameId2, newKey);
+		await namepublickey.addKey(nameId2, newKey, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+
+		var signature = createSetDefaultKeySignature(account2PrivateKey, nameId2, newKey);
 		var vrs = EthCrypto.vrs.fromString(signature);
 
 		var canSetDefault;

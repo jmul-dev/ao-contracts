@@ -35,7 +35,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 	ITAOPool internal _taoPool;
 
 	// Mapping from TAO ID to its nonce
-	mapping (address => uint256) public nonces;
+	mapping (address => uint256) internal _nonces;
 
 	// Event to be broadcasted to public when Advocate creates a TAO
 	event CreateTAO(address indexed ethAddress, address advocateId, address taoId, uint256 index, address parent, uint8 parentTypeId);
@@ -124,15 +124,24 @@ contract TAOFactory is TAOController, ITAOFactory {
 
 	/***** PUBLIC METHODS *****/
 	/**
+	 * @dev Get the nonce given a TAO ID
+	 * @param _taoId The TAO ID to check
+	 * @return The nonce of the TAO
+	 */
+	function nonces(address _taoId) external view returns (uint256) {
+		return _nonces[_taoId];
+	}
+
+	/**
 	 * @dev Increment the nonce of a TAO
 	 * @param _taoId The ID of the TAO
 	 * @return current nonce
 	 */
 	function incrementNonce(address _taoId) external canUpdateNonce returns (uint256) {
 		// Check if _taoId exist
-		require (nonces[_taoId] > 0);
-		nonces[_taoId]++;
-		return nonces[_taoId];
+		require (_nonces[_taoId] > 0);
+		_nonces[_taoId]++;
+		return _nonces[_taoId];
 	}
 
 	/**
@@ -288,7 +297,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 		address taoId = AOLibrary.deployTAO(_name, _nameId, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
 
 		// Increment the nonce
-		nonces[taoId]++;
+		_nonces[taoId]++;
 
 		// Store the name lookup information
 		require (_nameTAOLookup.initialize(_name, taoId, 0, TAO(_parentId).name(), _parentId, uint256(TAO(_parentId).typeId())));
@@ -327,13 +336,13 @@ contract TAOFactory is TAOController, ITAOFactory {
 		uint256 _nonce
 	) internal view returns (bool) {
 		if (_validateAddress != address(0)) {
-			return (_nonce == nonces[_taoId].add(1) &&
+			return (_nonce == _nonces[_taoId].add(1) &&
 				_signatureAddress == _validateAddress &&
 				_nameTAOPosition.senderIsPosition(_validateAddress, _taoId)
 			);
 		} else {
 			return (
-				_nonce == nonces[_taoId].add(1) &&
+				_nonce == _nonces[_taoId].add(1) &&
 				_nameTAOPosition.senderIsPosition(_signatureAddress, _taoId)
 			);
 		}

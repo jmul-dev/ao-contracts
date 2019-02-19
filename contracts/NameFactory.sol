@@ -40,7 +40,7 @@ contract NameFactory is TheAO, INameFactory {
 	mapping (address => address) internal _nameIdToEthAddress;
 
 	// Mapping from Name ID to its nonce
-	mapping (address => uint256) public nonces;
+	mapping (address => uint256) internal _nonces;
 
 	// Event to be broadcasted to public when a Name is created
 	event CreateName(address indexed ethAddress, address nameId, uint256 index, string name);
@@ -171,15 +171,24 @@ contract NameFactory is TheAO, INameFactory {
 
 	/***** PUBLIC METHODS *****/
 	/**
+	 * @dev Get the nonce given a Name ID
+	 * @param _nameId The Name ID to check
+	 * @return The nonce of the Name
+	 */
+	function nonces(address _nameId) external view returns (uint256) {
+		return _nonces[_nameId];
+	}
+
+	/**
 	 * @dev Increment the nonce of a Name
 	 * @param _nameId The ID of the Name
 	 * @return current nonce
 	 */
 	function incrementNonce(address _nameId) external canUpdateNonce returns (uint256) {
 		// Check if _nameId exist
-		require (nonces[_nameId] > 0);
-		nonces[_nameId]++;
-		return nonces[_nameId];
+		require (_nonces[_nameId] > 0);
+		_nonces[_nameId]++;
+		return _nonces[_nameId];
 	}
 
 	/**
@@ -204,7 +213,7 @@ contract NameFactory is TheAO, INameFactory {
 		require (_nameIdToEthAddress[nameId] == address(0));
 
 		// Increment the nonce
-		nonces[nameId]++;
+		_nonces[nameId]++;
 
 		_ethAddressToNameId[msg.sender] = nameId;
 		_nameIdToEthAddress[nameId] = msg.sender;
@@ -321,13 +330,13 @@ contract NameFactory is TheAO, INameFactory {
 		address _signatureAddress = _getValidateSignatureAddress(_data, _nonce, _signatureV, _signatureR, _signatureS);
 		if (_validateAddress != address(0)) {
 			return (
-				_nonce == nonces[_nameId].add(1) &&
+				_nonce == _nonces[_nameId].add(1) &&
 				_signatureAddress == _validateAddress &&
 				_namePublicKey.isKeyExist(_nameId, _validateAddress)
 			);
 		} else {
 			return (
-				_nonce == nonces[_nameId].add(1) &&
+				_nonce == _nonces[_nameId].add(1) &&
 				_signatureAddress == _namePublicKey.getDefaultKey(_nameId)
 			);
 		}

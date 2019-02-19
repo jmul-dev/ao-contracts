@@ -456,7 +456,31 @@ contract("NameFactory", function(accounts) {
 		assert.equal(isValid, true, "validateNameSignature() returns incorrect value - signatureAddress is Name's Default Public Key");
 
 		// Add account1 to NameId2 Public Key
-		await namepublickey.addKey(nameId2, account1, { from: account2 });
+		nonce = await namefactory.nonces(nameId2);
+		var signHash = EthCrypto.hash.keccak256([
+			{
+				type: "address",
+				value: namepublickey.address
+			},
+			{
+				type: "address",
+				value: nameId2
+			},
+			{
+				type: "address",
+				value: account1
+			},
+			{
+				type: "uint256",
+				value: nonce.plus(1).toNumber()
+			}
+		]);
+
+		var signature = EthCrypto.sign(account1PrivateKey, signHash);
+		var vrs = EthCrypto.vrs.fromString(signature);
+
+		await namepublickey.addKey(nameId2, account1, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+
 		nonce = await namefactory.nonces(nameId2);
 
 		signature = createSignature(account1PrivateKey, data, nonce.plus(1).toNumber());
