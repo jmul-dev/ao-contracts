@@ -168,15 +168,12 @@ contract TAOFactory is TAOController, ITAOFactory {
 		require (bytes(_name).length > 0);
 		require (!_nameTAOLookup.isExist(_name));
 
-		uint256 _parentCreateChildTAOMinLogos;
-		uint256 _createChildTAOMinLogos = _getSettingVariables();
+		uint256 _nameSumLogos = _logos.sumBalanceOf(_nameFactory.ethAddressToNameId(msg.sender));
 		if (AOLibrary.isTAO(_parentId)) {
-			(, _parentCreateChildTAOMinLogos,) = _taoAncestry.getAncestryById(_parentId);
-		}
-		if (_parentCreateChildTAOMinLogos > 0) {
-			require (_logos.sumBalanceOf(_nameFactory.ethAddressToNameId(msg.sender)) >= _parentCreateChildTAOMinLogos);
-		} else if (_createChildTAOMinLogos > 0) {
-			require (_logos.sumBalanceOf(_nameFactory.ethAddressToNameId(msg.sender)) >= _createChildTAOMinLogos);
+			(, uint256 _parentCreateChildTAOMinLogos,) = _taoAncestry.getAncestryById(_parentId);
+			require (_nameSumLogos >= _parentCreateChildTAOMinLogos);
+		} else {
+			require (_nameSumLogos >= _getCreateChildTAOMinLogos());
 		}
 
 		// Create the TAO
@@ -358,10 +355,10 @@ contract TAOFactory is TAOController, ITAOFactory {
 	}
 
 	/**
-	 * @dev Get setting variables
+	 * @dev Get createChildTAOMinLogos setting
 	 * @return createChildTAOMinLogos The minimum required Logos to create a TAO
 	 */
-	function _getSettingVariables() internal view returns (uint256) {
+	function _getCreateChildTAOMinLogos() internal view returns (uint256) {
 		(uint256 createChildTAOMinLogos,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'createChildTAOMinLogos');
 		return createChildTAOMinLogos;
 	}
