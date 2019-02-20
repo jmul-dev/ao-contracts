@@ -38,7 +38,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 	mapping (address => uint256) internal _nonces;
 
 	// Event to be broadcasted to public when Advocate creates a TAO
-	event CreateTAO(address indexed ethAddress, address advocateId, address taoId, uint256 index, address parent, uint8 parentTypeId);
+	event CreateTAO(address indexed advocateId, address taoId, uint256 index, string name, address parent, uint8 parentTypeId);
 
 	/**
 	 * @dev Constructor function
@@ -313,7 +313,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 
 		taos.push(taoId);
 
-		emit CreateTAO(msg.sender, _nameId, taoId, taos.length.sub(1), _parentId, TAO(_parentId).typeId());
+		emit CreateTAO(_nameId, taoId, taos.length.sub(1), _name, _parentId, TAO(_parentId).typeId());
 
 		if (AOLibrary.isTAO(_parentId)) {
 			require (_taoAncestry.addChild(_parentId, taoId));
