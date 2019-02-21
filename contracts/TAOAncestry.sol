@@ -38,13 +38,13 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 	event UpdateChildMinLogos(address indexed taoId, uint256 childMinLogos, uint256 nonce);
 
 	// Event to be broadcasted to public when a TAO adds a child TAO
-	event AddChild(address indexed taoId, address childId, bool approved, bool connected);
+	event AddChild(address indexed taoId, address taoAdvocate, address childId, address childAdvocate, bool approved, bool connected);
 
 	// Event to be broadcasted to public when a TAO approves a child TAO
-	event ApproveChild(address indexed taoId, address childId, uint256 nonce);
+	event ApproveChild(address indexed taoId, address taoAdvocate, address childId, address childAdvocate, uint256 nonce);
 
 	// Event to be broadcasted to public when a TAO removes a child TAO
-	event RemoveChild(address indexed taoId, address childId, uint256 nonce);
+	event RemoveChild(address indexed taoId, address taoAdvocate, address childId, address childAdvocate, uint256 nonce);
 
 	/**
 	 * @dev Constructor function
@@ -203,7 +203,7 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 		// Otherwise, child TAO needs parent TAO approval
 		address _taoAdvocate = _nameTAOPosition.getAdvocate(_taoId);
 		address _childAdvocate = _nameTAOPosition.getAdvocate(_childId);
-		emit AddChild(_taoId, _childId, _child.approved, _child.connected);
+		emit AddChild(_taoId, _taoAdvocate, _childId, _childAdvocate, _child.approved, _child.connected);
 
 		if (_taoAdvocate == _childAdvocate) {
 			_approveChild(_taoId, _childId);
@@ -255,7 +255,9 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 		uint256 _nonce = _taoFactory.incrementNonce(_taoId);
 		require (_nonce > 0);
 
-		emit RemoveChild(_taoId, _childId, _nonce);
+		address _taoAdvocate = _nameTAOPosition.getAdvocate(_taoId);
+		address _childAdvocate = _nameTAOPosition.getAdvocate(_childId);
+		emit RemoveChild(_taoId, _taoAdvocate, _childId, _childAdvocate, _nonce);
 	}
 
 	/**
@@ -298,6 +300,8 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 		uint256 _nonce = _taoFactory.incrementNonce(_taoId);
 		require (_nonce > 0);
 
-		emit ApproveChild(_taoId, _childId, _nonce);
+		address _taoAdvocate = _nameTAOPosition.getAdvocate(_taoId);
+		address _childAdvocate = _nameTAOPosition.getAdvocate(_childId);
+		emit ApproveChild(_taoId, _taoAdvocate, _childId, _childAdvocate, _nonce);
 	}
 }
