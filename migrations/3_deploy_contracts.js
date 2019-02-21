@@ -641,6 +641,12 @@ module.exports = function(deployer, network, accounts) {
 				return;
 			}
 
+			try {
+				await taoancestry.approveChild(primordialTAOId, settingTAOId, { from: primordialAccount });
+			} catch (e) {
+				console.log("Primordial Name unable to approve setting TAO");
+			}
+
 			// Set settingTAOId in TAOFactory
 			await taofactory.setSettingTAOId(settingTAOId, { from: primordialAccount });
 
@@ -1359,7 +1365,6 @@ module.exports = function(deployer, network, accounts) {
 			await aocontenthost.setWhitelist(aocontentfactory.address, true, { from: primordialAccount });
 
 			// TODO: Transfer TheAO ownership to Primordial TAO
-
 			console.log("Primordial Name ID", primordialNameId);
 			console.log("Setting Name ID", settingNameId);
 			console.log("Primordial TAO ID", primordialTAOId);
