@@ -1365,6 +1365,47 @@ module.exports = function(deployer, network, accounts) {
 			await aocontenthost.setWhitelist(aocontentfactory.address, true, { from: primordialAccount });
 
 			// TODO: Transfer TheAO ownership to Primordial TAO
+
+			/**
+			 * For testing purposes:
+			 * Remove this later
+			 * --- START ---
+			 */
+			await aoion.setWhitelist(primordialAccount, true, { from: primordialAccount });
+			await aoion.mint(accounts[1], 10 ** 6, { from: primordialAccount }); // 1,000,000,000 AO Ion
+			// Buy 2 lots so that we can test avg weighted multiplier
+			await aoion.buyPrimordial({ from: accounts[1], value: 50000 * 10 ** 4 });
+			await aoion.buyPrimordial({ from: accounts[1], value: 20000 * 10 ** 4 });
+
+			await logos.setWhitelist(primordialAccount, true, { from: primordialAccount });
+			await ethos.setWhitelist(primordialAccount, true, { from: primordialAccount });
+			await pathos.setWhitelist(primordialAccount, true, { from: primordialAccount });
+
+			await logos.mint(primordialNameId, 10 ** 12, { from: primordialAccount });
+			await ethos.mint(primordialNameId, 10 ** 12, { from: primordialAccount });
+			await pathos.mint(primordialNameId, 10 ** 12, { from: primordialAccount });
+
+			await logos.mint(settingNameId, 10 ** 12, { from: primordialAccount });
+			await ethos.mint(settingNameId, 10 ** 12, { from: primordialAccount });
+			await pathos.mint(settingNameId, 10 ** 12, { from: primordialAccount });
+
+			// Test staking Ethos/Pathos and withdraw Logos
+			var result = await taopool.stakeEthos(primordialTAOId, 5 * 10 ** 4, { from: primordialAccount });
+			var stakeEthosEvent = result.logs[0];
+			var lotId = stakeEthosEvent.args.lotId;
+
+			await taopool.stakeEthos(primordialTAOId, 2 * 10 ** 4, { from: settingAccount });
+
+			await taopool.stakePathos(primordialTAOId, 2 * 10 ** 3, { from: primordialAccount });
+			await taopool.stakePathos(primordialTAOId, 567, { from: settingAccount });
+
+			await taopool.withdrawLogos(lotId, { from: primordialAccount });
+
+			await taopool.stakePathos(primordialTAOId, 8 * 10 ** 3, { from: settingAccount });
+
+			/**
+			 * --- END ---
+			 */
 			console.log("Primordial Name ID", primordialNameId);
 			console.log("Setting Name ID", settingNameId);
 			console.log("Primordial TAO ID", primordialTAOId);
