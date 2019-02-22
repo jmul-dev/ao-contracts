@@ -265,9 +265,13 @@ module.exports = function(deployer, network, accounts) {
 	}
 
 	deployer
-		.deploy([[Epiphany, { overwrite: false }], [Voice, "Voice", "VOICE"]])
+		.deploy(Epiphany, { overwrite: false })
 		.then(async function() {
 			epiphany = await Epiphany.deployed();
+
+			return deployer.deploy(Voice, "Voice", "VOICE");
+		})
+		.then(async function() {
 			voice = await Voice.deployed();
 
 			return deployer.deploy(NameFactory, voice.address);
@@ -300,91 +304,209 @@ module.exports = function(deployer, network, accounts) {
 			// Link NameTAOPosition to TAOFactory
 			await taofactory.setNameTAOPositionAddress(nametaoposition.address, { from: primordialAccount });
 
-			return deployer.deploy([
-				[NameTAOVault, namefactory.address, nametaoposition.address],
-				[NameTAOLookup, namefactory.address, taofactory.address, nametaoposition.address],
-				[NamePublicKey, namefactory.address, nametaoposition.address],
-				[NameAccountRecovery, namefactory.address, nametaoposition.address],
-				[TAOAncestry, namefactory.address, taofactory.address, nametaoposition.address],
-				[TAOVoice, namefactory.address, voice.address, nametaoposition.address],
-				[AOSettingAttribute, nametaoposition.address],
-				[AOSettingValue, nametaoposition.address],
-				[Logos, "Logos", "LOGOS", namefactory.address, nametaoposition.address],
-				[LogosKilo, "Logos Kilo", "LOGOSKILO", nametaoposition.address],
-				[LogosMega, "Logos Mega", "LOGOSMEGA", nametaoposition.address],
-				[LogosGiga, "Logos Giga", "LOGOSGIGA", nametaoposition.address],
-				[LogosTera, "Logos Tera", "LOGOSTERA", nametaoposition.address],
-				[LogosPeta, "Logos Peta", "LOGOSPETA", nametaoposition.address],
-				[LogosExa, "Logos Exa", "LOGOSEXA", nametaoposition.address],
-				[LogosZetta, "Logos Zetta", "LOGOSZETTA", nametaoposition.address],
-				[LogosYotta, "Logos Yotta", "LOGOSYOTTA", nametaoposition.address],
-				[LogosXona, "Logos Xona", "LOGOSXONA", nametaoposition.address],
-				[LogosTreasury, namefactory.address, nametaoposition.address],
-				[Ethos, "Ethos", "ETHOS", nametaoposition.address],
-				[EthosKilo, "Ethos Kilo", "ETHOSKILO", nametaoposition.address],
-				[EthosMega, "Ethos Mega", "ETHOSMEGA", nametaoposition.address],
-				[EthosGiga, "Ethos Giga", "ETHOSGIGA", nametaoposition.address],
-				[EthosTera, "Ethos Tera", "ETHOSTERA", nametaoposition.address],
-				[EthosPeta, "Ethos Peta", "ETHOSPETA", nametaoposition.address],
-				[EthosExa, "Ethos Exa", "ETHOSEXA", nametaoposition.address],
-				[EthosZetta, "Ethos Zetta", "ETHOSZETTA", nametaoposition.address],
-				[EthosYotta, "Ethos Yotta", "ETHOSYOTTA", nametaoposition.address],
-				[EthosXona, "Ethos Xona", "ETHOSXONA", nametaoposition.address],
-				[EthosTreasury, namefactory.address, nametaoposition.address],
-				[Pathos, "Pathos", "PATHOS", nametaoposition.address],
-				[PathosKilo, "Pathos Kilo", "PATHOSKILO", nametaoposition.address],
-				[PathosMega, "Pathos Mega", "PATHOSMEGA", nametaoposition.address],
-				[PathosGiga, "Pathos Giga", "PATHOSGIGA", nametaoposition.address],
-				[PathosTera, "Pathos Tera", "PATHOSTERA", nametaoposition.address],
-				[PathosPeta, "Pathos Peta", "PATHOSPETA", nametaoposition.address],
-				[PathosExa, "Pathos Exa", "PATHOSEXA", nametaoposition.address],
-				[PathosZetta, "Pathos Zetta", "PATHOSZETTA", nametaoposition.address],
-				[PathosYotta, "Pathos Yotta", "PATHOSYOTTA", nametaoposition.address],
-				[PathosXona, "Pathos Xona", "PATHOSXONA", nametaoposition.address],
-				[PathosTreasury, namefactory.address, nametaoposition.address]
-			]);
+			return deployer.deploy(NameTAOVault, namefactory.address, nametaoposition.address);
 		})
 		.then(async function() {
 			nametaovault = await NameTAOVault.deployed();
+
+			return deployer.deploy(NameTAOLookup, namefactory.address, taofactory.address, nametaoposition.address);
+		})
+		.then(async function() {
 			nametaolookup = await NameTAOLookup.deployed();
+
+			return deployer.deploy(NamePublicKey, namefactory.address, nametaoposition.address);
+		})
+		.then(async function() {
 			namepublickey = await NamePublicKey.deployed();
+
+			return deployer.deploy(NameAccountRecovery, namefactory.address, nametaoposition.address);
+		})
+		.then(async function() {
 			nameaccountrecovery = await NameAccountRecovery.deployed();
+
+			return deployer.deploy(TAOAncestry, namefactory.address, taofactory.address, nametaoposition.address);
+		})
+		.then(async function() {
 			taoancestry = await TAOAncestry.deployed();
+
+			return deployer.deploy(TAOVoice, namefactory.address, voice.address, nametaoposition.address);
+		})
+		.then(async function() {
 			taovoice = await TAOVoice.deployed();
+
+			return deployer.deploy(AOSettingAttribute, nametaoposition.address);
+		})
+		.then(async function() {
 			aosettingattribute = await AOSettingAttribute.deployed();
+
+			return deployer.deploy(AOSettingValue, nametaoposition.address);
+		})
+		.then(async function() {
 			aosettingvalue = await AOSettingValue.deployed();
+
+			return deployer.deploy(Logos, "Logos", "LOGOS", namefactory.address, nametaoposition.address);
+		})
+		.then(async function() {
 			logos = await Logos.deployed();
+
+			return deployer.deploy(LogosKilo, "Logos Kilo", "LOGOSKILO", nametaoposition.address);
+		})
+		.then(async function() {
 			logoskilo = await LogosKilo.deployed();
+
+			return deployer.deploy(LogosMega, "Logos Mega", "LOGOSMEGA", nametaoposition.address);
+		})
+		.then(async function() {
 			logosmega = await LogosMega.deployed();
+
+			return deployer.deploy(LogosGiga, "Logos Giga", "LOGOSGIGA", nametaoposition.address);
+		})
+		.then(async function() {
 			logosgiga = await LogosGiga.deployed();
+
+			return deployer.deploy(LogosTera, "Logos Tera", "LOGOSTERA", nametaoposition.address);
+		})
+		.then(async function() {
 			logostera = await LogosTera.deployed();
+
+			return deployer.deploy(LogosPeta, "Logos Peta", "LOGOSPETA", nametaoposition.address);
+		})
+		.then(async function() {
 			logospeta = await LogosPeta.deployed();
+
+			return deployer.deploy(LogosExa, "Logos Exa", "LOGOSEXA", nametaoposition.address);
+		})
+		.then(async function() {
 			logosexa = await LogosExa.deployed();
+
+			return deployer.deploy(LogosZetta, "Logos Zetta", "LOGOSZETTA", nametaoposition.address);
+		})
+		.then(async function() {
 			logoszetta = await LogosZetta.deployed();
+
+			return deployer.deploy(LogosYotta, "Logos Yotta", "LOGOSYOTTA", nametaoposition.address);
+		})
+		.then(async function() {
 			logosyotta = await LogosYotta.deployed();
+
+			return deployer.deploy(LogosXona, "Logos Xona", "LOGOSXONA", nametaoposition.address);
+		})
+		.then(async function() {
 			logosxona = await LogosXona.deployed();
+
+			return deployer.deploy(LogosTreasury, namefactory.address, nametaoposition.address);
+		})
+		.then(async function() {
 			logostreasury = await LogosTreasury.deployed();
+
+			return deployer.deploy(Ethos, "Ethos", "ETHOS", nametaoposition.address);
+		})
+		.then(async function() {
 			ethos = await Ethos.deployed();
+
+			return deployer.deploy(EthosKilo, "Ethos Kilo", "ETHOSKILO", nametaoposition.address);
+		})
+		.then(async function() {
 			ethoskilo = await EthosKilo.deployed();
+
+			return deployer.deploy(EthosMega, "Ethos Mega", "ETHOSMEGA", nametaoposition.address);
+		})
+		.then(async function() {
 			ethosmega = await EthosMega.deployed();
+
+			return deployer.deploy(EthosGiga, "Ethos Giga", "ETHOSGIGA", nametaoposition.address);
+		})
+		.then(async function() {
 			ethosgiga = await EthosGiga.deployed();
+
+			return deployer.deploy(EthosTera, "Ethos Tera", "ETHOSTERA", nametaoposition.address);
+		})
+		.then(async function() {
 			ethostera = await EthosTera.deployed();
+
+			return deployer.deploy(EthosPeta, "Ethos Peta", "ETHOSPETA", nametaoposition.address);
+		})
+		.then(async function() {
 			ethospeta = await EthosPeta.deployed();
+
+			return deployer.deploy(EthosExa, "Ethos Exa", "ETHOSEXA", nametaoposition.address);
+		})
+		.then(async function() {
 			ethosexa = await EthosExa.deployed();
+
+			return deployer.deploy(EthosZetta, "Ethos Zetta", "ETHOSZETTA", nametaoposition.address);
+		})
+		.then(async function() {
 			ethoszetta = await EthosZetta.deployed();
+
+			return deployer.deploy(EthosYotta, "Ethos Yotta", "ETHOSYOTTA", nametaoposition.address);
+		})
+		.then(async function() {
 			ethosyotta = await EthosYotta.deployed();
+
+			return deployer.deploy(EthosXona, "Ethos Xona", "ETHOSXONA", nametaoposition.address);
+		})
+		.then(async function() {
 			ethosxona = await EthosXona.deployed();
+
+			return deployer.deploy(EthosTreasury, namefactory.address, nametaoposition.address);
+		})
+		.then(async function() {
 			ethostreasury = await EthosTreasury.deployed();
+
+			return deployer.deploy(Pathos, "Pathos", "PATHOS", nametaoposition.address);
+		})
+		.then(async function() {
 			pathos = await Pathos.deployed();
+
+			return deployer.deploy(PathosKilo, "Pathos Kilo", "PATHOSKILO", nametaoposition.address);
+		})
+		.then(async function() {
 			pathoskilo = await PathosKilo.deployed();
+
+			return deployer.deploy(PathosMega, "Pathos Mega", "PATHOSMEGA", nametaoposition.address);
+		})
+		.then(async function() {
 			pathosmega = await PathosMega.deployed();
+
+			return deployer.deploy(PathosGiga, "Pathos Giga", "PATHOSGIGA", nametaoposition.address);
+		})
+		.then(async function() {
 			pathosgiga = await PathosGiga.deployed();
+
+			return deployer.deploy(PathosTera, "Pathos Tera", "PATHOSTERA", nametaoposition.address);
+		})
+		.then(async function() {
 			pathostera = await PathosTera.deployed();
+
+			return deployer.deploy(PathosPeta, "Pathos Peta", "PATHOSPETA", nametaoposition.address);
+		})
+		.then(async function() {
 			pathospeta = await PathosPeta.deployed();
+
+			return deployer.deploy(PathosExa, "Pathos Exa", "PATHOSEXA", nametaoposition.address);
+		})
+		.then(async function() {
 			pathosexa = await PathosExa.deployed();
+
+			return deployer.deploy(PathosZetta, "Pathos Zetta", "PATHOSZETTA", nametaoposition.address);
+		})
+		.then(async function() {
 			pathoszetta = await PathosZetta.deployed();
+
+			return deployer.deploy(PathosYotta, "Pathos Yotta", "PATHOSYOTTA", nametaoposition.address);
+		})
+		.then(async function() {
 			pathosyotta = await PathosYotta.deployed();
+
+			return deployer.deploy(PathosXona, "Pathos Xona", "PATHOSXONA", nametaoposition.address);
+		})
+		.then(async function() {
 			pathosxona = await PathosXona.deployed();
+
+			return deployer.deploy(PathosTreasury, namefactory.address, nametaoposition.address);
+		})
+		.then(async function() {
 			pathostreasury = await PathosTreasury.deployed();
 
 			// Link NameTAOVault to NameFactory
@@ -522,20 +644,29 @@ module.exports = function(deployer, network, accounts) {
 			await pathosyotta.setWhitelist(pathostreasury.address, true, { from: primordialAccount });
 			await pathosxona.setWhitelist(pathostreasury.address, true, { from: primordialAccount });
 
-			return deployer.deploy([
-				[
-					AOSetting,
-					namefactory.address,
-					nametaoposition.address,
-					nameaccountrecovery.address,
-					aosettingattribute.address,
-					aosettingvalue.address
-				],
-				[TAOPool, namefactory.address, taofactory.address, nametaoposition.address, pathos.address, ethos.address, logos.address]
-			]);
+			return deployer.deploy(
+				AOSetting,
+				namefactory.address,
+				nametaoposition.address,
+				nameaccountrecovery.address,
+				aosettingattribute.address,
+				aosettingvalue.address
+			);
 		})
 		.then(async function() {
 			aosetting = await AOSetting.deployed();
+
+			return deployer.deploy(
+				TAOPool,
+				namefactory.address,
+				taofactory.address,
+				nametaoposition.address,
+				pathos.address,
+				ethos.address,
+				logos.address
+			);
+		})
+		.then(async function() {
 			taopool = await TAOPool.deployed();
 
 			// Link AOSetting to TAOFactory
@@ -562,28 +693,29 @@ module.exports = function(deployer, network, accounts) {
 			await ethos.setWhitelist(taopool.address, true, { from: primordialAccount });
 			await logos.setWhitelist(taopool.address, true, { from: primordialAccount });
 
-			return deployer.deploy([
-				[
-					AOSettingUpdate,
-					namefactory.address,
-					nametaoposition.address,
-					nameaccountrecovery.address,
-					aosettingattribute.address,
-					aosettingvalue.address,
-					aosetting.address
-				],
-				[
-					AOSettingDeprecation,
-					namefactory.address,
-					nametaoposition.address,
-					nameaccountrecovery.address,
-					aosettingattribute.address,
-					aosetting.address
-				]
-			]);
+			return deployer.deploy(
+				AOSettingUpdate,
+				namefactory.address,
+				nametaoposition.address,
+				nameaccountrecovery.address,
+				aosettingattribute.address,
+				aosettingvalue.address,
+				aosetting.address
+			);
 		})
 		.then(async function() {
 			aosettingupdate = await AOSettingUpdate.deployed();
+
+			return deployer.deploy(
+				AOSettingDeprecation,
+				namefactory.address,
+				nametaoposition.address,
+				nameaccountrecovery.address,
+				aosettingattribute.address,
+				aosetting.address
+			);
+		})
+		.then(async function() {
 			aosettingdeprecation = await AOSettingDeprecation.deployed();
 
 			// AOSettingAttribute grant accesss to AOSettingUpdate/AOSettingDeprecation
@@ -1126,40 +1258,124 @@ module.exports = function(deployer, network, accounts) {
 				console.log("Unable to add Default Ethereum Provider for Kovan setting", e);
 			}
 
-			return deployer.deploy([
-				[
-					AOIon,
-					"AO Ion",
-					"AOION",
-					settingTAOId,
-					aosetting.address,
-					nametaoposition.address,
-					namepublickey.address,
-					nameaccountrecovery.address
-				],
-				[AOKilo, "AO Kilo", "AOKILO", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
-				[AOMega, "AO Mega", "AOMEGA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
-				[AOGiga, "AO Giga", "AOGIGA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
-				[AOTera, "AO Tera", "AOTERA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
-				[AOPeta, "AO Peta", "AOPETA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
-				[AOExa, "AO Exa", "AOEXA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
-				[AOZetta, "AO Zetta", "AOZETTA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
-				[AOYotta, "AO Yotta", "AOYOTTA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
-				[AOXona, "AO Xona", "AOXONA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address],
-				[AOTreasury, nametaoposition.address]
-			]);
+			return deployer.deploy(
+				AOIon,
+				"AO Ion",
+				"AOION",
+				settingTAOId,
+				aosetting.address,
+				nametaoposition.address,
+				namepublickey.address,
+				nameaccountrecovery.address
+			);
 		})
 		.then(async function() {
 			aoion = await AOIon.deployed();
+
+			return deployer.deploy(
+				AOKilo,
+				"AO Kilo",
+				"AOKILO",
+				nametaoposition.address,
+				namepublickey.address,
+				nameaccountrecovery.address
+			);
+		})
+		.then(async function() {
 			aokilo = await AOKilo.deployed();
+
+			return deployer.deploy(
+				AOMega,
+				"AO Mega",
+				"AOMEGA",
+				nametaoposition.address,
+				namepublickey.address,
+				nameaccountrecovery.address
+			);
+		})
+		.then(async function() {
 			aomega = await AOMega.deployed();
+
+			return deployer.deploy(
+				AOGiga,
+				"AO Giga",
+				"AOGIGA",
+				nametaoposition.address,
+				namepublickey.address,
+				nameaccountrecovery.address
+			);
+		})
+		.then(async function() {
 			aogiga = await AOGiga.deployed();
+
+			return deployer.deploy(
+				AOTera,
+				"AO Tera",
+				"AOTERA",
+				nametaoposition.address,
+				namepublickey.address,
+				nameaccountrecovery.address
+			);
+		})
+		.then(async function() {
 			aotera = await AOTera.deployed();
+
+			return deployer.deploy(
+				AOPeta,
+				"AO Peta",
+				"AOPETA",
+				nametaoposition.address,
+				namepublickey.address,
+				nameaccountrecovery.address
+			);
+		})
+		.then(async function() {
 			aopeta = await AOPeta.deployed();
+
+			return deployer.deploy(AOExa, "AO Exa", "AOEXA", nametaoposition.address, namepublickey.address, nameaccountrecovery.address);
+		})
+		.then(async function() {
 			aoexa = await AOExa.deployed();
+
+			return deployer.deploy(
+				AOZetta,
+				"AO Zetta",
+				"AOZETTA",
+				nametaoposition.address,
+				namepublickey.address,
+				nameaccountrecovery.address
+			);
+		})
+		.then(async function() {
 			aozetta = await AOZetta.deployed();
+
+			return deployer.deploy(
+				AOYotta,
+				"AO Yotta",
+				"AOYOTTA",
+				nametaoposition.address,
+				namepublickey.address,
+				nameaccountrecovery.address
+			);
+		})
+		.then(async function() {
 			aoyotta = await AOYotta.deployed();
+
+			return deployer.deploy(
+				AOXona,
+				"AO Xona",
+				"AOXONA",
+				nametaoposition.address,
+				namepublickey.address,
+				nameaccountrecovery.address
+			);
+		})
+		.then(async function() {
 			aoxona = await AOXona.deployed();
+
+			return deployer.deploy(AOTreasury, nametaoposition.address);
+		})
+		.then(async function() {
 			aotreasury = await AOTreasury.deployed();
 
 			// Link AOIon to NameTAOVault
@@ -1192,17 +1408,24 @@ module.exports = function(deployer, network, accounts) {
 			await aoyotta.setWhitelist(aotreasury.address, true, { from: primordialAccount });
 			await aoxona.setWhitelist(aotreasury.address, true, { from: primordialAccount });
 
-			return deployer.deploy([
-				[AOIonLot, aoion.address, nametaoposition.address],
-				[AOPool, aoion.address, nametaoposition.address],
-				[AOETH, 0, "AO ETH", "AOETH", aoion.address, nametaoposition.address],
-				[AOContent, settingTAOId, aosetting.address, nametaoposition.address]
-			]);
+			return deployer.deploy(AOIonLot, aoion.address, nametaoposition.address);
 		})
 		.then(async function() {
 			aoionlot = await AOIonLot.deployed();
+
+			return deployer.deploy(AOPool, aoion.address, nametaoposition.address);
+		})
+		.then(async function() {
 			aopool = await AOPool.deployed();
+
+			return deployer.deploy(AOETH, 0, "AO ETH", "AOETH", aoion.address, nametaoposition.address);
+		})
+		.then(async function() {
 			aoeth = await AOETH.deployed();
+
+			return deployer.deploy(AOContent, settingTAOId, aosetting.address, nametaoposition.address);
+		})
+		.then(async function() {
 			aocontent = await AOContent.deployed();
 
 			// Link AOIonLot to AOIon
@@ -1264,23 +1487,24 @@ module.exports = function(deployer, network, accounts) {
 			// AOETH grant access to AOIon
 			await aoeth.setWhitelist(aoion.address, true, { from: primordialAccount });
 
-			return deployer.deploy([
-				[AOStakedContent, aoion.address, aotreasury.address, aocontent.address, nametaoposition.address],
-				[
-					AOEarning,
-					settingTAOId,
-					aosetting.address,
-					aoion.address,
-					namefactory.address,
-					pathos.address,
-					ethos.address,
-					aocontent.address,
-					nametaoposition.address
-				]
-			]);
+			return deployer.deploy(AOStakedContent, aoion.address, aotreasury.address, aocontent.address, nametaoposition.address);
 		})
 		.then(async function() {
 			aostakedcontent = await AOStakedContent.deployed();
+
+			return deployer.deploy(
+				AOEarning,
+				settingTAOId,
+				aosetting.address,
+				aoion.address,
+				namefactory.address,
+				pathos.address,
+				ethos.address,
+				aocontent.address,
+				nametaoposition.address
+			);
+		})
+		.then(async function() {
 			aoearning = await AOEarning.deployed();
 
 			// AOIon grant access to AOStakedContent
