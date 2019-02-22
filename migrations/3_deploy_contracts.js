@@ -98,8 +98,8 @@ var TokenThree = artifacts.require("./TokenThree.sol");
 module.exports = function(deployer, network, accounts) {
 	var primordialAccount, settingAccount, primordialNameId, settingNameId, primordialTAOId, settingTAOId;
 	if (network === "rinkeby") {
-		primordialAccount = "0x16a038099561ac8ad73c497c18207e6c88ff6593";
-		settingAccount = "0xd2021e918ed447797fb66c48efa2899ea17dbddb";
+		primordialAccount = "0xe80a265742e74e8c52d6ca185edf894edebe033f";
+		settingAccount = "0xa21238ff54391900d002bb85019285bc08ad1ca5";
 	} else if (network === "live") {
 		primordialAccount = "0x268c85ef559be52f3749791445dfd9a5abc37186";
 		settingAccount = "0x5a5ee57f51d412018d6da04e66d97ad0e7f02a04";
