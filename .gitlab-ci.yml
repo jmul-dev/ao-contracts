@@ -1,30 +1,15 @@
 before_script:
-  - eval $(ssh-agent -s)
+    - eval $(ssh-agent -s)
 variables:
-  CI: "false"
+    CI: "false"
 stages:
-  - build
-  - release
+    - build
 contract_build:
-  tags:
-    - centos7
-  stage: build
-  script:
-    - npm install
-    - npm run compile
-  only:
-    - master
-contracts_release:
-  tags:
-    - centos7
-  stage: release
-  before_script:
-    - npm install gitlab-ci-releaser
-  script:
-    - npm install
-    - npm run compile
-    - $(npm bin)/gitlab-ci-releaser
-    - npm publish
-  when: manual
-  only:
-    - master
+    tags:
+        - centos7
+    stage: build
+    script:
+        - npm install
+        - npm run compile
+    only:
+        - master

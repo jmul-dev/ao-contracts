@@ -1,19 +1,15 @@
 {
 	"name": "ao-contracts",
-	"version": "1.0.9",
+	"version": "1.0.10",
 	"main": "index.js",
 	"author": "Johan <johan@paramation.com>",
 	"license": "MIT",
-	"publishConfig": {
-		"registry": "https://npm.y-designs.com"
-	},
 	"files": [
 		"build"
 	],
 	"dependencies": {
 		"bignumber.js": "^7.2.1",
-		"eth-crypto": "^1.2.3",
-		"gitlab-ci-releaser": "^1.5.0"
+		"eth-crypto": "^1.2.3"
 	},
 	"scripts": {
 		"chain": "ganache-cli -p 8545 -m 'stomach six rural battle middle jazz chalk camera grain render feed job' -g 10000000000 -e 1000 -l 6900000 -i 1985",
