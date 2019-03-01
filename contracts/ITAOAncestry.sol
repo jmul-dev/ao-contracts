@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.4;
 
 interface ITAOAncestry {
 	function initialize(address _id, address _parentId, uint256 _childMinLogos) external returns (bool);

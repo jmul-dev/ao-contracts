@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.4;
 
 interface IAOSettingAttribute {
 	function add(uint256 _settingId, address _creatorNameId, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) external returns (bytes32, bytes32);

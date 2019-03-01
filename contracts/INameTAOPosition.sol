@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.4;
 
 interface INameTAOPosition {
 	function senderIsAdvocate(address _sender, address _id) external view returns (bool);

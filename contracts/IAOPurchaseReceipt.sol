@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.4;
 
 interface IAOPurchaseReceipt {
 	function senderIsBuyer(bytes32 _purchaseReceiptId, address _sender) external view returns (bool);

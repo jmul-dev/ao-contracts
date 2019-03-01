@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.4;
 
 interface INameFactory {
 	function nonces(address _nameId) external view returns (uint256);

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.4;
 
 interface INameTAOLookup {
 	function isExist(string _name) external view returns (bool);
