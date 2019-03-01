@@ -47,6 +47,11 @@ module.exports = {
 			gasPrice: 10000000000 // 10 Gwei
 		}
 	},
+	compilers: {
+		solc: {
+			version: "v0.5.4"
+		}
+	},
 	solc: {
 		optimizer: {
 			enabled: true,
