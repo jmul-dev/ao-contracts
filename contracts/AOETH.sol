@@ -65,7 +65,7 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(uint256 initialSupply, string tokenName, string tokenSymbol, address _aoIonAddress, address _nameTAOPositionAddress)
+	constructor(uint256 initialSupply, string memory tokenName, string memory tokenSymbol, address _aoIonAddress, address _nameTAOPositionAddress)
 		TokenERC20(initialSupply, tokenName, tokenSymbol) public {
 		setAOIonAddress(_aoIonAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
@@ -219,7 +219,7 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	 * @return The total AOETH exchanged from this token
 	 * @return The status of this token
 	 */
-	function getById(uint256 _id) public view returns (address, string, string, uint256, uint256, uint256, bool) {
+	function getById(uint256 _id) public view returns (address, string memory, string memory, uint256, uint256, uint256, bool) {
 		require (erc20Tokens[_id].tokenAddress != address(0));
 		ERC20Token memory _erc20Token = erc20Tokens[_id];
 		return (
@@ -244,7 +244,7 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	 * @return The total AOETH exchanged from this token
 	 * @return The status of this token
 	 */
-	function getByAddress(address _tokenAddress) public view returns (address, string, string, uint256, uint256, uint256, bool) {
+	function getByAddress(address _tokenAddress) public view returns (address, string memory, string memory, uint256, uint256, uint256, bool) {
 		require (erc20TokenIdLookup[_tokenAddress] > 0);
 		return getById(erc20TokenIdLookup[_tokenAddress]);
 	}
@@ -256,7 +256,7 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	 * @param _token The address of the ERC20 Token
 	 * @param _extraData The extra data sent during the approval
 	 */
-	function receiveApproval(address _from, uint256 _value, address _token, bytes _extraData) external {
+	function receiveApproval(address _from, uint256 _value, address _token, bytes calldata _extraData) external {
 		require (_from != address(0));
 		require (AOLibrary.isValidERC20TokenAddress(_token));
 
@@ -306,7 +306,7 @@ contract AOETH is TheAO, TokenERC20, tokenRecipient {
 	 * @return The amount of AOETH received
 	 * @return Extra data during the transaction
 	 */
-	function getTokenExchangeById(bytes32 _exchangeId) public view returns (address, address, string, string, uint256, uint256,  uint256, bytes) {
+	function getTokenExchangeById(bytes32 _exchangeId) public view returns (address, address, string memory, string memory, uint256, uint256,  uint256, bytes memory) {
 		require (tokenExchangeIdLookup[_exchangeId] > 0);
 		TokenExchange memory _tokenExchange = tokenExchanges[tokenExchangeIdLookup[_exchangeId]];
 		return (

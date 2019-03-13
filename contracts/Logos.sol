@@ -44,7 +44,7 @@ contract Logos is TAOCurrency {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(string _name, string _symbol, address _nameFactoryAddress, address _nameTAOPositionAddress)
+	constructor(string memory _name, string memory _symbol, address _nameFactoryAddress, address _nameTAOPositionAddress)
 		TAOCurrency(_name, _symbol, _nameTAOPositionAddress) public {
 		setNameFactoryAddress(_nameFactoryAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);

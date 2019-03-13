@@ -373,7 +373,7 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	 * @return the Speaker name
 	 * @return the Speaker ID of Name/TAO
 	 */
-	function getPositionById(address _id) public view returns (string, address, string, address, string, address) {
+	function getPositionById(address _id) public view returns (string memory, address, string memory, address, string memory, address) {
 		require (isExist(_id));
 		PositionDetail memory _positionDetail = positionDetails[_id];
 		return (
@@ -602,8 +602,9 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		address _currentListenerId = _positionDetail.listenerId;
 		_positionDetail.listenerId = _newListenerId;
 
+		uint256 _nonce;
 		if (_isName) {
-			uint256 _nonce = _nameFactory.incrementNonce(_id);
+			_nonce = _nameFactory.incrementNonce(_id);
 		} else {
 			_nonce = _taoFactory.incrementNonce(_id);
 		}
@@ -638,8 +639,9 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		address _currentSpeakerId = _positionDetail.speakerId;
 		_positionDetail.speakerId = _newSpeakerId;
 
+		uint256 _nonce;
 		if (_isName) {
-			uint256 _nonce = _nameFactory.incrementNonce(_id);
+			_nonce = _nameFactory.incrementNonce(_id);
 		} else {
 			_nonce = _taoFactory.incrementNonce(_id);
 		}

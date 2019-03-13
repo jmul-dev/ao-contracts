@@ -192,7 +192,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 		uint256 _networkIntegerAmount,
 		uint256 _networkFractionAmount,
 		bytes8 _denomination,
-		string _publicKey,
+		string memory _publicKey,
 		address _publicAddress
 	) public {
 		require (_canBuy(msg.sender, _contentHostId, _publicKey, _publicAddress));
@@ -262,7 +262,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	 * @return request node's public address
 	 * @return created on timestamp
 	 */
-	function getById(bytes32 _purchaseReceiptId) external view returns (bytes32, bytes32, bytes32, address, uint256, uint256, uint256, string, address, uint256) {
+	function getById(bytes32 _purchaseReceiptId) external view returns (bytes32, bytes32, bytes32, address, uint256, uint256, uint256, string memory, address, uint256) {
 		// Make sure the purchase receipt exist
 		require (this.isExist(_purchaseReceiptId));
 		PurchaseReceipt memory _purchaseReceipt = purchaseReceipts[purchaseReceiptIndex[_purchaseReceiptId]];
@@ -313,7 +313,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	 */
 	function _canBuy(address _buyer,
 		bytes32 _contentHostId,
-		string _publicKey,
+		string memory _publicKey,
 		address _publicAddress
 	) internal view returns (bool) {
 		(bytes32 _stakedContentId,,address _host,,) = _aoContentHost.getById(_contentHostId);

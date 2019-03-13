@@ -68,7 +68,7 @@ contract AOIon is AOIonInterface {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(string _name, string _symbol, address _settingTAOId, address _aoSettingAddress, address _nameTAOPositionAddress, address _namePublicKeyAddress, address _nameAccountRecoveryAddress)
+	constructor(string memory _name, string memory _symbol, address _settingTAOId, address _aoSettingAddress, address _nameTAOPositionAddress, address _namePublicKeyAddress, address _nameAccountRecoveryAddress)
 		AOIonInterface(_name, _symbol, _nameTAOPositionAddress, _namePublicKeyAddress, _nameAccountRecoveryAddress) public {
 		setSettingTAOId(_settingTAOId);
 		setAOSettingAddress(_aoSettingAddress);
@@ -333,7 +333,7 @@ contract AOIon is AOIonInterface {
 	 * @param _extraData some extra information to send to the approved contract
 	 * @return true on success
 	 */
-	function approvePrimordialAndCall(address _spender, uint256 _value, bytes _extraData) public returns (bool) {
+	function approvePrimordialAndCall(address _spender, uint256 _value, bytes memory _extraData) public returns (bool) {
 		tokenRecipient spender = tokenRecipient(_spender);
 		if (approvePrimordial(_spender, _value)) {
 			spender.receiveApproval(msg.sender, _value, this, _extraData);

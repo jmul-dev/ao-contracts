@@ -267,7 +267,7 @@ contract TAOAncestry is TAOController, ITAOAncestry {
 	 * @param _to The ending index, (max is childInternalId)
 	 * @return list of child TAO IDs
 	 */
-	function getChildIds(address _taoId, uint256 _from, uint256 _to) public view returns (address[]) {
+	function getChildIds(address _taoId, uint256 _from, uint256 _to) public view returns (address[] memory) {
 		require (isExist(_taoId));
 		Ancestry storage _ancestry = ancestries[_taoId];
 		require (_from >= 1 && _to >= _from && _ancestry.childInternalId >= _to);

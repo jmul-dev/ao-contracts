@@ -194,10 +194,10 @@ contract AOContentFactory is TheAO {
 		uint256 _networkFractionAmount,
 		bytes8 _denomination,
 		uint256 _primordialAmount,
-		string _baseChallenge,
-		string _encChallenge,
-		string _contentDatKey,
-		string _metadataDatKey,
+		string memory _baseChallenge,
+		string memory _encChallenge,
+		string memory _contentDatKey,
+		string memory _metadataDatKey,
 		uint256 _fileSize,
 		uint256 _profitPercentage
 		) public {
@@ -248,10 +248,10 @@ contract AOContentFactory is TheAO {
 		uint256 _networkFractionAmount,
 		bytes8 _denomination,
 		uint256 _primordialAmount,
-		string _baseChallenge,
-		string _encChallenge,
-		string _contentDatKey,
-		string _metadataDatKey,
+		string memory _baseChallenge,
+		string memory _encChallenge,
+		string memory _contentDatKey,
+		string memory _metadataDatKey,
 		uint256 _fileSize
 		) public {
 		/**
@@ -302,10 +302,10 @@ contract AOContentFactory is TheAO {
 		uint256 _networkFractionAmount,
 		bytes8 _denomination,
 		uint256 _primordialAmount,
-		string _baseChallenge,
-		string _encChallenge,
-		string _contentDatKey,
-		string _metadataDatKey,
+		string memory _baseChallenge,
+		string memory _encChallenge,
+		string memory _contentDatKey,
+		string memory _metadataDatKey,
 		uint256 _fileSize,
 		address _taoId
 		) public {
@@ -427,7 +427,7 @@ contract AOContentFactory is TheAO {
 	 * @return the ID of the content
 	 */
 	function _storeContent(address _creator,
-		string _baseChallenge,
+		string memory _baseChallenge,
 		uint256 _fileSize,
 		bytes32 _contentUsageType,
 		address _taoId
@@ -466,7 +466,7 @@ contract AOContentFactory is TheAO {
 	 * @param _metadataDatKey The dat key of the content's metadata
 	 * @return true on success
 	 */
-	function _hostContent(address _host, bytes32 _stakedContentId, string _encChallenge, string _contentDatKey, string _metadataDatKey) internal returns (bool) {
+	function _hostContent(address _host, bytes32 _stakedContentId, string memory _encChallenge, string memory _contentDatKey, string memory _metadataDatKey) internal returns (bool) {
 		return _aoContentHost.create(_host, _stakedContentId, _encChallenge, _contentDatKey, _metadataDatKey);
 	}
 }

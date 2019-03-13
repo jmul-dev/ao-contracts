@@ -8,7 +8,7 @@ import './INamePublicKey.sol';
 import './INameAccountRecovery.sol';
 
 interface ionRecipient {
-	function receiveApproval(address _from, uint256 _value, address _token, bytes _extraData) external;
+	function receiveApproval(address _from, uint256 _value, address _token, bytes calldata _extraData) external;
 }
 
 /**
@@ -63,7 +63,7 @@ contract AOIonInterface is TheAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor(string _name, string _symbol, address _nameTAOPositionAddress, address _namePublicKeyAddress, address _nameAccountRecoveryAddress) public {
+	constructor(string memory _name, string memory _symbol, address _nameTAOPositionAddress, address _namePublicKeyAddress, address _nameAccountRecoveryAddress) public {
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
 		setNamePublicKeyAddress(_namePublicKeyAddress);
 		setNameAccountRecoveryAddress(_nameAccountRecoveryAddress);
@@ -345,7 +345,7 @@ contract AOIonInterface is TheAO {
 	 * @param _value the max amount they can spend
 	 * @param _extraData some extra information to send to the approved contract
 	 */
-	function approveAndCall(address _spender, uint256 _value, bytes _extraData) public returns (bool success) {
+	function approveAndCall(address _spender, uint256 _value, bytes memory _extraData) public returns (bool success) {
 		ionRecipient spender = ionRecipient(_spender);
 		if (approve(_spender, _value)) {
 			spender.receiveApproval(msg.sender, _value, this, _extraData);

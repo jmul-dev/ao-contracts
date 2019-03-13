@@ -248,7 +248,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @param _to The ending index
 	 * @return list of publicKeys
 	 */
-	function getKeys(address _id, uint256 _from, uint256 _to) public isName(_id) view returns (address[]) {
+	function getKeys(address _id, uint256 _from, uint256 _to) public isName(_id) view returns (address[] memory) {
 		require (isExist(_id));
 		require (_from >= 0 && _to >= _from);
 
@@ -289,7 +289,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 			}
 		}
 
-		for (i = index; i < _publicKey.keys.length.sub(1); i++) {
+		for (uint256 i = index; i < _publicKey.keys.length.sub(1); i++) {
 			_publicKey.keys[i] = _publicKey.keys[i+1];
 		}
 		_publicKey.keys.length--;

@@ -155,10 +155,10 @@ contract TAOFactory is TAOController, ITAOFactory {
 	 * @param _childMinLogos The min required Logos to create a child from this TAO
 	 */
 	function createTAO(
-		string _name,
-		string _datHash,
-		string _database,
-		string _keyValue,
+		string memory _name,
+		string memory _datHash,
+		string memory _database,
+		string memory _keyValue,
 		bytes32 _contentId,
 		address _parentId,
 		uint256 _childMinLogos,
@@ -192,7 +192,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 	 * @return The contentId of the TAO
 	 * @return The typeId of the TAO
 	 */
-	function getTAO(address _taoId) public view returns (string, address, string, string, string, string, bytes32, uint8) {
+	function getTAO(address _taoId) public view returns (string memory, address, string memory, string memory, string memory, string memory, bytes32, uint8) {
 		TAO _tao = TAO(_taoId);
 		return (
 			_tao.name(),
@@ -220,7 +220,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 	 * @param _to The ending index
 	 * @return list of TAO IDs
 	 */
-	function getTAOIds(uint256 _from, uint256 _to) public view returns (address[]) {
+	function getTAOIds(uint256 _from, uint256 _to) public view returns (address[] memory) {
 		require (_from >= 0 && _to >= _from);
 		require (taos.length > 0);
 
@@ -249,14 +249,14 @@ contract TAOFactory is TAOController, ITAOFactory {
 	 *			0 == unknown. 1 == Advocate. 2 == Listener. 3 == Speaker
 	 */
 	function validateTAOSignature(
-		string _data,
+		string memory _data,
 		uint256 _nonce,
 		address _validateAddress,
-		string _name,
+		string memory _name,
 		uint8 _signatureV,
 		bytes32 _signatureR,
 		bytes32 _signatureS
-	) public isTAO(_getTAOIdByName(_name)) view returns (bool, string, uint256) {
+	) public isTAO(_getTAOIdByName(_name)) view returns (bool, string memory, uint256) {
 		address _signatureAddress = _getValidateSignatureAddress(_data, _nonce, _signatureV, _signatureR, _signatureS);
 		if (_isTAOSignatureAddressValid(_validateAddress, _signatureAddress, _getTAOIdByName(_name), _nonce)) {
 			return (true, Name(_nameFactory.ethAddressToNameId(_signatureAddress)).name(), _nameTAOPosition.determinePosition(_signatureAddress, _getTAOIdByName(_name)));
@@ -279,11 +279,11 @@ contract TAOFactory is TAOController, ITAOFactory {
 	 * @return true on success
 	 */
 	function _createTAO(
-		string _name,
+		string memory _name,
 		address _nameId,
-		string _datHash,
-		string _database,
-		string _keyValue,
+		string memory _datHash,
+		string memory _database,
+		string memory _keyValue,
 		bytes32 _contentId,
 		address _parentId,
 		uint256 _childMinLogos,
@@ -350,7 +350,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 	 * @param _name The name of the TAO
 	 * @return the TAO ID
 	 */
-	function _getTAOIdByName(string _name) internal view returns (address) {
+	function _getTAOIdByName(string memory _name) internal view returns (address) {
 		return _nameTAOLookup.getIdByName(_name);
 	}
 
@@ -372,7 +372,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 	 * @param _s part of the signature
 	 * @return the address that signed the message
 	 */
-	function _getValidateSignatureAddress(string _data, uint256 _nonce, uint8 _v, bytes32 _r, bytes32 _s) internal view returns (address) {
+	function _getValidateSignatureAddress(string memory _data, uint256 _nonce, uint8 _v, bytes32 _r, bytes32 _s) internal view returns (address) {
 		bytes32 _hash = keccak256(abi.encodePacked(address(this), _data, _nonce));
 		return ecrecover(_hash, _v, _r, _s);
 	}

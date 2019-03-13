@@ -185,7 +185,7 @@ contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 	 * @return the denomination num of decimals
 	 * @return the denomination multiplier (power of ten)
 	 */
-	function getDenominationByName(bytes8 denominationName) public isValidDenomination(denominationName) view returns (bytes8, address, string, string, uint8, uint256) {
+	function getDenominationByName(bytes8 denominationName) public isValidDenomination(denominationName) view returns (bytes8, address, string memory, string memory, uint8, uint256) {
 		TAOCurrency _tc = TAOCurrency(denominations[denominationIndex[denominationName]].denominationAddress);
 		return (
 			denominations[denominationIndex[denominationName]].name,
@@ -207,7 +207,7 @@ contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 	 * @return the denomination num of decimals
 	 * @return the denomination multiplier (power of ten)
 	 */
-	function getDenominationByIndex(uint256 index) public view returns (bytes8, address, string, string, uint8, uint256) {
+	function getDenominationByIndex(uint256 index) public view returns (bytes8, address, string memory, string memory, uint8, uint256) {
 		require (index > 0 && index <= totalDenominations);
 		require (denominations[index].denominationAddress != address(0));
 		TAOCurrency _tc = TAOCurrency(denominations[index].denominationAddress);
@@ -230,7 +230,7 @@ contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 	 * @return the denomination num of decimals
 	 * @return the denomination multiplier (power of ten)
 	 */
-	function getBaseDenomination() public view returns (bytes8, address, string, string, uint8, uint256) {
+	function getBaseDenomination() public view returns (bytes8, address, string memory, string memory, uint8, uint256) {
 		require (totalDenominations > 0);
 		return getDenominationByIndex(1);
 	}
@@ -328,7 +328,7 @@ contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 	 * @return The to denomination symbol
 	 * @return The amount exchanged
 	 */
-	function getDenominationExchangeById(bytes32 _exchangeId) public view returns (address, address, address, string, string, uint256) {
+	function getDenominationExchangeById(bytes32 _exchangeId) public view returns (address, address, address, string memory, string memory, uint256) {
 		require (denominationExchangeIdLookup[_exchangeId] > 0);
 		DenominationExchange memory _denominationExchange = denominationExchanges[denominationExchangeIdLookup[_exchangeId]];
 		return (
@@ -353,7 +353,7 @@ contract TAOCurrencyTreasury is TheAO, ITAOCurrencyTreasury {
 	 * @return the denomination num of decimals
 	 * @return the denomination multiplier (power of ten)
 	 */
-	function toHighestDenomination(uint256 amount) public view returns (bytes8, address, uint256, uint256, string, string, uint8, uint256) {
+	function toHighestDenomination(uint256 amount) public view returns (bytes8, address, uint256, uint256, string memory, string memory, uint8, uint256) {
 		uint256 integerAmount;
 		uint256 fractionAmount;
 		uint256 index;

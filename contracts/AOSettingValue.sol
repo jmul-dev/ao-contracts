@@ -92,7 +92,7 @@ contract AOSettingValue is TheAO, IAOSettingValue {
 		address _addressValue,
 		bool _boolValue,
 		bytes32 _bytesValue,
-		string _stringValue,
+		string calldata _stringValue,
 		uint256 _uintValue) external inWhitelist returns (bool) {
 		PendingValue storage _pendingValue = pendingValues[_settingId];
 		_pendingValue.addressValue = _addressValue;
@@ -128,7 +128,7 @@ contract AOSettingValue is TheAO, IAOSettingValue {
 	 * @return The string setting value
 	 * @return The uint256 setting value
 	 */
-	function settingValue(uint256 _settingId) external view returns (address, bool, bytes32, string, uint256) {
+	function settingValue(uint256 _settingId) external view returns (address, bool, bytes32, string memory, uint256) {
 		SettingValue memory _settingValue = settingValues[_settingId];
 		return (
 			_settingValue.addressValue,
@@ -147,7 +147,7 @@ contract AOSettingValue is TheAO, IAOSettingValue {
 	 * @return The string pending value
 	 * @return The uint256 pending value
 	 */
-	function pendingValue(uint256 _settingId) public view returns (address, bool, bytes32, string, uint256) {
+	function pendingValue(uint256 _settingId) public view returns (address, bool, bytes32, string memory, uint256) {
 		PendingValue memory _pendingValue = pendingValues[_settingId];
 		return (
 			_pendingValue.addressValue,

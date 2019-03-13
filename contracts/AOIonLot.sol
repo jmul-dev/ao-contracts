@@ -182,7 +182,7 @@ contract AOIonLot is TheAO {
 	 * @param _lotOwner The address of the lot owner
 	 * @return array of lot IDs
 	 */
-	function lotIdsByAddress(address _lotOwner) public view returns (bytes32[]) {
+	function lotIdsByAddress(address _lotOwner) public view returns (bytes32[] memory) {
 		return ownedLots[_lotOwner];
 	}
 
@@ -240,7 +240,7 @@ contract AOIonLot is TheAO {
 	 * @param _lotOwner The address of the burn lot owner
 	 * @return array of Burn Lot IDs
 	 */
-	function burnLotIdsByAddress(address _lotOwner) public view returns (bytes32[]) {
+	function burnLotIdsByAddress(address _lotOwner) public view returns (bytes32[] memory) {
 		return ownedBurnLots[_lotOwner];
 	}
 
@@ -296,7 +296,7 @@ contract AOIonLot is TheAO {
 	 * @param _lotOwner The address of the convert lot owner
 	 * @return array of Convert Lot IDs
 	 */
-	function convertLotIdsByAddress(address _lotOwner) public view returns (bytes32[]) {
+	function convertLotIdsByAddress(address _lotOwner) public view returns (bytes32[] memory) {
 		return ownedConvertLots[_lotOwner];
 	}
 

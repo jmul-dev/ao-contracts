@@ -96,7 +96,7 @@ contract AOSetting is TheAO, IAOSetting {
 	/**
 	 * @dev Check if `_settingName` of `_associatedTAOId` is taken
 	 */
-	modifier settingNameNotTaken(string _settingName, address _associatedTAOId) {
+	modifier settingNameNotTaken(string memory _settingName, address _associatedTAOId) {
 		require (settingNameExist(_settingName, _associatedTAOId) == false);
 		_;
 	}
@@ -202,7 +202,7 @@ contract AOSetting is TheAO, IAOSetting {
 	 * @param _associatedTAOId The taoId that the setting affects
 	 * @return true if yes. false otherwise
 	 */
-	function settingNameExist(string _settingName, address _associatedTAOId) public view returns (bool) {
+	function settingNameExist(string memory _settingName, address _associatedTAOId) public view returns (bool) {
 		return (nameSettingLookup[_associatedTAOId][keccak256(abi.encodePacked(this, _settingName))] > 0);
 	}
 
@@ -215,11 +215,11 @@ contract AOSetting is TheAO, IAOSetting {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function addUintSetting(
-		string _settingName,
+		string memory _settingName,
 		uint256 _value,
 		address _creatorTAOId,
 		address _associatedTAOId,
-		string _extraData)
+		string memory _extraData)
 		public
 		isTAO(_creatorTAOId)
 		isTAO(_associatedTAOId)
@@ -247,11 +247,11 @@ contract AOSetting is TheAO, IAOSetting {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function addBoolSetting(
-		string _settingName,
+		string memory _settingName,
 		bool _value,
 		address _creatorTAOId,
 		address _associatedTAOId,
-		string _extraData)
+		string memory _extraData)
 		public
 		isTAO(_creatorTAOId)
 		isTAO(_associatedTAOId)
@@ -279,11 +279,11 @@ contract AOSetting is TheAO, IAOSetting {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function addAddressSetting(
-		string _settingName,
+		string memory _settingName,
 		address _value,
 		address _creatorTAOId,
 		address _associatedTAOId,
-		string _extraData)
+		string memory _extraData)
 		public
 		isTAO(_creatorTAOId)
 		isTAO(_associatedTAOId)
@@ -311,11 +311,11 @@ contract AOSetting is TheAO, IAOSetting {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function addBytesSetting(
-		string _settingName,
+		string memory _settingName,
 		bytes32 _value,
 		address _creatorTAOId,
 		address _associatedTAOId,
-		string _extraData)
+		string memory _extraData)
 		public
 		isTAO(_creatorTAOId)
 		isTAO(_associatedTAOId)
@@ -343,11 +343,11 @@ contract AOSetting is TheAO, IAOSetting {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
 	function addStringSetting(
-		string _settingName,
-		string _value,
+		string memory _settingName,
+		string memory _value,
 		address _creatorTAOId,
 		address _associatedTAOId,
-		string _extraData)
+		string memory _extraData)
 		public
 		isTAO(_creatorTAOId)
 		isTAO(_associatedTAOId)
@@ -414,7 +414,7 @@ contract AOSetting is TheAO, IAOSetting {
 	 * @param _settingName The name of the setting
 	 * @return the ID of the setting
 	 */
-	function getSettingIdByTAOName(address _associatedTAOId, string _settingName) public view returns (uint256) {
+	function getSettingIdByTAOName(address _associatedTAOId, string memory _settingName) public view returns (uint256) {
 		return nameSettingLookup[_associatedTAOId][keccak256(abi.encodePacked(this, _settingName))];
 	}
 
@@ -428,7 +428,7 @@ contract AOSetting is TheAO, IAOSetting {
 	 * @return the bytes32 value of this setting ID
 	 * @return the string value of this setting ID
 	 */
-	function getSettingValuesById(uint256 _settingId) public view returns (uint256, bool, address, bytes32, string) {
+	function getSettingValuesById(uint256 _settingId) public view returns (uint256, bool, address, bytes32, string memory) {
 		require (_aoSettingAttribute.settingExist(_settingId));
 		_settingId = _aoSettingAttribute.getLatestSettingId(_settingId);
 		(address _addressValue, bool _boolValue, bytes32 _bytesValue, string memory _stringValue, uint256 _uintValue) = _aoSettingValue.settingValue(_settingId);
@@ -446,7 +446,7 @@ contract AOSetting is TheAO, IAOSetting {
 	 * @return the bytes32 value of this setting ID
 	 * @return the string value of this setting ID
 	 */
-	function getSettingValuesByTAOName(address _taoId, string _settingName) external view returns (uint256, bool, address, bytes32, string) {
+	function getSettingValuesByTAOName(address _taoId, string calldata _settingName) external view returns (uint256, bool, address, bytes32, string memory) {
 		return getSettingValuesById(getSettingIdByTAOName(_taoId, _settingName));
 	}
 
@@ -477,7 +477,7 @@ contract AOSetting is TheAO, IAOSetting {
 	 * @param _associatedTAOId The taoId that the setting affects
 	 * @param _extraData Catch-all string value to be stored if exist
 	 */
-	function _storeSettingCreation(address _creatorNameId, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) internal {
+	function _storeSettingCreation(address _creatorNameId, string memory _settingName, address _creatorTAOId, address _associatedTAOId, string memory _extraData) internal {
 		// Store nameSettingLookup
 		nameSettingLookup[_associatedTAOId][keccak256(abi.encodePacked(address(this), _settingName))] = totalSetting;
 

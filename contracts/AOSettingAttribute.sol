@@ -173,7 +173,7 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 	 * @return The ID of the "Associated" setting
 	 * @return The ID of the "Creator" setting
 	 */
-	function add(uint256 _settingId, address _creatorNameId, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) external inWhitelist returns (bytes32, bytes32) {
+	function add(uint256 _settingId, address _creatorNameId, string calldata _settingName, address _creatorTAOId, address _associatedTAOId, string calldata _extraData) external inWhitelist returns (bytes32, bytes32) {
 		// Store setting data/state
 		require (_storeSettingDataState(_settingId, _creatorNameId, _settingName, _creatorTAOId, _associatedTAOId, _extraData));
 
@@ -188,7 +188,7 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 	 * @dev Get Setting Data of a setting ID
 	 * @param _settingId The ID of the setting
 	 */
-	function getSettingData(uint256 _settingId) external view returns (uint256, address, address, address, string, bool, bool, bool, string) {
+	function getSettingData(uint256 _settingId) external view returns (uint256, address, address, address, string memory, bool, bool, bool, string memory) {
 		SettingData memory _settingData = settingDatas[_settingId];
 		return (
 			_settingData.settingId,
@@ -291,7 +291,7 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 * @return true on success
 	 */
-	function update(uint256 _settingId, address _associatedTAOAdvocate, address _proposalTAOId, string _extraData) external inWhitelist returns (bool) {
+	function update(uint256 _settingId, address _associatedTAOAdvocate, address _proposalTAOId, string calldata _extraData) external inWhitelist returns (bool) {
 		// Make sure setting is created
 		SettingData memory _settingData = settingDatas[_settingId];
 		require (_settingData.settingId == _settingId &&
@@ -325,7 +325,7 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 	 * @dev Get setting state
 	 * @param _settingId The ID of the setting
 	 */
-	function getSettingState(uint256 _settingId) external view returns (uint256, bool, address, address, address, string) {
+	function getSettingState(uint256 _settingId) external view returns (uint256, bool, address, address, address, string memory) {
 		SettingState memory _settingState = settingStates[_settingId];
 		return (
 			_settingState.settingId,
@@ -579,7 +579,7 @@ contract AOSettingAttribute is TheAO, IAOSettingAttribute {
 	 * @param _extraData Catch-all string value to be stored if exist
 	 * @return true on success
 	 */
-	function _storeSettingDataState(uint256 _settingId, address _creatorNameId, string _settingName, address _creatorTAOId, address _associatedTAOId, string _extraData) internal returns (bool) {
+	function _storeSettingDataState(uint256 _settingId, address _creatorNameId, string memory _settingName, address _creatorTAOId, address _associatedTAOId, string memory _extraData) internal returns (bool) {
 		// Store setting data
 		SettingData storage _settingData = settingDatas[_settingId];
 		_settingData.settingId = _settingId;

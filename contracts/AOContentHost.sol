@@ -153,7 +153,7 @@ contract AOContentHost is TheAO, IAOContentHost {
 	 * @param _metadataDatKey The dat key of the content's metadata
 	 * @return true on success
 	 */
-	function create(address _host, bytes32 _stakedContentId, string _encChallenge, string _contentDatKey, string _metadataDatKey) external inWhitelist returns (bool) {
+	function create(address _host, bytes32 _stakedContentId, string calldata _encChallenge, string calldata _contentDatKey, string calldata _metadataDatKey) external inWhitelist returns (bool) {
 		require (_create(_host, _stakedContentId, _encChallenge, _contentDatKey, _metadataDatKey));
 		return true;
 	}
@@ -167,7 +167,7 @@ contract AOContentHost is TheAO, IAOContentHost {
 	 * @return the dat key of the content
 	 * @return the dat key of the content's metadata
 	 */
-	function getById(bytes32 _contentHostId) external view returns (bytes32, bytes32, address, string, string) {
+	function getById(bytes32 _contentHostId) external view returns (bytes32, bytes32, address, string memory, string memory) {
 		// Make sure the content host exist
 		require (contentHostIndex[_contentHostId] > 0);
 		ContentHost memory _contentHost = contentHosts[contentHostIndex[_contentHostId]];
@@ -242,9 +242,9 @@ contract AOContentHost is TheAO, IAOContentHost {
 		uint8 _baseChallengeV,
 		bytes32 _baseChallengeR,
 		bytes32 _baseChallengeS,
-		string _encChallenge,
-		string _contentDatKey,
-		string _metadataDatKey
+		string memory _encChallenge,
+		string memory _contentDatKey,
+		string memory _metadataDatKey
 	) public {
 		require (_canBecomeHost(_purchaseReceiptId, msg.sender, _baseChallengeV, _baseChallengeR, _baseChallengeS));
 
@@ -266,7 +266,7 @@ contract AOContentHost is TheAO, IAOContentHost {
 	 * @param _metadataDatKey The dat key of the content's metadata
 	 * @return true on success
 	 */
-	function _create(address _host, bytes32 _stakedContentId, string _encChallenge, string _contentDatKey, string _metadataDatKey) internal returns (bool) {
+	function _create(address _host, bytes32 _stakedContentId, string memory _encChallenge, string memory _contentDatKey, string memory _metadataDatKey) internal returns (bool) {
 		require (_host != address(0));
 		require (bytes(_encChallenge).length > 0);
 		require (bytes(_contentDatKey).length > 0);

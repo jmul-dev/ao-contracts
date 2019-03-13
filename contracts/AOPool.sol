@@ -429,7 +429,7 @@ contract AOPool is TheAO {
 	 * @param _to The ending index, (i.e total - 1)
 	 * @return list of owner's Lot IDs
 	 */
-	function ownerLotIds(address _account, uint256 _from, uint256 _to) public view returns (bytes32[]) {
+	function ownerLotIds(address _account, uint256 _from, uint256 _to) public view returns (bytes32[] memory) {
 		require (_from >= 0 && _to >= _from && ownerLots[_account].length > _to);
 		bytes32[] memory _lotIds = new bytes32[](_to.sub(_from).add(1));
 		for (uint256 i = _from; i <= _to; i++) {
@@ -632,7 +632,7 @@ contract AOPool is TheAO {
 
 		uint256 hundredThousandth = lotInternalId.div(100000);
 		if (hundredThousandth > 0) {
-			for (i=lowerBound.add(1); i<=hundredThousandth; i++) {
+			for (uint256 i=lowerBound.add(1); i<=hundredThousandth; i++) {
 				if (poolHundredThousandthLotIonWithdrawnSnapshot[_lot.poolId][i] > 0) {
 					totalIonWithdrawn = totalIonWithdrawn.add(poolHundredThousandthLotIonWithdrawnSnapshot[_lot.poolId][i]);
 				}
@@ -648,7 +648,7 @@ contract AOPool is TheAO {
 
 		uint256 tenThousandth = lotInternalId.div(10000);
 		if (tenThousandth > 0) {
-			for (i=lowerBound.add(1); i<=tenThousandth; i++) {
+			for (uint256 i=lowerBound.add(1); i<=tenThousandth; i++) {
 				if (poolTenThousandthLotIonWithdrawnSnapshot[_lot.poolId][i] > 0) {
 					totalIonWithdrawn = totalIonWithdrawn.add(poolTenThousandthLotIonWithdrawnSnapshot[_lot.poolId][i]);
 				}
@@ -664,7 +664,7 @@ contract AOPool is TheAO {
 
 		uint256 thousandth = lotInternalId.div(1000);
 		if (thousandth > 0) {
-			for (i=lowerBound.add(1); i<=thousandth; i++) {
+			for (uint256 i=lowerBound.add(1); i<=thousandth; i++) {
 				if (poolThousandthLotIonWithdrawnSnapshot[_lot.poolId][i] > 0) {
 					totalIonWithdrawn = totalIonWithdrawn.add(poolThousandthLotIonWithdrawnSnapshot[_lot.poolId][i]);
 				}
@@ -680,7 +680,7 @@ contract AOPool is TheAO {
 
 		uint256 hundredth = lotInternalId.div(100);
 		if (hundredth > 0) {
-			for (i=lowerBound.add(1); i<=hundredth; i++) {
+			for (uint256 i=lowerBound.add(1); i<=hundredth; i++) {
 				if (poolHundredthLotIonWithdrawnSnapshot[_lot.poolId][i] > 0) {
 					totalIonWithdrawn = totalIonWithdrawn.add(poolHundredthLotIonWithdrawnSnapshot[_lot.poolId][i]);
 				}
@@ -696,7 +696,7 @@ contract AOPool is TheAO {
 
 		uint256 tenth = lotInternalId.div(10);
 		if (tenth > 0) {
-			for (i=lowerBound.add(1); i<=tenth; i++) {
+			for (uint256 i=lowerBound.add(1); i<=tenth; i++) {
 				if (poolTenthLotIonWithdrawnSnapshot[_lot.poolId][i] > 0) {
 					totalIonWithdrawn = totalIonWithdrawn.add(poolTenthLotIonWithdrawnSnapshot[_lot.poolId][i]);
 				}
@@ -708,7 +708,7 @@ contract AOPool is TheAO {
 			}
 		}
 
-		for (i=lowerBound.add(1); i<lotInternalId; i++) {
+		for (uint256 i=lowerBound.add(1); i<lotInternalId; i++) {
 			if (poolLotIonWithdrawn[_lot.poolId][i] > 0) {
 				totalIonWithdrawn = totalIonWithdrawn.add(poolLotIonWithdrawn[_lot.poolId][i]);
 			}

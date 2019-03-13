@@ -253,7 +253,7 @@ contract AOSettingUpdate is TheAO {
 		uint8 _signatureV,
 		bytes32 _signatureR,
 		bytes32 _signatureS,
-		string _extraData)
+		string memory _extraData)
 		public
 		canUpdate(_proposalTAOId)
 		isAddressSetting(_settingId) {
@@ -290,7 +290,7 @@ contract AOSettingUpdate is TheAO {
 		uint8 _signatureV,
 		bytes32 _signatureR,
 		bytes32 _signatureS,
-		string _extraData)
+		string memory _extraData)
 		public
 		canUpdate(_proposalTAOId)
 		isBoolSetting(_settingId) {
@@ -327,7 +327,7 @@ contract AOSettingUpdate is TheAO {
 		uint8 _signatureV,
 		bytes32 _signatureR,
 		bytes32 _signatureS,
-		string _extraData)
+		string memory _extraData)
 		public
 		canUpdate(_proposalTAOId)
 		isBytesSetting(_settingId) {
@@ -359,12 +359,12 @@ contract AOSettingUpdate is TheAO {
 	 */
 	function updateStringSetting(
 		uint256 _settingId,
-		string _newValue,
+		string memory _newValue,
 		address _proposalTAOId,
 		uint8 _signatureV,
 		bytes32 _signatureR,
 		bytes32 _signatureS,
-		string _extraData)
+		string memory _extraData)
 		public
 		canUpdate(_proposalTAOId)
 		isStringSetting(_settingId) {
@@ -401,7 +401,7 @@ contract AOSettingUpdate is TheAO {
 		uint8 _signatureV,
 		bytes32 _signatureR,
 		bytes32 _signatureS,
-		string _extraData)
+		string memory _extraData)
 		public
 		canUpdate(_proposalTAOId)
 		isUintSetting(_settingId) {
@@ -547,7 +547,7 @@ contract AOSettingUpdate is TheAO {
 	 */
 	function _verifyAndStoreUpdateStringSignature(
 		uint256 _settingId,
-		string _newValue,
+		string memory _newValue,
 		address _proposalTAOId,
 		uint8 _v,
 		bytes32 _r,
@@ -598,7 +598,7 @@ contract AOSettingUpdate is TheAO {
 		uint256 _settingId,
 		address _newValue,
 		address _proposalTAOId,
-		string _extraData)
+		string memory _extraData)
 		internal {
 		// Store the update hash key lookup
 		(address _addressValue,,,,) = _aoSettingValue.settingValue(_settingId);
@@ -616,7 +616,7 @@ contract AOSettingUpdate is TheAO {
 		uint256 _settingId,
 		bool _newValue,
 		address _proposalTAOId,
-		string _extraData)
+		string memory _extraData)
 		internal {
 		// Store the update hash key lookup
 		(, bool _boolValue,,,) = _aoSettingValue.settingValue(_settingId);
@@ -634,7 +634,7 @@ contract AOSettingUpdate is TheAO {
 		uint256 _settingId,
 		bytes32 _newValue,
 		address _proposalTAOId,
-		string _extraData)
+		string memory _extraData)
 		internal {
 		// Store the update hash key lookup
 		(,, bytes32 _bytesValue,,) = _aoSettingValue.settingValue(_settingId);
@@ -650,9 +650,9 @@ contract AOSettingUpdate is TheAO {
 	 */
 	function _storeUpdateStringHashLookup(
 		uint256 _settingId,
-		string _newValue,
+		string memory _newValue,
 		address _proposalTAOId,
-		string _extraData)
+		string memory _extraData)
 		internal {
 		// Store the update hash key lookup
 		(,,, string memory _stringValue,) = _aoSettingValue.settingValue(_settingId);
@@ -670,7 +670,7 @@ contract AOSettingUpdate is TheAO {
 		uint256 _settingId,
 		uint256 _newValue,
 		address _proposalTAOId,
-		string _extraData)
+		string memory _extraData)
 		internal {
 		// Store the update hash key lookup
 		(,,,, uint256 _uintValue) = _aoSettingValue.settingValue(_settingId);

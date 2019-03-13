@@ -92,11 +92,11 @@ library AOLibrary {
 	 * @param _contentId The contentId related to this TAO
 	 * @param _nameTAOVaultAddress The address of NameTAOVault
 	 */
-	function deployTAO(string _name,
+	function deployTAO(string memory _name,
 		address _originId,
-		string _datHash,
-		string _database,
-		string _keyValue,
+		string memory _datHash,
+		string memory _database,
+		string memory _keyValue,
 		bytes32 _contentId,
 		address _nameTAOVaultAddress
 		) public returns (TAO _tao) {
@@ -113,11 +113,11 @@ library AOLibrary {
 	 * @param _contentId The contentId related to this Name
 	 * @param _nameTAOVaultAddress The address of NameTAOVault
 	 */
-	function deployName(string _name,
+	function deployName(string memory _name,
 		address _originId,
-		string _datHash,
-		string _database,
-		string _keyValue,
+		string memory _datHash,
+		string memory _database,
+		string memory _keyValue,
 		bytes32 _contentId,
 		address _nameTAOVaultAddress
 		) public returns (Name _myName) {

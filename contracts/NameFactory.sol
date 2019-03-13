@@ -199,7 +199,7 @@ contract NameFactory is TheAO, INameFactory {
 	 * @param _keyValue The key/value pair to be checked on the database
 	 * @param _contentId The contentId related to this Name
 	 */
-	function createName(string _name, string _datHash, string _database, string _keyValue, bytes32 _contentId) public {
+	function createName(string memory _name, string memory _datHash, string memory _database, string memory _keyValue, bytes32 _contentId) public {
 		require (bytes(_name).length > 0);
 		require (!_nameTAOLookup.isExist(_name));
 
@@ -264,7 +264,7 @@ contract NameFactory is TheAO, INameFactory {
 	 * @return The contentId of the Name
 	 * @return The typeId of the Name
 	 */
-	function getName(address _nameId) public view returns (string, address, string, string, string, bytes32, uint8) {
+	function getName(address _nameId) public view returns (string memory, address, string memory, string memory, string memory, bytes32, uint8) {
 		Name _name = Name(_nameId);
 		return (
 			_name.name(),
@@ -291,7 +291,7 @@ contract NameFactory is TheAO, INameFactory {
 	 * @param _to The ending index
 	 * @return list of Name IDs
 	 */
-	function getNameIds(uint256 _from, uint256 _to) public view returns (address[]) {
+	function getNameIds(uint256 _from, uint256 _to) public view returns (address[] memory) {
 		require (_from >= 0 && _to >= _from);
 		require (names.length > 0);
 
@@ -317,10 +317,10 @@ contract NameFactory is TheAO, INameFactory {
 	 * @return true if valid. false otherwise
 	 */
 	function validateNameSignature(
-		string _data,
+		string memory _data,
 		uint256 _nonce,
 		address _validateAddress,
-		string _name,
+		string memory _name,
 		uint8 _signatureV,
 		bytes32 _signatureR,
 		bytes32 _signatureS
@@ -352,7 +352,7 @@ contract NameFactory is TheAO, INameFactory {
 	 * @param _s part of the signature
 	 * @return the address that signed the message
 	 */
-	function _getValidateSignatureAddress(string _data, uint256 _nonce, uint8 _v, bytes32 _r, bytes32 _s) internal view returns (address) {
+	function _getValidateSignatureAddress(string memory _data, uint256 _nonce, uint8 _v, bytes32 _r, bytes32 _s) internal view returns (address) {
 		bytes32 _hash = keccak256(abi.encodePacked(address(this), _data, _nonce));
 		return ecrecover(_hash, _v, _r, _s);
 	}

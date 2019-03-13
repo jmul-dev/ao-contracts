@@ -28,11 +28,11 @@ contract TAO {
 	/**
 	 * @dev Constructor function
 	 */
-	constructor (string _name,
+	constructor (string memory _name,
 		address _originId,
-		string _datHash,
-		string _database,
-		string _keyValue,
+		string memory _datHash,
+		string memory _database,
+		string memory _keyValue,
 		bytes32 _contentId,
 		address _vaultAddress
 	) public {

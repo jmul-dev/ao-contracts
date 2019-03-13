@@ -134,7 +134,7 @@ contract AOContent is TheAO, IAOContent {
 	 * @return the ID of the content
 	 */
 	function create(address _creator,
-		string _baseChallenge,
+		string calldata _baseChallenge,
 		uint256 _fileSize,
 		bytes32 _contentUsageType,
 		address _taoId
@@ -184,7 +184,7 @@ contract AOContent is TheAO, IAOContent {
 	 * @return The S part of signature that is used to update the TAO Content State
 	 * @return the extra information sent to the contract when creating a content
 	 */
-	function getById(bytes32 _contentId) external view returns (address, uint256, bytes32, address, bytes32, uint8, bytes32, bytes32, string) {
+	function getById(bytes32 _contentId) external view returns (address, uint256, bytes32, address, bytes32, uint8, bytes32, bytes32, string memory) {
 		// Make sure the content exist
 		require (contentIndex[_contentId] > 0);
 		Content memory _content = contents[contentIndex[_contentId]];
@@ -206,7 +206,7 @@ contract AOContent is TheAO, IAOContent {
 	 * @param _contentId The ID of the content
 	 * @return the base challenge
 	 */
-	function getBaseChallenge(bytes32 _contentId) external view returns (string) {
+	function getBaseChallenge(bytes32 _contentId) external view returns (string memory) {
 		// Make sure the content exist
 		require (contentIndex[_contentId] > 0);
 		Content memory _content = contents[contentIndex[_contentId]];
@@ -268,7 +268,7 @@ contract AOContent is TheAO, IAOContent {
 	 * @param _contentId The ID of the content
 	 * @param _extraData some extra information to send to the contract for a content
 	 */
-	function setExtraData(bytes32 _contentId, string _extraData) public {
+	function setExtraData(bytes32 _contentId, string memory _extraData) public {
 		// Make sure the content exist
 		require (contentIndex[_contentId] > 0);
 
@@ -291,7 +291,7 @@ contract AOContent is TheAO, IAOContent {
 	 * @param _taoId The TAO (TAO) ID for this content (if this is a T(AO) Content)
 	 * @return true if yes. false otherwise
 	 */
-	function _canCreate(address _creator, string _baseChallenge, uint256 _fileSize, bytes32 _contentUsageType, address _taoId) internal view returns (bool) {
+	function _canCreate(address _creator, string memory _baseChallenge, uint256 _fileSize, bytes32 _contentUsageType, address _taoId) internal view returns (bool) {
 		(bytes32 aoContent, bytes32 creativeCommons, bytes32 taoContent,,,) = _getSettingVariables();
 		return (_creator != address(0) &&
 			bytes(_baseChallenge).length > 0 &&

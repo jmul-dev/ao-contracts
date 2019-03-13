@@ -540,7 +540,7 @@ contract AOEarning is TheAO, IAOEarning {
 			require (_pathos.mint(_nameFactory.ethAddressToNameId(_account), _pathosAmount));
 			emit PathosEarned(_nameFactory.ethAddressToNameId(_account), _purchaseReceiptId, _pathosAmount);
 		} else if (_recipientType == 1) {
-			_earning = ownerPurchaseReceiptHostEarnings[_account][_purchaseReceiptId];
+			Earning storage _earning = ownerPurchaseReceiptHostEarnings[_account][_purchaseReceiptId];
 			_paymentEarning = _earning.paymentEarning;
 			_inflationBonus = _earning.inflationBonus;
 			_ethosAmount = _earning.ethosAmount;
@@ -566,7 +566,7 @@ contract AOEarning is TheAO, IAOEarning {
 			require (_ethos.mint(_nameFactory.ethAddressToNameId(_account), _ethosAmount));
 			emit EthosEarned(_nameFactory.ethAddressToNameId(_account), _purchaseReceiptId, _ethosAmount);
 		} else {
-			_earning = theAOPurchaseReceiptEarnings[_purchaseReceiptId];
+			Earning storage _earning = theAOPurchaseReceiptEarnings[_purchaseReceiptId];
 			_paymentEarning = _earning.paymentEarning;
 			_inflationBonus = _earning.inflationBonus;
 			_earning.paymentEarning = 0;

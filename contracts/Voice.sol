@@ -36,7 +36,7 @@ contract Voice is TheAO {
 	/**
 	 * Constructor function
 	 */
-	constructor (string _name, string _symbol) public {
+	constructor (string memory _name, string memory _symbol) public {
 		name = _name;						// Set the name for display purposes
 		symbol = _symbol;					// Set the symbol for display purposes
 	}

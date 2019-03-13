@@ -296,7 +296,7 @@ contract TAOPool is TAOController, ITAOPool {
 	 * @param _to The ending index, (i.e total - 1)
 	 * @return list of owner's Lot IDs
 	 */
-	function ownerLotIds(address _nameId, uint256 _from, uint256 _to) public view returns (bytes32[]) {
+	function ownerLotIds(address _nameId, uint256 _from, uint256 _to) public view returns (bytes32[] memory) {
 		require (_from >= 0 && _to >= _from && ownerLots[_nameId].length > _to);
 		bytes32[] memory _lotIds = new bytes32[](_to.sub(_from).add(1));
 		for (uint256 i = _from; i <= _to; i++) {

@@ -37,7 +37,7 @@ contract TAOCurrency is TheAO {
 	 *
 	 * Initializes contract with initial supply TAOCurrency to the creator of the contract
 	 */
-	constructor (string _name, string _symbol, address _nameTAOPositionAddress) public {
+	constructor (string memory _name, string memory _symbol, address _nameTAOPositionAddress) public {
 		name = _name;		// Set the name for display purposes
 		symbol = _symbol;	// Set the symbol for display purposes
 
