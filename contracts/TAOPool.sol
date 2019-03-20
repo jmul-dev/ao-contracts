@@ -78,6 +78,18 @@ contract TAOPool is TAOController, ITAOPool {
 	// Mapping from a Name ID to quantity of Pathos staked from all lots
 	mapping (address => uint256) public totalPathosStaked;
 
+	// Mapping from a Name ID to total Logos withdrawn from all lots
+	mapping (address => uint256) public totalLogosWithdrawn;
+
+	// Mapping from a Name ID to quantity of Ethos staked from all lots on a Pool
+	mapping (address => mapping (address => uint256)) public namePoolEthosStaked;
+
+	// Mapping from a Name ID to quantity of Pathos staked from all lots on a Pool
+	mapping (address => mapping (address => uint256)) public namePoolPathosStaked;
+
+	// Mapping from a Name ID to quantity of Logos withdrawn from a Pool
+	mapping (address => mapping (address => uint256)) public namePoolLogosWithdrawn;
+
 	// Event to be broadcasted to public when Pool is created
 	event CreatePool(address indexed taoId, bool ethosCapStatus, uint256 ethosCapAmount, bool status);
 
@@ -273,6 +285,7 @@ contract TAOPool is TAOController, ITAOPool {
 
 		// Update contract variables
 		totalEthosStaked[_nameId] = totalEthosStaked[_nameId].add(_quantity);
+		namePoolEthosStaked[_nameId][_taoId] = namePoolEthosStaked[_nameId][_taoId].add(_quantity);
 		contractTotalEthos = contractTotalEthos.add(_quantity);
 
 		require (_ethos.transferFrom(_nameId, _taoId, _quantity));
@@ -330,6 +343,7 @@ contract TAOPool is TAOController, ITAOPool {
 
 		// Update contract variables
 		totalPathosStaked[_nameId] = totalPathosStaked[_nameId].add(_quantity);
+		namePoolPathosStaked[_nameId][_taoId] = namePoolPathosStaked[_nameId][_taoId].add(_quantity);
 		contractTotalPathos = contractTotalPathos.add(_quantity);
 
 		require (_pathos.transferFrom(_nameId, _taoId, _quantity));
@@ -360,6 +374,8 @@ contract TAOPool is TAOController, ITAOPool {
 		// Update contract variables
 		contractTotalLogosWithdrawn = contractTotalLogosWithdrawn.add(logosAvailableToWithdraw);
 		poolTotalLogosWithdrawn[_lot.taoId] = poolTotalLogosWithdrawn[_lot.taoId].add(logosAvailableToWithdraw);
+		totalLogosWithdrawn[_lot.nameId] = totalLogosWithdrawn[_lot.nameId].add(logosAvailableToWithdraw);
+		namePoolLogosWithdrawn[_lot.nameId][_lot.taoId] = namePoolLogosWithdrawn[_lot.nameId][_lot.taoId].add(logosAvailableToWithdraw);
 
 		// Mint logos to seller
 		require (_logos.mint(_nameId, logosAvailableToWithdraw));

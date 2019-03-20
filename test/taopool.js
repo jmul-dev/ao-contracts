@@ -149,6 +149,7 @@ contract("TAOPool", function(accounts) {
 		var ownerTotalLotBefore = await taopool.ownerTotalLot(nameId);
 
 		var nameTotalEthosStakedBefore = await taopool.totalEthosStaked(nameId);
+		var namePoolEthosStakedBefore = await taopool.namePoolEthosStaked(nameId, taoId);
 		var nameEthosBalanceBefore = await ethos.balanceOf(nameId);
 		var taoEthosBalanceBefore = await ethos.balanceOf(taoId);
 
@@ -172,6 +173,7 @@ contract("TAOPool", function(accounts) {
 		var ownerTotalLotAfter = await taopool.ownerTotalLot(nameId);
 
 		var nameTotalEthosStakedAfter = await taopool.totalEthosStaked(nameId);
+		var namePoolEthosStakedAfter = await taopool.namePoolEthosStaked(nameId, taoId);
 		var nameEthosBalanceAfter = await ethos.balanceOf(nameId);
 		var taoEthosBalanceAfter = await ethos.balanceOf(taoId);
 
@@ -193,6 +195,11 @@ contract("TAOPool", function(accounts) {
 			nameTotalEthosStakedAfter.toNumber(),
 			nameTotalEthosStakedBefore.plus(quantity).toNumber(),
 			"Name has incorrect totalEthosStaked value"
+		);
+		assert.equal(
+			namePoolEthosStakedAfter.toNumber(),
+			namePoolEthosStakedBefore.plus(quantity).toNumber(),
+			"Name has incorrect namePoolEthosStaked value"
 		);
 		assert.equal(
 			nameEthosBalanceAfter.toNumber(),
@@ -219,6 +226,7 @@ contract("TAOPool", function(accounts) {
 
 		var contractTotalPathosBefore = await taopool.contractTotalPathos();
 		var nameTotalPathosStakedBefore = await taopool.totalPathosStaked(nameId);
+		var namePoolPathosStakedBefore = await taopool.namePoolPathosStaked(nameId, taoId);
 		var namePathosBalanceBefore = await pathos.balanceOf(nameId);
 		var taoPathosBalanceBefore = await pathos.balanceOf(taoId);
 		var availablePathosToStakeBefore = await taopool.availablePathosToStake(taoId);
@@ -237,6 +245,7 @@ contract("TAOPool", function(accounts) {
 
 		var contractTotalPathosAfter = await taopool.contractTotalPathos();
 		var nameTotalPathosStakedAfter = await taopool.totalPathosStaked(nameId);
+		var namePoolPathosStakedAfter = await taopool.namePoolPathosStaked(nameId, taoId);
 		var namePathosBalanceAfter = await pathos.balanceOf(nameId);
 		var taoPathosBalanceAfter = await pathos.balanceOf(taoId);
 		var availablePathosToStakeAfter = await taopool.availablePathosToStake(taoId);
@@ -254,6 +263,11 @@ contract("TAOPool", function(accounts) {
 			nameTotalPathosStakedAfter.toNumber(),
 			nameTotalPathosStakedBefore.plus(quantity).toNumber(),
 			"Name has incorrect totalPathosStaked value"
+		);
+		assert.equal(
+			namePoolPathosStakedAfter.toNumber(),
+			namePoolPathosStakedBefore.plus(quantity).toNumber(),
+			"Name has incorrect namePoolPathosStaked value"
 		);
 		assert.equal(
 			namePathosBalanceAfter.toNumber(),
@@ -293,6 +307,8 @@ contract("TAOPool", function(accounts) {
 		var contractTotalLogosWithdrawnBefore = await taopool.contractTotalLogosWithdrawn();
 		var poolTotalLogosWithdrawnBefore = await taopool.poolTotalLogosWithdrawn(taoId);
 		var lotLogosAvailableToWithdrawBefore = await taopool.lotLogosAvailableToWithdraw(lotId);
+		var nameTotalLogosWithdrawnBefore = await taopool.totalLogosWithdrawn(nameId);
+		var namePoolLogosWithdrawnBefore = await taopool.namePoolLogosWithdrawn(nameId, taoId);
 
 		var canWithdrawLogos;
 		try {
@@ -308,6 +324,8 @@ contract("TAOPool", function(accounts) {
 		var contractTotalLogosWithdrawnAfter = await taopool.contractTotalLogosWithdrawn();
 		var poolTotalLogosWithdrawnAfter = await taopool.poolTotalLogosWithdrawn(taoId);
 		var lotLogosAvailableToWithdrawAfter = await taopool.lotLogosAvailableToWithdraw(lotId);
+		var nameTotalLogosWithdrawnAfter = await taopool.totalLogosWithdrawn(nameId);
+		var namePoolLogosWithdrawnAfter = await taopool.namePoolLogosWithdrawn(nameId, taoId);
 
 		assert.equal(
 			lotAfter[6].toNumber(),
@@ -336,6 +354,17 @@ contract("TAOPool", function(accounts) {
 			"Contract has incorrect poolTotalLogosWithdrawn"
 		);
 		assert.equal(lotLogosAvailableToWithdrawAfter.toNumber(), 0, "lotLogosAvailableToWithdraw() returns incorrect value");
+
+		assert.equal(
+			nameTotalLogosWithdrawnAfter.toNumber(),
+			nameTotalLogosWithdrawnBefore.plus(lotLogosAvailableToWithdrawBefore).toNumber(),
+			"Name has incorrect totalLogosWithdrawn value"
+		);
+		assert.equal(
+			namePoolLogosWithdrawnAfter.toNumber(),
+			namePoolLogosWithdrawnBefore.plus(lotLogosAvailableToWithdrawBefore).toNumber(),
+			"Name has incorrect namePoolLogosWithdrawn value"
+		);
 	};
 
 	it("The AO - transferOwnership() - should be able to transfer ownership to a TAO", async function() {
