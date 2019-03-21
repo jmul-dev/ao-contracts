@@ -207,7 +207,7 @@ contract NameFactory is TheAO, INameFactory {
 		require (_ethAddressToNameId[msg.sender] == address(0));
 
 		// The address is the Name ID (which is also a TAO ID)
-		address nameId = AOLibrary.deployName(_name, msg.sender, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
+		address nameId = address(AOLibrary.deployName(_name, msg.sender, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress));
 
 		// Only one ETH address per Name
 		require (_nameIdToEthAddress[nameId] == address(0));
@@ -265,7 +265,7 @@ contract NameFactory is TheAO, INameFactory {
 	 * @return The typeId of the Name
 	 */
 	function getName(address _nameId) public view returns (string memory, address, string memory, string memory, string memory, bytes32, uint8) {
-		Name _name = Name(_nameId);
+		Name _name = Name(address(uint160(_nameId)));
 		return (
 			_name.name(),
 			_name.originId(),

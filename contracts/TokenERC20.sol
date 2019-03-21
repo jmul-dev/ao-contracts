@@ -40,7 +40,7 @@ contract TokenERC20 {
 	 */
 	function _transfer(address _from, address _to, uint _value) internal {
 		// Prevent transfer to 0x0 address. Use burn() instead
-		require(_to != 0x0);
+		require(_to != address(0));
 		// Check if the sender has enough
 		require(balanceOf[_from] >= _value);
 		// Check for overflows
@@ -111,7 +111,7 @@ contract TokenERC20 {
 	function approveAndCall(address _spender, uint256 _value, bytes memory _extraData) public returns (bool success) {
 		tokenRecipient spender = tokenRecipient(_spender);
 		if (approve(_spender, _value)) {
-			spender.receiveApproval(msg.sender, _value, this, _extraData);
+			spender.receiveApproval(msg.sender, _value, address(this), _extraData);
 			return true;
 		}
 	}

@@ -336,7 +336,7 @@ contract AOIon is AOIonInterface {
 	function approvePrimordialAndCall(address _spender, uint256 _value, bytes memory _extraData) public returns (bool) {
 		tokenRecipient spender = tokenRecipient(_spender);
 		if (approvePrimordial(_spender, _value)) {
-			spender.receiveApproval(msg.sender, _value, this, _extraData);
+			spender.receiveApproval(msg.sender, _value, address(this), _extraData);
 			return true;
 		}
 	}
@@ -602,8 +602,8 @@ contract AOIon is AOIonInterface {
 	function _mintPrimordial(address target, uint256 mintedAmount) internal {
 		primordialBalanceOf[target] = primordialBalanceOf[target].add(mintedAmount);
 		primordialTotalSupply = primordialTotalSupply.add(mintedAmount);
-		emit PrimordialTransfer(0, this, mintedAmount);
-		emit PrimordialTransfer(this, target, mintedAmount);
+		emit PrimordialTransfer(address(0), address(this), mintedAmount);
+		emit PrimordialTransfer(address(this), target, mintedAmount);
 	}
 
 	/**

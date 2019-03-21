@@ -195,7 +195,7 @@ contract NameTAOVault is TheAO {
 		if (_nameFactory.nameIdToEthAddress(_to) != address(0)) {
 			require (!_nameAccountRecovery.isCompromised(_to));
 		}
-		require (TAO(_from).transferEth(_to, _amount));
+		require (TAO(address(uint160(_from))).transferEth(address(uint160(_to)), _amount));
 		emit TransferEth(_nameFactory.ethAddressToNameId(msg.sender), _from, _to, _amount);
 	}
 
@@ -217,7 +217,7 @@ contract NameTAOVault is TheAO {
 		if (_nameFactory.nameIdToEthAddress(_to) != address(0)) {
 			require (!_nameAccountRecovery.isCompromised(_to));
 		}
-		require (TAO(_from).transferERC20(_erc20TokenAddress, _to, _amount));
+		require (TAO(address(uint160(_from))).transferERC20(_erc20TokenAddress, address(uint160(_to)), _amount));
 		emit TransferERC20(_nameFactory.ethAddressToNameId(msg.sender), _from, _to, _amount, _erc20TokenAddress, _erc20.name(), _erc20.symbol());
 	}
 

@@ -193,11 +193,11 @@ contract TAOFactory is TAOController, ITAOFactory {
 	 * @return The typeId of the TAO
 	 */
 	function getTAO(address _taoId) public view returns (string memory, address, string memory, string memory, string memory, string memory, bytes32, uint8) {
-		TAO _tao = TAO(_taoId);
+		TAO _tao = TAO(address(uint160(_taoId)));
 		return (
 			_tao.name(),
 			_tao.originId(),
-			Name(_tao.originId()).name(),
+			Name(address(uint160(_tao.originId()))).name(),
 			_tao.datHash(),
 			_tao.database(),
 			_tao.keyValue(),
@@ -259,7 +259,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 	) public isTAO(_getTAOIdByName(_name)) view returns (bool, string memory, uint256) {
 		address _signatureAddress = _getValidateSignatureAddress(_data, _nonce, _signatureV, _signatureR, _signatureS);
 		if (_isTAOSignatureAddressValid(_validateAddress, _signatureAddress, _getTAOIdByName(_name), _nonce)) {
-			return (true, Name(_nameFactory.ethAddressToNameId(_signatureAddress)).name(), _nameTAOPosition.determinePosition(_signatureAddress, _getTAOIdByName(_name)));
+			return (true, Name(address(uint160(_nameFactory.ethAddressToNameId(_signatureAddress)))).name(), _nameTAOPosition.determinePosition(_signatureAddress, _getTAOIdByName(_name)));
 		} else {
 			return (false, "", 0);
 		}
@@ -291,13 +291,13 @@ contract TAOFactory is TAOController, ITAOFactory {
 		uint256 _ethosCapAmount
 	) internal returns (bool) {
 		// Create the TAO
-		address taoId = AOLibrary.deployTAO(_name, _nameId, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress);
+		address taoId = address(AOLibrary.deployTAO(_name, _nameId, _datHash, _database, _keyValue, _contentId, nameTAOVaultAddress));
 
 		// Increment the nonce
 		_nonces[taoId]++;
 
 		// Store the name lookup information
-		require (_nameTAOLookup.initialize(_name, taoId, 0, TAO(_parentId).name(), _parentId, uint256(TAO(_parentId).typeId())));
+		require (_nameTAOLookup.initialize(_name, taoId, 0, TAO(address(uint160(_parentId))).name(), _parentId, uint256(TAO(address(uint160(_parentId))).typeId())));
 
 		// Store the Advocate/Listener/Speaker information
 		require (_nameTAOPosition.initialize(taoId, _nameId, _nameId, _nameId));
@@ -310,7 +310,7 @@ contract TAOFactory is TAOController, ITAOFactory {
 
 		taos.push(taoId);
 
-		emit CreateTAO(_nameId, taoId, taos.length.sub(1), _name, _parentId, TAO(_parentId).typeId());
+		emit CreateTAO(_nameId, taoId, taos.length.sub(1), _name, _parentId, TAO(address(uint160(_parentId))).typeId());
 
 		if (AOLibrary.isTAO(_parentId)) {
 			require (_taoAncestry.addChild(_parentId, taoId));

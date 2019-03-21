@@ -138,7 +138,7 @@ contract AOIonInterface is TheAO {
 	 * @param _recipient The recipient address
 	 * @param _amount The amount to transfer
 	 */
-	function transferEth(address _recipient, uint256 _amount) public onlyTheAO {
+	function transferEth(address payable _recipient, uint256 _amount) public onlyTheAO {
 		require (_recipient != address(0));
 		_recipient.transfer(_amount);
 	}
@@ -226,7 +226,7 @@ contract AOIonInterface is TheAO {
 	function mintEscrow(address target, uint256 mintedAmount) public inWhitelist returns (bool) {
 		escrowedBalance[target] = escrowedBalance[target].add(mintedAmount);
 		totalSupply = totalSupply.add(mintedAmount);
-		emit Escrow(this, target, mintedAmount);
+		emit Escrow(address(this), target, mintedAmount);
 		return true;
 	}
 
@@ -348,7 +348,7 @@ contract AOIonInterface is TheAO {
 	function approveAndCall(address _spender, uint256 _value, bytes memory _extraData) public returns (bool success) {
 		ionRecipient spender = ionRecipient(_spender);
 		if (approve(_spender, _value)) {
-			spender.receiveApproval(msg.sender, _value, this, _extraData);
+			spender.receiveApproval(msg.sender, _value, address(this), _extraData);
 			return true;
 		}
 	}
@@ -392,7 +392,7 @@ contract AOIonInterface is TheAO {
 	function buy() public payable {
 		require (buyPrice > 0);
 		uint256 amount = msg.value.div(buyPrice);
-		_transfer(this, msg.sender, amount);
+		_transfer(address(this), msg.sender, amount);
 	}
 
 	/**
@@ -401,9 +401,9 @@ contract AOIonInterface is TheAO {
 	 */
 	function sell(uint256 amount) public {
 		require (sellPrice > 0);
-		address myAddress = this;
+		address myAddress = address(this);
 		require (myAddress.balance >= amount.mul(sellPrice));
-		_transfer(msg.sender, this, amount);
+		_transfer(msg.sender, address(this), amount);
 		msg.sender.transfer(amount.mul(sellPrice));
 	}
 
@@ -435,7 +435,7 @@ contract AOIonInterface is TheAO {
 	function _mint(address target, uint256 mintedAmount) internal {
 		balanceOf[target] = balanceOf[target].add(mintedAmount);
 		totalSupply = totalSupply.add(mintedAmount);
-		emit Transfer(0, this, mintedAmount);
-		emit Transfer(this, target, mintedAmount);
+		emit Transfer(address(0), address(this), mintedAmount);
+		emit Transfer(address(this), target, mintedAmount);
 	}
 }

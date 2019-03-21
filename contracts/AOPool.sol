@@ -252,7 +252,7 @@ contract AOPool is TheAO {
 	 * @param _recipient The recipient address
 	 * @param _amount The amount to transfer
 	 */
-	function transferEth(address _recipient, uint256 _amount) public onlyTheAO {
+	function transferEth(address payable _recipient, uint256 _amount) public onlyTheAO {
 		_recipient.transfer(_amount);
 	}
 
@@ -408,7 +408,7 @@ contract AOPool is TheAO {
 		contractTotalQuantity = contractTotalQuantity.add(_quantity);
 		contractTotalSell = contractTotalSell.add(_quantity);
 
-		require (_aoIon.whitelistTransferFrom(msg.sender, this, _quantity));
+		require (_aoIon.whitelistTransferFrom(msg.sender, address(this), _quantity));
 
 		emit LotCreation(_lot.poolId, _lot.lotId, _lot.seller, _lot.lotQuantity, _pool.price, _lot.poolPreSellSnapshot, _lot.poolSellLotSnapshot, _lot.lotValueInCounterAsset, _pool.erc20CounterAsset, _lot.timestamp);
 	}
@@ -461,7 +461,7 @@ contract AOPool is TheAO {
 
 		totalBought[msg.sender] = totalBought[msg.sender].add(_quantity);
 
-		require (_aoIon.whitelistTransferFrom(this, msg.sender, _quantity));
+		require (_aoIon.whitelistTransferFrom(address(this), msg.sender, _quantity));
 
 		emit BuyWithEth(_poolId, msg.sender, _quantity, _price, poolTotalBuy[_poolId]);
 	}
@@ -491,7 +491,8 @@ contract AOPool is TheAO {
 		totalEthereumWithdrawn[msg.sender] = totalEthereumWithdrawn[msg.sender].add(ethAvailableToWithdraw);
 
 		// Send eth to seller
-		_lot.seller.transfer(ethAvailableToWithdraw);
+		address(uint160(_lot.seller)).transfer(ethAvailableToWithdraw);
+		//_lot.seller.transfer(ethAvailableToWithdraw);
 
 		emit WithdrawEth(_lot.seller, _lot.lotId, _lot.poolId, ethAvailableToWithdraw, _lot.lotValueInCounterAsset, _lot.counterAssetWithdrawn);
 	}
@@ -596,7 +597,7 @@ contract AOPool is TheAO {
 
 		assert (_lot.ionWithdrawn.add(_lot.lotValueInCounterAsset.div(_pool.price)).add(_lot.counterAssetWithdrawn.div(_pool.price)) == _lot.lotQuantity);
 
-		require (_aoIon.whitelistTransferFrom(this, msg.sender, _quantity));
+		require (_aoIon.whitelistTransferFrom(address(this), msg.sender, _quantity));
 
 		emit WithdrawIon(_lot.seller, _lot.lotId, _lot.poolId, _quantity, _lot.lotValueInCounterAsset, _lot.ionWithdrawn);
 	}

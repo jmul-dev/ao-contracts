@@ -161,7 +161,7 @@ contract TAOCurrency is TheAO {
 	function _mint(address target, uint256 mintedAmount) internal {
 		balanceOf[target] = balanceOf[target].add(mintedAmount);
 		totalSupply = totalSupply.add(mintedAmount);
-		emit Transfer(0, this, mintedAmount);
-		emit Transfer(this, target, mintedAmount);
+		emit Transfer(address(0), address(this), mintedAmount);
+		emit Transfer(address(this), target, mintedAmount);
 	}
 }

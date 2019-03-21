@@ -377,11 +377,11 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		require (isExist(_id));
 		PositionDetail memory _positionDetail = positionDetails[_id];
 		return (
-			TAO(_positionDetail.advocateId).name(),
+			TAO(address(uint160(_positionDetail.advocateId))).name(),
 			_positionDetail.advocateId,
-			TAO(_positionDetail.listenerId).name(),
+			TAO(address(uint160(_positionDetail.listenerId))).name(),
 			_positionDetail.listenerId,
-			TAO(_positionDetail.speakerId).name(),
+			TAO(address(uint160(_positionDetail.speakerId))).name(),
 			_positionDetail.speakerId
 		);
 	}

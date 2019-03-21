@@ -1,267 +1,289 @@
 {
-	"contractName": "INameAccountRecovery",
-	"abi": [
-		{
-			"constant": true,
-			"inputs": [
-				{
-					"name": "_id",
-					"type": "address"
-				}
-			],
-			"name": "isCompromised",
-			"outputs": [
-				{
-					"name": "",
-					"type": "bool"
-				}
-			],
-			"payable": false,
-			"stateMutability": "view",
-			"type": "function"
-		}
-	],
-	"bytecode": "0x",
-	"deployedBytecode": "0x",
-	"sourceMap": "",
-	"deployedSourceMap": "",
-	"source": "pragma solidity ^0.4.24;\n\ninterface INameAccountRecovery {\n\tfunction isCompromised(address _id) external view returns (bool);\n}\n",
-	"sourcePath": "/data/jmulyono/ao-contracts/contracts/INameAccountRecovery.sol",
-	"ast": {
-		"absolutePath": "/data/jmulyono/ao-contracts/contracts/INameAccountRecovery.sol",
-		"exportedSymbols": {
-			"INameAccountRecovery": [21831]
-		},
-		"id": 21832,
-		"nodeType": "SourceUnit",
-		"nodes": [
-			{
-				"id": 21823,
-				"literals": ["solidity", "^", "0.4", ".24"],
-				"nodeType": "PragmaDirective",
-				"src": "0:24:49"
-			},
-			{
-				"baseContracts": [],
-				"contractDependencies": [],
-				"contractKind": "interface",
-				"documentation": null,
-				"fullyImplemented": false,
-				"id": 21831,
-				"linearizedBaseContracts": [21831],
-				"name": "INameAccountRecovery",
-				"nodeType": "ContractDefinition",
-				"nodes": [
-					{
-						"body": null,
-						"documentation": null,
-						"id": 21830,
-						"implemented": false,
-						"isConstructor": false,
-						"isDeclaredConst": true,
-						"modifiers": [],
-						"name": "isCompromised",
-						"nodeType": "FunctionDefinition",
-						"parameters": {
-							"id": 21826,
-							"nodeType": "ParameterList",
-							"parameters": [
-								{
-									"constant": false,
-									"id": 21825,
-									"name": "_id",
-									"nodeType": "VariableDeclaration",
-									"scope": 21830,
-									"src": "83:11:49",
-									"stateVariable": false,
-									"storageLocation": "default",
-									"typeDescriptions": {
-										"typeIdentifier": "t_address",
-										"typeString": "address"
-									},
-									"typeName": {
-										"id": 21824,
-										"name": "address",
-										"nodeType": "ElementaryTypeName",
-										"src": "83:7:49",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									},
-									"value": null,
-									"visibility": "internal"
-								}
-							],
-							"src": "82:13:49"
-						},
-						"payable": false,
-						"returnParameters": {
-							"id": 21829,
-							"nodeType": "ParameterList",
-							"parameters": [
-								{
-									"constant": false,
-									"id": 21828,
-									"name": "",
-									"nodeType": "VariableDeclaration",
-									"scope": 21830,
-									"src": "119:4:49",
-									"stateVariable": false,
-									"storageLocation": "default",
-									"typeDescriptions": {
-										"typeIdentifier": "t_bool",
-										"typeString": "bool"
-									},
-									"typeName": {
-										"id": 21827,
-										"name": "bool",
-										"nodeType": "ElementaryTypeName",
-										"src": "119:4:49",
-										"typeDescriptions": {
-											"typeIdentifier": "t_bool",
-											"typeString": "bool"
-										}
-									},
-									"value": null,
-									"visibility": "internal"
-								}
-							],
-							"src": "118:6:49"
-						},
-						"scope": 21831,
-						"src": "60:65:49",
-						"stateMutability": "view",
-						"superFunction": null,
-						"visibility": "external"
-					}
-				],
-				"scope": 21832,
-				"src": "26:101:49"
-			}
-		],
-		"src": "0:128:49"
-	},
-	"legacyAST": {
-		"absolutePath": "/data/jmulyono/ao-contracts/contracts/INameAccountRecovery.sol",
-		"exportedSymbols": {
-			"INameAccountRecovery": [21831]
-		},
-		"id": 21832,
-		"nodeType": "SourceUnit",
-		"nodes": [
-			{
-				"id": 21823,
-				"literals": ["solidity", "^", "0.4", ".24"],
-				"nodeType": "PragmaDirective",
-				"src": "0:24:49"
-			},
-			{
-				"baseContracts": [],
-				"contractDependencies": [],
-				"contractKind": "interface",
-				"documentation": null,
-				"fullyImplemented": false,
-				"id": 21831,
-				"linearizedBaseContracts": [21831],
-				"name": "INameAccountRecovery",
-				"nodeType": "ContractDefinition",
-				"nodes": [
-					{
-						"body": null,
-						"documentation": null,
-						"id": 21830,
-						"implemented": false,
-						"isConstructor": false,
-						"isDeclaredConst": true,
-						"modifiers": [],
-						"name": "isCompromised",
-						"nodeType": "FunctionDefinition",
-						"parameters": {
-							"id": 21826,
-							"nodeType": "ParameterList",
-							"parameters": [
-								{
-									"constant": false,
-									"id": 21825,
-									"name": "_id",
-									"nodeType": "VariableDeclaration",
-									"scope": 21830,
-									"src": "83:11:49",
-									"stateVariable": false,
-									"storageLocation": "default",
-									"typeDescriptions": {
-										"typeIdentifier": "t_address",
-										"typeString": "address"
-									},
-									"typeName": {
-										"id": 21824,
-										"name": "address",
-										"nodeType": "ElementaryTypeName",
-										"src": "83:7:49",
-										"typeDescriptions": {
-											"typeIdentifier": "t_address",
-											"typeString": "address"
-										}
-									},
-									"value": null,
-									"visibility": "internal"
-								}
-							],
-							"src": "82:13:49"
-						},
-						"payable": false,
-						"returnParameters": {
-							"id": 21829,
-							"nodeType": "ParameterList",
-							"parameters": [
-								{
-									"constant": false,
-									"id": 21828,
-									"name": "",
-									"nodeType": "VariableDeclaration",
-									"scope": 21830,
-									"src": "119:4:49",
-									"stateVariable": false,
-									"storageLocation": "default",
-									"typeDescriptions": {
-										"typeIdentifier": "t_bool",
-										"typeString": "bool"
-									},
-									"typeName": {
-										"id": 21827,
-										"name": "bool",
-										"nodeType": "ElementaryTypeName",
-										"src": "119:4:49",
-										"typeDescriptions": {
-											"typeIdentifier": "t_bool",
-											"typeString": "bool"
-										}
-									},
-									"value": null,
-									"visibility": "internal"
-								}
-							],
-							"src": "118:6:49"
-						},
-						"scope": 21831,
-						"src": "60:65:49",
-						"stateMutability": "view",
-						"superFunction": null,
-						"visibility": "external"
-					}
-				],
-				"scope": 21832,
-				"src": "26:101:49"
-			}
-		],
-		"src": "0:128:49"
-	},
-	"compiler": {
-		"name": "solc",
-		"version": "0.4.24+commit.e67f0147.Emscripten.clang"
-	},
-	"networks": {},
-	"schemaVersion": "2.0.1",
-	"updatedAt": "2019-02-22T06:38:41.840Z"
+  "contractName": "INameAccountRecovery",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_id",
+          "type": "address"
+        }
+      ],
+      "name": "isCompromised",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity ^0.5.4;\n\ninterface INameAccountRecovery {\n\tfunction isCompromised(address _id) external view returns (bool);\n}\n",
+  "sourcePath": "/usr/local/ao-contracts/contracts/INameAccountRecovery.sol",
+  "ast": {
+    "absolutePath": "/usr/local/ao-contracts/contracts/INameAccountRecovery.sol",
+    "exportedSymbols": {
+      "INameAccountRecovery": [
+        21877
+      ]
+    },
+    "id": 21878,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 21869,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".4"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:49"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 21877,
+        "linearizedBaseContracts": [
+          21877
+        ],
+        "name": "INameAccountRecovery",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 21876,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isCompromised",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 21872,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 21871,
+                  "name": "_id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 21876,
+                  "src": "82:11:49",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 21870,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "82:7:49",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "81:13:49"
+            },
+            "returnParameters": {
+              "id": 21875,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 21874,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 21876,
+                  "src": "118:4:49",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 21873,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "118:4:49",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "117:6:49"
+            },
+            "scope": 21877,
+            "src": "59:65:49",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 21878,
+        "src": "25:101:49"
+      }
+    ],
+    "src": "0:127:49"
+  },
+  "legacyAST": {
+    "absolutePath": "/usr/local/ao-contracts/contracts/INameAccountRecovery.sol",
+    "exportedSymbols": {
+      "INameAccountRecovery": [
+        21877
+      ]
+    },
+    "id": 21878,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 21869,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".4"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:49"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 21877,
+        "linearizedBaseContracts": [
+          21877
+        ],
+        "name": "INameAccountRecovery",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 21876,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isCompromised",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 21872,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 21871,
+                  "name": "_id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 21876,
+                  "src": "82:11:49",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 21870,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "82:7:49",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "81:13:49"
+            },
+            "returnParameters": {
+              "id": 21875,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 21874,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 21876,
+                  "src": "118:4:49",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 21873,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "118:4:49",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "117:6:49"
+            },
+            "scope": 21877,
+            "src": "59:65:49",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 21878,
+        "src": "25:101:49"
+      }
+    ],
+    "src": "0:127:49"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.4+commit.9549d8ff.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.0.2",
+  "updatedAt": "2019-03-21T02:41:20.931Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
 }

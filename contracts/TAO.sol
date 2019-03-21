@@ -69,7 +69,7 @@ contract TAO {
 	 * @param _amount The amount to transfer
 	 * @return true on success
 	 */
-	function transferEth(address _recipient, uint256 _amount) public onlyVault returns (bool) {
+	function transferEth(address payable _recipient, uint256 _amount) public onlyVault returns (bool) {
 		_recipient.transfer(_amount);
 		return true;
 	}
