@@ -1616,14 +1616,14 @@ module.exports = function(deployer, network, accounts) {
 			// Test staking Ethos/Pathos and withdraw Logos
 			var result = await taopool.stakeEthos(primordialTAOId, 5 * 10 ** 4, { from: primordialAccount });
 			var stakeEthosEvent = result.logs[0];
-			var lotId = stakeEthosEvent.args.lotId;
+			var ethosLotId = stakeEthosEvent.args.ethosLotId;
 
 			await taopool.stakeEthos(primordialTAOId, 2 * 10 ** 4, { from: settingAccount });
 
 			await taopool.stakePathos(primordialTAOId, 2 * 10 ** 3, { from: primordialAccount });
 			await taopool.stakePathos(primordialTAOId, 567, { from: settingAccount });
 
-			await taopool.withdrawLogos(lotId, { from: primordialAccount });
+			await taopool.withdrawLogos(ethosLotId, { from: primordialAccount });
 
 			await taopool.stakePathos(primordialTAOId, 8 * 10 ** 3, { from: settingAccount });
 
