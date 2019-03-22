@@ -70,7 +70,7 @@ contract AOPool is TheAO {
 		uint256 lotQuantity;				// Amount of AO being added to the Pool from this Lot
 		uint256 poolId;						// Identifier for the Pool this Lot is adding to
 		uint256 poolPreSellSnapshot;		// Amount of contributed to the Pool prior to this Lot Number
-		uint256 poolSellLotSnapshot;		// poolPreSellSnapshot + lotQuantity - ionWithdrawn
+		uint256 poolSellLotSnapshot;		// poolPreSellSnapshot + lotQuantity
 		uint256 lotValueInCounterAsset;		// Amount of AO x Pool Price
 		uint256 counterAssetWithdrawn;		// Amount of Counter-Asset withdrawn from this Lot
 		uint256 ionWithdrawn;				// Amount of AO withdrawn from this Lot
@@ -475,7 +475,7 @@ contract AOPool is TheAO {
 		require (_lot.seller == msg.sender && _lot.lotValueInCounterAsset > 0);
 		(uint256 soldQuantity, uint256 ethAvailableToWithdraw,) = lotEthAvailableToWithdraw(_lotId);
 
-		require (ethAvailableToWithdraw > 0 && ethAvailableToWithdraw <= _lot.lotValueInCounterAsset && ethAvailableToWithdraw <= poolEthereumBalance[_lot.poolId] && ethAvailableToWithdraw <= contractEthereumBalance);
+		require (ethAvailableToWithdraw > 0 && ethAvailableToWithdraw <= _lot.lotValueInCounterAsset && ethAvailableToWithdraw <= poolEthereumBalance[_lot.poolId] && ethAvailableToWithdraw <= contractEthereumBalance && soldQuantity <= _lot.lotQuantity.sub(_lot.ionWithdrawn));
 
 		// Update lot variables
 		_lot.counterAssetWithdrawn = _lot.counterAssetWithdrawn.add(ethAvailableToWithdraw);
@@ -519,8 +519,14 @@ contract AOPool is TheAO {
 		if (poolTotalBuy[_lot.poolId] > _lot.poolPreSellSnapshot.sub(lotAdjustment) && _lot.lotValueInCounterAsset > 0) {
 			soldQuantity = (poolTotalBuy[_lot.poolId] >= _lot.poolSellLotSnapshot.sub(lotAdjustment)) ? _lot.lotQuantity : poolTotalBuy[_lot.poolId].sub(_lot.poolPreSellSnapshot.sub(lotAdjustment));
 			if (soldQuantity > 0) {
-				soldQuantity = soldQuantity.sub(_lot.counterAssetWithdrawn.div(_pool.price)).sub(_lot.ionWithdrawn);
+				if (soldQuantity > _lot.ionWithdrawn) {
+					soldQuantity = soldQuantity.sub(_lot.ionWithdrawn);
+				}
+				soldQuantity = soldQuantity.sub(_lot.counterAssetWithdrawn.div(_pool.price));
 				ethAvailableToWithdraw = soldQuantity.mul(_pool.price);
+				assert (soldQuantity <= _lot.lotValueInCounterAsset.div(_pool.price));
+				assert (soldQuantity.add(_lot.ionWithdrawn) <= _lot.lotQuantity);
+				assert (ethAvailableToWithdraw <= _lot.lotValueInCounterAsset);
 			}
 		}
 		return (soldQuantity, ethAvailableToWithdraw, _lot.counterAssetWithdrawn);
@@ -541,7 +547,6 @@ contract AOPool is TheAO {
 		// Update lot variables
 		_lot.ionWithdrawn = _lot.ionWithdrawn.add(_quantity);
 		_lot.lotValueInCounterAsset = _lot.lotValueInCounterAsset.sub(_quantity.mul(_pool.price));
-		_lot.poolSellLotSnapshot = _lot.poolSellLotSnapshot.sub(_quantity);
 		poolLotIonWithdrawn[_lot.poolId][poolLotInternalIdLookup[_lot.poolId][_lotId]] = poolLotIonWithdrawn[_lot.poolId][poolLotInternalIdLookup[_lot.poolId][_lotId]].add(_quantity);
 
 		// Store Pool's millionth Lot snapshot

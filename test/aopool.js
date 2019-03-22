@@ -447,7 +447,7 @@ contract("AOPool", function(accounts) {
 		var accountNetworkBalanceAfter = await aoion.balanceOf(account);
 		var poolNetworkBalanceAfter = await aoion.balanceOf(aopool.address);
 
-		assert.equal(lotAfter[5].toString(), lotBefore[5].minus(quantity).toString(), "Lot has incorrect poolSellLotSnapshot");
+		assert.equal(lotAfter[5].toString(), lotBefore[5].toString(), "Lot has incorrect poolSellLotSnapshot");
 		assert.equal(
 			lotAfter[6].toString(),
 			lotBefore[6].minus(new BigNumber(quantity).times(price)).toString(),

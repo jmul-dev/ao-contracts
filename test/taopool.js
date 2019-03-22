@@ -32,11 +32,11 @@ contract("TAOPool", function(accounts) {
 		taopool,
 		pathos,
 		ethos,
-		lotId1,
-		lotId2,
-		lotId4,
-		lotId5,
-		lotId6,
+		ethosLotId1,
+		ethosLotId2,
+		ethosLotId4,
+		ethosLotId5,
+		ethosLotId6,
 		nameaccountrecovery,
 		aosetting,
 		accountRecoveryLockDuration;
@@ -52,9 +52,9 @@ contract("TAOPool", function(accounts) {
 	var whitelistedAddress = accounts[8];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 
-	var nameId4Lots = [];
-	var nameId5Lots = [];
-	var nameId6Lots = [];
+	var nameId4EthosLots = [];
+	var nameId5EthosLots = [];
+	var nameId6EthosLots = [];
 
 	before(async function() {
 		namefactory = await NameFactory.deployed();
@@ -140,37 +140,37 @@ contract("TAOPool", function(accounts) {
 		await nametaoposition.setListener(nameId4, nameId3, { from: account4 });
 	});
 
-	var stakeEthos = async function(taoId, quantity, account, nameLots) {
+	var stakeEthos = async function(taoId, quantity, account, nameEthosLots) {
 		var nameId = await namefactory.ethAddressToNameId(account);
-		var contractTotalLotBefore = await taopool.contractTotalLot();
+		var contractTotalEthosLotBefore = await taopool.contractTotalEthosLot();
 		var contractTotalEthosBefore = await taopool.contractTotalEthos();
 
-		var poolTotalLotBefore = await taopool.poolTotalLot(taoId);
-		var ownerTotalLotBefore = await taopool.ownerTotalLot(nameId);
+		var poolTotalEthosLotBefore = await taopool.poolTotalEthosLot(taoId);
+		var ownerTotalEthosLotBefore = await taopool.ownerTotalEthosLot(nameId);
 
 		var nameTotalEthosStakedBefore = await taopool.totalEthosStaked(nameId);
 		var namePoolEthosStakedBefore = await taopool.namePoolEthosStaked(nameId, taoId);
 		var nameEthosBalanceBefore = await ethos.balanceOf(nameId);
 		var taoEthosBalanceBefore = await ethos.balanceOf(taoId);
 
-		var canStakeEthos, stakeEthosEvent, lotId;
+		var canStakeEthos, stakeEthosEvent, ethosLotId;
 		try {
 			var result = await taopool.stakeEthos(taoId, quantity, { from: account });
 			stakeEthosEvent = result.logs[0];
-			lotId = stakeEthosEvent.args.lotId;
+			ethosLotId = stakeEthosEvent.args.ethosLotId;
 			canStakeEthos = true;
 		} catch (e) {
 			stakeEthosEvent = null;
-			lotId = null;
+			ethosLotId = null;
 			canStakeEthos = false;
 		}
 		assert.equal(canStakeEthos, true, "Name can't stake Ethos on a TAO");
 
-		var contractTotalLotAfter = await taopool.contractTotalLot();
+		var contractTotalEthosLotAfter = await taopool.contractTotalEthosLot();
 		var contractTotalEthosAfter = await taopool.contractTotalEthos();
 
-		var poolTotalLotAfter = await taopool.poolTotalLot(taoId);
-		var ownerTotalLotAfter = await taopool.ownerTotalLot(nameId);
+		var poolTotalEthosLotAfter = await taopool.poolTotalEthosLot(taoId);
+		var ownerTotalEthosLotAfter = await taopool.ownerTotalEthosLot(nameId);
 
 		var nameTotalEthosStakedAfter = await taopool.totalEthosStaked(nameId);
 		var namePoolEthosStakedAfter = await taopool.namePoolEthosStaked(nameId, taoId);
@@ -178,9 +178,9 @@ contract("TAOPool", function(accounts) {
 		var taoEthosBalanceAfter = await ethos.balanceOf(taoId);
 
 		assert.equal(
-			contractTotalLotAfter.toNumber(),
-			contractTotalLotBefore.plus(1).toNumber(),
-			"Contract has incorrect contractTotalLot"
+			contractTotalEthosLotAfter.toNumber(),
+			contractTotalEthosLotBefore.plus(1).toNumber(),
+			"Contract has incorrect contractTotalEthosLot"
 		);
 		assert.equal(
 			contractTotalEthosAfter.toNumber(),
@@ -188,8 +188,8 @@ contract("TAOPool", function(accounts) {
 			"Contract has incorrect contractTotalEthos"
 		);
 
-		assert.equal(poolTotalLotAfter.toNumber(), poolTotalLotBefore.plus(1).toNumber(), "Pool has incorrect total Lot");
-		assert.equal(ownerTotalLotAfter.toNumber(), ownerTotalLotBefore.plus(1).toNumber(), "Name has incorrect total Lot");
+		assert.equal(poolTotalEthosLotAfter.toNumber(), poolTotalEthosLotBefore.plus(1).toNumber(), "Pool has incorrect total Ethos Lot");
+		assert.equal(ownerTotalEthosLotAfter.toNumber(), ownerTotalEthosLotBefore.plus(1).toNumber(), "Name has incorrect total Ethos Lot");
 
 		assert.equal(
 			nameTotalEthosStakedAfter.toNumber(),
@@ -208,22 +208,27 @@ contract("TAOPool", function(accounts) {
 		);
 		assert.equal(taoEthosBalanceAfter.toNumber(), taoEthosBalanceBefore.plus(quantity).toNumber(), "TAO has incorrect Ethos balance");
 
-		var lot = await taopool.lots(lotId);
-		assert.equal(lot[0], lotId, "Lot has incorrect lotId");
-		assert.equal(lot[1], nameId, "Lot has incorrect nameId (seller)");
-		assert.equal(lot[2].toNumber(), quantity, "Lot has incorrect lotQuantity");
-		assert.equal(lot[3], taoId, "Lot has incorrect taoId");
-		assert.equal(lot[4].toNumber(), taoEthosBalanceBefore.toNumber(), "Lot has incorrect poolPreStakeSnapshot");
-		assert.equal(lot[5].toNumber(), taoEthosBalanceBefore.plus(quantity).toNumber(), "Lot has incorrect poolStakeLotSnapshot");
-		assert.equal(lot[6].toNumber(), quantity, "Lot has incorrect lotValueInLogos");
-		assert.equal(lot[7].toNumber(), 0, "Lot has incorrect logosWithdrawn");
-		nameLots.push(lotId);
-		return lotId;
+		var ethosLot = await taopool.ethosLots(ethosLotId);
+		assert.equal(ethosLot[0], ethosLotId, "EthosLot has incorrect ethosLotId");
+		assert.equal(ethosLot[1], nameId, "EthosLot has incorrect nameId (seller)");
+		assert.equal(ethosLot[2].toNumber(), quantity, "EthosLot has incorrect lotQuantity");
+		assert.equal(ethosLot[3], taoId, "EthosLot has incorrect taoId");
+		assert.equal(ethosLot[4].toNumber(), taoEthosBalanceBefore.toNumber(), "EthosLot has incorrect poolPreStakeSnapshot");
+		assert.equal(
+			ethosLot[5].toNumber(),
+			taoEthosBalanceBefore.plus(quantity).toNumber(),
+			"EthosLot has incorrect poolStakeLotSnapshot"
+		);
+		assert.equal(ethosLot[6].toNumber(), quantity, "EthosLot has incorrect lotValueInLogos");
+		assert.equal(ethosLot[7].toNumber(), 0, "EthosLot has incorrect logosWithdrawn");
+		nameEthosLots.push(ethosLotId);
+		return ethosLotId;
 	};
 
 	var stakePathos = async function(taoId, quantity, advocateNameId, account) {
 		var nameId = await namefactory.ethAddressToNameId(account);
 
+		var contractTotalPathosStakeBefore = await taopool.contractTotalPathosStake();
 		var contractTotalPathosBefore = await taopool.contractTotalPathos();
 		var nameTotalPathosStakedBefore = await taopool.totalPathosStaked(nameId);
 		var namePoolPathosStakedBefore = await taopool.namePoolPathosStaked(nameId, taoId);
@@ -243,6 +248,7 @@ contract("TAOPool", function(accounts) {
 		}
 		assert.equal(canStakePathos, true, "Name can't stake Pathos on a TAO");
 
+		var contractTotalPathosStakeAfter = await taopool.contractTotalPathosStake();
 		var contractTotalPathosAfter = await taopool.contractTotalPathos();
 		var nameTotalPathosStakedAfter = await taopool.totalPathosStaked(nameId);
 		var namePoolPathosStakedAfter = await taopool.namePoolPathosStaked(nameId, taoId);
@@ -252,6 +258,12 @@ contract("TAOPool", function(accounts) {
 
 		var advocatedTAOLogosAfter = await logos.advocatedTAOLogos(advocateNameId, taoId);
 		var totalAdvocatedTAOLogosAfter = await logos.totalAdvocatedTAOLogos(advocateNameId);
+
+		assert.equal(
+			contractTotalPathosStakeAfter.toNumber(),
+			contractTotalPathosStakeBefore.plus(1).toNumber(),
+			"Contract has incorrect contractTotalPathosStake"
+		);
 
 		assert.equal(
 			contractTotalPathosAfter.toNumber(),
@@ -297,45 +309,45 @@ contract("TAOPool", function(accounts) {
 		);
 	};
 
-	var withdrawLogos = async function(lotId, account) {
+	var withdrawLogos = async function(ethosLotId, account) {
 		var nameId = await namefactory.ethAddressToNameId(account);
 
-		var lotBefore = await taopool.lots(lotId);
-		var taoId = lotBefore[3];
+		var ethosLotBefore = await taopool.ethosLots(ethosLotId);
+		var taoId = ethosLotBefore[3];
 
 		var nameLogosBefore = await logos.balanceOf(nameId);
 		var contractTotalLogosWithdrawnBefore = await taopool.contractTotalLogosWithdrawn();
 		var poolTotalLogosWithdrawnBefore = await taopool.poolTotalLogosWithdrawn(taoId);
-		var lotLogosAvailableToWithdrawBefore = await taopool.lotLogosAvailableToWithdraw(lotId);
+		var lotLogosAvailableToWithdrawBefore = await taopool.lotLogosAvailableToWithdraw(ethosLotId);
 		var nameTotalLogosWithdrawnBefore = await taopool.totalLogosWithdrawn(nameId);
 		var namePoolLogosWithdrawnBefore = await taopool.namePoolLogosWithdrawn(nameId, taoId);
 
 		var canWithdrawLogos;
 		try {
-			var result = await taopool.withdrawLogos(lotId, { from: account });
+			var result = await taopool.withdrawLogos(ethosLotId, { from: account });
 			canWithdrawLogos = true;
 		} catch (e) {
 			canWithdrawLogos = false;
 		}
-		assert.equal(canWithdrawLogos, true, "Name can't withdraw Logos from Lot");
+		assert.equal(canWithdrawLogos, true, "Name can't withdraw Logos from Ethos Lot");
 
-		var lotAfter = await taopool.lots(lotId);
+		var ethosLotAfter = await taopool.ethosLots(ethosLotId);
 		var nameLogosAfter = await logos.balanceOf(nameId);
 		var contractTotalLogosWithdrawnAfter = await taopool.contractTotalLogosWithdrawn();
 		var poolTotalLogosWithdrawnAfter = await taopool.poolTotalLogosWithdrawn(taoId);
-		var lotLogosAvailableToWithdrawAfter = await taopool.lotLogosAvailableToWithdraw(lotId);
+		var lotLogosAvailableToWithdrawAfter = await taopool.lotLogosAvailableToWithdraw(ethosLotId);
 		var nameTotalLogosWithdrawnAfter = await taopool.totalLogosWithdrawn(nameId);
 		var namePoolLogosWithdrawnAfter = await taopool.namePoolLogosWithdrawn(nameId, taoId);
 
 		assert.equal(
-			lotAfter[6].toNumber(),
-			lotBefore[6].minus(lotLogosAvailableToWithdrawBefore).toNumber(),
-			"Lot has incorrect lotValueInLogos"
+			ethosLotAfter[6].toNumber(),
+			ethosLotBefore[6].minus(lotLogosAvailableToWithdrawBefore).toNumber(),
+			"Ethos Lot has incorrect lotValueInLogos"
 		);
 		assert.equal(
-			lotAfter[7].toNumber(),
-			lotBefore[7].plus(lotLogosAvailableToWithdrawBefore).toNumber(),
-			"Lot has incorrect logosWithdrawn"
+			ethosLotAfter[7].toNumber(),
+			ethosLotBefore[7].plus(lotLogosAvailableToWithdrawBefore).toNumber(),
+			"Ethos Lot has incorrect logosWithdrawn"
 		);
 
 		assert.equal(
@@ -838,9 +850,9 @@ contract("TAOPool", function(accounts) {
 		// Fast forward the time
 		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
-		lotId1 = await stakeEthos(taoId2, 500, account4, nameId4Lots);
-		lotId2 = await stakeEthos(taoId2, 500, account5, nameId5Lots);
-		lotId3 = await stakeEthos(taoId2, 500, account6, nameId6Lots);
+		ethosLotId1 = await stakeEthos(taoId2, 500, account4, nameId4EthosLots);
+		ethosLotId2 = await stakeEthos(taoId2, 500, account5, nameId5EthosLots);
+		ethosLotId3 = await stakeEthos(taoId2, 500, account6, nameId6EthosLots);
 
 		// Test Ethos cap
 		try {
@@ -852,49 +864,49 @@ contract("TAOPool", function(accounts) {
 		assert.equal(canStakeEthos, false, "Name can stake Ethos on a TAO that has reached Ethos cap");
 
 		// Test stake Ethos on Pool with no cap
-		lotId4 = await stakeEthos(taoId3, 10000, account4, nameId4Lots);
-		lotId5 = await stakeEthos(taoId3, 10000, account5, nameId5Lots);
-		lotId6 = await stakeEthos(taoId3, 10000, account6, nameId6Lots);
+		ethosLotId4 = await stakeEthos(taoId3, 10000, account4, nameId4EthosLots);
+		ethosLotId5 = await stakeEthos(taoId3, 10000, account5, nameId5EthosLots);
+		ethosLotId6 = await stakeEthos(taoId3, 10000, account6, nameId6EthosLots);
 	});
 
-	it("ownerTotalLot() - should return the correct total Lots of a Name", async function() {
-		var nameId4TotalLot = await taopool.ownerTotalLot(nameId4);
-		assert.equal(nameId4TotalLot.toString(), nameId4Lots.length, "ownerTotalLot returns incorrect total Lots");
+	it("ownerTotalEthosLot() - should return the correct total Ethos Lots of a Name", async function() {
+		var nameId4TotalEthosLot = await taopool.ownerTotalEthosLot(nameId4);
+		assert.equal(nameId4TotalEthosLot.toString(), nameId4EthosLots.length, "ownerTotalEthosLot returns incorrect total Ethos Lots");
 
-		var nameId5TotalLot = await taopool.ownerTotalLot(nameId5);
-		assert.equal(nameId5TotalLot.toString(), nameId5Lots.length, "ownerTotalLot returns incorrect total Lots");
+		var nameId5TotalEthosLot = await taopool.ownerTotalEthosLot(nameId5);
+		assert.equal(nameId5TotalEthosLot.toString(), nameId5EthosLots.length, "ownerTotalEthosLot returns incorrect total Ethos Lots");
 
-		var nameId6TotalLot = await taopool.ownerTotalLot(nameId6);
-		assert.equal(nameId6TotalLot.toString(), nameId6Lots.length, "ownerTotalLot returns incorrect total Lots");
+		var nameId6TotalEthosLot = await taopool.ownerTotalEthosLot(nameId6);
+		assert.equal(nameId6TotalEthosLot.toString(), nameId6EthosLots.length, "ownerTotalEthosLot returns incorrect total Ethos Lots");
 	});
 
-	it("ownerLotIds() - should return all the Lot IDs of a Name", async function() {
-		var nameId4TotalLot = await taopool.ownerTotalLot(nameId4);
-		var lots = await taopool.ownerLotIds(nameId4, 0, nameId4TotalLot.minus(1).toString());
+	it("ownerEthosLotIds() - should return all the Ethos Lot IDs of a Name", async function() {
+		var nameId4TotalEthosLot = await taopool.ownerTotalEthosLot(nameId4);
+		var ethosLots = await taopool.ownerEthosLotIds(nameId4, 0, nameId4TotalEthosLot.minus(1).toString());
 		var isEqual =
-			lots.length === nameId4Lots.length &&
-			lots.every(function(value, index) {
-				return value === nameId4Lots[index];
+			ethosLots.length === nameId4EthosLots.length &&
+			ethosLots.every(function(value, index) {
+				return value === nameId4EthosLots[index];
 			});
-		assert.equal(isEqual, true, "ownerLotIds() return incorrect Lot IDs");
+		assert.equal(isEqual, true, "ownerEthosLotIds() return incorrect EthosLot IDs");
 
-		var nameId5TotalLot = await taopool.ownerTotalLot(nameId5);
-		var lots = await taopool.ownerLotIds(nameId5, 0, nameId5TotalLot.minus(1).toString());
+		var nameId5TotalEthosLot = await taopool.ownerTotalEthosLot(nameId5);
+		var ethosLots = await taopool.ownerEthosLotIds(nameId5, 0, nameId5TotalEthosLot.minus(1).toString());
 		var isEqual =
-			lots.length === nameId5Lots.length &&
-			lots.every(function(value, index) {
-				return value === nameId5Lots[index];
+			ethosLots.length === nameId5EthosLots.length &&
+			ethosLots.every(function(value, index) {
+				return value === nameId5EthosLots[index];
 			});
-		assert.equal(isEqual, true, "ownerLotIds() return incorrect Lot IDs");
+		assert.equal(isEqual, true, "ownerEthosLotIds() return incorrect EthosLot IDs");
 
-		var nameId6TotalLot = await taopool.ownerTotalLot(nameId6);
-		var lots = await taopool.ownerLotIds(nameId6, 0, nameId6TotalLot.minus(1).toString());
+		var nameId6TotalEthosLot = await taopool.ownerTotalEthosLot(nameId6);
+		var ethosLots = await taopool.ownerEthosLotIds(nameId6, 0, nameId6TotalEthosLot.minus(1).toString());
 		var isEqual =
-			lots.length === nameId6Lots.length &&
-			lots.every(function(value, index) {
-				return value === nameId6Lots[index];
+			ethosLots.length === nameId6EthosLots.length &&
+			ethosLots.every(function(value, index) {
+				return value === nameId6EthosLots[index];
 			});
-		assert.equal(isEqual, true, "ownerLotIds() return incorrect Lot IDs");
+		assert.equal(isEqual, true, "ownerEthosLotIds() return incorrect EthosLot IDs");
 	});
 
 	it("availablePathosToStake() - should return the amount of Pathos that can be staked on a TAO", async function() {
@@ -996,7 +1008,7 @@ contract("TAOPool", function(accounts) {
 		assert.equal(canStakePathos, false, "Name can stake Pathos on a TAO more than its available amount to fill");
 	});
 
-	it("lotLogosAvailableToWithdraw() - should return the amount of Logos available to withdraw from a Lot", async function() {
+	it("lotLogosAvailableToWithdraw() - should return the amount of Logos available to withdraw from a Ethos Lot", async function() {
 		var canGet;
 		try {
 			await taopool.lotLogosAvailableToWithdraw(someAddress);
@@ -1006,22 +1018,22 @@ contract("TAOPool", function(accounts) {
 		}
 		assert.equal(canGet, false, "Can get Logos available to withdraw of a non-existing TAO");
 
-		// lotId1 has 500 lotQuantity
+		// ethosLotId1 has 500 lotQuantity
 		// nameId4 staked 400 Pathos
 		// nameId5 staked 300 Pathos
-		// lotId1 is filled entirely
-		var availableToWithdraw = await taopool.lotLogosAvailableToWithdraw(lotId1);
+		// ethosLotId1 is filled entirely
+		var availableToWithdraw = await taopool.lotLogosAvailableToWithdraw(ethosLotId1);
 		assert.equal(availableToWithdraw.toNumber(), 500, "lotLogosAvailableToWithdraw() returns incorrect value");
 
-		// lotId2 has 500 lotQuantity
+		// ethosLotId2 has 500 lotQuantity
 		// nameId4 staked 400 Pathos
 		// nameId5 staked 300 Pathos
-		// lotId2 is sold partially
-		availableToWithdraw = await taopool.lotLogosAvailableToWithdraw(lotId2);
+		// ethosLotId2 is sold partially
+		availableToWithdraw = await taopool.lotLogosAvailableToWithdraw(ethosLotId2);
 		assert.equal(availableToWithdraw.toNumber(), 200, "lotLogosAvailableToWithdraw() returns incorrect value");
 	});
 
-	it("withdrawLogos() - should be able to withdraw Logos from filled Lot", async function() {
+	it("withdrawLogos() - should be able to withdraw Logos from filled Ethos Lot", async function() {
 		var canWithdrawLogos;
 		try {
 			var result = await taopool.withdrawLogos(someAddress, { from: account4 });
@@ -1029,23 +1041,23 @@ contract("TAOPool", function(accounts) {
 		} catch (e) {
 			canWithdrawLogos = false;
 		}
-		assert.equal(canWithdrawLogos, false, "Name can withdraw Logos from non-existing Lot");
+		assert.equal(canWithdrawLogos, false, "Name can withdraw Logos from non-existing Ethos Lot");
 
 		try {
-			var result = await taopool.withdrawLogos(lotId1, { from: account3 });
+			var result = await taopool.withdrawLogos(ethosLotId1, { from: account3 });
 			canWithdrawLogos = true;
 		} catch (e) {
 			canWithdrawLogos = false;
 		}
-		assert.equal(canWithdrawLogos, false, "Non-Lot owner can withdraw Logos from Lot");
+		assert.equal(canWithdrawLogos, false, "Non-Ethos Lot owner can withdraw Logos from Ethos Lot");
 
 		try {
-			var result = await taopool.withdrawLogos(lotId3, { from: account6 });
+			var result = await taopool.withdrawLogos(ethosLotId3, { from: account6 });
 			canWithdrawLogos = true;
 		} catch (e) {
 			canWithdrawLogos = false;
 		}
-		assert.equal(canWithdrawLogos, false, "Name can withdraw Logos from Lot that is not yet filled");
+		assert.equal(canWithdrawLogos, false, "Name can withdraw Logos from Ethos Lot that is not yet filled");
 
 		// Listener submit account recovery for nameId4
 		await nameaccountrecovery.submitAccountRecovery(nameId4, { from: account3 });
@@ -1054,17 +1066,17 @@ contract("TAOPool", function(accounts) {
 		await helper.advanceTimeAndBlock(1000);
 
 		try {
-			var result = await taopool.withdrawLogos(lotId1, { from: account4 });
+			var result = await taopool.withdrawLogos(ethosLotId1, { from: account4 });
 			canWithdrawLogos = true;
 		} catch (e) {
 			canWithdrawLogos = false;
 		}
-		assert.equal(canWithdrawLogos, false, "Compromised Name can withdraw Logos from Lot");
+		assert.equal(canWithdrawLogos, false, "Compromised Name can withdraw Logos from Ethos Lot");
 
 		// Fast forward the time
 		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
 
-		await withdrawLogos(lotId1, account4);
-		await withdrawLogos(lotId2, account5);
+		await withdrawLogos(ethosLotId1, account4);
+		await withdrawLogos(ethosLotId2, account5);
 	});
 });
