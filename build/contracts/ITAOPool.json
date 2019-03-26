@@ -33,7 +33,7 @@
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "pragma solidity ^0.5.4;\n\ninterface ITAOPool {\n\tfunction createPool(address _taoId, bool _ethosCapStatus, uint256 _ethosCapAmount) external returns (bool);\n}\n",
+  "source": "pragma solidity >=0.5.4 <0.6.0;\n\ninterface ITAOPool {\n\tfunction createPool(address _taoId, bool _ethosCapStatus, uint256 _ethosCapAmount) external returns (bool);\n}\n",
   "sourcePath": "/usr/local/ao-contracts/contracts/ITAOPool.sol",
   "ast": {
     "absolutePath": "/usr/local/ao-contracts/contracts/ITAOPool.sol",
@@ -49,12 +49,15 @@
         "id": 22165,
         "literals": [
           "solidity",
-          "^",
+          ">=",
           "0.5",
-          ".4"
+          ".4",
+          "<",
+          "0.6",
+          ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:57"
+        "src": "0:31:57"
       },
       {
         "baseContracts": [],
@@ -88,7 +91,7 @@
                   "name": "_taoId",
                   "nodeType": "VariableDeclaration",
                   "scope": 22176,
-                  "src": "67:14:57",
+                  "src": "75:14:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -99,7 +102,7 @@
                     "id": 22166,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "67:7:57",
+                    "src": "75:7:57",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -115,7 +118,7 @@
                   "name": "_ethosCapStatus",
                   "nodeType": "VariableDeclaration",
                   "scope": 22176,
-                  "src": "83:20:57",
+                  "src": "91:20:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -126,7 +129,7 @@
                     "id": 22168,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "83:4:57",
+                    "src": "91:4:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -141,7 +144,7 @@
                   "name": "_ethosCapAmount",
                   "nodeType": "VariableDeclaration",
                   "scope": 22176,
-                  "src": "105:23:57",
+                  "src": "113:23:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -152,7 +155,7 @@
                     "id": 22170,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "105:7:57",
+                    "src": "113:7:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -162,7 +165,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "66:63:57"
+              "src": "74:63:57"
             },
             "returnParameters": {
               "id": 22175,
@@ -174,7 +177,7 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 22176,
-                  "src": "148:4:57",
+                  "src": "156:4:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -185,7 +188,7 @@
                     "id": 22173,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "148:4:57",
+                    "src": "156:4:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -195,20 +198,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "147:6:57"
+              "src": "155:6:57"
             },
             "scope": 22177,
-            "src": "47:107:57",
+            "src": "55:107:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
         "scope": 22178,
-        "src": "25:131:57"
+        "src": "33:131:57"
       }
     ],
-    "src": "0:157:57"
+    "src": "0:165:57"
   },
   "legacyAST": {
     "absolutePath": "/usr/local/ao-contracts/contracts/ITAOPool.sol",
@@ -224,12 +227,15 @@
         "id": 22165,
         "literals": [
           "solidity",
-          "^",
+          ">=",
           "0.5",
-          ".4"
+          ".4",
+          "<",
+          "0.6",
+          ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:57"
+        "src": "0:31:57"
       },
       {
         "baseContracts": [],
@@ -263,7 +269,7 @@
                   "name": "_taoId",
                   "nodeType": "VariableDeclaration",
                   "scope": 22176,
-                  "src": "67:14:57",
+                  "src": "75:14:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -274,7 +280,7 @@
                     "id": 22166,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "67:7:57",
+                    "src": "75:7:57",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -290,7 +296,7 @@
                   "name": "_ethosCapStatus",
                   "nodeType": "VariableDeclaration",
                   "scope": 22176,
-                  "src": "83:20:57",
+                  "src": "91:20:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -301,7 +307,7 @@
                     "id": 22168,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "83:4:57",
+                    "src": "91:4:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -316,7 +322,7 @@
                   "name": "_ethosCapAmount",
                   "nodeType": "VariableDeclaration",
                   "scope": 22176,
-                  "src": "105:23:57",
+                  "src": "113:23:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -327,7 +333,7 @@
                     "id": 22170,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "105:7:57",
+                    "src": "113:7:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -337,7 +343,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "66:63:57"
+              "src": "74:63:57"
             },
             "returnParameters": {
               "id": 22175,
@@ -349,7 +355,7 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 22176,
-                  "src": "148:4:57",
+                  "src": "156:4:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -360,7 +366,7 @@
                     "id": 22173,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "148:4:57",
+                    "src": "156:4:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -370,28 +376,28 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "147:6:57"
+              "src": "155:6:57"
             },
             "scope": 22177,
-            "src": "47:107:57",
+            "src": "55:107:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
         "scope": 22178,
-        "src": "25:131:57"
+        "src": "33:131:57"
       }
     ],
-    "src": "0:157:57"
+    "src": "0:165:57"
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.4+commit.9549d8ff.Emscripten.clang"
+    "version": "0.5.6+commit.b259423e.Emscripten.clang"
   },
   "networks": {},
   "schemaVersion": "3.0.2",
-  "updatedAt": "2019-03-21T02:41:20.934Z",
+  "updatedAt": "2019-03-26T16:54:30.795Z",
   "devdoc": {
     "methods": {}
   },

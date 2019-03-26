@@ -1,4 +1,4 @@
-pragma solidity ^0.5.4;
+pragma solidity >=0.5.4 <0.6.0;
 
 interface IAOContentHost {
 	function create(address _host, bytes32 _stakedContentId, string calldata _encChallenge, string calldata _contentDatKey, string calldata _metadataDatKey) external returns (bool);

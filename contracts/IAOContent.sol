@@ -1,4 +1,4 @@
-pragma solidity ^0.5.4;
+pragma solidity >=0.5.4 <0.6.0;
 
 interface IAOContent {
 	function create(address _creator, string calldata _baseChallenge, uint256 _fileSize, bytes32 _contentUsageType, address _taoId) external returns (bytes32);

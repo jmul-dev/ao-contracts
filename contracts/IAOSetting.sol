@@ -1,4 +1,4 @@
-pragma solidity ^0.5.4;
+pragma solidity >=0.5.4 <0.6.0;
 
 interface IAOSetting {
 	function getSettingValuesByTAOName(address _taoId, string calldata _settingName) external view returns (uint256, bool, address, bytes32, string memory);

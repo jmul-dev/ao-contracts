@@ -25,7 +25,7 @@
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "pragma solidity ^0.5.4;\n\ninterface INameAccountRecovery {\n\tfunction isCompromised(address _id) external view returns (bool);\n}\n",
+  "source": "pragma solidity >=0.5.4 <0.6.0;\n\ninterface INameAccountRecovery {\n\tfunction isCompromised(address _id) external view returns (bool);\n}\n",
   "sourcePath": "/usr/local/ao-contracts/contracts/INameAccountRecovery.sol",
   "ast": {
     "absolutePath": "/usr/local/ao-contracts/contracts/INameAccountRecovery.sol",
@@ -41,12 +41,15 @@
         "id": 21869,
         "literals": [
           "solidity",
-          "^",
+          ">=",
           "0.5",
-          ".4"
+          ".4",
+          "<",
+          "0.6",
+          ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:49"
+        "src": "0:31:49"
       },
       {
         "baseContracts": [],
@@ -80,7 +83,7 @@
                   "name": "_id",
                   "nodeType": "VariableDeclaration",
                   "scope": 21876,
-                  "src": "82:11:49",
+                  "src": "90:11:49",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -91,7 +94,7 @@
                     "id": 21870,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "82:7:49",
+                    "src": "90:7:49",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -102,7 +105,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "81:13:49"
+              "src": "89:13:49"
             },
             "returnParameters": {
               "id": 21875,
@@ -114,7 +117,7 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 21876,
-                  "src": "118:4:49",
+                  "src": "126:4:49",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -125,7 +128,7 @@
                     "id": 21873,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "118:4:49",
+                    "src": "126:4:49",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -135,20 +138,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "117:6:49"
+              "src": "125:6:49"
             },
             "scope": 21877,
-            "src": "59:65:49",
+            "src": "67:65:49",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
         "scope": 21878,
-        "src": "25:101:49"
+        "src": "33:101:49"
       }
     ],
-    "src": "0:127:49"
+    "src": "0:135:49"
   },
   "legacyAST": {
     "absolutePath": "/usr/local/ao-contracts/contracts/INameAccountRecovery.sol",
@@ -164,12 +167,15 @@
         "id": 21869,
         "literals": [
           "solidity",
-          "^",
+          ">=",
           "0.5",
-          ".4"
+          ".4",
+          "<",
+          "0.6",
+          ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:49"
+        "src": "0:31:49"
       },
       {
         "baseContracts": [],
@@ -203,7 +209,7 @@
                   "name": "_id",
                   "nodeType": "VariableDeclaration",
                   "scope": 21876,
-                  "src": "82:11:49",
+                  "src": "90:11:49",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -214,7 +220,7 @@
                     "id": 21870,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "82:7:49",
+                    "src": "90:7:49",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -225,7 +231,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "81:13:49"
+              "src": "89:13:49"
             },
             "returnParameters": {
               "id": 21875,
@@ -237,7 +243,7 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 21876,
-                  "src": "118:4:49",
+                  "src": "126:4:49",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -248,7 +254,7 @@
                     "id": 21873,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "118:4:49",
+                    "src": "126:4:49",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -258,28 +264,28 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "117:6:49"
+              "src": "125:6:49"
             },
             "scope": 21877,
-            "src": "59:65:49",
+            "src": "67:65:49",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
         "scope": 21878,
-        "src": "25:101:49"
+        "src": "33:101:49"
       }
     ],
-    "src": "0:127:49"
+    "src": "0:135:49"
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.4+commit.9549d8ff.Emscripten.clang"
+    "version": "0.5.6+commit.b259423e.Emscripten.clang"
   },
   "networks": {},
   "schemaVersion": "3.0.2",
-  "updatedAt": "2019-03-21T02:41:20.931Z",
+  "updatedAt": "2019-03-26T16:54:30.794Z",
   "devdoc": {
     "methods": {}
   },

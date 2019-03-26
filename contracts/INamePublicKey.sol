@@ -1,4 +1,4 @@
-pragma solidity ^0.5.4;
+pragma solidity >=0.5.4 <0.6.0;
 
 interface INamePublicKey {
 	function initialize(address _id, address _defaultKey) external returns (bool);
