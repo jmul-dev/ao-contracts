@@ -978,14 +978,14 @@
     "absolutePath": "/usr/local/ao-contracts/contracts/AOZetta.sol",
     "exportedSymbols": {
       "AOZetta": [
-        20828
+        20866
       ]
     },
-    "id": 20829,
+    "id": 20867,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 20795,
+        "id": 20833,
         "literals": [
           "solidity",
           ">=",
@@ -1001,9 +1001,9 @@
       {
         "absolutePath": "/usr/local/ao-contracts/contracts/AOIonInterface.sol",
         "file": "./AOIonInterface.sol",
-        "id": 20796,
+        "id": 20834,
         "nodeType": "ImportDirective",
-        "scope": 20829,
+        "scope": 20867,
         "sourceUnit": 8302,
         "src": "33:30:26",
         "symbolAliases": [],
@@ -1015,7 +1015,7 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 20797,
+              "id": 20835,
               "name": "AOIonInterface",
               "nodeType": "UserDefinedTypeName",
               "referencedDeclaration": 8301,
@@ -1025,44 +1025,44 @@
                 "typeString": "contract AOIonInterface"
               }
             },
-            "id": 20798,
+            "id": 20836,
             "nodeType": "InheritanceSpecifier",
             "src": "85:14:26"
           }
         ],
         "contractDependencies": [
           8301,
-          34066
+          34214
         ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 20828,
+        "id": 20866,
         "linearizedBaseContracts": [
-          20828,
+          20866,
           8301,
-          34066
+          34214
         ],
         "name": "AOZetta",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "body": {
-              "id": 20826,
+              "id": 20864,
               "nodeType": "Block",
               "src": "417:40:26",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 20820,
+                    "id": 20858,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 20818,
+                      "id": 20856,
                       "name": "powerOfTen",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
@@ -1078,7 +1078,7 @@
                     "rightHandSide": {
                       "argumentTypes": null,
                       "hexValue": "3231",
-                      "id": 20819,
+                      "id": 20857,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": true,
@@ -1099,21 +1099,21 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 20821,
+                  "id": 20859,
                   "nodeType": "ExpressionStatement",
                   "src": "421:15:26"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 20824,
+                    "id": 20862,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 20822,
+                      "id": 20860,
                       "name": "decimals",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
@@ -1129,7 +1129,7 @@
                     "rightHandSide": {
                       "argumentTypes": null,
                       "hexValue": "3231",
-                      "id": 20823,
+                      "id": 20861,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": true,
@@ -1150,14 +1150,14 @@
                       "typeString": "uint8"
                     }
                   },
-                  "id": 20825,
+                  "id": 20863,
                   "nodeType": "ExpressionStatement",
                   "src": "440:13:26"
                 }
               ]
             },
             "documentation": "@dev Constructor function",
-            "id": 20827,
+            "id": 20865,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [
@@ -1165,11 +1165,11 @@
                 "arguments": [
                   {
                     "argumentTypes": null,
-                    "id": 20811,
+                    "id": 20849,
                     "name": "_name",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 20800,
+                    "referencedDeclaration": 20838,
                     "src": "317:5:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_memory_ptr",
@@ -1178,11 +1178,11 @@
                   },
                   {
                     "argumentTypes": null,
-                    "id": 20812,
+                    "id": 20850,
                     "name": "_symbol",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 20802,
+                    "referencedDeclaration": 20840,
                     "src": "324:7:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_memory_ptr",
@@ -1191,11 +1191,11 @@
                   },
                   {
                     "argumentTypes": null,
-                    "id": 20813,
+                    "id": 20851,
                     "name": "_nameTAOPositionAddress",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 20804,
+                    "referencedDeclaration": 20842,
                     "src": "333:23:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1204,11 +1204,11 @@
                   },
                   {
                     "argumentTypes": null,
-                    "id": 20814,
+                    "id": 20852,
                     "name": "_namePublicKeyAddress",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 20806,
+                    "referencedDeclaration": 20844,
                     "src": "358:21:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1217,11 +1217,11 @@
                   },
                   {
                     "argumentTypes": null,
-                    "id": 20815,
+                    "id": 20853,
                     "name": "_nameAccountRecoveryAddress",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 20808,
+                    "referencedDeclaration": 20846,
                     "src": "381:27:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1229,10 +1229,10 @@
                     }
                   }
                 ],
-                "id": 20816,
+                "id": 20854,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 20810,
+                  "id": 20848,
                   "name": "AOIonInterface",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
@@ -1250,15 +1250,15 @@
             "name": "",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 20809,
+              "id": 20847,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 20800,
+                  "id": 20838,
                   "name": "_name",
                   "nodeType": "VariableDeclaration",
-                  "scope": 20827,
+                  "scope": 20865,
                   "src": "155:19:26",
                   "stateVariable": false,
                   "storageLocation": "memory",
@@ -1267,7 +1267,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 20799,
+                    "id": 20837,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "155:6:26",
@@ -1281,10 +1281,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 20802,
+                  "id": 20840,
                   "name": "_symbol",
                   "nodeType": "VariableDeclaration",
-                  "scope": 20827,
+                  "scope": 20865,
                   "src": "176:21:26",
                   "stateVariable": false,
                   "storageLocation": "memory",
@@ -1293,7 +1293,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 20801,
+                    "id": 20839,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "176:6:26",
@@ -1307,10 +1307,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 20804,
+                  "id": 20842,
                   "name": "_nameTAOPositionAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 20827,
+                  "scope": 20865,
                   "src": "199:31:26",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1319,7 +1319,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 20803,
+                    "id": 20841,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "199:7:26",
@@ -1334,10 +1334,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 20806,
+                  "id": 20844,
                   "name": "_namePublicKeyAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 20827,
+                  "scope": 20865,
                   "src": "232:29:26",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1346,7 +1346,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 20805,
+                    "id": 20843,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "232:7:26",
@@ -1361,10 +1361,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 20808,
+                  "id": 20846,
                   "name": "_nameAccountRecoveryAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 20827,
+                  "scope": 20865,
                   "src": "263:35:26",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1373,7 +1373,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 20807,
+                    "id": 20845,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "263:7:26",
@@ -1390,19 +1390,19 @@
               "src": "154:145:26"
             },
             "returnParameters": {
-              "id": 20817,
+              "id": 20855,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "417:0:26"
             },
-            "scope": 20828,
+            "scope": 20866,
             "src": "143:314:26",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 20829,
+        "scope": 20867,
         "src": "65:394:26"
       }
     ],
@@ -1412,14 +1412,14 @@
     "absolutePath": "/usr/local/ao-contracts/contracts/AOZetta.sol",
     "exportedSymbols": {
       "AOZetta": [
-        20828
+        20866
       ]
     },
-    "id": 20829,
+    "id": 20867,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 20795,
+        "id": 20833,
         "literals": [
           "solidity",
           ">=",
@@ -1435,9 +1435,9 @@
       {
         "absolutePath": "/usr/local/ao-contracts/contracts/AOIonInterface.sol",
         "file": "./AOIonInterface.sol",
-        "id": 20796,
+        "id": 20834,
         "nodeType": "ImportDirective",
-        "scope": 20829,
+        "scope": 20867,
         "sourceUnit": 8302,
         "src": "33:30:26",
         "symbolAliases": [],
@@ -1449,7 +1449,7 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 20797,
+              "id": 20835,
               "name": "AOIonInterface",
               "nodeType": "UserDefinedTypeName",
               "referencedDeclaration": 8301,
@@ -1459,44 +1459,44 @@
                 "typeString": "contract AOIonInterface"
               }
             },
-            "id": 20798,
+            "id": 20836,
             "nodeType": "InheritanceSpecifier",
             "src": "85:14:26"
           }
         ],
         "contractDependencies": [
           8301,
-          34066
+          34214
         ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 20828,
+        "id": 20866,
         "linearizedBaseContracts": [
-          20828,
+          20866,
           8301,
-          34066
+          34214
         ],
         "name": "AOZetta",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "body": {
-              "id": 20826,
+              "id": 20864,
               "nodeType": "Block",
               "src": "417:40:26",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 20820,
+                    "id": 20858,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 20818,
+                      "id": 20856,
                       "name": "powerOfTen",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
@@ -1512,7 +1512,7 @@
                     "rightHandSide": {
                       "argumentTypes": null,
                       "hexValue": "3231",
-                      "id": 20819,
+                      "id": 20857,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": true,
@@ -1533,21 +1533,21 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 20821,
+                  "id": 20859,
                   "nodeType": "ExpressionStatement",
                   "src": "421:15:26"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 20824,
+                    "id": 20862,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 20822,
+                      "id": 20860,
                       "name": "decimals",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
@@ -1563,7 +1563,7 @@
                     "rightHandSide": {
                       "argumentTypes": null,
                       "hexValue": "3231",
-                      "id": 20823,
+                      "id": 20861,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": true,
@@ -1584,14 +1584,14 @@
                       "typeString": "uint8"
                     }
                   },
-                  "id": 20825,
+                  "id": 20863,
                   "nodeType": "ExpressionStatement",
                   "src": "440:13:26"
                 }
               ]
             },
             "documentation": "@dev Constructor function",
-            "id": 20827,
+            "id": 20865,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [
@@ -1599,11 +1599,11 @@
                 "arguments": [
                   {
                     "argumentTypes": null,
-                    "id": 20811,
+                    "id": 20849,
                     "name": "_name",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 20800,
+                    "referencedDeclaration": 20838,
                     "src": "317:5:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_memory_ptr",
@@ -1612,11 +1612,11 @@
                   },
                   {
                     "argumentTypes": null,
-                    "id": 20812,
+                    "id": 20850,
                     "name": "_symbol",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 20802,
+                    "referencedDeclaration": 20840,
                     "src": "324:7:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_memory_ptr",
@@ -1625,11 +1625,11 @@
                   },
                   {
                     "argumentTypes": null,
-                    "id": 20813,
+                    "id": 20851,
                     "name": "_nameTAOPositionAddress",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 20804,
+                    "referencedDeclaration": 20842,
                     "src": "333:23:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1638,11 +1638,11 @@
                   },
                   {
                     "argumentTypes": null,
-                    "id": 20814,
+                    "id": 20852,
                     "name": "_namePublicKeyAddress",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 20806,
+                    "referencedDeclaration": 20844,
                     "src": "358:21:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1651,11 +1651,11 @@
                   },
                   {
                     "argumentTypes": null,
-                    "id": 20815,
+                    "id": 20853,
                     "name": "_nameAccountRecoveryAddress",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 20808,
+                    "referencedDeclaration": 20846,
                     "src": "381:27:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1663,10 +1663,10 @@
                     }
                   }
                 ],
-                "id": 20816,
+                "id": 20854,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 20810,
+                  "id": 20848,
                   "name": "AOIonInterface",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
@@ -1684,15 +1684,15 @@
             "name": "",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 20809,
+              "id": 20847,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 20800,
+                  "id": 20838,
                   "name": "_name",
                   "nodeType": "VariableDeclaration",
-                  "scope": 20827,
+                  "scope": 20865,
                   "src": "155:19:26",
                   "stateVariable": false,
                   "storageLocation": "memory",
@@ -1701,7 +1701,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 20799,
+                    "id": 20837,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "155:6:26",
@@ -1715,10 +1715,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 20802,
+                  "id": 20840,
                   "name": "_symbol",
                   "nodeType": "VariableDeclaration",
-                  "scope": 20827,
+                  "scope": 20865,
                   "src": "176:21:26",
                   "stateVariable": false,
                   "storageLocation": "memory",
@@ -1727,7 +1727,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 20801,
+                    "id": 20839,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "176:6:26",
@@ -1741,10 +1741,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 20804,
+                  "id": 20842,
                   "name": "_nameTAOPositionAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 20827,
+                  "scope": 20865,
                   "src": "199:31:26",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1753,7 +1753,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 20803,
+                    "id": 20841,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "199:7:26",
@@ -1768,10 +1768,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 20806,
+                  "id": 20844,
                   "name": "_namePublicKeyAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 20827,
+                  "scope": 20865,
                   "src": "232:29:26",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1780,7 +1780,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 20805,
+                    "id": 20843,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "232:7:26",
@@ -1795,10 +1795,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 20808,
+                  "id": 20846,
                   "name": "_nameAccountRecoveryAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 20827,
+                  "scope": 20865,
                   "src": "263:35:26",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1807,7 +1807,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 20807,
+                    "id": 20845,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "263:7:26",
@@ -1824,19 +1824,19 @@
               "src": "154:145:26"
             },
             "returnParameters": {
-              "id": 20817,
+              "id": 20855,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "417:0:26"
             },
-            "scope": 20828,
+            "scope": 20866,
             "src": "143:314:26",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 20829,
+        "scope": 20867,
         "src": "65:394:26"
       }
     ],
@@ -1857,7 +1857,7 @@
     }
   },
   "schemaVersion": "3.0.2",
-  "updatedAt": "2019-03-26T16:54:30.886Z",
+  "updatedAt": "2019-03-28T22:28:46.903Z",
   "devdoc": {
     "methods": {
       "approve(address,uint256)": {
