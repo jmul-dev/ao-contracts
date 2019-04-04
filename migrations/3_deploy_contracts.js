@@ -1676,6 +1676,7 @@ module.exports = function(deployer, network, accounts) {
 			 * For testing purposes:
 			 * Remove this later
 			 * --- START ---
+			 */
 			await aoion.setWhitelist(primordialAccount, true, { from: primordialAccount });
 			await aoion.mint(accounts[1], 10 ** 6, { from: primordialAccount }); // 1,000,000,000 AO Ion
 			// Buy 2 lots so that we can test avg weighted multiplier
