@@ -9,6 +9,7 @@ import './IAOContent.sol';
 import './IAOStakedContent.sol';
 import './IAOContentHost.sol';
 import './IAOEarning.sol';
+import './INameFactory.sol';
 import './INameTAOPosition.sol';
 
 /**
@@ -27,6 +28,7 @@ contract AOContentFactory is TheAO {
 	address public aoStakedContentAddress;
 	address public aoContentHostAddress;
 	address public aoEarningAddress;
+	address public nameFactoryAddress;
 
 	IAOSetting internal _aoSetting;
 	IAOTreasury internal _aoTreasury;
@@ -34,6 +36,7 @@ contract AOContentFactory is TheAO {
 	IAOStakedContent internal _aoStakedContent;
 	IAOContentHost internal _aoContentHost;
 	IAOEarning internal _aoEarning;
+	INameFactory internal _nameFactory;
 	INameTAOPosition internal _nameTAOPosition;
 
 	/**
@@ -45,6 +48,7 @@ contract AOContentFactory is TheAO {
 	 * @param _aoStakedContentAddress The address of AOStakedContent
 	 * @param _aoContentHostAddress The address of AOContentHost
 	 * @param _aoEarningAddress The address of AOEarning
+	 * @param _nameFactoryAddress The address of NameFactory
 	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
 	constructor(address _settingTAOId,
@@ -54,6 +58,7 @@ contract AOContentFactory is TheAO {
 		address _aoStakedContentAddress,
 		address _aoContentHostAddress,
 		address _aoEarningAddress,
+		address _nameFactoryAddress,
 		address _nameTAOPositionAddress
 		) public {
 		setSettingTAOId(_settingTAOId);
@@ -63,6 +68,7 @@ contract AOContentFactory is TheAO {
 		setAOStakedContentAddress(_aoStakedContentAddress);
 		setAOContentHostAddress(_aoContentHostAddress);
 		setAOEarningAddress(_aoEarningAddress);
+		setNameFactoryAddress(_nameFactoryAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
@@ -163,6 +169,16 @@ contract AOContentFactory is TheAO {
 		require (_aoEarningAddress != address(0));
 		aoEarningAddress = _aoEarningAddress;
 		_aoEarning = IAOEarning(_aoEarningAddress);
+	}
+
+	/**
+	 * @dev The AO sets NameFactory address
+	 * @param _nameFactoryAddress The address of NameFactory
+	 */
+	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
+		require (_nameFactoryAddress != address(0));
+		nameFactoryAddress = _nameFactoryAddress;
+		_nameFactory = INameFactory(_nameFactoryAddress);
 	}
 
 	/**
@@ -432,7 +448,9 @@ contract AOContentFactory is TheAO {
 		bytes32 _contentUsageType,
 		address _taoId
 		) internal returns (bytes32) {
-		return _aoContent.create(_creator, _baseChallenge, _fileSize, _contentUsageType, _taoId);
+		address _creatorNameId = _nameFactory.ethAddressToNameId(_creator);
+		require (_creatorNameId != address(0));
+		return _aoContent.create(_creatorNameId, _baseChallenge, _fileSize, _contentUsageType, _taoId);
 	}
 
 	/**
@@ -454,7 +472,9 @@ contract AOContentFactory is TheAO {
 		uint256 _primordialAmount,
 		uint256 _profitPercentage
 		) internal returns (bytes32) {
-		return _aoStakedContent.create(_stakeOwner, _contentId, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _profitPercentage);
+		address _stakeOwnerNameId = _nameFactory.ethAddressToNameId(_stakeOwner);
+		require (_stakeOwnerNameId != address(0));
+		return _aoStakedContent.create(_stakeOwnerNameId, _contentId, _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount, _profitPercentage);
 	}
 
 	/**
@@ -467,6 +487,8 @@ contract AOContentFactory is TheAO {
 	 * @return true on success
 	 */
 	function _hostContent(address _host, bytes32 _stakedContentId, string _encChallenge, string _contentDatKey, string _metadataDatKey) internal returns (bool) {
-		return _aoContentHost.create(_host, _stakedContentId, _encChallenge, _contentDatKey, _metadataDatKey);
+		address _hostNameId = _nameFactory.ethAddressToNameId(_host);
+		require (_hostNameId != address(0));
+		return _aoContentHost.create(_hostNameId, _stakedContentId, _encChallenge, _contentDatKey, _metadataDatKey);
 	}
 }

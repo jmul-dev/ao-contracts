@@ -35,6 +35,8 @@ contract("AOPurchaseReceipt", function(accounts) {
 		contentUsageType_taoContent,
 		nameId1,
 		nameId2,
+		nameId3,
+		nameId4,
 		taoId1,
 		contentId1,
 		contentId2,
@@ -56,8 +58,9 @@ contract("AOPurchaseReceipt", function(accounts) {
 	var account2 = accounts[2];
 	var account3 = accounts[3];
 	var account4 = accounts[4];
-	var someAddress = accounts[5];
-	var whitelistedAddress = accounts[6];
+	var account5 = accounts[5];
+	var someAddress = accounts[6];
+	var whitelistedAddress = accounts[7];
 
 	var baseChallenge = "basechallengestring";
 	var fileSize = 1000000; // 1000000 bytes = min 1000000 AO
@@ -77,6 +80,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 	var account2PrivateKey = "0x6a35c58d0acad0ceca9c03d37aa2d2288d70afe0690f5e5f5e05aeab93b95dad";
 	var account3PrivateKey = "0xf4bab2d2f0c5119cc6aad0735bbf0a017d229cbf430c0041af382b93e713a1c3";
 	var account4PrivateKey = "0xfc164bb116857e2b7e5bafb6f515c61cc2cddae22a052c3988c8ff5de598ede0";
+	var account5PrivateKey = "0xa9cf82c9c26517be94310dcfde34076cffc8d22a8f3c29b572ea92de8a96fd32";
 	var account1LocalIdentity = {
 		publicKey: EthCrypto.publicKeyByPrivateKey(account1PrivateKey),
 		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account1PrivateKey))
@@ -92,6 +96,10 @@ contract("AOPurchaseReceipt", function(accounts) {
 	var account4LocalIdentity = {
 		publicKey: EthCrypto.publicKeyByPrivateKey(account4PrivateKey),
 		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account4PrivateKey))
+	};
+	var account5LocalIdentity = {
+		publicKey: EthCrypto.publicKeyByPrivateKey(account5PrivateKey),
+		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account5PrivateKey))
 	};
 
 	before(async function() {
@@ -129,6 +137,16 @@ contract("AOPurchaseReceipt", function(accounts) {
 			from: account2
 		});
 		nameId2 = await namefactory.ethAddressToNameId(account2);
+
+		var result = await namefactory.createName("echo", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+			from: account3
+		});
+		nameId3 = await namefactory.ethAddressToNameId(account3);
+
+		var result = await namefactory.createName("foxtrot", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+			from: account4
+		});
+		nameId4 = await namefactory.ethAddressToNameId(account4);
 
 		// Mint Logos to nameId1 and nameId2
 		await logos.setWhitelist(theAO, true, { from: theAO });
@@ -170,6 +188,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		await aoion.buyPrimordial({ from: account2, value: 500000000000 });
 
 		await aoion.mint(account3, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
+		await aoion.mint(account5, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 	});
 
 	var buyContent = async function(
@@ -181,6 +200,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		publicKey,
 		publicAddress
 	) {
+		var nameId = await namefactory.ethAddressToNameId(account);
 		var accountBalanceBefore = new BigNumber(await aoion.balanceOf(account));
 		var contentHost = await aocontenthost.getById(contentHostId);
 		var stakedContentId = contentHost[0];
@@ -222,7 +242,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		assert.equal(purchaseReceipt[0], contentHostId, "PurchaseReceipt has incorrect contentHostId");
 		assert.equal(purchaseReceipt[1], stakedContentId, "PurchaseReceipt has incorrect stakedContentId");
 		assert.equal(purchaseReceipt[2], contentId, "PurchaseReceipt has incorrect contentId");
-		assert.equal(purchaseReceipt[3], account, "PurchaseReceipt has incorrect buyer");
+		assert.equal(purchaseReceipt[3], nameId, "PurchaseReceipt has incorrect buyer");
 		assert.equal(purchaseReceipt[4].toNumber(), contentHostPrice.toNumber(), "PurchaseReceipt has incorrect price");
 		assert.equal(
 			purchaseReceipt[5].toNumber(),
@@ -303,38 +323,38 @@ contract("AOPurchaseReceipt", function(accounts) {
 		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
 
 		// Create several contents
-		var result = await aocontent.create(account1, baseChallenge, fileSize, contentUsageType_aoContent, emptyAddress, {
+		var result = await aocontent.create(nameId1, baseChallenge, fileSize, contentUsageType_aoContent, emptyAddress, {
 			from: whitelistedAddress
 		});
 		var storeContentEvent = result.logs[0];
 		contentId1 = storeContentEvent.args.contentId;
 
-		result = await aocontent.create(account2, baseChallenge, fileSize, contentUsageType_creativeCommons, emptyAddress, {
+		result = await aocontent.create(nameId2, baseChallenge, fileSize, contentUsageType_creativeCommons, emptyAddress, {
 			from: whitelistedAddress
 		});
 		storeContentEvent = result.logs[0];
 		contentId2 = storeContentEvent.args.contentId;
 
-		result = await aocontent.create(account1, baseChallenge, fileSize, contentUsageType_taoContent, taoId1, {
+		result = await aocontent.create(nameId1, baseChallenge, fileSize, contentUsageType_taoContent, taoId1, {
 			from: whitelistedAddress
 		});
 		storeContentEvent = result.logs[0];
 		contentId3 = storeContentEvent.args.contentId;
 
-		result = await aostakedcontent.create(account1, contentId1, 4, 1000, "mega", 100000, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId1, contentId1, 4, 1000, "mega", 100000, 100000, { from: whitelistedAddress });
 		var stakeContentEvent = result.logs[0];
 		stakedContentId1 = stakeContentEvent.args.stakedContentId;
 
-		result = await aostakedcontent.create(account2, contentId2, 0, 0, "", 1000000, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId2, contentId2, 0, 0, "", 1000000, 100000, { from: whitelistedAddress });
 		stakeContentEvent = result.logs[0];
 		stakedContentId2 = stakeContentEvent.args.stakedContentId;
 
-		result = await aostakedcontent.create(account1, contentId3, 1000000, 0, "ao", 0, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId1, contentId3, 1000000, 0, "ao", 0, 100000, { from: whitelistedAddress });
 		stakeContentEvent = result.logs[0];
 		stakedContentId3 = stakeContentEvent.args.stakedContentId;
 
 		result = await aocontenthost.create(
-			account1,
+			nameId1,
 			stakedContentId1,
 			account1EncChallenge,
 			account1ContentDatKey,
@@ -347,7 +367,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		contentHostId1 = hostContentEvent.args.contentHostId;
 
 		result = await aocontenthost.create(
-			account2,
+			nameId2,
 			stakedContentId2,
 			account2EncChallenge,
 			account2ContentDatKey,
@@ -360,7 +380,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		contentHostId2 = hostContentEvent.args.contentHostId;
 
 		result = await aocontenthost.create(
-			account1,
+			nameId1,
 			stakedContentId3,
 			account1EncChallenge,
 			account1ContentDatKey,
@@ -481,6 +501,28 @@ contract("AOPurchaseReceipt", function(accounts) {
 
 		var aoEarningAddress = await aopurchasereceipt.aoEarningAddress();
 		assert.equal(aoEarningAddress, aoearning.address, "Contract has incorrect aoEarningAddress");
+	});
+
+	it("The AO - setNameFactoryAddress() should be able to set NameFactory address", async function() {
+		var canSetAddress;
+		try {
+			await aopurchasereceipt.setNameFactoryAddress(namefactory.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameFactory address");
+
+		try {
+			await aopurchasereceipt.setNameFactoryAddress(namefactory.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameFactory address");
+
+		var nameFactoryAddress = await aopurchasereceipt.nameFactoryAddress();
+		assert.equal(nameFactoryAddress, namefactory.address, "Contract has incorrect nameFactoryAddress");
 	});
 
 	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
@@ -614,6 +656,26 @@ contract("AOPurchaseReceipt", function(accounts) {
 			purchaseReceiptId = null;
 		}
 		assert.equal(canBuyContent, false, "Account without enough ions balance can buy hosted content");
+
+		try {
+			var result = await aopurchasereceipt.buyContent(
+				contentId1,
+				5,
+				0,
+				"mega",
+				account5LocalIdentity.publicKey,
+				account5LocalIdentity.address,
+				{ from: account5 }
+			);
+			canBuyContent = true;
+			buyContentEvent = result.logs[0];
+			purchaseReceiptId = buyContentEvent.args.purchaseReceiptId;
+		} catch (e) {
+			canBuyContent = false;
+			buyContentEvent = null;
+			purchaseReceiptId = null;
+		}
+		assert.equal(canBuyContent, false, "Account that is not associated with a Name can buy hosted content");
 	});
 
 	it("buyContent() - should be able to buy content and store all of the earnings of stake owner (content creator)/host/The AO in escrow", async function() {
@@ -667,17 +729,17 @@ contract("AOPurchaseReceipt", function(accounts) {
 	it("senderIsBuyer() - should be able to check whether or not an address is the buyer of a Purchase Receipt", async function() {
 		var canGetSenderIsBuyer, senderIsBuyer;
 		try {
-			senderIsBuyer = await aopurchasereceipt.senderIsBuyer(someAddress, account3);
+			senderIsBuyer = await aopurchasereceipt.senderIsBuyer(someAddress, nameId3);
 			canGetSenderIsBuyer = true;
 		} catch (e) {
 			canGetSenderIsBuyer = false;
 		}
 		assert.equal(canGetSenderIsBuyer, false, "Contract can get senderIsBuyer() of non-exist purchaseReceiptId");
 
-		senderIsBuyer = await aopurchasereceipt.senderIsBuyer(purchaseReceiptId1, account1);
+		senderIsBuyer = await aopurchasereceipt.senderIsBuyer(purchaseReceiptId1, nameId1);
 		assert.equal(senderIsBuyer, false, "senderIsBuyer() returns incorrect value");
 
-		senderIsBuyer = await aopurchasereceipt.senderIsBuyer(purchaseReceiptId1, account3);
+		senderIsBuyer = await aopurchasereceipt.senderIsBuyer(purchaseReceiptId1, nameId3);
 		assert.equal(senderIsBuyer, true, "senderIsBuyer() returns incorrect value");
 	});
 });

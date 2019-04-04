@@ -9,6 +9,7 @@ import './IAOStakedContent.sol';
 import './IAOContentHost.sol';
 import './IAOTreasury.sol';
 import './IAOEarning.sol';
+import './INameFactory.sol';
 
 /**
  * @title AOPurchaseReceipt
@@ -22,12 +23,14 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	address public aoContentHostAddress;
 	address public aoTreasuryAddress;
 	address public aoEarningAddress;
+	address public nameFactoryAddress;
 
 	IAOContent internal _aoContent;
 	IAOStakedContent internal _aoStakedContent;
 	IAOContentHost internal _aoContentHost;
 	IAOTreasury internal _aoTreasury;
 	IAOEarning internal _aoEarning;
+	INameFactory internal _nameFactory;
 
 	struct PurchaseReceipt {
 		bytes32 purchaseReceiptId;
@@ -74,18 +77,21 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	 * @param _aoStakedContentAddress The address of AOStakedContent
 	 * @param _aoTreasuryAddress The address of AOTreasury
 	 * @param _aoEarningAddress The address of AOEarning
+	 * @param _nameFactoryAddress The address of NameFactory
 	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
 	constructor(address _aoContentAddress,
 		address _aoStakedContentAddress,
 		address _aoTreasuryAddress,
 		address _aoEarningAddress,
+		address _nameFactoryAddress,
 		address _nameTAOPositionAddress
 		) public {
 		setAOContentAddress(_aoContentAddress);
 		setAOStakedContentAddress(_aoStakedContentAddress);
 		setAOTreasuryAddress(_aoTreasuryAddress);
 		setAOEarningAddress(_aoEarningAddress);
+		setNameFactoryAddress(_nameFactoryAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
@@ -170,6 +176,16 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 	}
 
 	/**
+	 * @dev The AO sets NameFactory address
+	 * @param _nameFactoryAddress The address of NameFactory
+	 */
+	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
+		require (_nameFactoryAddress != address(0));
+		nameFactoryAddress = _nameFactoryAddress;
+		_nameFactory = INameFactory(_nameFactoryAddress);
+	}
+
+	/**
 	 * @dev The AO sets NameTAOPosition address
 	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
@@ -195,7 +211,9 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 		string _publicKey,
 		address _publicAddress
 	) public {
-		require (_canBuy(msg.sender, _contentHostId, _publicKey, _publicAddress));
+		address _buyerNameId = _nameFactory.ethAddressToNameId(msg.sender);
+		require (_buyerNameId != address(0));
+		require (_canBuy(_buyerNameId, _contentHostId, _publicKey, _publicAddress));
 
 		(bytes32 _stakedContentId, bytes32 _contentId,,,) = _aoContentHost.getById(_contentHostId);
 
@@ -208,7 +226,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 		totalPurchaseReceipts++;
 
 		// Generate purchaseReceiptId
-		bytes32 _purchaseReceiptId = keccak256(abi.encodePacked(this, msg.sender, _contentHostId));
+		bytes32 _purchaseReceiptId = keccak256(abi.encodePacked(this, _buyerNameId, _contentHostId));
 		PurchaseReceipt storage _purchaseReceipt = purchaseReceipts[totalPurchaseReceipts];
 
 		// Make sure the node doesn't buy the same content twice
@@ -218,7 +236,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 		_purchaseReceipt.contentHostId = _contentHostId;
 		_purchaseReceipt.stakedContentId = _stakedContentId;
 		_purchaseReceipt.contentId = _contentId;
-		_purchaseReceipt.buyer = msg.sender;
+		_purchaseReceipt.buyer = _buyerNameId;
 		// Update the receipt with the correct network amount
 		_purchaseReceipt.price = _aoContentHost.contentHostPrice(_contentHostId);
 		_purchaseReceipt.amountPaidByAO = _aoContentHost.contentHostPaidByAO(_contentHostId);
@@ -228,7 +246,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 		_purchaseReceipt.createdOnTimestamp = now;
 
 		purchaseReceiptIndex[_purchaseReceiptId] = totalPurchaseReceipts;
-		buyerPurchaseReceipts[msg.sender][_contentHostId] = _purchaseReceiptId;
+		buyerPurchaseReceipts[_buyerNameId][_contentHostId] = _purchaseReceiptId;
 
 		// Calculate content creator/host/The AO earning from this purchase and store them in escrow
 		require (_aoEarning.calculateEarning(_purchaseReceiptId));
@@ -322,6 +340,7 @@ contract AOPurchaseReceipt is TheAO, IAOPurchaseReceipt {
 		return (_aoContentHost.isExist(_contentHostId) &&
 			_buyer != address(0) &&
 			_buyer != _host &&
+			AOLibrary.isName(_buyer) &&
 			bytes(_publicKey).length > 0 &&
 			_publicAddress != address(0) &&
 			_aoStakedContent.isActive(_stakedContentId) &&

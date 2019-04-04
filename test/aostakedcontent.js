@@ -7,6 +7,7 @@ var AOSetting = artifacts.require("./AOSetting.sol");
 var AOContent = artifacts.require("./AOContent.sol");
 var AOStakedContent = artifacts.require("./AOStakedContent.sol");
 var Logos = artifacts.require("./Logos.sol");
+var NamePublicKey = artifacts.require("./NamePublicKey.sol");
 
 var BigNumber = require("bignumber.js");
 
@@ -22,6 +23,7 @@ contract("AOStakedContent", function(accounts) {
 		aocontent,
 		aostakedcontent,
 		logos,
+		namepublickey,
 		settingTAOId,
 		contentUsageType_aoContent,
 		contentUsageType_creativeCommons,
@@ -59,6 +61,7 @@ contract("AOStakedContent", function(accounts) {
 		aocontent = await AOContent.deployed();
 		aostakedcontent = await AOStakedContent.deployed();
 		logos = await Logos.deployed();
+		namepublickey = await NamePublicKey.deployed();
 
 		settingTAOId = await aocontent.settingTAOId();
 
@@ -163,12 +166,13 @@ contract("AOStakedContent", function(accounts) {
 		primordialAmount,
 		profitPercentage
 	) {
-		var accountBalanceBefore = await aoion.balanceOf(stakeOwner);
-		var accountStakedBalanceBefore = await aoion.stakedBalance(stakeOwner);
-		var accountWeightedMultiplierBefore = await aoion.weightedMultiplierByAddress(stakeOwner);
-		var accountPrimordialBalanceBefore = await aoion.primordialBalanceOf(stakeOwner);
+		var defaultKey = await namepublickey.getDefaultKey(stakeOwner);
+		var accountBalanceBefore = await aoion.balanceOf(defaultKey);
+		var accountStakedBalanceBefore = await aoion.stakedBalance(defaultKey);
+		var accountWeightedMultiplierBefore = await aoion.weightedMultiplierByAddress(defaultKey);
+		var accountPrimordialBalanceBefore = await aoion.primordialBalanceOf(defaultKey);
 		var accountPrimordialStakedBalanceBefore = await aoion.primordialStakedBalance(
-			stakeOwner,
+			defaultKey,
 			accountWeightedMultiplierBefore.toNumber()
 		);
 
@@ -215,12 +219,12 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(stakedContent[6], true, "StakedContent has incorrect active");
 
 		// Verify the account balance after staking
-		var accountBalanceAfter = await aoion.balanceOf(stakeOwner);
-		var accountStakedBalanceAfter = await aoion.stakedBalance(stakeOwner);
-		var accountWeightedMultiplierAfter = await aoion.weightedMultiplierByAddress(stakeOwner);
-		var accountPrimordialBalanceAfter = await aoion.primordialBalanceOf(stakeOwner);
+		var accountBalanceAfter = await aoion.balanceOf(defaultKey);
+		var accountStakedBalanceAfter = await aoion.stakedBalance(defaultKey);
+		var accountWeightedMultiplierAfter = await aoion.weightedMultiplierByAddress(defaultKey);
+		var accountPrimordialBalanceAfter = await aoion.primordialBalanceOf(defaultKey);
 		var accountPrimordialStakedBalanceAfter = await aoion.primordialStakedBalance(
-			stakeOwner,
+			defaultKey,
 			accountWeightedMultiplierAfter.toNumber()
 		);
 
@@ -261,12 +265,14 @@ contract("AOStakedContent", function(accounts) {
 		denomination,
 		primordialAmount
 	) {
+		var nameId = await namefactory.ethAddressToNameId(account);
+		var defaultKey = await namepublickey.getDefaultKey(nameId);
 		var stakedContentBefore = await aostakedcontent.getById(stakedContentId);
-		var accountBalanceBefore = await aoion.balanceOf(account);
-		var accountStakedBalanceBefore = await aoion.stakedBalance(account);
-		var accountWeightedMultiplierBefore = await aoion.weightedMultiplierByAddress(account);
-		var accountPrimordialBalanceBefore = await aoion.primordialBalanceOf(account);
-		var accountPrimordialStakedBalanceBefore = await aoion.primordialStakedBalance(account, stakedContentBefore[4].toString());
+		var accountBalanceBefore = await aoion.balanceOf(defaultKey);
+		var accountStakedBalanceBefore = await aoion.stakedBalance(defaultKey);
+		var accountWeightedMultiplierBefore = await aoion.weightedMultiplierByAddress(defaultKey);
+		var accountPrimordialBalanceBefore = await aoion.primordialBalanceOf(defaultKey);
+		var accountPrimordialStakedBalanceBefore = await aoion.primordialStakedBalance(defaultKey, stakedContentBefore[4].toString());
 
 		var networkAmount =
 			networkIntegerAmount > 0 || networkFractionAmount > 0
@@ -293,11 +299,11 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canUnstakePartial, true, "Stake owner was unable to partially unstake ions from existing staked content.");
 
 		var stakedContentAfter = await aostakedcontent.getById(stakedContentId);
-		var accountBalanceAfter = await aoion.balanceOf(account);
-		var accountStakedBalanceAfter = await aoion.stakedBalance(account);
-		var accountWeightedMultiplierAfter = await aoion.weightedMultiplierByAddress(account);
-		var accountPrimordialBalanceAfter = await aoion.primordialBalanceOf(account);
-		var accountPrimordialStakedBalanceAfter = await aoion.primordialStakedBalance(account, stakedContentAfter[4].toString());
+		var accountBalanceAfter = await aoion.balanceOf(defaultKey);
+		var accountStakedBalanceAfter = await aoion.stakedBalance(defaultKey);
+		var accountWeightedMultiplierAfter = await aoion.weightedMultiplierByAddress(defaultKey);
+		var accountPrimordialBalanceAfter = await aoion.primordialBalanceOf(defaultKey);
+		var accountPrimordialStakedBalanceAfter = await aoion.primordialStakedBalance(defaultKey, stakedContentAfter[4].toString());
 
 		assert.equal(
 			stakedContentAfter[2].toString(),
@@ -343,12 +349,14 @@ contract("AOStakedContent", function(accounts) {
 	};
 
 	var unstakeContent = async function(account, stakedContentId) {
+		var nameId = await namefactory.ethAddressToNameId(account);
+		var defaultKey = await namepublickey.getDefaultKey(nameId);
 		var stakedContentBefore = await aostakedcontent.getById(stakedContentId);
-		var accountBalanceBefore = await aoion.balanceOf(account);
-		var accountStakedBalanceBefore = await aoion.stakedBalance(account);
-		var accountWeightedMultiplierBefore = await aoion.weightedMultiplierByAddress(account);
-		var accountPrimordialBalanceBefore = await aoion.primordialBalanceOf(account);
-		var accountPrimordialStakedBalanceBefore = await aoion.primordialStakedBalance(account, stakedContentBefore[4].toString());
+		var accountBalanceBefore = await aoion.balanceOf(defaultKey);
+		var accountStakedBalanceBefore = await aoion.stakedBalance(defaultKey);
+		var accountWeightedMultiplierBefore = await aoion.weightedMultiplierByAddress(defaultKey);
+		var accountPrimordialBalanceBefore = await aoion.primordialBalanceOf(defaultKey);
+		var accountPrimordialStakedBalanceBefore = await aoion.primordialStakedBalance(defaultKey, stakedContentBefore[4].toString());
 
 		var networkAmount = stakedContentBefore[2];
 		var primordialAmount = stakedContentBefore[3];
@@ -363,11 +371,11 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canUnstake, true, "Stake owner address unable to unstake network and primordial ions from existing staked content");
 
 		var stakedContentAfter = await aostakedcontent.getById(stakedContentId);
-		var accountBalanceAfter = await aoion.balanceOf(account);
-		var accountStakedBalanceAfter = await aoion.stakedBalance(account);
-		var accountWeightedMultiplierAfter = await aoion.weightedMultiplierByAddress(account);
-		var accountPrimordialBalanceAfter = await aoion.primordialBalanceOf(account);
-		var accountPrimordialStakedBalanceAfter = await aoion.primordialStakedBalance(account, stakedContentBefore[4].toString());
+		var accountBalanceAfter = await aoion.balanceOf(defaultKey);
+		var accountStakedBalanceAfter = await aoion.stakedBalance(defaultKey);
+		var accountWeightedMultiplierAfter = await aoion.weightedMultiplierByAddress(defaultKey);
+		var accountPrimordialBalanceAfter = await aoion.primordialBalanceOf(defaultKey);
+		var accountPrimordialStakedBalanceAfter = await aoion.primordialStakedBalance(defaultKey, stakedContentBefore[4].toString());
 
 		assert.equal(stakedContentAfter[2].toString(), 0, "Staked content has incorrect networkAmount after unstaking");
 		assert.equal(stakedContentAfter[3].toString(), 0, "Staked content has incorrect primordialAmount after unstaking");
@@ -408,12 +416,17 @@ contract("AOStakedContent", function(accounts) {
 		denomination,
 		primordialAmount
 	) {
+		var nameId = await namefactory.ethAddressToNameId(account);
+		var defaultKey = await namepublickey.getDefaultKey(nameId);
 		var stakedContentBefore = await aostakedcontent.getById(stakedContentId);
-		var accountBalanceBefore = await aoion.balanceOf(account);
-		var accountStakedBalanceBefore = await aoion.stakedBalance(account);
-		var accountWeightedMultiplierBefore = await aoion.weightedMultiplierByAddress(account);
-		var accountPrimordialBalanceBefore = await aoion.primordialBalanceOf(account);
-		var accountPrimordialStakedBalanceBefore = await aoion.primordialStakedBalance(account, accountWeightedMultiplierBefore.toString());
+		var accountBalanceBefore = await aoion.balanceOf(defaultKey);
+		var accountStakedBalanceBefore = await aoion.stakedBalance(defaultKey);
+		var accountWeightedMultiplierBefore = await aoion.weightedMultiplierByAddress(defaultKey);
+		var accountPrimordialBalanceBefore = await aoion.primordialBalanceOf(defaultKey);
+		var accountPrimordialStakedBalanceBefore = await aoion.primordialStakedBalance(
+			defaultKey,
+			accountWeightedMultiplierBefore.toString()
+		);
 
 		var canStakeExisting;
 		try {
@@ -439,11 +452,11 @@ contract("AOStakedContent", function(accounts) {
 				: 0;
 
 		var stakedContentAfter = await aostakedcontent.getById(stakedContentId);
-		var accountBalanceAfter = await aoion.balanceOf(account);
-		var accountStakedBalanceAfter = await aoion.stakedBalance(account);
-		var accountWeightedMultiplierAfter = await aoion.weightedMultiplierByAddress(account);
-		var accountPrimordialBalanceAfter = await aoion.primordialBalanceOf(account);
-		var accountPrimordialStakedBalanceAfter = await aoion.primordialStakedBalance(account, stakedContentAfter[4].toString());
+		var accountBalanceAfter = await aoion.balanceOf(defaultKey);
+		var accountStakedBalanceAfter = await aoion.stakedBalance(defaultKey);
+		var accountWeightedMultiplierAfter = await aoion.weightedMultiplierByAddress(defaultKey);
+		var accountPrimordialBalanceAfter = await aoion.primordialBalanceOf(defaultKey);
+		var accountPrimordialStakedBalanceAfter = await aoion.primordialStakedBalance(defaultKey, stakedContentAfter[4].toString());
 
 		assert.equal(
 			stakedContentAfter[2].toString(),
@@ -533,19 +546,19 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
 
 		// Create several contents
-		var result = await aocontent.create(account1, baseChallenge, fileSize, contentUsageType_aoContent, emptyAddress, {
+		var result = await aocontent.create(nameId1, baseChallenge, fileSize, contentUsageType_aoContent, emptyAddress, {
 			from: whitelistedAddress
 		});
 		var storeContentEvent = result.logs[0];
 		contentId1 = storeContentEvent.args.contentId;
 
-		result = await aocontent.create(account2, baseChallenge, fileSize, contentUsageType_creativeCommons, emptyAddress, {
+		result = await aocontent.create(nameId2, baseChallenge, fileSize, contentUsageType_creativeCommons, emptyAddress, {
 			from: whitelistedAddress
 		});
 		storeContentEvent = result.logs[0];
 		contentId2 = storeContentEvent.args.contentId;
 
-		result = await aocontent.create(account1, baseChallenge, fileSize, contentUsageType_taoContent, taoId1, {
+		result = await aocontent.create(nameId1, baseChallenge, fileSize, contentUsageType_taoContent, taoId1, {
 			from: whitelistedAddress
 		});
 		storeContentEvent = result.logs[0];
@@ -618,6 +631,28 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(aoContentAddress, aocontent.address, "Contract has incorrect aoContentAddress");
 	});
 
+	it("The AO - setNamePublicKeyAddress() should be able to set NamePublicKey address", async function() {
+		var canSetAddress;
+		try {
+			await aostakedcontent.setNamePublicKeyAddress(namepublickey.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NamePublicKey address");
+
+		try {
+			await aostakedcontent.setNamePublicKeyAddress(namepublickey.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NamePublicKey address");
+
+		var namePublicKeyAddress = await aostakedcontent.namePublicKeyAddress();
+		assert.equal(namePublicKeyAddress, namepublickey.address, "Contract has incorrect namePublicKeyAddress");
+	});
+
 	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
 		var canSetAddress;
 		try {
@@ -643,7 +678,7 @@ contract("AOStakedContent", function(accounts) {
 	it("Whitelisted Address - should not be able to stake content with invalid params", async function() {
 		var canStake, stakeContentEvent, stakedContentId;
 		try {
-			var result = await aostakedcontent.create(account1, contentId1, 1000000, 0, "ao", 0, 80000, {
+			var result = await aostakedcontent.create(nameId1, contentId1, 1000000, 0, "ao", 0, 80000, {
 				from: someAddress
 			});
 			canStake = true;
@@ -657,7 +692,21 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Non-whitelisted address can stake content");
 
 		try {
-			var result = await aostakedcontent.create(account2, contentId1, 1000000, 0, "ao", 0, 80000, {
+			var result = await aostakedcontent.create(account1, contentId1, 1000000, 0, "ao", 0, 80000, {
+				from: whitelisteedAddress
+			});
+			canStake = true;
+			stakeContentEvent = result.logs[0];
+			stakedContentId = stakeContentEvent.args.stakedContentId;
+		} catch (e) {
+			canStake = false;
+			stakeContentEvent = null;
+			stakedContentId = null;
+		}
+		assert.equal(canStake, false, "Whitelisted address can stake content even though stake owner is not a Name");
+
+		try {
+			var result = await aostakedcontent.create(nameId2, contentId1, 1000000, 0, "ao", 0, 80000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -675,7 +724,7 @@ contract("AOStakedContent", function(accounts) {
 		);
 
 		try {
-			var result = await aostakedcontent.create(account1, "someid", 1000000, 0, "ao", 0, 80000, {
+			var result = await aostakedcontent.create(nameId1, "someid", 1000000, 0, "ao", 0, 80000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -689,7 +738,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Whitelisted address can stake content for non-existing content ID");
 
 		try {
-			var result = await aostakedcontent.create(account1, contentId1, 100000, 0, "ao", 2000, 80000, {
+			var result = await aostakedcontent.create(nameId1, contentId1, 100000, 0, "ao", 2000, 80000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -703,7 +752,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Whitelisted address can stake content with price less than fileSize");
 
 		try {
-			var result = await aostakedcontent.create(account1, contentId1, 1000000, 0, "deca", 0, 80000, {
+			var result = await aostakedcontent.create(nameId1, contentId1, 1000000, 0, "deca", 0, 80000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -717,7 +766,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Whitelisted address can stake content with invalid denomination");
 
 		try {
-			var result = await aostakedcontent.create(account1, contentId1, 10 ** 10, 0, "ao", 0, 80000, {
+			var result = await aostakedcontent.create(nameId1, contentId1, 10 ** 10, 0, "ao", 0, 80000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -731,7 +780,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Whitelisted address can stake content with more than owned AO balance");
 
 		try {
-			var result = await aostakedcontent.create(account1, contentId1, 0, 0, "ao", 10 ** 10, 80000, {
+			var result = await aostakedcontent.create(nameId1, contentId1, 0, 0, "ao", 10 ** 10, 80000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -745,7 +794,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Whitelisted address can stake content with more than owned AO+ balance");
 
 		try {
-			var result = await aostakedcontent.create(account1, contentId1, 1000000, 0, "ao", 0, 10000000, {
+			var result = await aostakedcontent.create(nameId1, contentId1, 1000000, 0, "ao", 0, 10000000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -759,7 +808,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Whitelisted address can stake content with invalid profitPercentage");
 
 		try {
-			var result = await aostakedcontent.create(account2, contentId2, 2, 0, "mega", 1000, 10000000, {
+			var result = await aostakedcontent.create(nameId2, contentId2, 2, 0, "mega", 1000, 10000000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -777,7 +826,7 @@ contract("AOStakedContent", function(accounts) {
 		);
 
 		try {
-			var result = await aostakedcontent.create(account1, contentId3, 2, 0, "mega", 1000, 10000000, {
+			var result = await aostakedcontent.create(nameId1, contentId3, 2, 0, "mega", 1000, 10000000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -792,9 +841,9 @@ contract("AOStakedContent", function(accounts) {
 	});
 
 	it("Whitelisted Address - should be able to stake content", async function() {
-		stakedContentId1 = await create(account1, contentId1, 4, 1000, "mega", 100000, 100000);
-		stakedContentId2 = await create(account2, contentId2, 0, 0, "", 1000000, 100000);
-		stakedContentId3 = await create(account1, contentId3, 1000000, 0, "ao", 0, 100000);
+		stakedContentId1 = await create(nameId1, contentId1, 4, 1000, "mega", 100000, 100000);
+		stakedContentId2 = await create(nameId2, contentId2, 0, 0, "", 1000000, 100000);
+		stakedContentId3 = await create(nameId1, contentId3, 1000000, 0, "ao", 0, 100000);
 	});
 
 	it("setProfitPercentage() - should NOT be able to set profit percentage on non-existing staked content", async function() {

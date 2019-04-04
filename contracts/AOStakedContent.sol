@@ -7,6 +7,8 @@ import './IAOStakedContent.sol';
 import './AOIon.sol';
 import './IAOTreasury.sol';
 import './IAOContent.sol';
+import './INameFactory.sol';
+import './INamePublicKey.sol';
 
 /**
  * @title AOStakedContent
@@ -18,10 +20,14 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 	address public aoIonAddress;
 	address public aoTreasuryAddress;
 	address public aoContentAddress;
+	address public nameFactoryAddress;
+	address public namePublicKeyAddress;
 
 	AOIon internal _aoIon;
 	IAOTreasury internal _aoTreasury;
 	IAOContent internal _aoContent;
+	INameFactory internal _nameFactory;
+	INamePublicKey internal _namePublicKey;
 
 	struct StakedContent {
 		bytes32 stakedContentId;
@@ -84,12 +90,16 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 	 * @param _aoIonAddress The address of AOIon
 	 * @param _aoTreasuryAddress The address of AOTreasury
 	 * @param _aoContentAddress The address of AOContent
+	 * @param _nameFactoryAddress The address of NameFactory
+	 * @param _namePublicKeyAddress The address of NamePublicKey
 	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
-	constructor(address _aoIonAddress, address _aoTreasuryAddress, address _aoContentAddress, address _nameTAOPositionAddress) public {
+	constructor(address _aoIonAddress, address _aoTreasuryAddress, address _aoContentAddress, address _nameFactoryAddress, address _namePublicKeyAddress, address _nameTAOPositionAddress) public {
 		setAOIonAddress(_aoIonAddress);
 		setAOTreasuryAddress(_aoTreasuryAddress);
 		setAOContentAddress(_aoContentAddress);
+		setNameFactoryAddress(_nameFactoryAddress);
+		setNamePublicKeyAddress(_namePublicKeyAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
@@ -154,6 +164,26 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 	}
 
 	/**
+	 * @dev The AO sets NameFactory address
+	 * @param _nameFactoryAddress The address of NameFactory
+	 */
+	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
+		require (_nameFactoryAddress != address(0));
+		nameFactoryAddress = _nameFactoryAddress;
+		_nameFactory = INameFactory(_nameFactoryAddress);
+	}
+
+	/**
+	 * @dev The AO sets NamePublicKey address
+	 * @param _namePublicKeyAddress The address of NamePublicKey
+	 */
+	function setNamePublicKeyAddress(address _namePublicKeyAddress) public onlyTheAO {
+		require (_namePublicKeyAddress != address(0));
+		namePublicKeyAddress = _namePublicKeyAddress;
+		_namePublicKey = INamePublicKey(_namePublicKeyAddress);
+	}
+
+	/**
 	 * @dev The AO sets NameTAOPosition address
 	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
@@ -202,14 +232,14 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 
 		if (_aoTreasury.isDenominationExist(_denomination) && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			_stakedContent.networkAmount = _aoTreasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
-			require (_aoIon.stakeFrom(_stakeOwner, _stakedContent.networkAmount));
+			require (_aoIon.stakeFrom(_namePublicKey.getDefaultKey(_stakeOwner), _stakedContent.networkAmount));
 		}
 		if (_primordialAmount > 0) {
 			_stakedContent.primordialAmount = _primordialAmount;
 
 			// Primordial ion is the base AO ion
-			_stakedContent.primordialWeightedMultiplier = _aoIon.weightedMultiplierByAddress(_stakedContent.stakeOwner);
-			require (_aoIon.stakePrimordialFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedMultiplier));
+			_stakedContent.primordialWeightedMultiplier = _aoIon.weightedMultiplierByAddress(_namePublicKey.getDefaultKey(_stakedContent.stakeOwner));
+			require (_aoIon.stakePrimordialFrom(_namePublicKey.getDefaultKey(_stakedContent.stakeOwner), _primordialAmount, _stakedContent.primordialWeightedMultiplier));
 		}
 
 		stakedContentIndex[_stakedContentId] = totalStakedContents;
@@ -230,9 +260,12 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		// Make sure the staked content exist
 		require (stakedContentIndex[_stakedContentId] > 0);
 
+		address _stakeOwnerNameId = _nameFactory.ethAddressToNameId(msg.sender);
+		require (_stakeOwnerNameId != address(0));
+
 		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakedContentId]];
 		// Make sure the staked content owner is the same as the sender
-		require (_stakedContent.stakeOwner == msg.sender);
+		require (_stakedContent.stakeOwner == _stakeOwnerNameId);
 
 		// Make sure we are updating profit percentage for AO Content only
 		// Creative Commons/T(AO) Content has 0 profit percentage
@@ -240,7 +273,7 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 
 		_stakedContent.profitPercentage = _profitPercentage;
 
-		emit SetProfitPercentage(msg.sender, _stakedContentId, _profitPercentage);
+		emit SetProfitPercentage(_stakeOwnerNameId, _stakedContentId, _profitPercentage);
 	}
 
 	/**
@@ -295,8 +328,11 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakedContentId]];
 		(, uint256 _fileSize,,,,,,,) = _aoContent.getById(_stakedContent.contentId);
 
+		address _stakeOwnerNameId = _nameFactory.ethAddressToNameId(msg.sender);
+		require (_stakeOwnerNameId != address(0));
+
 		// Make sure the staked content owner is the same as the sender
-		require (_stakedContent.stakeOwner == msg.sender);
+		require (_stakedContent.stakeOwner == _stakeOwnerNameId);
 		// Make sure the staked content is currently active (staked) with some amounts
 		require (this.isActive(_stakedContentId));
 		// Make sure the staked content has enough balance to unstake
@@ -305,11 +341,11 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		if (_aoTreasury.isDenominationExist(_denomination) && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			uint256 _unstakeNetworkAmount = _aoTreasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
 			_stakedContent.networkAmount = _stakedContent.networkAmount.sub(_unstakeNetworkAmount);
-			require (_aoIon.unstakeFrom(msg.sender, _unstakeNetworkAmount));
+			require (_aoIon.unstakeFrom(_namePublicKey.getDefaultKey(_stakeOwnerNameId), _unstakeNetworkAmount));
 		}
 		if (_primordialAmount > 0) {
 			_stakedContent.primordialAmount = _stakedContent.primordialAmount.sub(_primordialAmount);
-			require (_aoIon.unstakePrimordialFrom(msg.sender, _primordialAmount, _stakedContent.primordialWeightedMultiplier));
+			require (_aoIon.unstakePrimordialFrom(_namePublicKey.getDefaultKey(_stakeOwnerNameId), _primordialAmount, _stakedContent.primordialWeightedMultiplier));
 		}
 		emit UnstakePartialContent(_stakedContent.stakeOwner, _stakedContent.stakedContentId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedMultiplier);
 	}
@@ -323,8 +359,12 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		require (stakedContentIndex[_stakedContentId] > 0);
 
 		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakedContentId]];
+
+		address _stakeOwnerNameId = _nameFactory.ethAddressToNameId(msg.sender);
+		require (_stakeOwnerNameId != address(0));
+
 		// Make sure the staked content owner is the same as the sender
-		require (_stakedContent.stakeOwner == msg.sender);
+		require (_stakedContent.stakeOwner == _stakeOwnerNameId);
 		// Make sure the staked content is currently active (staked) with some amounts
 		require (this.isActive(_stakedContentId));
 		_stakedContent.active = false;
@@ -332,14 +372,14 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		if (_stakedContent.networkAmount > 0) {
 			uint256 _unstakeNetworkAmount = _stakedContent.networkAmount;
 			_stakedContent.networkAmount = 0;
-			require (_aoIon.unstakeFrom(msg.sender, _unstakeNetworkAmount));
+			require (_aoIon.unstakeFrom(_namePublicKey.getDefaultKey(_stakeOwnerNameId), _unstakeNetworkAmount));
 		}
 		if (_stakedContent.primordialAmount > 0) {
 			uint256 _primordialAmount = _stakedContent.primordialAmount;
 			uint256 _primordialWeightedMultiplier = _stakedContent.primordialWeightedMultiplier;
 			_stakedContent.primordialAmount = 0;
 			_stakedContent.primordialWeightedMultiplier = 0;
-			require (_aoIon.unstakePrimordialFrom(msg.sender, _primordialAmount, _primordialWeightedMultiplier));
+			require (_aoIon.unstakePrimordialFrom(_namePublicKey.getDefaultKey(_stakeOwnerNameId), _primordialAmount, _primordialWeightedMultiplier));
 		}
 		emit UnstakeContent(_stakedContent.stakeOwner, _stakedContentId);
 	}
@@ -365,8 +405,11 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		StakedContent storage _stakedContent = stakedContents[stakedContentIndex[_stakedContentId]];
 		(, uint256 _fileSize,,,,,,,) = _aoContent.getById(_stakedContent.contentId);
 
+		address _stakeOwnerNameId = _nameFactory.ethAddressToNameId(msg.sender);
+		require (_stakeOwnerNameId != address(0));
+
 		// Make sure the staked content owner is the same as the sender
-		require (_stakedContent.stakeOwner == msg.sender);
+		require (_stakedContent.stakeOwner == _stakeOwnerNameId);
 		require (_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0);
 		require (_canStakeExisting(_aoContent.isAOContentUsageType(_stakedContent.contentId), _fileSize, _stakedContent.networkAmount.add(_stakedContent.primordialAmount), _networkIntegerAmount, _networkFractionAmount, _denomination, _primordialAmount));
 
@@ -374,24 +417,24 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		// If we are currently staking an active staked content, then the stake owner's weighted multiplier has to match `stakedContent.primordialWeightedMultiplier`
 		// i.e, can't use a combination of different weighted multiplier. Stake owner has to call unstakeContent() to unstake all ions first
 		if (_primordialAmount > 0 && _stakedContent.active && _stakedContent.primordialAmount > 0 && _stakedContent.primordialWeightedMultiplier > 0) {
-			require (_aoIon.weightedMultiplierByAddress(msg.sender) == _stakedContent.primordialWeightedMultiplier);
+			require (_aoIon.weightedMultiplierByAddress(_namePublicKey.getDefaultKey(_stakeOwnerNameId)) == _stakedContent.primordialWeightedMultiplier);
 		}
 
 		_stakedContent.active = true;
 		if (_aoTreasury.isDenominationExist(_denomination) && (_networkIntegerAmount > 0 || _networkFractionAmount > 0)) {
 			uint256 _stakeNetworkAmount = _aoTreasury.toBase(_networkIntegerAmount, _networkFractionAmount, _denomination);
 			_stakedContent.networkAmount = _stakedContent.networkAmount.add(_stakeNetworkAmount);
-			require (_aoIon.stakeFrom(_stakedContent.stakeOwner, _stakeNetworkAmount));
+			require (_aoIon.stakeFrom(_namePublicKey.getDefaultKey(_stakedContent.stakeOwner), _stakeNetworkAmount));
 		}
 		if (_primordialAmount > 0) {
 			_stakedContent.primordialAmount = _stakedContent.primordialAmount.add(_primordialAmount);
 
 			// Primordial ion is the base AO ion
-			_stakedContent.primordialWeightedMultiplier = _aoIon.weightedMultiplierByAddress(_stakedContent.stakeOwner);
-			require (_aoIon.stakePrimordialFrom(_stakedContent.stakeOwner, _primordialAmount, _stakedContent.primordialWeightedMultiplier));
+			_stakedContent.primordialWeightedMultiplier = _aoIon.weightedMultiplierByAddress(_namePublicKey.getDefaultKey(_stakedContent.stakeOwner));
+			require (_aoIon.stakePrimordialFrom(_namePublicKey.getDefaultKey(_stakedContent.stakeOwner), _primordialAmount, _stakedContent.primordialWeightedMultiplier));
 		}
 
-		emit StakeExistingContent(msg.sender, _stakedContent.stakedContentId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedMultiplier);
+		emit StakeExistingContent(_stakeOwnerNameId, _stakedContent.stakedContentId, _stakedContent.contentId, _stakedContent.networkAmount, _stakedContent.primordialAmount, _stakedContent.primordialWeightedMultiplier);
 	}
 
 	/**
@@ -428,6 +471,7 @@ contract AOStakedContent is TheAO, IAOStakedContent {
 		uint256 _profitPercentage) internal view returns (bool) {
 		(address _contentCreator, uint256 _fileSize,,,,,,,) = _aoContent.getById(_contentId);
 		return (_stakeOwner != address(0) &&
+			AOLibrary.isName(_stakeOwner) &&
 			_stakeOwner == _contentCreator &&
 			(_networkIntegerAmount > 0 || _networkFractionAmount > 0 || _primordialAmount > 0) &&
 			(_aoContent.isAOContentUsageType(_contentId) ?

@@ -1644,6 +1644,9 @@ contract("AOIon & AOIonLot", function(accounts) {
 		};
 
 		before(async function() {
+			// Need to re-set theAO address because the migration script sets theAO to primordialTAOId
+			await aoion.transferOwnership(theAO, { from: theAO });
+
 			await aoion.setWhitelist(whitelistedAddress, true, { from: theAO });
 
 			// Create Name

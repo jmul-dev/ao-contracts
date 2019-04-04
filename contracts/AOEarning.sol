@@ -13,6 +13,7 @@ import './IAOContent.sol';
 import './IAOStakedContent.sol';
 import './IAOContentHost.sol';
 import './IAOPurchaseReceipt.sol';
+import './INamePublicKey.sol';
 
 /**
  * @title AOEarning
@@ -32,6 +33,7 @@ contract AOEarning is TheAO, IAOEarning {
 	address public aoStakedContentAddress;
 	address public aoContentHostAddress;
 	address public aoPurchaseReceiptAddress;
+	address public namePublicKeyAddress;
 
 	IAOSetting internal _aoSetting;
 	AOIon internal _aoIon;
@@ -42,6 +44,7 @@ contract AOEarning is TheAO, IAOEarning {
 	IAOStakedContent internal _aoStakedContent;
 	IAOContentHost internal _aoContentHost;
 	IAOPurchaseReceipt internal _aoPurchaseReceipt;
+	INamePublicKey internal _namePublicKey;
 
 	// Total earning from staking content from all nodes
 	uint256 public totalStakedContentEarning;
@@ -139,6 +142,7 @@ contract AOEarning is TheAO, IAOEarning {
 	 * @param _nameFactoryAddress The address of NameFactory
 	 * @param _pathosAddress The address of Pathos
 	 * @param _ethosAddress The address of Ethos
+	 * @param _namePublicKeyAddress The address of NamePublicKey
 	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
 	constructor(address _settingTAOId,
@@ -148,6 +152,7 @@ contract AOEarning is TheAO, IAOEarning {
 		address _pathosAddress,
 		address _ethosAddress,
 		address _aoContentAddress,
+		address _namePublicKeyAddress,
 		address _nameTAOPositionAddress) public {
 		setSettingTAOId(_settingTAOId);
 		setAOSettingAddress(_aoSettingAddress);
@@ -156,6 +161,7 @@ contract AOEarning is TheAO, IAOEarning {
 		setPathosAddress(_pathosAddress);
 		setEthosAddress(_ethosAddress);
 		setAOContentAddress(_aoContentAddress);
+		setNamePublicKeyAddress(_namePublicKeyAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
@@ -289,6 +295,16 @@ contract AOEarning is TheAO, IAOEarning {
 	}
 
 	/**
+	 * @dev The AO sets NamePublicKey address
+	 * @param _namePublicKeyAddress The address of NamePublicKey
+	 */
+	function setNamePublicKeyAddress(address _namePublicKeyAddress) public onlyTheAO {
+		require (_namePublicKeyAddress != address(0));
+		namePublicKeyAddress = _namePublicKeyAddress;
+		_namePublicKey = INamePublicKey(_namePublicKeyAddress);
+	}
+
+	/**
 	 * @dev The AO set the NameTAOPosition Address
 	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
@@ -389,7 +405,7 @@ contract AOEarning is TheAO, IAOEarning {
 		_ownerPurchaseReceiptStakeEarning.paymentEarning = _aoContent.isAOContentUsageType(_contentId) ? (_price.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR()) : 0;
 		// Pathos = Price X Node Share X Inflation Rate
 		_ownerPurchaseReceiptStakeEarning.pathosAmount = _price.mul(AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage)).mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR()).div(AOLibrary.PERCENTAGE_DIVISOR());
-		require (_aoIon.escrowFrom(_buyer, _stakeOwner, _ownerPurchaseReceiptStakeEarning.paymentEarning));
+		require (_aoIon.escrowFrom(_namePublicKey.getDefaultKey(_buyer), _namePublicKey.getDefaultKey(_stakeOwner), _ownerPurchaseReceiptStakeEarning.paymentEarning));
 		emit PaymentEarningEscrowed(_stakeOwner, _purchaseReceiptId, _price, _profitPercentage, _ownerPurchaseReceiptStakeEarning.paymentEarning, 0);
 		return (_ownerPurchaseReceiptStakeEarning.paymentEarning, _ownerPurchaseReceiptStakeEarning.pathosAmount);
 	}
@@ -414,10 +430,10 @@ contract AOEarning is TheAO, IAOEarning {
 		_ownerPurchaseReceiptHostEarning.ethosAmount = _price.mul(_profitPercentage).mul(inflationRate).div(AOLibrary.PERCENTAGE_DIVISOR()).div(AOLibrary.PERCENTAGE_DIVISOR());
 
 		if (_aoContent.isAOContentUsageType(_contentId)) {
-			require (_aoIon.escrowFrom(_buyer, _host, _ownerPurchaseReceiptHostEarning.paymentEarning));
+			require (_aoIon.escrowFrom(_namePublicKey.getDefaultKey(_buyer), _namePublicKey.getDefaultKey(_host), _ownerPurchaseReceiptHostEarning.paymentEarning));
 		} else {
 			// If not AO Content usage type, we want to mint to the host
-			require (_aoIon.mintEscrow(_host, _ownerPurchaseReceiptHostEarning.paymentEarning));
+			require (_aoIon.mintEscrow(_namePublicKey.getDefaultKey(_host), _ownerPurchaseReceiptHostEarning.paymentEarning));
 		}
 		emit PaymentEarningEscrowed(_host, _purchaseReceiptId, _price, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), _ownerPurchaseReceiptHostEarning.paymentEarning, 1);
 		return _ownerPurchaseReceiptHostEarning.ethosAmount;
@@ -460,13 +476,13 @@ contract AOEarning is TheAO, IAOEarning {
 			uint256 _stakeOwnerInflationBonus = _aoContent.isAOContentUsageType(_contentId) ? (_inflationBonusAmount.mul(_profitPercentage)).div(AOLibrary.PERCENTAGE_DIVISOR()) : 0;
 			Earning storage _ownerPurchaseReceiptStakeEarning = ownerPurchaseReceiptStakeEarnings[_stakeOwner][_purchaseReceiptId];
 			_ownerPurchaseReceiptStakeEarning.inflationBonus = _stakeOwnerInflationBonus;
-			require (_aoIon.mintEscrow(_stakeOwner, _ownerPurchaseReceiptStakeEarning.inflationBonus));
+			require (_aoIon.mintEscrow(_namePublicKey.getDefaultKey(_stakeOwner), _ownerPurchaseReceiptStakeEarning.inflationBonus));
 			emit InflationBonusEscrowed(_stakeOwner, _purchaseReceiptId, _inflationBonusAmount, _profitPercentage, _ownerPurchaseReceiptStakeEarning.inflationBonus, 0);
 
 			// Store how much the host earns in escrow
 			Earning storage _ownerPurchaseReceiptHostEarning = ownerPurchaseReceiptHostEarnings[_host][_purchaseReceiptId];
 			_ownerPurchaseReceiptHostEarning.inflationBonus = _inflationBonusAmount.sub(_stakeOwnerInflationBonus);
-			require (_aoIon.mintEscrow(_host, _ownerPurchaseReceiptHostEarning.inflationBonus));
+			require (_aoIon.mintEscrow(_namePublicKey.getDefaultKey(_host), _ownerPurchaseReceiptHostEarning.inflationBonus));
 			emit InflationBonusEscrowed(_host, _purchaseReceiptId, _inflationBonusAmount, AOLibrary.PERCENTAGE_DIVISOR().sub(_profitPercentage), _ownerPurchaseReceiptHostEarning.inflationBonus, 1);
 
 			// Store how much the The AO earns in escrow
@@ -537,8 +553,9 @@ contract AOEarning is TheAO, IAOEarning {
 			ownerInflationBonusAccrued[_account] = ownerInflationBonusAccrued[_account].add(_inflationBonus);
 
 			// Reward the content creator/stake owner with some Pathos
-			require (_pathos.mint(_nameFactory.ethAddressToNameId(_account), _pathosAmount));
-			emit PathosEarned(_nameFactory.ethAddressToNameId(_account), _purchaseReceiptId, _pathosAmount);
+			require (_pathos.mint(_account, _pathosAmount));
+			emit PathosEarned(_account, _purchaseReceiptId, _pathosAmount);
+			require (_aoIon.unescrowFrom(_namePublicKey.getDefaultKey(_account), _totalEarning));
 		} else if (_recipientType == 1) {
 			_earning = ownerPurchaseReceiptHostEarnings[_account][_purchaseReceiptId];
 			_paymentEarning = _earning.paymentEarning;
@@ -563,8 +580,9 @@ contract AOEarning is TheAO, IAOEarning {
 			ownerInflationBonusAccrued[_account] = ownerInflationBonusAccrued[_account].add(_inflationBonus);
 
 			// Reward the host node with some Ethos
-			require (_ethos.mint(_nameFactory.ethAddressToNameId(_account), _ethosAmount));
-			emit EthosEarned(_nameFactory.ethAddressToNameId(_account), _purchaseReceiptId, _ethosAmount);
+			require (_ethos.mint(_account, _ethosAmount));
+			emit EthosEarned(_account, _purchaseReceiptId, _ethosAmount);
+			require (_aoIon.unescrowFrom(_namePublicKey.getDefaultKey(_account), _totalEarning));
 		} else {
 			_earning = theAOPurchaseReceiptEarnings[_purchaseReceiptId];
 			_paymentEarning = _earning.paymentEarning;
@@ -579,8 +597,8 @@ contract AOEarning is TheAO, IAOEarning {
 			totalTheAOEarning = totalTheAOEarning.add(_totalEarning);
 			ownerInflationBonusAccrued[_account] = ownerInflationBonusAccrued[_account].add(_inflationBonus);
 			stakedContentTheAOEarning[_stakedContentId] = stakedContentTheAOEarning[_stakedContentId].add(_totalEarning);
+			require (_aoIon.unescrowFrom(_account, _totalEarning));
 		}
-		require (_aoIon.unescrowFrom(_account, _totalEarning));
 		emit EarningUnescrowed(_account, _purchaseReceiptId, _paymentEarning, _inflationBonus, _recipientType);
 	}
 

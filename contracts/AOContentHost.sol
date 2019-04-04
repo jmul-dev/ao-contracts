@@ -8,6 +8,7 @@ import './IAOContent.sol';
 import './IAOStakedContent.sol';
 import './IAOPurchaseReceipt.sol';
 import './IAOEarning.sol';
+import './INameFactory.sol';
 
 /**
  * @title AOContentHost
@@ -20,11 +21,13 @@ contract AOContentHost is TheAO, IAOContentHost {
 	address public aoStakedContentAddress;
 	address public aoPurchaseReceiptAddress;
 	address public aoEarningAddress;
+	address public nameFactoryAddress;
 
 	IAOContent internal _aoContent;
 	IAOStakedContent internal _aoStakedContent;
 	IAOPurchaseReceipt internal _aoPurchaseReceipt;
 	IAOEarning internal _aoEarning;
+	INameFactory internal _nameFactory;
 
 	struct ContentHost {
 		bytes32 contentHostId;
@@ -54,13 +57,15 @@ contract AOContentHost is TheAO, IAOContentHost {
 	 * @param _aoStakedContentAddress The address of AOStakedContent
 	 * @param _aoPurchaseReceiptAddress The address of AOPurchaseReceipt
 	 * @param _aoEarningAddress The address of AOEarning
+	 * @param _nameFactoryAddress The address of NameFactory
 	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
-	constructor(address _aoContentAddress, address _aoStakedContentAddress, address _aoPurchaseReceiptAddress, address _aoEarningAddress, address _nameTAOPositionAddress) public {
+	constructor(address _aoContentAddress, address _aoStakedContentAddress, address _aoPurchaseReceiptAddress, address _aoEarningAddress, address _nameFactoryAddress, address _nameTAOPositionAddress) public {
 		setAOContentAddress(_aoContentAddress);
 		setAOStakedContentAddress(_aoStakedContentAddress);
 		setAOPurchaseReceiptAddress(_aoPurchaseReceiptAddress);
 		setAOEarningAddress(_aoEarningAddress);
+		setNameFactoryAddress(_nameFactoryAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
@@ -132,6 +137,16 @@ contract AOContentHost is TheAO, IAOContentHost {
 		require (_aoEarningAddress != address(0));
 		aoEarningAddress = _aoEarningAddress;
 		_aoEarning = IAOEarning(_aoEarningAddress);
+	}
+
+	/**
+	 * @dev The AO sets NameFactory address
+	 * @param _nameFactoryAddress The address of NameFactory
+	 */
+	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
+		require (_nameFactoryAddress != address(0));
+		nameFactoryAddress = _nameFactoryAddress;
+		_nameFactory = INameFactory(_nameFactoryAddress);
 	}
 
 	/**
@@ -246,11 +261,13 @@ contract AOContentHost is TheAO, IAOContentHost {
 		string _contentDatKey,
 		string _metadataDatKey
 	) public {
-		require (_canBecomeHost(_purchaseReceiptId, msg.sender, _baseChallengeV, _baseChallengeR, _baseChallengeS));
+		address _hostNameId = _nameFactory.ethAddressToNameId(msg.sender);
+		require (_hostNameId != address(0));
+		require (_canBecomeHost(_purchaseReceiptId, _hostNameId, _baseChallengeV, _baseChallengeR, _baseChallengeS));
 
 		(, bytes32 _stakedContentId,,,,,,,,) = _aoPurchaseReceipt.getById(_purchaseReceiptId);
 
-		require (_create(msg.sender, _stakedContentId, _encChallenge, _contentDatKey, _metadataDatKey));
+		require (_create(_hostNameId, _stakedContentId, _encChallenge, _contentDatKey, _metadataDatKey));
 
 		// Release earning from escrow
 		require (_aoEarning.releaseEarning(_purchaseReceiptId));
@@ -268,6 +285,7 @@ contract AOContentHost is TheAO, IAOContentHost {
 	 */
 	function _create(address _host, bytes32 _stakedContentId, string _encChallenge, string _contentDatKey, string _metadataDatKey) internal returns (bool) {
 		require (_host != address(0));
+		require (AOLibrary.isName(_host));
 		require (bytes(_encChallenge).length > 0);
 		require (bytes(_contentDatKey).length > 0);
 		require (bytes(_metadataDatKey).length > 0);

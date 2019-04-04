@@ -1423,7 +1423,7 @@ module.exports = function(deployer, network, accounts) {
 		.then(async function() {
 			aoeth = await AOETH.deployed();
 
-			return deployer.deploy(AOContent, settingTAOId, aosetting.address, nametaoposition.address);
+			return deployer.deploy(AOContent, settingTAOId, aosetting.address, namefactory.address, nametaoposition.address);
 		})
 		.then(async function() {
 			aocontent = await AOContent.deployed();
@@ -1487,7 +1487,15 @@ module.exports = function(deployer, network, accounts) {
 			// AOETH grant access to AOIon
 			await aoeth.setWhitelist(aoion.address, true, { from: primordialAccount });
 
-			return deployer.deploy(AOStakedContent, aoion.address, aotreasury.address, aocontent.address, nametaoposition.address);
+			return deployer.deploy(
+				AOStakedContent,
+				aoion.address,
+				aotreasury.address,
+				aocontent.address,
+				namefactory.address,
+				namepublickey.address,
+				nametaoposition.address
+			);
 		})
 		.then(async function() {
 			aostakedcontent = await AOStakedContent.deployed();
@@ -1501,6 +1509,7 @@ module.exports = function(deployer, network, accounts) {
 				pathos.address,
 				ethos.address,
 				aocontent.address,
+				namepublickey.address,
 				nametaoposition.address
 			);
 		})
@@ -1528,6 +1537,7 @@ module.exports = function(deployer, network, accounts) {
 				aostakedcontent.address,
 				aotreasury.address,
 				aoearning.address,
+				namefactory.address,
 				nametaoposition.address
 			);
 		})
@@ -1546,6 +1556,7 @@ module.exports = function(deployer, network, accounts) {
 				aostakedcontent.address,
 				aopurchasereceipt.address,
 				aoearning.address,
+				namefactory.address,
 				nametaoposition.address
 			);
 		})
@@ -1573,6 +1584,7 @@ module.exports = function(deployer, network, accounts) {
 				aostakedcontent.address,
 				aocontenthost.address,
 				aoearning.address,
+				namefactory.address,
 				nametaoposition.address
 			);
 		})
@@ -1588,13 +1600,82 @@ module.exports = function(deployer, network, accounts) {
 			// AOContentHost grant access to AOContentFactory
 			await aocontenthost.setWhitelist(aocontentfactory.address, true, { from: primordialAccount });
 
-			// TODO: Transfer TheAO ownership to Primordial TAO
+			// Transfer TheAO ownership to Primordial TAO
+			await epiphany.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await voice.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await namefactory.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await nametaovault.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await taofactory.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await nametaoposition.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await nametaolookup.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await namepublickey.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await nameaccountrecovery.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await taoancestry.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await taovoice.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aosettingattribute.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aosettingvalue.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aosetting.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aosettingupdate.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aosettingdeprecation.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await logos.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await logoskilo.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await logosmega.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await logosgiga.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await logostera.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await logospeta.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await logosexa.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await logoszetta.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await logosyotta.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await logosxona.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await logostreasury.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await ethos.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await ethoskilo.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await ethosmega.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await ethosgiga.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await ethostera.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await ethospeta.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await ethosexa.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await ethoszetta.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await ethosyotta.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await ethosxona.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await ethostreasury.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await pathos.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await pathoskilo.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await pathosmega.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await pathosgiga.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await pathostera.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await pathospeta.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await pathosexa.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await pathoszetta.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await pathosyotta.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await pathosxona.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await pathostreasury.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await taopool.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aoion.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aokilo.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aomega.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aogiga.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aotera.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aopeta.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aoexa.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aozetta.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aoyotta.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aoxona.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aoionlot.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aopool.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aoeth.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aotreasury.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aocontent.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aostakedcontent.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aopurchasereceipt.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aocontenthost.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aoearning.transferOwnership(primordialTAOId, { from: primordialAccount });
+			await aocontentfactory.transferOwnership(primordialTAOId, { from: primordialAccount });
 
 			/**
 			 * For testing purposes:
 			 * Remove this later
 			 * --- START ---
-			 */
 			await aoion.setWhitelist(primordialAccount, true, { from: primordialAccount });
 			await aoion.mint(accounts[1], 10 ** 6, { from: primordialAccount }); // 1,000,000,000 AO Ion
 			// Buy 2 lots so that we can test avg weighted multiplier
