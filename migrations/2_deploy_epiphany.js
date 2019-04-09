@@ -4,5 +4,6 @@ var Epiphany = artifacts.require("./Epiphany.sol");
 module.exports = function(deployer) {
 	deployer.deploy(AOLibrary);
 	deployer.link(AOLibrary, Epiphany);
-	deployer.deploy(Epiphany, { overwrite: false });
+	//deployer.deploy(Epiphany, { overwrite: false });
+	deployer.deploy(Epiphany);
 };

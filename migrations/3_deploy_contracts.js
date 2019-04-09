@@ -257,11 +257,16 @@ module.exports = function(deployer, network, accounts) {
 
 	// Deploy Testing ERC20 tokens only in development network
 	if (network === "development") {
+		/*
 		deployer.deploy([
 			[TokenOne, 10 ** 6, "Token One", "TOKENONE"],
 			[TokenTwo, 10 ** 6, "Token Two", "TOKENTWO"],
 			[TokenThree, 10 ** 6, "Token Three", "TOKENTHREE"]
 		]);
+		*/
+		deployer.deploy(TokenOne, 10 ** 6, "Token One", "TOKENONE");
+		deployer.deploy(TokenTwo, 10 ** 6, "Token Two", "TOKENTWO");
+		deployer.deploy(TokenThree, 10 ** 6, "Token Three", "TOKENTHREE");
 	}
 
 	deployer
@@ -573,16 +578,16 @@ module.exports = function(deployer, network, accounts) {
 			await logos.setWhitelist(nametaoposition.address, true, { from: primordialAccount });
 
 			// Store Logos denominations in LogosTreasury
-			await logostreasury.addDenomination("logos", logos.address, { from: primordialAccount });
-			await logostreasury.addDenomination("kilo", logoskilo.address, { from: primordialAccount });
-			await logostreasury.addDenomination("mega", logosmega.address, { from: primordialAccount });
-			await logostreasury.addDenomination("giga", logosgiga.address, { from: primordialAccount });
-			await logostreasury.addDenomination("tera", logostera.address, { from: primordialAccount });
-			await logostreasury.addDenomination("peta", logospeta.address, { from: primordialAccount });
-			await logostreasury.addDenomination("exa", logosexa.address, { from: primordialAccount });
-			await logostreasury.addDenomination("zetta", logoszetta.address, { from: primordialAccount });
-			await logostreasury.addDenomination("yotta", logosyotta.address, { from: primordialAccount });
-			await logostreasury.addDenomination("xona", logosxona.address, { from: primordialAccount });
+			await logostreasury.addDenomination(web3.utils.toHex("logos"), logos.address, { from: primordialAccount });
+			await logostreasury.addDenomination(web3.utils.toHex("kilo"), logoskilo.address, { from: primordialAccount });
+			await logostreasury.addDenomination(web3.utils.toHex("mega"), logosmega.address, { from: primordialAccount });
+			await logostreasury.addDenomination(web3.utils.toHex("giga"), logosgiga.address, { from: primordialAccount });
+			await logostreasury.addDenomination(web3.utils.toHex("tera"), logostera.address, { from: primordialAccount });
+			await logostreasury.addDenomination(web3.utils.toHex("peta"), logospeta.address, { from: primordialAccount });
+			await logostreasury.addDenomination(web3.utils.toHex("exa"), logosexa.address, { from: primordialAccount });
+			await logostreasury.addDenomination(web3.utils.toHex("zetta"), logoszetta.address, { from: primordialAccount });
+			await logostreasury.addDenomination(web3.utils.toHex("yotta"), logosyotta.address, { from: primordialAccount });
+			await logostreasury.addDenomination(web3.utils.toHex("xona"), logosxona.address, { from: primordialAccount });
 
 			// Logos denominations grant access to LogosTreasury
 			await logos.setWhitelist(logostreasury.address, true, { from: primordialAccount });
@@ -597,16 +602,16 @@ module.exports = function(deployer, network, accounts) {
 			await logosxona.setWhitelist(logostreasury.address, true, { from: primordialAccount });
 
 			// Store Ethos denominations in EthosTreasury
-			await ethostreasury.addDenomination("ethos", ethos.address, { from: primordialAccount });
-			await ethostreasury.addDenomination("kilo", ethoskilo.address, { from: primordialAccount });
-			await ethostreasury.addDenomination("mega", ethosmega.address, { from: primordialAccount });
-			await ethostreasury.addDenomination("giga", ethosgiga.address, { from: primordialAccount });
-			await ethostreasury.addDenomination("tera", ethostera.address, { from: primordialAccount });
-			await ethostreasury.addDenomination("peta", ethospeta.address, { from: primordialAccount });
-			await ethostreasury.addDenomination("exa", ethosexa.address, { from: primordialAccount });
-			await ethostreasury.addDenomination("zetta", ethoszetta.address, { from: primordialAccount });
-			await ethostreasury.addDenomination("yotta", ethosyotta.address, { from: primordialAccount });
-			await ethostreasury.addDenomination("xona", ethosxona.address, { from: primordialAccount });
+			await ethostreasury.addDenomination(web3.utils.toHex("ethos"), ethos.address, { from: primordialAccount });
+			await ethostreasury.addDenomination(web3.utils.toHex("kilo"), ethoskilo.address, { from: primordialAccount });
+			await ethostreasury.addDenomination(web3.utils.toHex("mega"), ethosmega.address, { from: primordialAccount });
+			await ethostreasury.addDenomination(web3.utils.toHex("giga"), ethosgiga.address, { from: primordialAccount });
+			await ethostreasury.addDenomination(web3.utils.toHex("tera"), ethostera.address, { from: primordialAccount });
+			await ethostreasury.addDenomination(web3.utils.toHex("peta"), ethospeta.address, { from: primordialAccount });
+			await ethostreasury.addDenomination(web3.utils.toHex("exa"), ethosexa.address, { from: primordialAccount });
+			await ethostreasury.addDenomination(web3.utils.toHex("zetta"), ethoszetta.address, { from: primordialAccount });
+			await ethostreasury.addDenomination(web3.utils.toHex("yotta"), ethosyotta.address, { from: primordialAccount });
+			await ethostreasury.addDenomination(web3.utils.toHex("xona"), ethosxona.address, { from: primordialAccount });
 
 			// Ethos denominations grant access to EthosTreasury
 			await ethos.setWhitelist(ethostreasury.address, true, { from: primordialAccount });
@@ -621,16 +626,16 @@ module.exports = function(deployer, network, accounts) {
 			await ethosxona.setWhitelist(ethostreasury.address, true, { from: primordialAccount });
 
 			// Store Pathos denominations in PathosTreasury
-			await pathostreasury.addDenomination("pathos", pathos.address, { from: primordialAccount });
-			await pathostreasury.addDenomination("kilo", pathoskilo.address, { from: primordialAccount });
-			await pathostreasury.addDenomination("mega", pathosmega.address, { from: primordialAccount });
-			await pathostreasury.addDenomination("giga", pathosgiga.address, { from: primordialAccount });
-			await pathostreasury.addDenomination("tera", pathostera.address, { from: primordialAccount });
-			await pathostreasury.addDenomination("peta", pathospeta.address, { from: primordialAccount });
-			await pathostreasury.addDenomination("exa", pathosexa.address, { from: primordialAccount });
-			await pathostreasury.addDenomination("zetta", pathoszetta.address, { from: primordialAccount });
-			await pathostreasury.addDenomination("yotta", pathosyotta.address, { from: primordialAccount });
-			await pathostreasury.addDenomination("xona", pathosxona.address, { from: primordialAccount });
+			await pathostreasury.addDenomination(web3.utils.toHex("pathos"), pathos.address, { from: primordialAccount });
+			await pathostreasury.addDenomination(web3.utils.toHex("kilo"), pathoskilo.address, { from: primordialAccount });
+			await pathostreasury.addDenomination(web3.utils.toHex("mega"), pathosmega.address, { from: primordialAccount });
+			await pathostreasury.addDenomination(web3.utils.toHex("giga"), pathosgiga.address, { from: primordialAccount });
+			await pathostreasury.addDenomination(web3.utils.toHex("tera"), pathostera.address, { from: primordialAccount });
+			await pathostreasury.addDenomination(web3.utils.toHex("peta"), pathospeta.address, { from: primordialAccount });
+			await pathostreasury.addDenomination(web3.utils.toHex("exa"), pathosexa.address, { from: primordialAccount });
+			await pathostreasury.addDenomination(web3.utils.toHex("zetta"), pathoszetta.address, { from: primordialAccount });
+			await pathostreasury.addDenomination(web3.utils.toHex("yotta"), pathosyotta.address, { from: primordialAccount });
+			await pathostreasury.addDenomination(web3.utils.toHex("xona"), pathosxona.address, { from: primordialAccount });
 
 			// Pathos denominations grant access to PathosTreasury
 			await pathos.setWhitelist(pathostreasury.address, true, { from: primordialAccount });
@@ -729,7 +734,7 @@ module.exports = function(deployer, network, accounts) {
 			 * Create Primordial Name and Associated Name
 			 */
 			try {
-				var result = await namefactory.createName("alpha", "", "", "", "", {
+				var result = await namefactory.createName("alpha", "", "", "", web3.utils.toHex(""), {
 					from: primordialAccount
 				});
 				primordialNameId = await namefactory.ethAddressToNameId(primordialAccount);
@@ -739,7 +744,7 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			try {
-				var result = await namefactory.createName("beta", "", "", "", "", {
+				var result = await namefactory.createName("beta", "", "", "", web3.utils.toHex(""), {
 					from: settingAccount
 				});
 				settingNameId = await namefactory.ethAddressToNameId(settingAccount);
@@ -752,9 +757,20 @@ module.exports = function(deployer, network, accounts) {
 			 * Create Primordial TAO and Associated TAO that proposes Content Usage Setting creation
 			 */
 			try {
-				var result = await taofactory.createTAO("Primordial Thought of AO", "", "", "", "", primordialNameId, 0, false, 0, {
-					from: primordialAccount
-				});
+				var result = await taofactory.createTAO(
+					"Primordial Thought of AO",
+					"",
+					"",
+					"",
+					web3.utils.toHex(""),
+					primordialNameId,
+					0,
+					false,
+					0,
+					{
+						from: primordialAccount
+					}
+				);
 				var createTAOEvent = result.logs[0];
 				primordialTAOId = createTAOEvent.args.taoId;
 			} catch (e) {
@@ -763,7 +779,7 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			try {
-				var result = await taofactory.createTAO("Settings of AO", "", "", "", "", primordialTAOId, 0, false, 0, {
+				var result = await taofactory.createTAO("Settings of AO", "", "", "", web3.utils.toHex(""), primordialTAOId, 0, false, 0, {
 					from: settingAccount
 				});
 				var createTAOEvent = result.logs[0];
@@ -962,7 +978,7 @@ module.exports = function(deployer, network, accounts) {
 			try {
 				var result = await aosetting.addBytesSetting(
 					"contentUsageType_aoContent",
-					"AO Content",
+					web3.utils.toHex("AO Content"),
 					primordialTAOId,
 					settingTAOId,
 					"",
@@ -984,7 +1000,7 @@ module.exports = function(deployer, network, accounts) {
 			try {
 				var result = await aosetting.addBytesSetting(
 					"contentUsageType_creativeCommons",
-					"Creative Commons",
+					web3.utils.toHex("Creative Commons"),
 					primordialTAOId,
 					settingTAOId,
 					"",
@@ -1006,7 +1022,7 @@ module.exports = function(deployer, network, accounts) {
 			try {
 				var result = await aosetting.addBytesSetting(
 					"contentUsageType_taoContent",
-					"T(AO) Content",
+					web3.utils.toHex("T(AO) Content"),
 					primordialTAOId,
 					settingTAOId,
 					"",
@@ -1026,9 +1042,16 @@ module.exports = function(deployer, network, accounts) {
 			 * TAO Content State Submitted = Submitted
 			 */
 			try {
-				var result = await aosetting.addBytesSetting("taoContentState_submitted", "Submitted", primordialTAOId, settingTAOId, "", {
-					from: primordialAccount
-				});
+				var result = await aosetting.addBytesSetting(
+					"taoContentState_submitted",
+					web3.utils.toHex("Submitted"),
+					primordialTAOId,
+					settingTAOId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
 				var settingId = result.logs[0].args.settingId;
 
 				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
@@ -1043,7 +1066,7 @@ module.exports = function(deployer, network, accounts) {
 			try {
 				var result = await aosetting.addBytesSetting(
 					"taoContentState_pendingReview",
-					"Pending Review",
+					web3.utils.toHex("Pending Review"),
 					primordialTAOId,
 					settingTAOId,
 					"",
@@ -1065,7 +1088,7 @@ module.exports = function(deployer, network, accounts) {
 			try {
 				var result = await aosetting.addBytesSetting(
 					"taoContentState_acceptedToTAO",
-					"Accepted to TAO",
+					web3.utils.toHex("Accepted to TAO"),
 					primordialTAOId,
 					settingTAOId,
 					"",
