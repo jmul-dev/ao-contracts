@@ -12,6 +12,7 @@ var AOPurchaseReceipt = artifacts.require("./AOPurchaseReceipt.sol");
 var AOEarning = artifacts.require("./AOEarning.sol");
 var AOContentFactory = artifacts.require("./AOContentFactory.sol");
 var Logos = artifacts.require("./Logos.sol");
+var NamePublicKey = artifacts.require("./NamePublicKey.sol");
 
 var EthCrypto = require("eth-crypto");
 var BigNumber = require("bignumber.js");
@@ -33,6 +34,7 @@ contract("AOContentFactory", function(accounts) {
 		aoearning,
 		aocontentfactory,
 		logos,
+		namepublickey,
 		settingTAOId,
 		contentUsageType_aoContent,
 		contentUsageType_creativeCommons,
@@ -113,6 +115,7 @@ contract("AOContentFactory", function(accounts) {
 		aoearning = await AOEarning.deployed();
 		aocontentfactory = await AOContentFactory.deployed();
 		logos = await Logos.deployed();
+		namepublickey = await NamePublicKey.deployed();
 
 		settingTAOId = await aocontent.settingTAOId();
 
@@ -419,6 +422,28 @@ contract("AOContentFactory", function(accounts) {
 		assert.equal(aoEarningAddress, aoearning.address, "Contract has incorrect aoEarningAddress");
 	});
 
+	it("The AO - setNameFactoryAddress() should be able to set NameFactory address", async function() {
+		var canSetAddress;
+		try {
+			await aocontentfactory.setNameFactoryAddress(namefactory.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameFactory address");
+
+		try {
+			await aocontentfactory.setNameFactoryAddress(namefactory.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameFactory address");
+
+		var nameFactoryAddress = await aocontentfactory.nameFactoryAddress();
+		assert.equal(nameFactoryAddress, namefactory.address, "Contract has incorrect nameFactoryAddress");
+	});
+
 	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
 		var canSetAddress;
 		try {
@@ -447,7 +472,8 @@ contract("AOContentFactory", function(accounts) {
 		var denomination = "mega";
 		var primordialAmount = 1000;
 		var networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
-		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(account1);
+		var defaultKey = await namepublickey.getDefaultKey(nameId1);
+		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(defaultKey);
 		var profitPercentage = 100000;
 
 		var _event = aocontenthost.HostContent();
@@ -459,7 +485,7 @@ contract("AOContentFactory", function(accounts) {
 					contentHostId1 = log.args.contentHostId;
 
 					var content = await aocontent.getById(contentId1);
-					assert.equal(content[0], account1, "Content has incorrect creator");
+					assert.equal(content[0], nameId1, "Content has incorrect creator");
 					assert.equal(content[1].toNumber(), fileSize, "Content has incorrect creator");
 					assert.equal(content[2], contentUsageType_aoContent, "Content has incorrect contentUsageType");
 					assert.equal(content[5].toNumber(), 0, "Content has incorrect updateTAOContentStateV");
@@ -469,7 +495,7 @@ contract("AOContentFactory", function(accounts) {
 
 					var stakedContent = await aostakedcontent.getById(stakedContentId1);
 					assert.equal(stakedContent[0], contentId1, "StakedContent has incorrect contentId");
-					assert.equal(stakedContent[1], account1, "StakedContent has incorrect stakeOwner");
+					assert.equal(stakedContent[1], nameId1, "StakedContent has incorrect stakeOwner");
 					assert.equal(stakedContent[2].toNumber(), networkAmount.toNumber(), "StakedContent has incorrect networkAmount");
 					assert.equal(stakedContent[3].toNumber(), primordialAmount, "StakedContent has incorrect primordialAmount");
 					assert.equal(
@@ -483,7 +509,7 @@ contract("AOContentFactory", function(accounts) {
 					var contentHost = await aocontenthost.getById(contentHostId1);
 					assert.equal(contentHost[0], stakedContentId1, "ContentHost has incorrect stakedContentId");
 					assert.equal(contentHost[1], contentId1, "ContentHost has incorrect contentId");
-					assert.equal(contentHost[2], account1, "ContentHost has incorrect host");
+					assert.equal(contentHost[2], nameId1, "ContentHost has incorrect host");
 					assert.equal(contentHost[3], account1ContentDatKey, "ContentHost has incorrect contentDatKey");
 					assert.equal(contentHost[4], account1MetadataDatKey, "ContentHost has incorrect metadataDatKey");
 				}
@@ -519,7 +545,8 @@ contract("AOContentFactory", function(accounts) {
 		var denomination = "mega";
 		var primordialAmount = 0;
 		var networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
-		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(account1);
+		var defaultKey = await namepublickey.getDefaultKey(nameId1);
+		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(defaultKey);
 		var profitPercentage = 0;
 
 		var _event = aocontenthost.HostContent();
@@ -531,7 +558,7 @@ contract("AOContentFactory", function(accounts) {
 					contentHostId2 = log.args.contentHostId;
 
 					var content = await aocontent.getById(contentId2);
-					assert.equal(content[0], account1, "Content has incorrect creator");
+					assert.equal(content[0], nameId1, "Content has incorrect creator");
 					assert.equal(content[1].toNumber(), fileSize, "Content has incorrect creator");
 					assert.equal(content[2], contentUsageType_creativeCommons, "Content has incorrect contentUsageType");
 					assert.equal(content[5].toNumber(), 0, "Content has incorrect updateTAOContentStateV");
@@ -541,7 +568,7 @@ contract("AOContentFactory", function(accounts) {
 
 					var stakedContent = await aostakedcontent.getById(stakedContentId2);
 					assert.equal(stakedContent[0], contentId2, "StakedContent has incorrect contentId");
-					assert.equal(stakedContent[1], account1, "StakedContent has incorrect stakeOwner");
+					assert.equal(stakedContent[1], nameId1, "StakedContent has incorrect stakeOwner");
 					assert.equal(stakedContent[2].toNumber(), networkAmount.toNumber(), "StakedContent has incorrect networkAmount");
 					assert.equal(stakedContent[3].toNumber(), primordialAmount, "StakedContent has incorrect primordialAmount");
 					assert.equal(
@@ -555,7 +582,7 @@ contract("AOContentFactory", function(accounts) {
 					var contentHost = await aocontenthost.getById(contentHostId2);
 					assert.equal(contentHost[0], stakedContentId2, "ContentHost has incorrect stakedContentId");
 					assert.equal(contentHost[1], contentId2, "ContentHost has incorrect contentId");
-					assert.equal(contentHost[2], account1, "ContentHost has incorrect host");
+					assert.equal(contentHost[2], nameId1, "ContentHost has incorrect host");
 					assert.equal(contentHost[3], account1ContentDatKey, "ContentHost has incorrect contentDatKey");
 					assert.equal(contentHost[4], account1MetadataDatKey, "ContentHost has incorrect metadataDatKey");
 				}
@@ -590,7 +617,8 @@ contract("AOContentFactory", function(accounts) {
 		var denomination = "";
 		var primordialAmount = 1000000;
 		var networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
-		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(account1);
+		var defaultKey = await namepublickey.getDefaultKey(nameId1);
+		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(defaultKey);
 		var profitPercentage = 0;
 
 		var _event = aocontenthost.HostContent();
@@ -602,7 +630,7 @@ contract("AOContentFactory", function(accounts) {
 					contentHostId3 = log.args.contentHostId;
 
 					var content = await aocontent.getById(contentId3);
-					assert.equal(content[0], account1, "Content has incorrect creator");
+					assert.equal(content[0], nameId1, "Content has incorrect creator");
 					assert.equal(content[1].toNumber(), fileSize, "Content has incorrect creator");
 					assert.equal(content[2], contentUsageType_taoContent, "Content has incorrect contentUsageType");
 					assert.equal(content[3], taoId1, "Content has incorrect taoId");
@@ -614,7 +642,7 @@ contract("AOContentFactory", function(accounts) {
 
 					var stakedContent = await aostakedcontent.getById(stakedContentId3);
 					assert.equal(stakedContent[0], contentId3, "StakedContent has incorrect contentId");
-					assert.equal(stakedContent[1], account1, "StakedContent has incorrect stakeOwner");
+					assert.equal(stakedContent[1], nameId1, "StakedContent has incorrect stakeOwner");
 					assert.equal(stakedContent[2].toNumber(), networkAmount.toNumber(), "StakedContent has incorrect networkAmount");
 					assert.equal(stakedContent[3].toNumber(), primordialAmount, "StakedContent has incorrect primordialAmount");
 					assert.equal(
@@ -628,7 +656,7 @@ contract("AOContentFactory", function(accounts) {
 					var contentHost = await aocontenthost.getById(contentHostId3);
 					assert.equal(contentHost[0], stakedContentId3, "ContentHost has incorrect stakedContentId");
 					assert.equal(contentHost[1], contentId3, "ContentHost has incorrect contentId");
-					assert.equal(contentHost[2], account1, "ContentHost has incorrect host");
+					assert.equal(contentHost[2], nameId1, "ContentHost has incorrect host");
 					assert.equal(contentHost[3], account1ContentDatKey, "ContentHost has incorrect contentDatKey");
 					assert.equal(contentHost[4], account1MetadataDatKey, "ContentHost has incorrect metadataDatKey");
 				}

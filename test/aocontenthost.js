@@ -243,6 +243,7 @@ contract("AOContentHost", function(accounts) {
 
 	var becomeHost = async function(
 		account,
+		nameId,
 		purchaseReceiptId,
 		baseChallengeV,
 		baseChallengeR,
@@ -277,7 +278,7 @@ contract("AOContentHost", function(accounts) {
 		var contentHost = await aocontenthost.getById(contentHostId);
 		assert.equal(contentHost[0], purchaseReceipt[1], "ContentHost has incorrect stakedContentId");
 		assert.equal(contentHost[1], purchaseReceipt[2], "ContentHost has incorrect contentId");
-		assert.equal(contentHost[2], account, "ContentHost has incorrect host");
+		assert.equal(contentHost[2], nameId, "ContentHost has incorrect host");
 		assert.equal(contentHost[3], contentDatKey, "ContentHost has incorrect contentDatKey");
 		assert.equal(contentHost[4], metadataDatKey, "ContentHost has incorrect metadataDatKey");
 		return contentHostId;
@@ -327,33 +328,33 @@ contract("AOContentHost", function(accounts) {
 		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
 
 		// Create several contents
-		var result = await aocontent.create(account1, baseChallenge, fileSize, contentUsageType_aoContent, emptyAddress, {
+		var result = await aocontent.create(nameId1, baseChallenge, fileSize, contentUsageType_aoContent, emptyAddress, {
 			from: whitelistedAddress
 		});
 		var storeContentEvent = result.logs[0];
 		contentId1 = storeContentEvent.args.contentId;
 
-		result = await aocontent.create(account2, baseChallenge, fileSize, contentUsageType_creativeCommons, emptyAddress, {
+		result = await aocontent.create(nameId2, baseChallenge, fileSize, contentUsageType_creativeCommons, emptyAddress, {
 			from: whitelistedAddress
 		});
 		storeContentEvent = result.logs[0];
 		contentId2 = storeContentEvent.args.contentId;
 
-		result = await aocontent.create(account1, baseChallenge, fileSize, contentUsageType_taoContent, taoId1, {
+		result = await aocontent.create(nameId1, baseChallenge, fileSize, contentUsageType_taoContent, taoId1, {
 			from: whitelistedAddress
 		});
 		storeContentEvent = result.logs[0];
 		contentId3 = storeContentEvent.args.contentId;
 
-		result = await aostakedcontent.create(account1, contentId1, 4, 1000, "mega", 100000, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId1, contentId1, 4, 1000, "mega", 100000, 100000, { from: whitelistedAddress });
 		var stakeContentEvent = result.logs[0];
 		stakedContentId1 = stakeContentEvent.args.stakedContentId;
 
-		result = await aostakedcontent.create(account2, contentId2, 0, 0, "", 1000000, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId2, contentId2, 0, 0, "", 1000000, 100000, { from: whitelistedAddress });
 		stakeContentEvent = result.logs[0];
 		stakedContentId2 = stakeContentEvent.args.stakedContentId;
 
-		result = await aostakedcontent.create(account1, contentId3, 1000000, 0, "ao", 0, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId1, contentId3, 1000000, 0, "ao", 0, 100000, { from: whitelistedAddress });
 		stakeContentEvent = result.logs[0];
 		stakedContentId3 = stakeContentEvent.args.stakedContentId;
 	});
@@ -446,6 +447,28 @@ contract("AOContentHost", function(accounts) {
 		assert.equal(aoEarningAddress, aoearning.address, "Contract has incorrect aoEarningAddress");
 	});
 
+	it("The AO - setNameFactoryAddress() should be able to set NameFactory address", async function() {
+		var canSetAddress;
+		try {
+			await aocontenthost.setNameFactoryAddress(namefactory.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameFactory address");
+
+		try {
+			await aocontenthost.setNameFactoryAddress(namefactory.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameFactory address");
+
+		var nameFactoryAddress = await aocontenthost.nameFactoryAddress();
+		assert.equal(nameFactoryAddress, namefactory.address, "Contract has incorrect nameFactoryAddress");
+	});
+
 	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
 		var canSetAddress;
 		try {
@@ -472,7 +495,7 @@ contract("AOContentHost", function(accounts) {
 		var canHostContent, hostContentEvent, contentHostId;
 		try {
 			var result = await aocontenthost.create(
-				account1,
+				nameId1,
 				stakedContentId1,
 				account1EncChallenge,
 				account1ContentDatKey,
@@ -514,7 +537,7 @@ contract("AOContentHost", function(accounts) {
 
 		try {
 			var result = await aocontenthost.create(
-				account1,
+				nameId1,
 				someAddress,
 				account1EncChallenge,
 				account1ContentDatKey,
@@ -534,7 +557,7 @@ contract("AOContentHost", function(accounts) {
 		assert.equal(canHostContent, false, "Whitelisted address can host content with invalid Staked ID");
 
 		try {
-			var result = await aocontenthost.create(account1, stakedContentId1, "", account1ContentDatKey, account1MetadataDatKey, {
+			var result = await aocontenthost.create(nameId1, stakedContentId1, "", account1ContentDatKey, account1MetadataDatKey, {
 				from: whitelistedAddress
 			});
 			canHostContent = true;
@@ -548,7 +571,7 @@ contract("AOContentHost", function(accounts) {
 		assert.equal(canHostContent, false, "Whitelisted address can host content with invalid encChallenge");
 
 		try {
-			var result = await aocontenthost.create(account1, stakedContentId1, account1EncChallenge, "", account1MetadataDatKey, {
+			var result = await aocontenthost.create(nameId1, stakedContentId1, account1EncChallenge, "", account1MetadataDatKey, {
 				from: whitelistedAddress
 			});
 			canHostContent = true;
@@ -562,7 +585,7 @@ contract("AOContentHost", function(accounts) {
 		assert.equal(canHostContent, false, "Whitelisted address can host content with invalid contentDatKey");
 
 		try {
-			var result = await aocontenthost.create(account1, stakedContentId1, account1EncChallenge, account1ContentDatKey, "", {
+			var result = await aocontenthost.create(nameId1, stakedContentId1, account1EncChallenge, account1ContentDatKey, "", {
 				from: whitelistedAddress
 			});
 			canHostContent = true;
@@ -580,7 +603,7 @@ contract("AOContentHost", function(accounts) {
 
 		try {
 			var result = await aocontenthost.create(
-				account1,
+				nameId1,
 				stakedContentId1,
 				account1EncChallenge,
 				account1ContentDatKey,
@@ -604,9 +627,9 @@ contract("AOContentHost", function(accounts) {
 	});
 
 	it("Whitelisted Address - should be able to host content", async function() {
-		contentHostId1 = await create(account1, stakedContentId1, account1EncChallenge, account1ContentDatKey, account1MetadataDatKey);
-		contentHostId2 = await create(account2, stakedContentId2, account2EncChallenge, account2ContentDatKey, account2MetadataDatKey);
-		contentHostId3 = await create(account1, stakedContentId3, account1EncChallenge, account1ContentDatKey, account1MetadataDatKey);
+		contentHostId1 = await create(nameId1, stakedContentId1, account1EncChallenge, account1ContentDatKey, account1MetadataDatKey);
+		contentHostId2 = await create(nameId2, stakedContentId2, account2EncChallenge, account2ContentDatKey, account2MetadataDatKey);
+		contentHostId3 = await create(nameId1, stakedContentId3, account1EncChallenge, account1ContentDatKey, account1MetadataDatKey);
 	});
 
 	it("contentHostPrice() - should return the content price hosted by a host", async function() {
@@ -956,6 +979,7 @@ contract("AOContentHost", function(accounts) {
 		var vrs = createBecomeHostSignature(account3PrivateKey, baseChallenge);
 		contentHostId4 = await becomeHost(
 			account3,
+			nameId3,
 			purchaseReceiptId1,
 			vrs.v,
 			vrs.r,
@@ -964,8 +988,10 @@ contract("AOContentHost", function(accounts) {
 			account3ContentDatKey,
 			account3MetadataDatKey
 		);
+
 		contentHostId5 = await becomeHost(
 			account3,
+			nameId3,
 			purchaseReceiptId2,
 			vrs.v,
 			vrs.r,
@@ -976,6 +1002,7 @@ contract("AOContentHost", function(accounts) {
 		);
 		contentHostId6 = await becomeHost(
 			account3,
+			nameId3,
 			purchaseReceiptId3,
 			vrs.v,
 			vrs.r,
@@ -1027,6 +1054,7 @@ contract("AOContentHost", function(accounts) {
 		var vrs = createBecomeHostSignature(account4PrivateKey, baseChallenge);
 		contentHostId4 = await becomeHost(
 			account4,
+			nameId4,
 			purchaseReceiptId4,
 			vrs.v,
 			vrs.r,
@@ -1038,6 +1066,7 @@ contract("AOContentHost", function(accounts) {
 
 		contentHostId5 = await becomeHost(
 			account4,
+			nameId4,
 			purchaseReceiptId5,
 			vrs.v,
 			vrs.r,
@@ -1049,6 +1078,7 @@ contract("AOContentHost", function(accounts) {
 
 		contentHostId6 = await becomeHost(
 			account4,
+			nameId4,
 			purchaseReceiptId6,
 			vrs.v,
 			vrs.r,

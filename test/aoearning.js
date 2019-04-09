@@ -13,6 +13,7 @@ var AOEarning = artifacts.require("./AOEarning.sol");
 var Logos = artifacts.require("./Logos.sol");
 var Pathos = artifacts.require("./Pathos.sol");
 var Ethos = artifacts.require("./Ethos.sol");
+var NamePublicKey = artifacts.require("./NamePublicKey.sol");
 
 var EthCrypto = require("eth-crypto");
 var BigNumber = require("bignumber.js");
@@ -35,6 +36,7 @@ contract("AOEarning", function(accounts) {
 		logos,
 		pathos,
 		ethos,
+		namepublickey,
 		settingTAOId,
 		inflationRate,
 		theAOCut,
@@ -48,6 +50,7 @@ contract("AOEarning", function(accounts) {
 		nameId2,
 		nameId3,
 		nameId4,
+		nameId5,
 		taoId1,
 		contentId1,
 		contentId2,
@@ -143,6 +146,7 @@ contract("AOEarning", function(accounts) {
 		logos = await Logos.deployed();
 		pathos = await Pathos.deployed();
 		ethos = await Ethos.deployed();
+		namepublickey = await NamePublicKey.deployed();
 
 		settingTAOId = await aocontent.settingTAOId();
 
@@ -187,6 +191,11 @@ contract("AOEarning", function(accounts) {
 			from: account4
 		});
 		nameId4 = await namefactory.ethAddressToNameId(account4);
+
+		var result = await namefactory.createName("golf", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
+			from: account5
+		});
+		nameId5 = await namefactory.ethAddressToNameId(account5);
 
 		// Mint Logos to nameId1 and nameId2
 		await logos.setWhitelist(theAO, true, { from: theAO });
@@ -257,12 +266,15 @@ contract("AOEarning", function(accounts) {
 		var contentHostPrice = new BigNumber(await aocontenthost.contentHostPrice(contentHostId));
 		var contentHostPaidByAO = new BigNumber(await aocontenthost.contentHostPaidByAO(contentHostId));
 
-		var stakeOwnerBalanceBefore = new BigNumber(await aoion.balanceOf(stakeOwner));
-		var hostBalanceBefore = new BigNumber(await aoion.balanceOf(host));
+		var stakeOwnerDefaultKey = await namepublickey.getDefaultKey(stakeOwner);
+		var hostDefaultKey = await namepublickey.getDefaultKey(host);
+
+		var stakeOwnerBalanceBefore = new BigNumber(await aoion.balanceOf(stakeOwnerDefaultKey));
+		var hostBalanceBefore = new BigNumber(await aoion.balanceOf(hostDefaultKey));
 		var theAOBalanceBefore = new BigNumber(await aoion.balanceOf(theAO));
 
-		var stakeOwnerEscrowedBalanceBefore = new BigNumber(await aoion.escrowedBalance(stakeOwner));
-		var hostEscrowedBalanceBefore = new BigNumber(await aoion.escrowedBalance(host));
+		var stakeOwnerEscrowedBalanceBefore = new BigNumber(await aoion.escrowedBalance(stakeOwnerDefaultKey));
+		var hostEscrowedBalanceBefore = new BigNumber(await aoion.escrowedBalance(hostDefaultKey));
 		var theAOEscrowedBalanceBefore = new BigNumber(await aoion.escrowedBalance(theAO));
 
 		var canBuyContent, buyContentEvent, purchaseReceiptId;
@@ -286,8 +298,8 @@ contract("AOEarning", function(accounts) {
 		}
 		assert.equal(canBuyContent, true, "Account can't buy content even though sent ions >= price");
 
-		var stakeOwnerBalanceAfter = new BigNumber(await aoion.balanceOf(stakeOwner));
-		var hostBalanceAfter = new BigNumber(await aoion.balanceOf(host));
+		var stakeOwnerBalanceAfter = new BigNumber(await aoion.balanceOf(stakeOwnerDefaultKey));
+		var hostBalanceAfter = new BigNumber(await aoion.balanceOf(hostDefaultKey));
 		var theAOBalanceAfter = new BigNumber(await aoion.balanceOf(theAO));
 
 		assert.equal(
@@ -399,8 +411,8 @@ contract("AOEarning", function(accounts) {
 		assert.equal(theAOPurchaseReceiptEarning[4].toNumber(), 0, "theAOPurchaseReceiptEarning has incorrect ethos amount");
 
 		// Verify escrowed balance
-		var stakeOwnerEscrowedBalanceAfter = await aoion.escrowedBalance(stakeOwner);
-		var hostEscrowedBalanceAfter = await aoion.escrowedBalance(host);
+		var stakeOwnerEscrowedBalanceAfter = await aoion.escrowedBalance(stakeOwnerDefaultKey);
+		var hostEscrowedBalanceAfter = await aoion.escrowedBalance(hostDefaultKey);
 		var theAOEscrowedBalanceAfter = await aoion.escrowedBalance(theAO);
 
 		// since the stake owner and the host are the same
@@ -495,18 +507,18 @@ contract("AOEarning", function(accounts) {
 
 		var isAOContentUsageType = await aocontent.isAOContentUsageType(contentId);
 
-		var stakeOwnerNameId = await namefactory.ethAddressToNameId(stakeOwner);
-		var hostNameId = await namefactory.ethAddressToNameId(host);
+		var stakeOwnerDefaultKey = await namepublickey.getDefaultKey(stakeOwner);
+		var hostDefaultKey = await namepublickey.getDefaultKey(host);
 
-		var stakeOwnerPathosBalanceBefore = await pathos.balanceOf(stakeOwnerNameId);
-		var hostEthosBalanceBefore = await ethos.balanceOf(hostNameId);
+		var stakeOwnerPathosBalanceBefore = await pathos.balanceOf(stakeOwner);
+		var hostEthosBalanceBefore = await ethos.balanceOf(host);
 
-		var stakeOwnerBalanceBefore = await aoion.balanceOf(stakeOwner);
-		var hostBalanceBefore = await aoion.balanceOf(host);
+		var stakeOwnerBalanceBefore = await aoion.balanceOf(stakeOwnerDefaultKey);
+		var hostBalanceBefore = await aoion.balanceOf(hostDefaultKey);
 		var theAOBalanceBefore = await aoion.balanceOf(theAO);
 
-		var stakeOwnerEscrowedBalanceBefore = await aoion.escrowedBalance(stakeOwner);
-		var hostEscrowedBalanceBefore = await aoion.escrowedBalance(host);
+		var stakeOwnerEscrowedBalanceBefore = await aoion.escrowedBalance(stakeOwnerDefaultKey);
+		var hostEscrowedBalanceBefore = await aoion.escrowedBalance(hostDefaultKey);
 		var theAOEscrowedBalanceBefore = await aoion.escrowedBalance(theAO);
 
 		var ownerPurchaseReceiptStakeEarningBefore = await aoearning.ownerPurchaseReceiptStakeEarnings(stakeOwner, purchaseReceiptId);
@@ -555,8 +567,8 @@ contract("AOEarning", function(accounts) {
 		}
 		assert.equal(canBecomeHost, true, "Account can't host content after buying");
 
-		var stakeOwnerPathosBalanceAfter = await pathos.balanceOf(stakeOwnerNameId);
-		var hostEthosBalanceAfter = await ethos.balanceOf(hostNameId);
+		var stakeOwnerPathosBalanceAfter = await pathos.balanceOf(stakeOwner);
+		var hostEthosBalanceAfter = await ethos.balanceOf(host);
 
 		assert.equal(
 			stakeOwnerPathosBalanceAfter.toString(),
@@ -569,8 +581,8 @@ contract("AOEarning", function(accounts) {
 			"Host has incorrect ethos balance"
 		);
 
-		var stakeOwnerBalanceAfter = await aoion.balanceOf(stakeOwner);
-		var hostBalanceAfter = await aoion.balanceOf(host);
+		var stakeOwnerBalanceAfter = await aoion.balanceOf(stakeOwnerDefaultKey);
+		var hostBalanceAfter = await aoion.balanceOf(hostDefaultKey);
 		var theAOBalanceAfter = await aoion.balanceOf(theAO);
 
 		// Verify the balance
@@ -659,8 +671,8 @@ contract("AOEarning", function(accounts) {
 			"The AO has incorrect balance after request node become host"
 		);
 
-		var stakeOwnerEscrowedBalanceAfter = await aoion.escrowedBalance(stakeOwner);
-		var hostEscrowedBalanceAfter = await aoion.escrowedBalance(host);
+		var stakeOwnerEscrowedBalanceAfter = await aoion.escrowedBalance(stakeOwnerDefaultKey);
+		var hostEscrowedBalanceAfter = await aoion.escrowedBalance(hostDefaultKey);
 		var theAOEscrowedBalanceAfter = await aoion.escrowedBalance(theAO);
 
 		// Verify the escrowed balance
@@ -1105,38 +1117,38 @@ contract("AOEarning", function(accounts) {
 		assert.equal(whitelistStatus, true, "Contract returns incorrect whitelist status for an address");
 
 		// Create several contents
-		var result = await aocontent.create(account1, baseChallenge, fileSize, contentUsageType_aoContent, emptyAddress, {
+		var result = await aocontent.create(nameId1, baseChallenge, fileSize, contentUsageType_aoContent, emptyAddress, {
 			from: whitelistedAddress
 		});
 		var storeContentEvent = result.logs[0];
 		contentId1 = storeContentEvent.args.contentId;
 
-		result = await aocontent.create(account2, baseChallenge, fileSize, contentUsageType_creativeCommons, emptyAddress, {
+		result = await aocontent.create(nameId2, baseChallenge, fileSize, contentUsageType_creativeCommons, emptyAddress, {
 			from: whitelistedAddress
 		});
 		storeContentEvent = result.logs[0];
 		contentId2 = storeContentEvent.args.contentId;
 
-		result = await aocontent.create(account1, baseChallenge, fileSize, contentUsageType_taoContent, taoId1, {
+		result = await aocontent.create(nameId1, baseChallenge, fileSize, contentUsageType_taoContent, taoId1, {
 			from: whitelistedAddress
 		});
 		storeContentEvent = result.logs[0];
 		contentId3 = storeContentEvent.args.contentId;
 
-		result = await aostakedcontent.create(account1, contentId1, 4, 1000, "mega", 100000, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId1, contentId1, 4, 1000, "mega", 100000, 100000, { from: whitelistedAddress });
 		var stakeContentEvent = result.logs[0];
 		stakedContentId1 = stakeContentEvent.args.stakedContentId;
 
-		result = await aostakedcontent.create(account2, contentId2, 0, 0, "", 1000000, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId2, contentId2, 0, 0, "", 1000000, 100000, { from: whitelistedAddress });
 		stakeContentEvent = result.logs[0];
 		stakedContentId2 = stakeContentEvent.args.stakedContentId;
 
-		result = await aostakedcontent.create(account1, contentId3, 1000000, 0, "ao", 0, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId1, contentId3, 1000000, 0, "ao", 0, 100000, { from: whitelistedAddress });
 		stakeContentEvent = result.logs[0];
 		stakedContentId3 = stakeContentEvent.args.stakedContentId;
 
 		result = await aocontenthost.create(
-			account1,
+			nameId1,
 			stakedContentId1,
 			account1EncChallenge,
 			account1ContentDatKey,
@@ -1149,7 +1161,7 @@ contract("AOEarning", function(accounts) {
 		contentHostId1 = hostContentEvent.args.contentHostId;
 
 		result = await aocontenthost.create(
-			account2,
+			nameId2,
 			stakedContentId2,
 			account2EncChallenge,
 			account2ContentDatKey,
@@ -1162,7 +1174,7 @@ contract("AOEarning", function(accounts) {
 		contentHostId2 = hostContentEvent.args.contentHostId;
 
 		result = await aocontenthost.create(
-			account1,
+			nameId1,
 			stakedContentId3,
 			account1EncChallenge,
 			account1ContentDatKey,
@@ -1393,6 +1405,28 @@ contract("AOEarning", function(accounts) {
 
 		var aoPurchaseReceiptAddress = await aoearning.aoPurchaseReceiptAddress();
 		assert.equal(aoPurchaseReceiptAddress, aopurchasereceipt.address, "Contract has incorrect aoPurchaseReceiptAddress");
+	});
+
+	it("The AO - setNamePublicKeyAddress() should be able to set NamePublicKey address", async function() {
+		var canSetAddress;
+		try {
+			await aoearning.setNamePublicKeyAddress(namepublickey.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NamePublicKey address");
+
+		try {
+			await aoearning.setNamePublicKeyAddress(namepublickey.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NamePublicKey address");
+
+		var namePublicKeyAddress = await aoearning.namePublicKeyAddress();
+		assert.equal(namePublicKeyAddress, namepublickey.address, "Contract has incorrect namePublicKeyAddress");
 	});
 
 	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {

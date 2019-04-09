@@ -1360,4 +1360,42 @@ contract("NameTAOPosition", function(accounts) {
 		}
 		assert.equal(canDetermine, false, "Can determinePosition of a sender eth address that is not a Name");
 	});
+
+	it("nameIsPosition() - should check whether or not nameId is either Advocate/Listener/Speaker of a Name/TAO", async function() {
+		// account1 (nameId1) is nameId1's Advocate
+		var nameIsPosition = await nametaoposition.nameIsPosition(nameId1, nameId1);
+		assert.equal(nameIsPosition, true, "nameIsPosition() returns incorrect value");
+
+		// account2 (nameId2) is nameId1's Listener
+		nameIsPosition = await nametaoposition.nameIsPosition(nameId2, nameId1);
+		assert.equal(nameIsPosition, true, "nameIsPosition() returns incorrect value");
+
+		// account3 (nameId3) is nameId1's Speaker
+		nameIsPosition = await nametaoposition.nameIsPosition(nameId3, nameId1);
+		assert.equal(nameIsPosition, true, "nameIsPosition() returns incorrect value");
+
+		nameIsPosition = await nametaoposition.nameIsPosition(nameId4, nameId1);
+		assert.equal(nameIsPosition, false, "nameIsPosition() returns incorrect value");
+
+		nameIsPosition = await nametaoposition.nameIsPosition(someAddress, nameId1);
+		assert.equal(nameIsPosition, false, "nameIsPosition() returns incorrect value");
+
+		// account1 (nameId1) is taoId1's Advocate
+		nameIsPosition = await nametaoposition.nameIsPosition(nameId1, taoId1);
+		assert.equal(nameIsPosition, true, "nameIsPosition() returns incorrect value");
+
+		// account2 (nameId2) is taoId1's Listener
+		nameIsPosition = await nametaoposition.nameIsPosition(nameId2, taoId1);
+		assert.equal(nameIsPosition, true, "nameIsPosition() returns incorrect value");
+
+		// account3 (nameId3) is taoId1's Speaker
+		nameIsPosition = await nametaoposition.nameIsPosition(nameId3, taoId1);
+		assert.equal(nameIsPosition, true, "nameIsPosition() returns incorrect value");
+
+		nameIsPosition = await nametaoposition.nameIsPosition(nameId4, taoId1);
+		assert.equal(nameIsPosition, false, "nameIsPosition() returns incorrect value");
+
+		nameIsPosition = await nametaoposition.nameIsPosition(someAddress, taoId1);
+		assert.equal(nameIsPosition, false, "nameIsPosition() returns incorrect value");
+	});
 });

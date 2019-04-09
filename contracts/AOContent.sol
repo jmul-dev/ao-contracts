@@ -4,6 +4,7 @@ import './AOLibrary.sol';
 import './TheAO.sol';
 import './IAOContent.sol';
 import './IAOSetting.sol';
+import './INameFactory.sol';
 import './INameTAOPosition.sol';
 
 /**
@@ -13,8 +14,10 @@ contract AOContent is TheAO, IAOContent {
 	uint256 public totalContents;
 	address public settingTAOId;
 	address public aoSettingAddress;
+	address public nameFactoryAddress;
 
 	IAOSetting internal _aoSetting;
+	INameFactory internal _nameFactory;
 	INameTAOPosition internal _nameTAOPosition;
 
 	struct Content {
@@ -56,11 +59,13 @@ contract AOContent is TheAO, IAOContent {
 	 * @dev Constructor function
 	 * @param _settingTAOId The TAO ID that controls the setting
 	 * @param _aoSettingAddress The address of AOSetting
+	 * @param _nameFactoryAddress The address of NameFactory
 	 * @param _nameTAOPositionAddress The address of NameTAOPosition
 	 */
-	constructor(address _settingTAOId, address _aoSettingAddress, address _nameTAOPositionAddress) public {
+	constructor(address _settingTAOId, address _aoSettingAddress, address _nameFactoryAddress, address _nameTAOPositionAddress) public {
 		setSettingTAOId(_settingTAOId);
 		setAOSettingAddress(_aoSettingAddress);
+		setNameFactoryAddress(_nameFactoryAddress);
 		setNameTAOPositionAddress(_nameTAOPositionAddress);
 	}
 
@@ -111,6 +116,16 @@ contract AOContent is TheAO, IAOContent {
 		require (_aoSettingAddress != address(0));
 		aoSettingAddress = _aoSettingAddress;
 		_aoSetting = IAOSetting(_aoSettingAddress);
+	}
+
+	/**
+	 * @dev The AO sets NameFactory address
+	 * @param _nameFactoryAddress The address of NameFactory
+	 */
+	function setNameFactoryAddress(address _nameFactoryAddress) public onlyTheAO {
+		require (_nameFactoryAddress != address(0));
+		nameFactoryAddress = _nameFactoryAddress;
+		_nameFactory = INameFactory(_nameFactoryAddress);
 	}
 
 	/**
@@ -210,7 +225,7 @@ contract AOContent is TheAO, IAOContent {
 		// Make sure the content exist
 		require (contentIndex[_contentId] > 0);
 		Content memory _content = contents[contentIndex[_contentId]];
-		require (whitelist[msg.sender] == true || _content.creator == msg.sender);
+		require (whitelist[msg.sender] == true || _content.creator == _nameFactory.ethAddressToNameId(msg.sender));
 		return _content.baseChallenge;
 	}
 
@@ -274,7 +289,7 @@ contract AOContent is TheAO, IAOContent {
 
 		Content storage _content = contents[contentIndex[_contentId]];
 		// Make sure the content creator is the same as the sender
-		require (_content.creator == msg.sender);
+		require (_content.creator == _nameFactory.ethAddressToNameId(msg.sender));
 
 		_content.extraData = _extraData;
 
@@ -294,12 +309,13 @@ contract AOContent is TheAO, IAOContent {
 	function _canCreate(address _creator, string memory _baseChallenge, uint256 _fileSize, bytes32 _contentUsageType, address _taoId) internal view returns (bool) {
 		(bytes32 aoContent, bytes32 creativeCommons, bytes32 taoContent,,,) = _getSettingVariables();
 		return (_creator != address(0) &&
+			AOLibrary.isName(_creator) &&
 			bytes(_baseChallenge).length > 0 &&
 			_fileSize > 0 &&
 			(_contentUsageType == aoContent || _contentUsageType == creativeCommons || _contentUsageType == taoContent) &&
 			(
 				_contentUsageType != taoContent ||
-				(_contentUsageType == taoContent && _taoId != address(0) && AOLibrary.isTAO(_taoId) && _nameTAOPosition.senderIsPosition(_creator, _taoId))
+				(_contentUsageType == taoContent && _taoId != address(0) && AOLibrary.isTAO(_taoId) && _nameTAOPosition.nameIsPosition(_creator, _taoId))
 			)
 		);
 	}

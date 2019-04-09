@@ -300,12 +300,7 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		if (_nameId == address(0)) {
 			return false;
 		} else {
-			return (positionDetails[_id].created &&
-				(positionDetails[_id].advocateId == _nameId ||
-				 positionDetails[_id].listenerId == _nameId ||
-				 positionDetails[_id].speakerId == _nameId
-				)
-			);
+			return this.nameIsPosition(_nameId, _id);
 		}
 	}
 
@@ -317,6 +312,21 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	 */
 	function nameIsAdvocate(address _nameId, address _id) external view returns (bool) {
 		return (positionDetails[_id].created && positionDetails[_id].advocateId == _nameId);
+	}
+
+	/**
+	 * @dev Check whether or not _nameId is either Advocate/Listener/Speaker of _id
+	 * @param _nameId The name ID to be checked
+	 * @param _id The ID to be checked
+	 * @return true if yes, false otherwise
+	 */
+	function nameIsPosition(address _nameId, address _id) external view returns (bool) {
+		return (positionDetails[_id].created &&
+			(positionDetails[_id].advocateId == _nameId ||
+			 positionDetails[_id].listenerId == _nameId ||
+			 positionDetails[_id].speakerId == _nameId
+			)
+	   );
 	}
 
 	/**

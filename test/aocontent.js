@@ -295,6 +295,28 @@ contract("AOContent", function(accounts) {
 		assert.equal(aoSettingAddress, aosetting.address, "Contract has incorrect aoSettingAddress");
 	});
 
+	it("The AO - setNameFactoryAddress() should be able to set NameFactory address", async function() {
+		var canSetAddress;
+		try {
+			await aocontent.setNameFactoryAddress(namefactory.address, { from: someAddress });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, false, "Non-AO can set NameFactory address");
+
+		try {
+			await aocontent.setNameFactoryAddress(namefactory.address, { from: account1 });
+			canSetAddress = true;
+		} catch (e) {
+			canSetAddress = false;
+		}
+		assert.equal(canSetAddress, true, "The AO can't set NameFactory address");
+
+		var nameFactoryAddress = await aocontent.nameFactoryAddress();
+		assert.equal(nameFactoryAddress, namefactory.address, "Contract has incorrect nameFactoryAddress");
+	});
+
 	it("The AO - setNameTAOPositionAddress() should be able to set NameTAOPosition address", async function() {
 		var canSetAddress;
 		try {
@@ -320,7 +342,7 @@ contract("AOContent", function(accounts) {
 	it("Whitelisted Address - should not be able to store content creation with invalid params", async function() {
 		var canCreate, storeContentEvent, contentId;
 		try {
-			var result = await aocontent.create(account1, baseChallenge, fileSize, contentUsageType_aoContent, emptyAddress, {
+			var result = await aocontent.create(nameId1, baseChallenge, fileSize, contentUsageType_aoContent, emptyAddress, {
 				from: someAddress
 			});
 			canCreate = true;
@@ -348,7 +370,21 @@ contract("AOContent", function(accounts) {
 		assert.equal(canCreate, false, "Whitelisted address can create content with invalid creator address");
 
 		try {
-			var result = await aocontent.create(account1, "", fileSize, contentUsageType_aoContent, emptyAddress, {
+			var result = await aocontent.create(account1, baseChallenge, fileSize, contentUsageType_aoContent, emptyAddress, {
+				from: whitelistedAddress
+			});
+			canCreate = true;
+			storeContentEvent = result.logs[0];
+			contentId = storeContentEvent.args.contentId;
+		} catch (e) {
+			canCreate = false;
+			storeContentEvent = null;
+			contentId = null;
+		}
+		assert.equal(canCreate, false, "Whitelisted address can create content with creator address that is not a Name");
+
+		try {
+			var result = await aocontent.create(nameId1, "", fileSize, contentUsageType_aoContent, emptyAddress, {
 				from: whitelistedAddress
 			});
 			canCreate = true;
@@ -362,7 +398,7 @@ contract("AOContent", function(accounts) {
 		assert.equal(canCreate, false, "Whitelisted address can create content with invalid baseChallenge string");
 
 		try {
-			var result = await aocontent.create(account1, baseChallenge, 0, contentUsageType_aoContent, emptyAddress, {
+			var result = await aocontent.create(nameId1, baseChallenge, 0, contentUsageType_aoContent, emptyAddress, {
 				from: whitelistedAddress
 			});
 			canCreate = true;
@@ -376,7 +412,7 @@ contract("AOContent", function(accounts) {
 		assert.equal(canCreate, false, "Whitelisted address can create content with invalid fileSize");
 
 		try {
-			var result = await aocontent.create(account1, baseChallenge, fileSize, "someContentUsageType", emptyAddress, {
+			var result = await aocontent.create(nameId1, baseChallenge, fileSize, "someContentUsageType", emptyAddress, {
 				from: whitelistedAddress
 			});
 			canCreate = true;
@@ -390,7 +426,7 @@ contract("AOContent", function(accounts) {
 		assert.equal(canCreate, false, "Whitelisted address can create content with invalid contentUsageType");
 
 		try {
-			var result = await aocontent.create(account1, baseChallenge, fileSize, contentUsageType_taoContent, someAddress, {
+			var result = await aocontent.create(nameId1, baseChallenge, fileSize, contentUsageType_taoContent, someAddress, {
 				from: whitelistedAddress
 			});
 			canCreate = true;
@@ -404,7 +440,7 @@ contract("AOContent", function(accounts) {
 		assert.equal(canCreate, false, "Whitelisted address can create content with invalid TAO ID");
 
 		try {
-			var result = await aocontent.create(account2, baseChallenge, fileSize, contentUsageType_taoContent, taoId1, {
+			var result = await aocontent.create(nameId2, baseChallenge, fileSize, contentUsageType_taoContent, taoId1, {
 				from: whitelistedAddress
 			});
 			canCreate = true;
@@ -424,13 +460,13 @@ contract("AOContent", function(accounts) {
 
 	it("Whitelisted Address - should be able to store content creation", async function() {
 		// Content Usage Type = AO Content
-		contentId1 = await create(account1, contentUsageType_aoContent, emptyAddress);
+		contentId1 = await create(nameId1, contentUsageType_aoContent, emptyAddress);
 
 		// Content Usage Type = Creative Commons
-		contentId2 = await create(account1, contentUsageType_creativeCommons, emptyAddress);
+		contentId2 = await create(nameId1, contentUsageType_creativeCommons, emptyAddress);
 
 		// Content Usage Type = T(AO) Content
-		contentId3 = await create(account1, contentUsageType_taoContent, taoId1);
+		contentId3 = await create(nameId1, contentUsageType_taoContent, taoId1);
 	});
 
 	it("Whitelisted Address/Content creator - should be able to get base challenge of a content", async function() {
