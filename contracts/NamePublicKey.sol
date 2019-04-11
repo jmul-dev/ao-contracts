@@ -161,7 +161,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @return true on success
 	 */
 	function whitelistAddKey(address _id, address _key) external isName(_id) keyNotTaken(_key) inWhitelist returns (bool) {
-		_addKey(_id, _key);
+		require (_addKey(_id, _key));
 		return true;
 	}
 
@@ -246,7 +246,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 		require (_nonce == _nameFactory.nonces(_id).add(1));
 		bytes32 _hash = keccak256(abi.encodePacked(address(this), _id, _key, _nonce));
 		require (ecrecover(_hash, _signatureV, _signatureR, _signatureS) == _key);
-		_addKey(_id, _key);
+		require (_addKey(_id, _key));
 	}
 
 	/**
@@ -267,6 +267,18 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	function getWriterKey(address _id) external isName(_id) view returns (address) {
 		require (isExist(_id));
 		return publicKeys[_id].writerKey;
+	}
+
+	/**
+	 * @dev Check whether or not a key is Name's writerKey
+	 * @param _id The ID of the Name
+	 * @param _key The key to be checked
+	 * @return true if yes, false otherwise
+	 */
+	function isNameWriterKey(address _id, address _key) public isName(_id) view returns (bool) {
+		require (isExist(_id));
+		require (_key != address(0));
+		return publicKeys[_id].writerKey == _key;
 	}
 
 	/**
@@ -363,17 +375,32 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @param _signatureS The S part of the signature for this update
 	 */
 	function setWriterKey(address _id, address _writerKey, uint8 _signatureV, bytes32 _signatureR, bytes32 _signatureS) public isName(_id) onlyAdvocate(_id) senderNameNotCompromised {
-		require (this.isKeyExist(_id, _writerKey));
-
 		bytes32 _hash = keccak256(abi.encodePacked(address(this), _id, _writerKey));
 		require (ecrecover(_hash, _signatureV, _signatureR, _signatureS) == msg.sender);
+		require (_setWriterKey(_id, _writerKey));
+	}
 
-		PublicKey storage _publicKey = publicKeys[_id];
-		_publicKey.writerKey = _writerKey;
-
-		uint256 _nonce = _nameFactory.incrementNonce(_id);
-		require (_nonce > 0);
-		emit SetWriterKey(_id, _writerKey, _nonce);
+	/**
+	 * @dev Add key and set as writerKey for a Name
+	 * @param _id The ID of the Name
+	 * @param _key The writerKey to be added
+	 * @param _nonce The signed uint256 nonce (should be Name's current nonce + 1)
+	 * @param _signatureV The V part of the signature
+	 * @param _signatureR The R part of the signature
+	 * @param _signatureS The S part of the signature
+	 */
+	function addSetWriterKey(address _id,
+		address _key,
+		uint256 _nonce,
+		uint8 _signatureV,
+		bytes32 _signatureR,
+		bytes32 _signatureS
+	) public isName(_id) onlyAdvocate(_id) keyNotTaken(_key) senderNameNotCompromised {
+		require (_nonce == _nameFactory.nonces(_id).add(1));
+		bytes32 _hash = keccak256(abi.encodePacked(address(this), _id, _key, _nonce));
+		require (ecrecover(_hash, _signatureV, _signatureR, _signatureS) == _key);
+		require (_addKey(_id, _key));
+		require (_setWriterKey(_id, _key));
 	}
 
 	/***** INTERNAL METHOD *****/
@@ -395,6 +422,24 @@ contract NamePublicKey is TheAO, INamePublicKey {
 		require (_nonce > 0);
 
 		emit AddKey(_id, _key, _nonce);
+		return true;
+	}
+
+	/**
+	 * @dev Actual setting the writerKey for a Name
+	 * @param _id The ID of the Name
+	 * @param _writerKey The writerKey to be set
+	 * @return true on success
+	 */
+	function _setWriterKey(address _id, address _writerKey) internal returns (bool) {
+		require (this.isKeyExist(_id, _writerKey));
+
+		PublicKey storage _publicKey = publicKeys[_id];
+		_publicKey.writerKey = _writerKey;
+
+		uint256 _nonce = _nameFactory.incrementNonce(_id);
+		require (_nonce > 0);
+		emit SetWriterKey(_id, _writerKey, _nonce);
 		return true;
 	}
 }

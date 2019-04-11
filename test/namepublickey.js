@@ -352,6 +352,9 @@ contract("NamePublicKey", function(accounts) {
 		var getWriterKey = await namepublickey.getWriterKey(nameId2);
 		assert.equal(getWriterKey.toLowerCase(), nameId2LocalWriterKey.address.toLowerCase(), "getWriterKey() returns incorrect value");
 
+		var isNameWriterKey = await namepublickey.isNameWriterKey(nameId2, nameId2LocalWriterKey.address);
+		assert.equal(isNameWriterKey, true, "isNameWriterKey() returns incorrect value");
+
 		var nonce = await namefactory.nonces(nameId2);
 		assert.equal(nonce.toNumber(), 1, "Name has incorrect nonce");
 
@@ -752,5 +755,142 @@ contract("NamePublicKey", function(accounts) {
 
 		var getWriterKey = await namepublickey.getWriterKey(nameId2);
 		assert.equal(getWriterKey.toLowerCase(), newKey.toLowerCase(), "getWriterKey() returns incorrect value");
+
+		var isNameWriterKey = await namepublickey.isNameWriterKey(nameId2, newKey);
+		assert.equal(isNameWriterKey, true, "isNameWriterKeu() returns incorrect value");
+	});
+
+	it("addSetWriterKey() - Advocate of Name should be able to add key and set it as writerKey for a Name", async function() {
+		var newKey = EthCrypto.createIdentity();
+		var nonce = await namefactory.nonces(nameId2);
+		var signature = createAddKeySignature(newKey.privateKey, nameId2, newKey.address, nonce.plus(1).toNumber());
+		var vrs = EthCrypto.vrs.fromString(signature);
+
+		var canAdd;
+		try {
+			await namepublickey.addSetWriterKey(someAddress, newKey.address, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, {
+				from: account1
+			});
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Can add/set writer key to a non-existing Name");
+
+		try {
+			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Non-Advocate of Name can add/set writer key");
+
+		try {
+			await namepublickey.addSetWriterKey(nameId2, emptyAddress, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Advocate of Name can add/set invalid writer key");
+
+		try {
+			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Advocate of Name can add/set writer key with invalid nonce");
+
+		try {
+			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.plus(1).toNumber(), "", vrs.r, vrs.s, { from: account2 });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Advocate of Name can add/set writer key with invalid v part of signature");
+
+		try {
+			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.plus(1).toNumber(), vrs.v, "", vrs.s, { from: account2 });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Advocate of Name can add/set writer key with invalid r part of signature");
+
+		try {
+			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.plus(1).toNumber(), vrs.v, vrs.r, "", { from: account2 });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Advocate of Name can add/set writer key with invalid s part of signature");
+
+		try {
+			signature = createAddKeySignature(account2PrivateKey, nameId2, account2, nonce.plus(1).toNumber());
+			vrs = EthCrypto.vrs.fromString(signature);
+			await namepublickey.addSetWriterKey(nameId2, account2, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Advocate of Name can add/set duplicate writer key");
+
+		var signature = createAddKeySignature(newKey.privateKey, nameId2, newKey.address, nonce.plus(1).toNumber());
+		var vrs = EthCrypto.vrs.fromString(signature);
+
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			nonce = await namefactory.nonces(nameId2);
+			signature = createAddKeySignature(newKey.privateKey, nameId2, newKey.address, nonce.plus(1).toNumber());
+			vrs = EthCrypto.vrs.fromString(signature);
+			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Compromised Advocate of Name can add public key");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		var nonceBefore = await namefactory.nonces(nameId2);
+		var getTotalPublicKeysCountBefore = await namepublickey.getTotalPublicKeysCount(nameId2);
+
+		try {
+			signature = createAddKeySignature(newKey.privateKey, nameId2, newKey.address, nonceBefore.plus(1).toNumber());
+			vrs = EthCrypto.vrs.fromString(signature);
+
+			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonceBefore.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, {
+				from: account2
+			});
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, true, "Advocate of Name can't add public key");
+
+		var nonceAfter = await namefactory.nonces(nameId2);
+		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(2).toNumber(), "Name has incorrect nonce");
+
+		var isKeyExist = await namepublickey.isKeyExist(nameId2, newKey.address);
+		assert.equal(isKeyExist, true, "isKeyExist() returns incorrect value");
+
+		var getTotalPublicKeysCountAfter = await namepublickey.getTotalPublicKeysCount(nameId2);
+		assert.equal(
+			getTotalPublicKeysCountAfter.toNumber(),
+			getTotalPublicKeysCountBefore.plus(1).toNumber(),
+			"getTotalPublicKeysCount() returns incorrect value"
+		);
+
+		var getWriterKey = await namepublickey.getWriterKey(nameId2);
+		assert.equal(getWriterKey.toLowerCase(), newKey.address.toLowerCase(), "getWriterKey() returns incorrect value");
+
+		var isNameWriterKey = await namepublickey.isNameWriterKey(nameId2, newKey.address);
+		assert.equal(isNameWriterKey, true, "isNameWriterKeu() returns incorrect value");
 	});
 });
