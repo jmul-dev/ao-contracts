@@ -24,11 +24,15 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	struct PublicKey {
 		bool created;
 		address defaultKey;
+		address writerKey;
 		address[] keys;
 	}
 
 	// Mapping from nameId to its PublicKey
 	mapping (address => PublicKey) internal publicKeys;
+
+	// Mapping from key to nameId
+	mapping (address => address) public keyToNameId;
 
 	// Event to be broadcasted to public when a publicKey is added to a Name
 	event AddKey(address indexed nameId, address publicKey, uint256 nonce);
@@ -38,6 +42,9 @@ contract NamePublicKey is TheAO, INamePublicKey {
 
 	// Event to be broadcasted to public when a publicKey is set as default for a Name
 	event SetDefaultKey(address indexed nameId, address publicKey, uint256 nonce);
+
+	// Event to be broadcasted to public when a publicKey is set as writer for a Name
+	event SetWriterKey(address indexed nameId, address publicKey, uint256 nonce);
 
 	/**
 	 * @dev Constructor function
@@ -86,6 +93,14 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 */
 	modifier senderNameNotCompromised() {
 		require (!_nameAccountRecovery.isCompromised(_nameFactory.ethAddressToNameId(msg.sender)));
+		_;
+	}
+
+	/**
+	 * @dev Check if `_key` is not yet taken
+	 */
+	modifier keyNotTaken(address _key) {
+		require (_key != address(0) && keyToNameId[_key] == address(0));
 		_;
 	}
 
@@ -145,7 +160,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @param _key The publicKey to be added
 	 * @return true on success
 	 */
-	function whitelistAddKey(address _id, address _key) external isName(_id) inWhitelist returns (bool) {
+	function whitelistAddKey(address _id, address _key) external isName(_id) keyNotTaken(_key) inWhitelist returns (bool) {
 		_addKey(_id, _key);
 		return true;
 	}
@@ -164,19 +179,29 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @dev Store the PublicKey info for a Name
 	 * @param _id The ID of the Name
 	 * @param _defaultKey The default public key for this Name
+	 * @param _writerKey The writer public key for this Name
 	 * @return true on success
 	 */
-	function initialize(address _id, address _defaultKey)
+	function initialize(address _id, address _defaultKey, address _writerKey)
 		external
 		isName(_id)
+		keyNotTaken(_defaultKey)
+		keyNotTaken(_writerKey)
 		onlyFactory returns (bool) {
 		require (!isExist(_id));
-		require (_defaultKey != address(0));
 
+		keyToNameId[_defaultKey] = _id;
+		if (_defaultKey != _writerKey) {
+			keyToNameId[_writerKey] = _id;
+		}
 		PublicKey storage _publicKey = publicKeys[_id];
 		_publicKey.created = true;
 		_publicKey.defaultKey = _defaultKey;
+		_publicKey.writerKey = _writerKey;
 		_publicKey.keys.push(_defaultKey);
+		if (_defaultKey != _writerKey) {
+			_publicKey.keys.push(_writerKey);
+		}
 		return true;
 	}
 
@@ -199,14 +224,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	function isKeyExist(address _id, address _key) isName(_id) external view returns (bool) {
 		require (isExist(_id));
 		require (_key != address(0));
-
-		PublicKey memory _publicKey = publicKeys[_id];
-		for (uint256 i = 0; i < _publicKey.keys.length; i++) {
-			if (_publicKey.keys[i] == _key) {
-				return true;
-			}
-		}
-		return false;
+		return keyToNameId[_key] == _id;
 	}
 
 	/**
@@ -224,7 +242,7 @@ contract NamePublicKey is TheAO, INamePublicKey {
 		uint8 _signatureV,
 		bytes32 _signatureR,
 		bytes32 _signatureS
-	) public isName(_id) onlyAdvocate(_id) senderNameNotCompromised {
+	) public isName(_id) onlyAdvocate(_id) keyNotTaken(_key) senderNameNotCompromised {
 		require (_nonce == _nameFactory.nonces(_id).add(1));
 		bytes32 _hash = keccak256(abi.encodePacked(address(this), _id, _key, _nonce));
 		require (ecrecover(_hash, _signatureV, _signatureR, _signatureS) == _key);
@@ -239,6 +257,16 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	function getDefaultKey(address _id) external isName(_id) view returns (address) {
 		require (isExist(_id));
 		return publicKeys[_id].defaultKey;
+	}
+
+	/**
+	 * @dev Get writer public key of a Name
+	 * @param _id The ID of the Name
+	 * @return the writer public key
+	 */
+	function getWriterKey(address _id) external isName(_id) view returns (address) {
+		require (isExist(_id));
+		return publicKeys[_id].writerKey;
 	}
 
 	/**
@@ -272,14 +300,18 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @param _key The publicKey to be removed
 	 */
 	function removeKey(address _id, address _key) public isName(_id) onlyAdvocate(_id) senderNameNotCompromised {
-		require (isExist(_id));
 		require (this.isKeyExist(_id, _key));
 
 		PublicKey storage _publicKey = publicKeys[_id];
 
 		// Can't remove default key
 		require (_key != _publicKey.defaultKey);
+		// Can't remove writer key
+		require (_key != _publicKey.writerKey);
+		// Has to have at least defaultKey/writerKey
 		require (_publicKey.keys.length > 1);
+
+		keyToNameId[_key] = address(0);
 
 		uint256 index;
 		for (uint256 i = 0; i < _publicKey.keys.length; i++) {
@@ -309,7 +341,6 @@ contract NamePublicKey is TheAO, INamePublicKey {
 	 * @param _signatureS The S part of the signature for this update
 	 */
 	function setDefaultKey(address _id, address _defaultKey, uint8 _signatureV, bytes32 _signatureR, bytes32 _signatureS) public isName(_id) onlyAdvocate(_id) senderNameNotCompromised {
-		require (isExist(_id));
 		require (this.isKeyExist(_id, _defaultKey));
 
 		bytes32 _hash = keccak256(abi.encodePacked(address(this), _id, _defaultKey));
@@ -323,15 +354,39 @@ contract NamePublicKey is TheAO, INamePublicKey {
 		emit SetDefaultKey(_id, _defaultKey, _nonce);
 	}
 
+	/**
+	 * @dev Set a publicKey as the writer for a Name
+	 * @param _id The ID of the Name
+	 * @param _writerKey The writerKey to be set
+	 * @param _signatureV The V part of the signature for this update
+	 * @param _signatureR The R part of the signature for this update
+	 * @param _signatureS The S part of the signature for this update
+	 */
+	function setWriterKey(address _id, address _writerKey, uint8 _signatureV, bytes32 _signatureR, bytes32 _signatureS) public isName(_id) onlyAdvocate(_id) senderNameNotCompromised {
+		require (this.isKeyExist(_id, _writerKey));
+
+		bytes32 _hash = keccak256(abi.encodePacked(address(this), _id, _writerKey));
+		require (ecrecover(_hash, _signatureV, _signatureR, _signatureS) == msg.sender);
+
+		PublicKey storage _publicKey = publicKeys[_id];
+		_publicKey.writerKey = _writerKey;
+
+		uint256 _nonce = _nameFactory.incrementNonce(_id);
+		require (_nonce > 0);
+		emit SetWriterKey(_id, _writerKey, _nonce);
+	}
+
 	/***** INTERNAL METHOD *****/
 	/**
 	 * @dev Actual adding the publicKey to list for a Name
 	 * @param _id The ID of the Name
 	 * @param _key The publicKey to be added
+	 * @return true on success
 	 */
-	function _addKey(address _id, address _key) internal {
+	function _addKey(address _id, address _key) internal returns (bool) {
 		require (!this.isKeyExist(_id, _key));
-		require (_key != address(0));
+
+		keyToNameId[_key] = _id;
 
 		PublicKey storage _publicKey = publicKeys[_id];
 		_publicKey.keys.push(_key);
@@ -340,5 +395,6 @@ contract NamePublicKey is TheAO, INamePublicKey {
 		require (_nonce > 0);
 
 		emit AddKey(_id, _key, _nonce);
+		return true;
 	}
 }

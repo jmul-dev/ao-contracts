@@ -4,6 +4,7 @@ var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var Logos = artifacts.require("./Logos.sol");
 
 var AOSettingValue = artifacts.require("./AOSettingValue.sol");
+var EthCrypto = require("eth-crypto");
 
 contract("AOSettingValue", function(accounts) {
 	var namefactory, taofactory, nametaoposition, logos, aosettingvalue, nameId, taoId;
@@ -21,6 +22,8 @@ contract("AOSettingValue", function(accounts) {
 
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 
+	var nameIdLocalWriterKey = EthCrypto.createIdentity();
+
 	before(async function() {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
@@ -29,9 +32,17 @@ contract("AOSettingValue", function(accounts) {
 		aosettingvalue = await AOSettingValue.deployed();
 
 		// Create Name
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameIdLocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		nameId = await namefactory.ethAddressToNameId(account1);
 
 		// Mint Logos to nameId

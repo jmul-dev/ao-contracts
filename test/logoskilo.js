@@ -3,6 +3,7 @@ var TAOFactory = artifacts.require("./TAOFactory.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var LogosKilo = artifacts.require("./LogosKilo.sol");
 var Logos = artifacts.require("./Logos.sol");
+var EthCrypto = require("eth-crypto");
 
 contract("Logos Kilo", function(accounts) {
 	var namefactory, taofactory, nametaoposition, logoskilo, logos, nameId1, nameId2, taoId1, taoId2;
@@ -11,6 +12,8 @@ contract("Logos Kilo", function(accounts) {
 	var account2 = accounts[2];
 	var someAddress = accounts[3];
 	var whitelistedAddress = accounts[4];
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
+	var nameId2LocalWriterKey = EthCrypto.createIdentity();
 
 	before(async function() {
 		namefactory = await NameFactory.deployed();
@@ -20,14 +23,30 @@ contract("Logos Kilo", function(accounts) {
 		logos = await Logos.deployed();
 
 		// Create Name
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId1LocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		nameId1 = await namefactory.ethAddressToNameId(account1);
 
-		var result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account2
-		});
+		var result = await namefactory.createName(
+			"delta",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId2LocalWriterKey.address,
+			{
+				from: account2
+			}
+		);
 		nameId2 = await namefactory.ethAddressToNameId(account2);
 
 		// Mint Logos to nameId1 and nameId2

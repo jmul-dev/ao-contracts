@@ -38,7 +38,11 @@ contract("NamePublicKey", function(accounts) {
 	var account1PrivateKey = "0xfa372b56eac0e71de587267f0a59989719b2325aeb4579912379641cf93ccaab";
 	var account2PrivateKey = "0x6a35c58d0acad0ceca9c03d37aa2d2288d70afe0690f5e5f5e05aeab93b95dad";
 
-	var createSetDefaultKeySignature = function(privateKey, nameId, publicKey) {
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
+	var nameId2LocalWriterKey = EthCrypto.createIdentity();
+	var nameId3LocalWriterKey = EthCrypto.createIdentity();
+
+	var createSetKeySignature = function(privateKey, nameId, publicKey) {
 		var signHash = EthCrypto.hash.keccak256([
 			{
 				type: "address",
@@ -97,14 +101,30 @@ contract("NamePublicKey", function(accounts) {
 		accountRecoveryLockDuration = settingValues[0];
 
 		// Create Name
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId1LocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		nameId1 = await namefactory.ethAddressToNameId(account1);
 
-		result = await namefactory.createName("echo", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account3
-		});
+		result = await namefactory.createName(
+			"echo",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId3LocalWriterKey.address,
+			{
+				from: account3
+			}
+		);
 		nameId3 = await namefactory.ethAddressToNameId(account3);
 
 		// Mint Logos to nameId
@@ -240,6 +260,9 @@ contract("NamePublicKey", function(accounts) {
 	});
 
 	it("Whitelisted address - only whitelisted address can add key on behalf of a Name", async function() {
+		var keyToNameId = await namepublickey.keyToNameId(someAddress);
+		assert.equal(keyToNameId, emptyAddress, "keyToNameId returns incorrect value");
+
 		var canAdd;
 		try {
 			await namepublickey.whitelistAddKey(nameId1, someAddress, { from: someAddress });
@@ -259,26 +282,75 @@ contract("NamePublicKey", function(accounts) {
 
 		var isKeyExist = await namepublickey.isKeyExist(nameId1, someAddress);
 		assert.equal(isKeyExist, true, "isKeyExist() returns incorrect value");
+
+		keyToNameId = await namepublickey.keyToNameId(someAddress);
+		assert.equal(keyToNameId, nameId1, "keyToNameId returns incorrect value");
+
+		try {
+			await namepublickey.whitelistAddKey(nameId2, someAddress, { from: whitelistedAddress });
+			canAdd = true;
+		} catch (e) {
+			canAdd = false;
+		}
+		assert.equal(canAdd, false, "Whitelisted address can add key that is already taken");
 	});
 
 	it("initialize() - only NameFactory can initialize PublicKey for a Name", async function() {
-		// Create Name
-		var result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account2
-		});
+		var canInitialize;
+		try {
+			// Create Name
+			var result = await namefactory.createName(
+				"delta",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				someAddress,
+				{
+					from: account2
+				}
+			);
+			canInitialize = true;
+		} catch (e) {
+			canInitialize = false;
+		}
+		assert.equal(canInitialize, false, "NameFactory can initialize PublicKey for a Name using writer key that is already taken");
+
+		try {
+			// Create Name
+			var result = await namefactory.createName(
+				"delta",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId2LocalWriterKey.address,
+				{
+					from: account2
+				}
+			);
+			canInitialize = true;
+		} catch (e) {
+			canInitialize = false;
+		}
+		assert.equal(canInitialize, true, "NameFactory can't initialize PublicKey for a Name");
+
 		nameId2 = await namefactory.ethAddressToNameId(account2);
 
 		var isExist = await namepublickey.isExist(nameId2);
 		assert.equal(isExist, true, "isExist() returns incorrect value");
 
 		var getTotalPublicKeysCount = await namepublickey.getTotalPublicKeysCount(nameId2);
-		assert.equal(getTotalPublicKeysCount.toNumber(), 1, "getTotalPublicKeysCount() returns incorrect value");
+		assert.equal(getTotalPublicKeysCount.toNumber(), 2, "getTotalPublicKeysCount() returns incorrect value");
 
 		var isKeyExist = await namepublickey.isKeyExist(nameId2, account2);
 		assert.equal(isKeyExist, true, "isKeyExist() returns incorrect value");
 
 		var getDefaultKey = await namepublickey.getDefaultKey(nameId2);
 		assert.equal(getDefaultKey, account2, "getDefaultKey() returns incorrect value");
+
+		var getWriterKey = await namepublickey.getWriterKey(nameId2);
+		assert.equal(getWriterKey.toLowerCase(), nameId2LocalWriterKey.address.toLowerCase(), "getWriterKey() returns incorrect value");
 
 		var nonce = await namefactory.nonces(nameId2);
 		assert.equal(nonce.toNumber(), 1, "Name has incorrect nonce");
@@ -447,6 +519,15 @@ contract("NamePublicKey", function(accounts) {
 		}
 		assert.equal(canRemove, false, "Advocate of Name can remove default public key");
 
+		var writerKey = await namepublickey.getWriterKey(nameId2);
+		try {
+			await namepublickey.removeKey(nameId2, writerKey, { from: account2 });
+			canRemove = true;
+		} catch (e) {
+			canRemove = false;
+		}
+		assert.equal(canRemove, false, "Advocate of Name can remove writer public key");
+
 		// Listener submit account recovery for nameId2
 		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
 
@@ -499,7 +580,7 @@ contract("NamePublicKey", function(accounts) {
 
 		await namepublickey.addKey(nameId2, newKey, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
 
-		var signature = createSetDefaultKeySignature(account2PrivateKey, nameId2, newKey);
+		var signature = createSetKeySignature(account2PrivateKey, nameId2, newKey);
 		var vrs = EthCrypto.vrs.fromString(signature);
 
 		var canSetDefault;
@@ -582,6 +663,94 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "Name has incorrect nonce");
 
 		var getDefaultKey = await namepublickey.getDefaultKey(nameId2);
-		assert.equal(getDefaultKey, newKey, "getDefaultKey() returns incorrect value");
+		assert.equal(getDefaultKey.toLowerCase(), newKey.toLowerCase(), "getDefaultKey() returns incorrect value");
+	});
+
+	it("setWriterKey() - should be able to set a writer public key from existing public key list", async function() {
+		var nonce = await namefactory.nonces(nameId2);
+		var signature = createSetKeySignature(account2PrivateKey, nameId2, newKey);
+		var vrs = EthCrypto.vrs.fromString(signature);
+
+		var canSetWriter;
+		try {
+			await namepublickey.setWriterKey(nameId2, newKey, vrs.v, vrs.r, vrs.s, { from: account1 });
+			canSetWriter = true;
+		} catch (e) {
+			canSetWriter = false;
+		}
+		assert.equal(canSetWriter, false, "Non-advocate of Name can set writer public key");
+
+		try {
+			await namepublickey.setWriterKey(someAddress, newKey, vrs.v, vrs.r, vrs.s, { from: account2 });
+			canSetWriter = true;
+		} catch (e) {
+			canSetWriter = false;
+		}
+		assert.equal(canSetWriter, false, "Can set writer public key on a non-existing Name");
+
+		try {
+			await namepublickey.setWriterKey(nameId2, someAddress, vrs.v, vrs.r, vrs.s, { from: account2 });
+			canSetWriter = true;
+		} catch (e) {
+			canSetWriter = false;
+		}
+		assert.equal(canSetWriter, false, "Advocate of Name can set non-existing public key as writer");
+
+		try {
+			await namepublickey.setWriterKey(nameId2, newKey, 0, vrs.r, vrs.s, { from: account2 });
+			canSetWriter = true;
+		} catch (e) {
+			canSetWriter = false;
+		}
+		assert.equal(canSetWriter, false, "Advocate of Name can set writer public key with invalid v part of signature");
+
+		try {
+			await namepublickey.setWriterKey(nameId2, newKey, vrs.v, "", vrs.s, { from: account2 });
+			canSetWriter = true;
+		} catch (e) {
+			canSetWriter = false;
+		}
+		assert.equal(canSetWriter, false, "Advocate of Name can set writer public key with invalid r part of signature");
+
+		try {
+			await namepublickey.setWriterKey(nameId2, newKey, vrs.v, vrs.r, "", { from: account2 });
+			canSetWriter = true;
+		} catch (e) {
+			canSetWriter = false;
+		}
+		assert.equal(canSetWriter, false, "Advocate of Name can set writer public key with invalid s part of signature");
+
+		// Listener submit account recovery for nameId2
+		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(1000);
+
+		try {
+			await namepublickey.setWriterKey(nameId2, newKey, vrs.v, vrs.r, vrs.s, { from: account2 });
+			canSetWriter = true;
+		} catch (e) {
+			canSetWriter = false;
+		}
+		assert.equal(canSetWriter, false, "Compromised Advocate of Name can set writer public key");
+
+		// Fast forward the time
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+
+		var nonceBefore = await namefactory.nonces(nameId2);
+
+		try {
+			await namepublickey.setWriterKey(nameId2, newKey, vrs.v, vrs.r, vrs.s, { from: account2 });
+			canSetWriter = true;
+		} catch (e) {
+			canSetWriter = false;
+		}
+		assert.equal(canSetWriter, true, "Advocate of Name can't set writer public key");
+
+		var nonceAfter = await namefactory.nonces(nameId2);
+		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "Name has incorrect nonce");
+
+		var getWriterKey = await namepublickey.getWriterKey(nameId2);
+		assert.equal(getWriterKey.toLowerCase(), newKey.toLowerCase(), "getWriterKey() returns incorrect value");
 	});
 });

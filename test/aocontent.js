@@ -53,6 +53,9 @@ contract("AOContent", function(accounts) {
 		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account3PrivateKey))
 	};
 
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
+	var nameId2LocalWriterKey = EthCrypto.createIdentity();
+
 	var baseChallenge = "basechallengestring";
 	var fileSize = 1000000; // 1000000 bytes = min 1000000 AO
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
@@ -87,14 +90,30 @@ contract("AOContent", function(accounts) {
 		taoContentState_acceptedToTAO = settingValues[3];
 
 		// Create Name
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId1LocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		nameId1 = await namefactory.ethAddressToNameId(account1);
 
-		var result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account2
-		});
+		var result = await namefactory.createName(
+			"delta",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId2LocalWriterKey.address,
+			{
+				from: account2
+			}
+		);
 		nameId2 = await namefactory.ethAddressToNameId(account2);
 
 		// Mint Logos to nameId1 and nameId2

@@ -62,6 +62,9 @@ contract("AOIon & AOIonLot", function(accounts) {
 	var account2Lots = [];
 	var account3Lots = [];
 
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
+	var nameId2LocalWriterKey = EthCrypto.createIdentity();
+
 	before(async function() {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
@@ -152,9 +155,17 @@ contract("AOIon & AOIonLot", function(accounts) {
 	contract("AOIon - The AO Only", function() {
 		before(async function() {
 			// Create Name
-			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account1
-			});
+			var result = await namefactory.createName(
+				"charlie",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId1LocalWriterKey.address,
+				{
+					from: account1
+				}
+			);
 			nameId1 = await namefactory.ethAddressToNameId(account1);
 
 			// Mint Logos to nameId1
@@ -428,9 +439,17 @@ contract("AOIon & AOIonLot", function(accounts) {
 	contract("AOIonLot - The AO Only", function() {
 		before(async function() {
 			// Create Name
-			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account1
-			});
+			var result = await namefactory.createName(
+				"charlie",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId1LocalWriterKey.address,
+				{
+					from: account1
+				}
+			);
 			nameId1 = await namefactory.ethAddressToNameId(account1);
 
 			// Mint Logos to nameId1
@@ -549,14 +568,30 @@ contract("AOIon & AOIonLot", function(accounts) {
 			await aoion.setWhitelist(whitelistedAddress, true, { from: theAO });
 
 			// Create Name
-			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account1
-			});
+			var result = await namefactory.createName(
+				"charlie",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId1LocalWriterKey.address,
+				{
+					from: account1
+				}
+			);
 			nameId1 = await namefactory.ethAddressToNameId(account1);
 
-			result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account2
-			});
+			result = await namefactory.createName(
+				"delta",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId2LocalWriterKey.address,
+				{
+					from: account2
+				}
+			);
 			nameId2 = await namefactory.ethAddressToNameId(account2);
 
 			await nametaoposition.setListener(nameId1, nameId2, { from: account1 });
@@ -1650,14 +1685,30 @@ contract("AOIon & AOIonLot", function(accounts) {
 			await aoion.setWhitelist(whitelistedAddress, true, { from: theAO });
 
 			// Create Name
-			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account1
-			});
+			var result = await namefactory.createName(
+				"charlie",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId1LocalWriterKey.address,
+				{
+					from: account1
+				}
+			);
 			nameId1 = await namefactory.ethAddressToNameId(account1);
 
-			result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account2
-			});
+			result = await namefactory.createName(
+				"delta",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId2LocalWriterKey.address,
+				{
+					from: account2
+				}
+			);
 			nameId2 = await namefactory.ethAddressToNameId(account2);
 
 			await nametaoposition.setListener(nameId1, nameId2, { from: account1 });

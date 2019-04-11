@@ -41,6 +41,9 @@ contract("NameTAOVault", function(accounts) {
 	var recipient = EthCrypto.createIdentity();
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
+	var nameId2LocalWriterKey = EthCrypto.createIdentity();
+
 	before(async function() {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
@@ -58,14 +61,30 @@ contract("NameTAOVault", function(accounts) {
 		accountRecoveryLockDuration = settingValues[0];
 
 		// Create Name
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId1LocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		nameId1 = await namefactory.ethAddressToNameId(account1);
 
-		result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account2
-		});
+		result = await namefactory.createName(
+			"delta",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId2LocalWriterKey.address,
+			{
+				from: account2
+			}
+		);
 		nameId2 = await namefactory.ethAddressToNameId(account2);
 
 		// Mint Logos to nameId

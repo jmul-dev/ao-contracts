@@ -14,6 +14,8 @@ var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 
+var EthCrypto = require("eth-crypto");
+
 contract("LogosTreasury", function(accounts) {
 	var logostreasury,
 		logos,
@@ -37,6 +39,9 @@ contract("LogosTreasury", function(accounts) {
 	var someAddress = accounts[3];
 	var whitelistedAddress = accounts[4];
 	var base, kilo, mega, giga, tera, peta, exa, zetta, yotta, xona;
+
+	var nameIdLocalWriterKey = EthCrypto.createIdentity();
+
 	before(async function() {
 		logostreasury = await LogosTreasury.deployed();
 		logos = await Logos.deployed();
@@ -55,9 +60,17 @@ contract("LogosTreasury", function(accounts) {
 		nametaoposition = await NameTAOPosition.deployed();
 
 		// Create Name
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameIdLocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		nameId1 = await namefactory.ethAddressToNameId(account1);
 
 		// Mint Logos to nameId1 and nameId2

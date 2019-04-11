@@ -3,6 +3,7 @@ var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var Logos = artifacts.require("./Logos.sol");
+var EthCrypto = require("eth-crypto");
 
 contract("AOSettingAttribute", function(accounts) {
 	var aosettingattribute, namefactory, taofactory, nametaoposition, logos;
@@ -21,6 +22,10 @@ contract("AOSettingAttribute", function(accounts) {
 	var newSettingId = 4;
 	var newSettingContractAddress = accounts[4];
 
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
+	var nameId2LocalWriterKey = EthCrypto.createIdentity();
+	var nameId3LocalWriterKey = EthCrypto.createIdentity();
+
 	before(async function() {
 		aosettingattribute = await AOSettingAttribute.deployed();
 		namefactory = await NameFactory.deployed();
@@ -31,17 +36,41 @@ contract("AOSettingAttribute", function(accounts) {
 		await logos.setWhitelist(theAO, true, { from: theAO });
 
 		// Create Names
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId1LocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		creatorTAONameId = await namefactory.ethAddressToNameId(account1);
 
-		result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account2
-		});
+		result = await namefactory.createName(
+			"delta",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId2LocalWriterKey.address,
+			{
+				from: account2
+			}
+		);
 		associatedTAONameId = await namefactory.ethAddressToNameId(account2);
 
-		result = await namefactory.createName("echo", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", { from: account3 });
+		result = await namefactory.createName(
+			"echo",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId3LocalWriterKey.address,
+			{ from: account3 }
+		);
 		proposalTAONameId = await namefactory.ethAddressToNameId(account3);
 
 		// Mint Logos to Names

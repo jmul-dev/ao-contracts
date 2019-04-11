@@ -7,6 +7,7 @@ var Logos = artifacts.require("./Logos.sol");
 var AOContent = artifacts.require("./AOContent.sol");
 var TAO = artifacts.require("./TAO.sol");
 
+var EthCrypto = require("eth-crypto");
 var BigNumber = require("bignumber.js");
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1 }); // no rounding
 
@@ -21,7 +22,6 @@ contract("AOLibrary", function(accounts) {
 		percentageDivisor,
 		multiplierDivisor,
 		nameId1,
-		nameId2,
 		taoId1,
 		taoId2;
 	var theAO = accounts[0];
@@ -29,6 +29,8 @@ contract("AOLibrary", function(accounts) {
 	var account2 = accounts[2];
 	var whitelistedAddress = accounts[3];
 	var someAddress = accounts[9];
+
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
 
 	before(async function() {
 		library = await AOLibrary.deployed();
@@ -40,9 +42,17 @@ contract("AOLibrary", function(accounts) {
 		aocontent = await AOContent.deployed();
 
 		// Create Name
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId1LocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		nameId1 = await namefactory.ethAddressToNameId(account1);
 
 		// Mint Logos to nameId1

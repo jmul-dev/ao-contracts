@@ -95,6 +95,10 @@ var TokenOne = artifacts.require("./TokenOne.sol");
 var TokenTwo = artifacts.require("./TokenTwo.sol");
 var TokenThree = artifacts.require("./TokenThree.sol");
 
+var EthCrypto = require("eth-crypto");
+var primordialNameLocalWriter = EthCrypto.createIdentity();
+var settingNameLocalWriter = EthCrypto.createIdentity();
+
 module.exports = function(deployer, network, accounts) {
 	var primordialAccount, settingAccount, primordialNameId, settingNameId, primordialTAOId, settingTAOId;
 	if (network === "rinkeby") {
@@ -729,7 +733,7 @@ module.exports = function(deployer, network, accounts) {
 			 * Create Primordial Name and Associated Name
 			 */
 			try {
-				var result = await namefactory.createName("alpha", "", "", "", "", {
+				var result = await namefactory.createName("alpha", "", "", "", "", primordialNameLocalWriter.address, {
 					from: primordialAccount
 				});
 				primordialNameId = await namefactory.ethAddressToNameId(primordialAccount);
@@ -739,7 +743,7 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			try {
-				var result = await namefactory.createName("beta", "", "", "", "", {
+				var result = await namefactory.createName("beta", "", "", "", "", settingNameLocalWriter.address, {
 					from: settingAccount
 				});
 				settingNameId = await namefactory.ethAddressToNameId(settingAccount);
@@ -1676,7 +1680,6 @@ module.exports = function(deployer, network, accounts) {
 			 * For testing purposes:
 			 * Remove this later
 			 * --- START ---
-			 */
 			await aoion.setWhitelist(primordialAccount, true, { from: primordialAccount });
 			await aoion.mint(accounts[1], 10 ** 6, { from: primordialAccount }); // 1,000,000,000 AO Ion
 			// Buy 2 lots so that we can test avg weighted multiplier

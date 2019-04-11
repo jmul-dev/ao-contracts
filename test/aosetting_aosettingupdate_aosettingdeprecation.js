@@ -80,6 +80,11 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 	var updateSignature = "somesignature";
 	var newSettingContractAddress = accounts[7];
 
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
+	var nameId2LocalWriterKey = EthCrypto.createIdentity();
+	var nameId3LocalWriterKey = EthCrypto.createIdentity();
+	var nameId4LocalWriterKey = EthCrypto.createIdentity();
+
 	var createSignature = function(_privateKey, _settingId, _proposalTAOId, _associatedTAONameId, _newValue, _type) {
 		var signHash = EthCrypto.hash.keccak256([
 			{
@@ -131,9 +136,17 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 	contract("AOSetting - The AO Only", function() {
 		before(async function() {
 			// Create Name
-			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account1
-			});
+			var result = await namefactory.createName(
+				"charlie",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId1LocalWriterKey.address,
+				{
+					from: account1
+				}
+			);
 			nameId = await namefactory.ethAddressToNameId(account1);
 
 			// Mint Logos to nameId
@@ -316,9 +329,17 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 	contract("AOSettingUpdate - The AO Only", function() {
 		before(async function() {
 			// Create Name
-			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account1
-			});
+			var result = await namefactory.createName(
+				"charlie",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId1LocalWriterKey.address,
+				{
+					from: account1
+				}
+			);
 			nameId = await namefactory.ethAddressToNameId(account1);
 
 			// Mint Logos to nameId
@@ -523,9 +544,17 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 	contract("AOSettingDeprecation - The AO Only", function() {
 		before(async function() {
 			// Create Name
-			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account1
-			});
+			var result = await namefactory.createName(
+				"charlie",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId1LocalWriterKey.address,
+				{
+					from: account1
+				}
+			);
 			nameId = await namefactory.ethAddressToNameId(account1);
 
 			// Mint Logos to nameId
@@ -710,24 +739,56 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			await logos.setWhitelist(theAO, true, { from: theAO });
 
 			// Create Names
-			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account1
-			});
+			var result = await namefactory.createName(
+				"charlie",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId1LocalWriterKey.address,
+				{
+					from: account1
+				}
+			);
 			creatorTAONameId = await namefactory.ethAddressToNameId(account1);
 
-			result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account2
-			});
+			result = await namefactory.createName(
+				"delta",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId2LocalWriterKey.address,
+				{
+					from: account2
+				}
+			);
 			associatedTAONameId = await namefactory.ethAddressToNameId(account2);
 
-			result = await namefactory.createName("echo", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account3
-			});
+			result = await namefactory.createName(
+				"echo",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId3LocalWriterKey.address,
+				{
+					from: account3
+				}
+			);
 			proposalTAONameId = await namefactory.ethAddressToNameId(account3);
 
-			result = await namefactory.createName("foxtrot", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account4
-			});
+			result = await namefactory.createName(
+				"foxtrot",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId4LocalWriterKey.address,
+				{
+					from: account4
+				}
+			);
 			nameId4 = await namefactory.ethAddressToNameId(account4);
 
 			// Mint Logos to Names
