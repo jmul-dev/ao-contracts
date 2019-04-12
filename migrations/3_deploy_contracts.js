@@ -1408,16 +1408,16 @@ module.exports = function(deployer, network, accounts) {
 			await aoion.setWhitelist(nametaovault.address, true, { from: primordialAccount });
 
 			// Store AO denominations in AOTreasury
-			await aotreasury.addDenomination("ao", aoion.address, { from: primordialAccount });
-			await aotreasury.addDenomination("kilo", aokilo.address, { from: primordialAccount });
-			await aotreasury.addDenomination("mega", aomega.address, { from: primordialAccount });
-			await aotreasury.addDenomination("giga", aogiga.address, { from: primordialAccount });
-			await aotreasury.addDenomination("tera", aotera.address, { from: primordialAccount });
-			await aotreasury.addDenomination("peta", aopeta.address, { from: primordialAccount });
-			await aotreasury.addDenomination("exa", aoexa.address, { from: primordialAccount });
-			await aotreasury.addDenomination("zetta", aozetta.address, { from: primordialAccount });
-			await aotreasury.addDenomination("yotta", aoyotta.address, { from: primordialAccount });
-			await aotreasury.addDenomination("xona", aoxona.address, { from: primordialAccount });
+			await aotreasury.addDenomination(web3.utils.toHex("ao"), aoion.address, { from: primordialAccount });
+			await aotreasury.addDenomination(web3.utils.toHex("kilo"), aokilo.address, { from: primordialAccount });
+			await aotreasury.addDenomination(web3.utils.toHex("mega"), aomega.address, { from: primordialAccount });
+			await aotreasury.addDenomination(web3.utils.toHex("giga"), aogiga.address, { from: primordialAccount });
+			await aotreasury.addDenomination(web3.utils.toHex("tera"), aotera.address, { from: primordialAccount });
+			await aotreasury.addDenomination(web3.utils.toHex("peta"), aopeta.address, { from: primordialAccount });
+			await aotreasury.addDenomination(web3.utils.toHex("exa"), aoexa.address, { from: primordialAccount });
+			await aotreasury.addDenomination(web3.utils.toHex("zetta"), aozetta.address, { from: primordialAccount });
+			await aotreasury.addDenomination(web3.utils.toHex("yotta"), aoyotta.address, { from: primordialAccount });
+			await aotreasury.addDenomination(web3.utils.toHex("xona"), aoxona.address, { from: primordialAccount });
 
 			// AO denominations grant access to AOTreasury
 			await aoion.setWhitelist(aotreasury.address, true, { from: primordialAccount });
@@ -1464,7 +1464,7 @@ module.exports = function(deployer, network, accounts) {
 			// sellCapStatus: no
 			// quantityCapStatus: no
 			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, false, "", false, "", false, "", "", { from: primordialAccount });
+			await aopool.createPool(10000, true, false, "", false, "", false, "0x0000000000000000000000000000000000000000", "", { from: primordialAccount });
 
 			// Pool #2
 			// price: 10000
@@ -1473,7 +1473,7 @@ module.exports = function(deployer, network, accounts) {
 			// sellCapAmount: 10000000
 			// quantityCapStatus: no
 			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, true, 10000000, false, "", false, "", "", { from: primordialAccount });
+			await aopool.createPool(10000, true, true, 10000000, false, "", false, "0x0000000000000000000000000000000000000000", "", { from: primordialAccount });
 
 			// Pool #3
 			// price: 10000
@@ -1482,7 +1482,7 @@ module.exports = function(deployer, network, accounts) {
 			// quantityCapStatus: yes
 			// quantityCapAmount: 5000
 			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, false, "", true, 5000, false, "", "", { from: primordialAccount });
+			await aopool.createPool(10000, true, false, "", true, 5000, false, "0x0000000000000000000000000000000000000000", "", { from: primordialAccount });
 
 			// Pool #4
 			// price: 10000
@@ -1492,7 +1492,7 @@ module.exports = function(deployer, network, accounts) {
 			// quantityCapStatus: yes
 			// quantityCapAmount: 5000
 			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, true, 10000000, true, 5000, false, "", "", { from: primordialAccount });
+			await aopool.createPool(10000, true, true, 10000000, true, 5000, false, "0x0000000000000000000000000000000000000000", "", { from: primordialAccount });
 
 			// Pool #5
 			// price: 10000
@@ -1502,7 +1502,7 @@ module.exports = function(deployer, network, accounts) {
 			// quantityCapStatus: yes
 			// quantityCapAmount: 5000
 			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, false, true, 10000000, true, 5000, false, "", "", { from: primordialAccount });
+			await aopool.createPool(10000, false, true, 10000000, true, 5000, false, "0x0000000000000000000000000000000000000000", "", { from: primordialAccount });
 
 			// Link AOETH to AOIon
 			await aoion.setAOETHAddress(aoeth.address, { from: primordialAccount });
