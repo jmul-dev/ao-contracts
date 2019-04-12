@@ -331,13 +331,13 @@
 	"ast": {
 		"absolutePath": "/data/jmulyono/ao-contracts/contracts/TokenOne.sol",
 		"exportedSymbols": {
-			"TokenOne": [35008]
+			"TokenOne": [35313]
 		},
-		"id": 35009,
+		"id": 35314,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 34968,
+				"id": 35273,
 				"literals": ["solidity", "^", "0.4", ".24"],
 				"nodeType": "PragmaDirective",
 				"src": "0:24:99"
@@ -345,10 +345,10 @@
 			{
 				"absolutePath": "/data/jmulyono/ao-contracts/contracts/TokenERC20.sol",
 				"file": "./TokenERC20.sol",
-				"id": 34969,
+				"id": 35274,
 				"nodeType": "ImportDirective",
-				"scope": 35009,
-				"sourceUnit": 34967,
+				"scope": 35314,
+				"sourceUnit": 35272,
 				"src": "26:26:99",
 				"symbolAliases": [],
 				"unitAlias": ""
@@ -359,51 +359,51 @@
 						"arguments": null,
 						"baseName": {
 							"contractScope": null,
-							"id": 34970,
+							"id": 35275,
 							"name": "TokenERC20",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 34966,
+							"referencedDeclaration": 35271,
 							"src": "102:10:99",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_TokenERC20_$34966",
+								"typeIdentifier": "t_contract$_TokenERC20_$35271",
 								"typeString": "contract TokenERC20"
 							}
 						},
-						"id": 34971,
+						"id": 35276,
 						"nodeType": "InheritanceSpecifier",
 						"src": "102:10:99"
 					}
 				],
-				"contractDependencies": [34966],
+				"contractDependencies": [35271],
 				"contractKind": "contract",
 				"documentation": "@title TokenOne",
 				"fullyImplemented": true,
-				"id": 35008,
-				"linearizedBaseContracts": [35008, 34966],
+				"id": 35313,
+				"linearizedBaseContracts": [35313, 35271],
 				"name": "TokenOne",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
 						"body": {
-							"id": 35006,
+							"id": 35311,
 							"nodeType": "Block",
 							"src": "288:219:99",
 							"statements": [
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 34987,
+										"id": 35292,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 34985,
+											"id": 35290,
 											"name": "decimals",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 34606,
+											"referencedDeclaration": 34911,
 											"src": "292:8:99",
 											"typeDescriptions": {
 												"typeIdentifier": "t_uint8",
@@ -415,7 +415,7 @@
 										"rightHandSide": {
 											"argumentTypes": null,
 											"hexValue": "3138",
-											"id": 34986,
+											"id": 35291,
 											"isConstant": false,
 											"isLValue": false,
 											"isPure": true,
@@ -436,25 +436,25 @@
 											"typeString": "uint8"
 										}
 									},
-									"id": 34988,
+									"id": 35293,
 									"nodeType": "ExpressionStatement",
 									"src": "292:13:99"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 34997,
+										"id": 35302,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 34989,
+											"id": 35294,
 											"name": "totalSupply",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 34608,
+											"referencedDeclaration": 34913,
 											"src": "309:11:99",
 											"typeDescriptions": {
 												"typeIdentifier": "t_uint256",
@@ -469,18 +469,18 @@
 												"typeIdentifier": "t_uint256",
 												"typeString": "uint256"
 											},
-											"id": 34996,
+											"id": 35301,
 											"isConstant": false,
 											"isLValue": false,
 											"isPure": false,
 											"lValueRequested": false,
 											"leftExpression": {
 												"argumentTypes": null,
-												"id": 34990,
+												"id": 35295,
 												"name": "initialSupply",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 34973,
+												"referencedDeclaration": 35278,
 												"src": "323:13:99",
 												"typeDescriptions": {
 													"typeIdentifier": "t_uint256",
@@ -495,7 +495,7 @@
 													"typeIdentifier": "t_uint256",
 													"typeString": "uint256"
 												},
-												"id": 34995,
+												"id": 35300,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -503,7 +503,7 @@
 												"leftExpression": {
 													"argumentTypes": null,
 													"hexValue": "3130",
-													"id": 34991,
+													"id": 35296,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": true,
@@ -525,11 +525,11 @@
 													"arguments": [
 														{
 															"argumentTypes": null,
-															"id": 34993,
+															"id": 35298,
 															"name": "decimals",
 															"nodeType": "Identifier",
 															"overloadedDeclarations": [],
-															"referencedDeclaration": 34606,
+															"referencedDeclaration": 34911,
 															"src": "353:8:99",
 															"typeDescriptions": {
 																"typeIdentifier": "t_uint8",
@@ -544,7 +544,7 @@
 																"typeString": "uint8"
 															}
 														],
-														"id": 34992,
+														"id": 35297,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": true,
@@ -557,7 +557,7 @@
 														},
 														"typeName": "uint256"
 													},
-													"id": 34994,
+													"id": 35299,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
@@ -589,14 +589,14 @@
 											"typeString": "uint256"
 										}
 									},
-									"id": 34998,
+									"id": 35303,
 									"nodeType": "ExpressionStatement",
 									"src": "309:53:99"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 35004,
+										"id": 35309,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -605,34 +605,34 @@
 											"argumentTypes": null,
 											"baseExpression": {
 												"argumentTypes": null,
-												"id": 34999,
+												"id": 35304,
 												"name": "balanceOf",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 34612,
+												"referencedDeclaration": 34917,
 												"src": "414:9:99",
 												"typeDescriptions": {
 													"typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
 													"typeString": "mapping(address => uint256)"
 												}
 											},
-											"id": 35002,
+											"id": 35307,
 											"indexExpression": {
 												"argumentTypes": null,
 												"expression": {
 													"argumentTypes": null,
-													"id": 35000,
+													"id": 35305,
 													"name": "msg",
 													"nodeType": "Identifier",
 													"overloadedDeclarations": [],
-													"referencedDeclaration": 35551,
+													"referencedDeclaration": 35856,
 													"src": "424:3:99",
 													"typeDescriptions": {
 														"typeIdentifier": "t_magic_message",
 														"typeString": "msg"
 													}
 												},
-												"id": 35001,
+												"id": 35306,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -661,11 +661,11 @@
 										"operator": "=",
 										"rightHandSide": {
 											"argumentTypes": null,
-											"id": 35003,
+											"id": 35308,
 											"name": "totalSupply",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 34608,
+											"referencedDeclaration": 34913,
 											"src": "438:11:99",
 											"typeDescriptions": {
 												"typeIdentifier": "t_uint256",
@@ -678,14 +678,14 @@
 											"typeString": "uint256"
 										}
 									},
-									"id": 35005,
+									"id": 35310,
 									"nodeType": "ExpressionStatement",
 									"src": "414:35:99"
 								}
 							]
 						},
 						"documentation": "@dev Constructor function",
-						"id": 35007,
+						"id": 35312,
 						"implemented": true,
 						"isConstructor": true,
 						"isDeclaredConst": false,
@@ -694,11 +694,11 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 34980,
+										"id": 35285,
 										"name": "initialSupply",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 34973,
+										"referencedDeclaration": 35278,
 										"src": "242:13:99",
 										"typeDescriptions": {
 											"typeIdentifier": "t_uint256",
@@ -707,11 +707,11 @@
 									},
 									{
 										"argumentTypes": null,
-										"id": 34981,
+										"id": 35286,
 										"name": "tokenName",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 34975,
+										"referencedDeclaration": 35280,
 										"src": "257:9:99",
 										"typeDescriptions": {
 											"typeIdentifier": "t_string_memory_ptr",
@@ -720,11 +720,11 @@
 									},
 									{
 										"argumentTypes": null,
-										"id": 34982,
+										"id": 35287,
 										"name": "tokenSymbol",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 34977,
+										"referencedDeclaration": 35282,
 										"src": "268:11:99",
 										"typeDescriptions": {
 											"typeIdentifier": "t_string_memory_ptr",
@@ -732,17 +732,17 @@
 										}
 									}
 								],
-								"id": 34983,
+								"id": 35288,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 34979,
+									"id": 35284,
 									"name": "TokenERC20",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 34966,
+									"referencedDeclaration": 35271,
 									"src": "231:10:99",
 									"typeDescriptions": {
-										"typeIdentifier": "t_type$_t_contract$_TokenERC20_$34966_$",
+										"typeIdentifier": "t_type$_t_contract$_TokenERC20_$35271_$",
 										"typeString": "type(contract TokenERC20)"
 									}
 								},
@@ -753,15 +753,15 @@
 						"name": "",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 34978,
+							"id": 35283,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 34973,
+									"id": 35278,
 									"name": "initialSupply",
 									"nodeType": "VariableDeclaration",
-									"scope": 35007,
+									"scope": 35312,
 									"src": "168:21:99",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -770,7 +770,7 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 34972,
+										"id": 35277,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
 										"src": "168:7:99",
@@ -784,10 +784,10 @@
 								},
 								{
 									"constant": false,
-									"id": 34975,
+									"id": 35280,
 									"name": "tokenName",
 									"nodeType": "VariableDeclaration",
-									"scope": 35007,
+									"scope": 35312,
 									"src": "191:16:99",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -796,7 +796,7 @@
 										"typeString": "string"
 									},
 									"typeName": {
-										"id": 34974,
+										"id": 35279,
 										"name": "string",
 										"nodeType": "ElementaryTypeName",
 										"src": "191:6:99",
@@ -810,10 +810,10 @@
 								},
 								{
 									"constant": false,
-									"id": 34977,
+									"id": 35282,
 									"name": "tokenSymbol",
 									"nodeType": "VariableDeclaration",
-									"scope": 35007,
+									"scope": 35312,
 									"src": "209:18:99",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -822,7 +822,7 @@
 										"typeString": "string"
 									},
 									"typeName": {
-										"id": 34976,
+										"id": 35281,
 										"name": "string",
 										"nodeType": "ElementaryTypeName",
 										"src": "209:6:99",
@@ -839,19 +839,19 @@
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 34984,
+							"id": 35289,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "288:0:99"
 						},
-						"scope": 35008,
+						"scope": 35313,
 						"src": "156:351:99",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					}
 				],
-				"scope": 35009,
+				"scope": 35314,
 				"src": "81:428:99"
 			}
 		],
@@ -860,13 +860,13 @@
 	"legacyAST": {
 		"absolutePath": "/data/jmulyono/ao-contracts/contracts/TokenOne.sol",
 		"exportedSymbols": {
-			"TokenOne": [35008]
+			"TokenOne": [35313]
 		},
-		"id": 35009,
+		"id": 35314,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 34968,
+				"id": 35273,
 				"literals": ["solidity", "^", "0.4", ".24"],
 				"nodeType": "PragmaDirective",
 				"src": "0:24:99"
@@ -874,10 +874,10 @@
 			{
 				"absolutePath": "/data/jmulyono/ao-contracts/contracts/TokenERC20.sol",
 				"file": "./TokenERC20.sol",
-				"id": 34969,
+				"id": 35274,
 				"nodeType": "ImportDirective",
-				"scope": 35009,
-				"sourceUnit": 34967,
+				"scope": 35314,
+				"sourceUnit": 35272,
 				"src": "26:26:99",
 				"symbolAliases": [],
 				"unitAlias": ""
@@ -888,51 +888,51 @@
 						"arguments": null,
 						"baseName": {
 							"contractScope": null,
-							"id": 34970,
+							"id": 35275,
 							"name": "TokenERC20",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 34966,
+							"referencedDeclaration": 35271,
 							"src": "102:10:99",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_TokenERC20_$34966",
+								"typeIdentifier": "t_contract$_TokenERC20_$35271",
 								"typeString": "contract TokenERC20"
 							}
 						},
-						"id": 34971,
+						"id": 35276,
 						"nodeType": "InheritanceSpecifier",
 						"src": "102:10:99"
 					}
 				],
-				"contractDependencies": [34966],
+				"contractDependencies": [35271],
 				"contractKind": "contract",
 				"documentation": "@title TokenOne",
 				"fullyImplemented": true,
-				"id": 35008,
-				"linearizedBaseContracts": [35008, 34966],
+				"id": 35313,
+				"linearizedBaseContracts": [35313, 35271],
 				"name": "TokenOne",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
 						"body": {
-							"id": 35006,
+							"id": 35311,
 							"nodeType": "Block",
 							"src": "288:219:99",
 							"statements": [
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 34987,
+										"id": 35292,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 34985,
+											"id": 35290,
 											"name": "decimals",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 34606,
+											"referencedDeclaration": 34911,
 											"src": "292:8:99",
 											"typeDescriptions": {
 												"typeIdentifier": "t_uint8",
@@ -944,7 +944,7 @@
 										"rightHandSide": {
 											"argumentTypes": null,
 											"hexValue": "3138",
-											"id": 34986,
+											"id": 35291,
 											"isConstant": false,
 											"isLValue": false,
 											"isPure": true,
@@ -965,25 +965,25 @@
 											"typeString": "uint8"
 										}
 									},
-									"id": 34988,
+									"id": 35293,
 									"nodeType": "ExpressionStatement",
 									"src": "292:13:99"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 34997,
+										"id": 35302,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 34989,
+											"id": 35294,
 											"name": "totalSupply",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 34608,
+											"referencedDeclaration": 34913,
 											"src": "309:11:99",
 											"typeDescriptions": {
 												"typeIdentifier": "t_uint256",
@@ -998,18 +998,18 @@
 												"typeIdentifier": "t_uint256",
 												"typeString": "uint256"
 											},
-											"id": 34996,
+											"id": 35301,
 											"isConstant": false,
 											"isLValue": false,
 											"isPure": false,
 											"lValueRequested": false,
 											"leftExpression": {
 												"argumentTypes": null,
-												"id": 34990,
+												"id": 35295,
 												"name": "initialSupply",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 34973,
+												"referencedDeclaration": 35278,
 												"src": "323:13:99",
 												"typeDescriptions": {
 													"typeIdentifier": "t_uint256",
@@ -1024,7 +1024,7 @@
 													"typeIdentifier": "t_uint256",
 													"typeString": "uint256"
 												},
-												"id": 34995,
+												"id": 35300,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -1032,7 +1032,7 @@
 												"leftExpression": {
 													"argumentTypes": null,
 													"hexValue": "3130",
-													"id": 34991,
+													"id": 35296,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": true,
@@ -1054,11 +1054,11 @@
 													"arguments": [
 														{
 															"argumentTypes": null,
-															"id": 34993,
+															"id": 35298,
 															"name": "decimals",
 															"nodeType": "Identifier",
 															"overloadedDeclarations": [],
-															"referencedDeclaration": 34606,
+															"referencedDeclaration": 34911,
 															"src": "353:8:99",
 															"typeDescriptions": {
 																"typeIdentifier": "t_uint8",
@@ -1073,7 +1073,7 @@
 																"typeString": "uint8"
 															}
 														],
-														"id": 34992,
+														"id": 35297,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": true,
@@ -1086,7 +1086,7 @@
 														},
 														"typeName": "uint256"
 													},
-													"id": 34994,
+													"id": 35299,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
@@ -1118,14 +1118,14 @@
 											"typeString": "uint256"
 										}
 									},
-									"id": 34998,
+									"id": 35303,
 									"nodeType": "ExpressionStatement",
 									"src": "309:53:99"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 35004,
+										"id": 35309,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -1134,34 +1134,34 @@
 											"argumentTypes": null,
 											"baseExpression": {
 												"argumentTypes": null,
-												"id": 34999,
+												"id": 35304,
 												"name": "balanceOf",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 34612,
+												"referencedDeclaration": 34917,
 												"src": "414:9:99",
 												"typeDescriptions": {
 													"typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
 													"typeString": "mapping(address => uint256)"
 												}
 											},
-											"id": 35002,
+											"id": 35307,
 											"indexExpression": {
 												"argumentTypes": null,
 												"expression": {
 													"argumentTypes": null,
-													"id": 35000,
+													"id": 35305,
 													"name": "msg",
 													"nodeType": "Identifier",
 													"overloadedDeclarations": [],
-													"referencedDeclaration": 35551,
+													"referencedDeclaration": 35856,
 													"src": "424:3:99",
 													"typeDescriptions": {
 														"typeIdentifier": "t_magic_message",
 														"typeString": "msg"
 													}
 												},
-												"id": 35001,
+												"id": 35306,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -1190,11 +1190,11 @@
 										"operator": "=",
 										"rightHandSide": {
 											"argumentTypes": null,
-											"id": 35003,
+											"id": 35308,
 											"name": "totalSupply",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 34608,
+											"referencedDeclaration": 34913,
 											"src": "438:11:99",
 											"typeDescriptions": {
 												"typeIdentifier": "t_uint256",
@@ -1207,14 +1207,14 @@
 											"typeString": "uint256"
 										}
 									},
-									"id": 35005,
+									"id": 35310,
 									"nodeType": "ExpressionStatement",
 									"src": "414:35:99"
 								}
 							]
 						},
 						"documentation": "@dev Constructor function",
-						"id": 35007,
+						"id": 35312,
 						"implemented": true,
 						"isConstructor": true,
 						"isDeclaredConst": false,
@@ -1223,11 +1223,11 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 34980,
+										"id": 35285,
 										"name": "initialSupply",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 34973,
+										"referencedDeclaration": 35278,
 										"src": "242:13:99",
 										"typeDescriptions": {
 											"typeIdentifier": "t_uint256",
@@ -1236,11 +1236,11 @@
 									},
 									{
 										"argumentTypes": null,
-										"id": 34981,
+										"id": 35286,
 										"name": "tokenName",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 34975,
+										"referencedDeclaration": 35280,
 										"src": "257:9:99",
 										"typeDescriptions": {
 											"typeIdentifier": "t_string_memory_ptr",
@@ -1249,11 +1249,11 @@
 									},
 									{
 										"argumentTypes": null,
-										"id": 34982,
+										"id": 35287,
 										"name": "tokenSymbol",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 34977,
+										"referencedDeclaration": 35282,
 										"src": "268:11:99",
 										"typeDescriptions": {
 											"typeIdentifier": "t_string_memory_ptr",
@@ -1261,17 +1261,17 @@
 										}
 									}
 								],
-								"id": 34983,
+								"id": 35288,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 34979,
+									"id": 35284,
 									"name": "TokenERC20",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 34966,
+									"referencedDeclaration": 35271,
 									"src": "231:10:99",
 									"typeDescriptions": {
-										"typeIdentifier": "t_type$_t_contract$_TokenERC20_$34966_$",
+										"typeIdentifier": "t_type$_t_contract$_TokenERC20_$35271_$",
 										"typeString": "type(contract TokenERC20)"
 									}
 								},
@@ -1282,15 +1282,15 @@
 						"name": "",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 34978,
+							"id": 35283,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 34973,
+									"id": 35278,
 									"name": "initialSupply",
 									"nodeType": "VariableDeclaration",
-									"scope": 35007,
+									"scope": 35312,
 									"src": "168:21:99",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1299,7 +1299,7 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 34972,
+										"id": 35277,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
 										"src": "168:7:99",
@@ -1313,10 +1313,10 @@
 								},
 								{
 									"constant": false,
-									"id": 34975,
+									"id": 35280,
 									"name": "tokenName",
 									"nodeType": "VariableDeclaration",
-									"scope": 35007,
+									"scope": 35312,
 									"src": "191:16:99",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1325,7 +1325,7 @@
 										"typeString": "string"
 									},
 									"typeName": {
-										"id": 34974,
+										"id": 35279,
 										"name": "string",
 										"nodeType": "ElementaryTypeName",
 										"src": "191:6:99",
@@ -1339,10 +1339,10 @@
 								},
 								{
 									"constant": false,
-									"id": 34977,
+									"id": 35282,
 									"name": "tokenSymbol",
 									"nodeType": "VariableDeclaration",
-									"scope": 35007,
+									"scope": 35312,
 									"src": "209:18:99",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1351,7 +1351,7 @@
 										"typeString": "string"
 									},
 									"typeName": {
-										"id": 34976,
+										"id": 35281,
 										"name": "string",
 										"nodeType": "ElementaryTypeName",
 										"src": "209:6:99",
@@ -1368,19 +1368,19 @@
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 34984,
+							"id": 35289,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "288:0:99"
 						},
-						"scope": 35008,
+						"scope": 35313,
 						"src": "156:351:99",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					}
 				],
-				"scope": 35009,
+				"scope": 35314,
 				"src": "81:428:99"
 			}
 		],
@@ -1392,5 +1392,5 @@
 	},
 	"networks": {},
 	"schemaVersion": "2.0.1",
-	"updatedAt": "2019-04-04T08:30:39.906Z"
+	"updatedAt": "2019-04-12T04:07:00.343Z"
 }

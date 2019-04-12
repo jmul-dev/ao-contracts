@@ -556,13 +556,13 @@
 	"ast": {
 		"absolutePath": "/data/jmulyono/ao-contracts/contracts/PathosTreasury.sol",
 		"exportedSymbols": {
-			"PathosTreasury": [29284]
+			"PathosTreasury": [29589]
 		},
-		"id": 29285,
+		"id": 29590,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 29268,
+				"id": 29573,
 				"literals": ["solidity", "^", "0.4", ".24"],
 				"nodeType": "PragmaDirective",
 				"src": "0:24:84"
@@ -570,10 +570,10 @@
 			{
 				"absolutePath": "/data/jmulyono/ao-contracts/contracts/TAOCurrencyTreasury.sol",
 				"file": "./TAOCurrencyTreasury.sol",
-				"id": 29269,
+				"id": 29574,
 				"nodeType": "ImportDirective",
-				"scope": 29285,
-				"sourceUnit": 32233,
+				"scope": 29590,
+				"sourceUnit": 32538,
 				"src": "26:35:84",
 				"symbolAliases": [],
 				"unitAlias": ""
@@ -584,39 +584,39 @@
 						"arguments": null,
 						"baseName": {
 							"contractScope": null,
-							"id": 29270,
+							"id": 29575,
 							"name": "TAOCurrencyTreasury",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 32232,
+							"referencedDeclaration": 32537,
 							"src": "254:19:84",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_TAOCurrencyTreasury_$32232",
+								"typeIdentifier": "t_contract$_TAOCurrencyTreasury_$32537",
 								"typeString": "contract TAOCurrencyTreasury"
 							}
 						},
-						"id": 29271,
+						"id": 29576,
 						"nodeType": "InheritanceSpecifier",
 						"src": "254:19:84"
 					}
 				],
-				"contractDependencies": [22622, 32232, 34596],
+				"contractDependencies": [22624, 32537, 34901],
 				"contractKind": "contract",
 				"documentation": "@title PathosTreasury\n * The purpose of this contract is to list all of the valid denominations of Pathos and do the conversion between denominations",
 				"fullyImplemented": true,
-				"id": 29284,
-				"linearizedBaseContracts": [29284, 32232, 22622, 34596],
+				"id": 29589,
+				"linearizedBaseContracts": [29589, 32537, 22624, 34901],
 				"name": "PathosTreasury",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
 						"body": {
-							"id": 29282,
+							"id": 29587,
 							"nodeType": "Block",
 							"src": "466:2:84",
 							"statements": []
 						},
 						"documentation": "@dev Constructor function",
-						"id": 29283,
+						"id": 29588,
 						"implemented": true,
 						"isConstructor": true,
 						"isDeclaredConst": false,
@@ -625,11 +625,11 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 29278,
+										"id": 29583,
 										"name": "_nameFactoryAddress",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 29273,
+										"referencedDeclaration": 29578,
 										"src": "413:19:84",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
@@ -638,11 +638,11 @@
 									},
 									{
 										"argumentTypes": null,
-										"id": 29279,
+										"id": 29584,
 										"name": "_nameTAOPositionAddress",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 29275,
+										"referencedDeclaration": 29580,
 										"src": "434:23:84",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
@@ -650,17 +650,17 @@
 										}
 									}
 								],
-								"id": 29280,
+								"id": 29585,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 29277,
+									"id": 29582,
 									"name": "TAOCurrencyTreasury",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 32232,
+									"referencedDeclaration": 32537,
 									"src": "393:19:84",
 									"typeDescriptions": {
-										"typeIdentifier": "t_type$_t_contract$_TAOCurrencyTreasury_$32232_$",
+										"typeIdentifier": "t_type$_t_contract$_TAOCurrencyTreasury_$32537_$",
 										"typeString": "type(contract TAOCurrencyTreasury)"
 									}
 								},
@@ -671,15 +671,15 @@
 						"name": "",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 29276,
+							"id": 29581,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 29273,
+									"id": 29578,
 									"name": "_nameFactoryAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 29283,
+									"scope": 29588,
 									"src": "329:27:84",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -688,7 +688,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 29272,
+										"id": 29577,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "329:7:84",
@@ -702,10 +702,10 @@
 								},
 								{
 									"constant": false,
-									"id": 29275,
+									"id": 29580,
 									"name": "_nameTAOPositionAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 29283,
+									"scope": 29588,
 									"src": "358:31:84",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -714,7 +714,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 29274,
+										"id": 29579,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "358:7:84",
@@ -731,19 +731,19 @@
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 29281,
+							"id": 29586,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "466:0:84"
 						},
-						"scope": 29284,
+						"scope": 29589,
 						"src": "317:151:84",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					}
 				],
-				"scope": 29285,
+				"scope": 29590,
 				"src": "227:243:84"
 			}
 		],
@@ -752,13 +752,13 @@
 	"legacyAST": {
 		"absolutePath": "/data/jmulyono/ao-contracts/contracts/PathosTreasury.sol",
 		"exportedSymbols": {
-			"PathosTreasury": [29284]
+			"PathosTreasury": [29589]
 		},
-		"id": 29285,
+		"id": 29590,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 29268,
+				"id": 29573,
 				"literals": ["solidity", "^", "0.4", ".24"],
 				"nodeType": "PragmaDirective",
 				"src": "0:24:84"
@@ -766,10 +766,10 @@
 			{
 				"absolutePath": "/data/jmulyono/ao-contracts/contracts/TAOCurrencyTreasury.sol",
 				"file": "./TAOCurrencyTreasury.sol",
-				"id": 29269,
+				"id": 29574,
 				"nodeType": "ImportDirective",
-				"scope": 29285,
-				"sourceUnit": 32233,
+				"scope": 29590,
+				"sourceUnit": 32538,
 				"src": "26:35:84",
 				"symbolAliases": [],
 				"unitAlias": ""
@@ -780,39 +780,39 @@
 						"arguments": null,
 						"baseName": {
 							"contractScope": null,
-							"id": 29270,
+							"id": 29575,
 							"name": "TAOCurrencyTreasury",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 32232,
+							"referencedDeclaration": 32537,
 							"src": "254:19:84",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_TAOCurrencyTreasury_$32232",
+								"typeIdentifier": "t_contract$_TAOCurrencyTreasury_$32537",
 								"typeString": "contract TAOCurrencyTreasury"
 							}
 						},
-						"id": 29271,
+						"id": 29576,
 						"nodeType": "InheritanceSpecifier",
 						"src": "254:19:84"
 					}
 				],
-				"contractDependencies": [22622, 32232, 34596],
+				"contractDependencies": [22624, 32537, 34901],
 				"contractKind": "contract",
 				"documentation": "@title PathosTreasury\n * The purpose of this contract is to list all of the valid denominations of Pathos and do the conversion between denominations",
 				"fullyImplemented": true,
-				"id": 29284,
-				"linearizedBaseContracts": [29284, 32232, 22622, 34596],
+				"id": 29589,
+				"linearizedBaseContracts": [29589, 32537, 22624, 34901],
 				"name": "PathosTreasury",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
 						"body": {
-							"id": 29282,
+							"id": 29587,
 							"nodeType": "Block",
 							"src": "466:2:84",
 							"statements": []
 						},
 						"documentation": "@dev Constructor function",
-						"id": 29283,
+						"id": 29588,
 						"implemented": true,
 						"isConstructor": true,
 						"isDeclaredConst": false,
@@ -821,11 +821,11 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 29278,
+										"id": 29583,
 										"name": "_nameFactoryAddress",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 29273,
+										"referencedDeclaration": 29578,
 										"src": "413:19:84",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
@@ -834,11 +834,11 @@
 									},
 									{
 										"argumentTypes": null,
-										"id": 29279,
+										"id": 29584,
 										"name": "_nameTAOPositionAddress",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 29275,
+										"referencedDeclaration": 29580,
 										"src": "434:23:84",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
@@ -846,17 +846,17 @@
 										}
 									}
 								],
-								"id": 29280,
+								"id": 29585,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 29277,
+									"id": 29582,
 									"name": "TAOCurrencyTreasury",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 32232,
+									"referencedDeclaration": 32537,
 									"src": "393:19:84",
 									"typeDescriptions": {
-										"typeIdentifier": "t_type$_t_contract$_TAOCurrencyTreasury_$32232_$",
+										"typeIdentifier": "t_type$_t_contract$_TAOCurrencyTreasury_$32537_$",
 										"typeString": "type(contract TAOCurrencyTreasury)"
 									}
 								},
@@ -867,15 +867,15 @@
 						"name": "",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 29276,
+							"id": 29581,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 29273,
+									"id": 29578,
 									"name": "_nameFactoryAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 29283,
+									"scope": 29588,
 									"src": "329:27:84",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -884,7 +884,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 29272,
+										"id": 29577,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "329:7:84",
@@ -898,10 +898,10 @@
 								},
 								{
 									"constant": false,
-									"id": 29275,
+									"id": 29580,
 									"name": "_nameTAOPositionAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 29283,
+									"scope": 29588,
 									"src": "358:31:84",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -910,7 +910,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 29274,
+										"id": 29579,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "358:7:84",
@@ -927,19 +927,19 @@
 						},
 						"payable": false,
 						"returnParameters": {
-							"id": 29281,
+							"id": 29586,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "466:0:84"
 						},
-						"scope": 29284,
+						"scope": 29589,
 						"src": "317:151:84",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					}
 				],
-				"scope": 29285,
+				"scope": 29590,
 				"src": "227:243:84"
 			}
 		],
@@ -953,12 +953,12 @@
 		"4": {
 			"events": {},
 			"links": {
-				"AOLibrary": "0x8e5a9f67cdaadbfef5f65e17cedb2d8bf5ef1584"
+				"AOLibrary": "0x2400a43880b5268580ef3f8f95fc01a46c787689"
 			},
-			"address": "0xc31af48f4faa8f513a4fb163edbd4ca2483c5d07",
-			"transactionHash": "0x8e36153048815a933851a9503fd2b4e9f13c6218df4c7b8e74484f33d3ae00bb"
+			"address": "0x7f793f22d332920323a0b5537aaffdbbef6c5b1f",
+			"transactionHash": "0x0c0df7c8845b5c789a7502961ff0311823e1c20c480a150d657b98d559cf2b8b"
 		}
 	},
 	"schemaVersion": "2.0.1",
-	"updatedAt": "2019-04-04T08:30:39.557Z"
+	"updatedAt": "2019-04-12T04:06:59.997Z"
 }
