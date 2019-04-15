@@ -134,9 +134,9 @@
 	"sourceMap": "",
 	"deployedSourceMap": "",
 	"source": "pragma solidity ^0.4.24;\n\ninterface IAOContentHost {\n\tfunction create(address _host, bytes32 _stakedContentId, string _encChallenge, string _contentDatKey, string _metadataDatKey) external returns (bool);\n\n\tfunction getById(bytes32 _contentHostId) external view returns (bytes32, bytes32, address, string, string);\n\n\tfunction contentHostPrice(bytes32 _contentHostId) external view returns (uint256);\n\n\tfunction contentHostPaidByAO(bytes32 _contentHostId) external view returns (uint256);\n\n\tfunction isExist(bytes32 _contentHostId) external view returns (bool);\n}\n",
-	"sourcePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/IAOContentHost.sol",
+	"sourcePath": "/data/jmulyono/ao-contracts/contracts/IAOContentHost.sol",
 	"ast": {
-		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/IAOContentHost.sol",
+		"absolutePath": "/data/jmulyono/ao-contracts/contracts/IAOContentHost.sol",
 		"exportedSymbols": {
 			"IAOContentHost": [21843]
 		},
@@ -791,7 +791,7 @@
 		"src": "0:563:40"
 	},
 	"legacyAST": {
-		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/IAOContentHost.sol",
+		"absolutePath": "/data/jmulyono/ao-contracts/contracts/IAOContentHost.sol",
 		"exportedSymbols": {
 			"IAOContentHost": [21843]
 		},
@@ -1451,5 +1451,5 @@
 	},
 	"networks": {},
 	"schemaVersion": "2.0.1",
-	"updatedAt": "2019-04-12T04:27:14.815Z"
+	"updatedAt": "2019-04-13T07:25:29.682Z"
 }

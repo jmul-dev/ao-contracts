@@ -169,9 +169,9 @@
 	"sourceMap": "",
 	"deployedSourceMap": "",
 	"source": "pragma solidity ^0.4.24;\n\ninterface IAOIonLot {\n\tfunction createPrimordialLot(address _account, uint256 _primordialAmount, uint256 _multiplier, uint256 _networkBonusAmount) external returns (bytes32);\n\n\tfunction createWeightedMultiplierLot(address _account, uint256 _amount, uint256 _weightedMultiplier) external returns (bytes32);\n\n\tfunction lotById(bytes32 _lotId) external view returns (bytes32, address, uint256, uint256);\n\n\tfunction totalLotsByAddress(address _lotOwner) external view returns (uint256);\n\n\tfunction createBurnLot(address _account, uint256 _amount, uint256 _multiplierAfterBurn) external returns (bool);\n\n\tfunction createConvertLot(address _account, uint256 _amount, uint256 _multiplierAfterConversion) external returns (bool);\n}\n",
-	"sourcePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/IAOIonLot.sol",
+	"sourcePath": "/data/jmulyono/ao-contracts/contracts/IAOIonLot.sol",
 	"ast": {
-		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/IAOIonLot.sol",
+		"absolutePath": "/data/jmulyono/ao-contracts/contracts/IAOIonLot.sol",
 		"exportedSymbols": {
 			"IAOIonLot": [21940]
 		},
@@ -1013,7 +1013,7 @@
 		"src": "0:750:42"
 	},
 	"legacyAST": {
-		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/IAOIonLot.sol",
+		"absolutePath": "/data/jmulyono/ao-contracts/contracts/IAOIonLot.sol",
 		"exportedSymbols": {
 			"IAOIonLot": [21940]
 		},
@@ -1860,5 +1860,5 @@
 	},
 	"networks": {},
 	"schemaVersion": "2.0.1",
-	"updatedAt": "2019-04-12T04:27:14.818Z"
+	"updatedAt": "2019-04-13T07:25:29.682Z"
 }
