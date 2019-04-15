@@ -218,9 +218,9 @@
 	"sourceMap": "",
 	"deployedSourceMap": "",
 	"source": "pragma solidity ^0.4.24;\n\ninterface INameTAOPosition {\n\tfunction senderIsAdvocate(address _sender, address _id) external view returns (bool);\n\tfunction senderIsListener(address _sender, address _id) external view returns (bool);\n\tfunction senderIsSpeaker(address _sender, address _id) external view returns (bool);\n\tfunction senderIsPosition(address _sender, address _id) external view returns (bool);\n\tfunction getAdvocate(address _id) external view returns (address);\n\tfunction nameIsAdvocate(address _nameId, address _id) external view returns (bool);\n\tfunction nameIsPosition(address _nameId, address _id) external view returns (bool);\n\tfunction initialize(address _id, address _advocateId, address _listenerId, address _speakerId) external returns (bool);\n\tfunction determinePosition(address _sender, address _id) external view returns (uint256);\n}\n",
-	"sourcePath": "/data/jmulyono/ao-contracts/contracts/INameTAOPosition.sol",
+	"sourcePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/INameTAOPosition.sol",
 	"ast": {
-		"absolutePath": "/data/jmulyono/ao-contracts/contracts/INameTAOPosition.sol",
+		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/INameTAOPosition.sol",
 		"exportedSymbols": {
 			"INameTAOPosition": [22560]
 		},
@@ -1259,7 +1259,7 @@
 		"src": "0:854:53"
 	},
 	"legacyAST": {
-		"absolutePath": "/data/jmulyono/ao-contracts/contracts/INameTAOPosition.sol",
+		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/INameTAOPosition.sol",
 		"exportedSymbols": {
 			"INameTAOPosition": [22560]
 		},
@@ -2303,5 +2303,5 @@
 	},
 	"networks": {},
 	"schemaVersion": "2.0.1",
-	"updatedAt": "2019-04-15T09:27:23.586Z"
+	"updatedAt": "2019-04-15T11:53:43.962Z"
 }
