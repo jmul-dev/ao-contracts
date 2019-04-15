@@ -1,11 +1,6 @@
 const fs = require("fs");
 const EthCrypto = require("eth-crypto");
-const networkId = process.argv[2];
-const name = process.argv[3];
-
-if (!networkId) {
-	throw new Error("Missing networkId args");
-}
+const name = process.argv[2];
 
 if (!name) {
 	throw new Error("Missing name args");
@@ -13,7 +8,7 @@ if (!name) {
 
 const identity = EthCrypto.createIdentity();
 
-const filename = "./writerKeys/" + networkId + "_" + name + ".json";
+const filename = "./writerKeys/" + name + ".json";
 if (fs.existsSync(filename)) {
 	throw new Error("writer key file already exists");
 } else {

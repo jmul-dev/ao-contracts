@@ -96,11 +96,11 @@ var TokenTwo = artifacts.require("./TokenTwo.sol");
 var TokenThree = artifacts.require("./TokenThree.sol");
 
 var fs = require("fs");
-function getWriterKey(networkId, type) {
-	if (fs.existsSync("../writerKeys/" + networkId + "_" + type + ".json")) {
+function getWriterKey(type) {
+	if (fs.existsSync("../writerKeys/" + type + ".json")) {
 		throw new Error("Missing " + type + " writer key file");
 	}
-	return require("../writerKeys/" + networkId + "_" + type + ".json");
+	return require("../writerKeys/" + type + ".json");
 }
 
 module.exports = function(deployer, network, accounts) {
@@ -115,18 +115,18 @@ module.exports = function(deployer, network, accounts) {
 	if (network === "rinkeby") {
 		primordialAccount = "0xe80a265742e74e8c52d6ca185edf894edebe033f";
 		settingAccount = "0xa21238ff54391900d002bb85019285bc08ad1ca5";
-		primordialWriterKey = getWriterKey(4, "primordial");
-		settingWriterKey = getWriterKey(4, "setting");
+		primordialWriterKey = getWriterKey("primordial");
+		settingWriterKey = getWriterKey("setting");
 	} else if (network === "live") {
 		primordialAccount = "0x268c85ef559be52f3749791445dfd9a5abc37186";
 		settingAccount = "0x5a5ee57f51d412018d6da04e66d97ad0e7f02a04";
-		primordialWriterKey = getWriterKey(1, "primordial");
-		settingWriterKey = getWriterKey(1, "setting");
+		primordialWriterKey = getWriterKey("primordial");
+		settingWriterKey = getWriterKey("setting");
 	} else {
 		primordialAccount = accounts[0];
 		settingAccount = accounts[9];
-		primordialWriterKey = getWriterKey(1985, "primordial");
-		settingWriterKey = getWriterKey(1985, "setting");
+		primordialWriterKey = getWriterKey("primordial");
+		settingWriterKey = getWriterKey("setting");
 	}
 
 	var epiphany,
