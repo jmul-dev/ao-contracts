@@ -278,11 +278,21 @@ module.exports = function(deployer, network, accounts) {
 
 	// Deploy Testing ERC20 tokens only in development network
 	if (network === "development") {
-		deployer.deploy([
-			[TokenOne, 10 ** 6, "Token One", "TOKENONE"],
-			[TokenTwo, 10 ** 6, "Token Two", "TOKENTWO"],
-			[TokenThree, 10 ** 6, "Token Three", "TOKENTHREE"]
-		]);
+		deployer
+			.deploy(TokenOne, 10 ** 6, "Token One", "TOKENONE")
+			.then(async function() {
+				tokenone = await TokenOne.deployed();
+
+				return deployer.deploy(TokenTwo, 10 ** 6, "Token Two", "TOKENTWO");
+			})
+			.then(async function() {
+				tokentwo = await TokenTwo.deployed();
+
+				return deployer.deploy(TokenThree, 10 ** 6, "Token Three", "TOKENTHREE");
+			})
+			.then(async function() {
+				tokenthree = await TokenThree.deployed();
+			});
 	}
 
 	deployer
@@ -1729,6 +1739,14 @@ module.exports = function(deployer, network, accounts) {
 			await taopool.withdrawLogos(ethosLotId, { from: primordialAccount });
 
 			await taopool.stakePathos(primordialTAOId, 8 * 10 ** 3, { from: settingAccount });
+
+			// Test resources
+			if (network === "development") {
+				await web3.eth.sendTransaction({ from: accounts[1], to: primordialTAOId, value: web3.toWei(10, "ether") });
+				await aoion.transfer(primordialTAOId, 10 ** 3, { from: accounts[1] });
+				await aoion.transferPrimordial(primordialTAOId, 10 ** 3, { from: accounts[1] });
+				await tokenone.transfer(primordialTAOId, 10 ** 3, { from: primordialAccount });
+			}
 
 			/**
 			 * --- END ---
