@@ -512,9 +512,10 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 	 *		1 = Can complete challenge
 	 *		2 = Challenge not exist
 	 *		3 = Sender is not the creator of the challenge
-	 *		4 = Transaction is not in the allowed period of time
-	 *		5 = Challenge has been completed
-	 *		6 = Challenger has less Logos than current Advocate of TAO
+	 *		4 = Transaction is not in the allowed period of time (locking period of time)
+	 *		5 = Transaction has expired
+	 *		6 = Challenge has been completed
+	 *		7 = Challenger has less Logos than current Advocate of TAO
 	 */
 	function getChallengeStatus(bytes32 _challengeId, address _sender) public view returns (uint8) {
 		address _challengerNameId = _nameFactory.ethAddressToNameId(_sender);
@@ -526,15 +527,18 @@ contract NameTAOPosition is TheAO, INameTAOPosition {
 		} else if (_challengerNameId != _taoAdvocateChallenge.newAdvocateId) {
 			// If the calling address is not the creator of the challenge
 			return 3;
-		} else if (now < _taoAdvocateChallenge.lockedUntilTimestamp || now > _taoAdvocateChallenge.completeBeforeTimestamp) {
+		} else if (now < _taoAdvocateChallenge.lockedUntilTimestamp) {
 			// If this transaction is not in the allowed period of time
 			return 4;
+		} else if (now > _taoAdvocateChallenge.completeBeforeTimestamp) {
+			// Transaction has expired
+			return 5;
 		} else if (_taoAdvocateChallenge.completed) {
 			// If the challenge has been completed
-			return 5;
+			return 6;
 		} else if (_logos.sumBalanceOf(_challengerNameId) <= _logos.sumBalanceOf(this.getAdvocate(_taoAdvocateChallenge.taoId))) {
 			// If challenger has less Logos than current Advocate of TAO
-			return 6;
+			return 7;
 		} else {
 			// Can complete!
 			return 1;
