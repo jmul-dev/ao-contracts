@@ -1718,9 +1718,9 @@ module.exports = function(deployer, network, accounts) {
 			await ethos.setWhitelist(primordialAccount, true, { from: primordialAccount });
 			await pathos.setWhitelist(primordialAccount, true, { from: primordialAccount });
 
-			await logos.mint(primordialNameId, 10 ** 12, { from: primordialAccount });
-			await ethos.mint(primordialNameId, 10 ** 12, { from: primordialAccount });
-			await pathos.mint(primordialNameId, 10 ** 12, { from: primordialAccount });
+			await logos.mint(primordialNameId, 1.5 * 10 ** 12, { from: primordialAccount });
+			await ethos.mint(primordialNameId, 1.5 * 10 ** 12, { from: primordialAccount });
+			await pathos.mint(primordialNameId, 1.5 * 10 ** 12, { from: primordialAccount });
 
 			await logos.mint(settingNameId, 10 ** 12, { from: primordialAccount });
 			await ethos.mint(settingNameId, 10 ** 12, { from: primordialAccount });
