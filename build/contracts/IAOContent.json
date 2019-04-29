@@ -131,9 +131,9 @@
 	"sourceMap": "",
 	"deployedSourceMap": "",
 	"source": "pragma solidity ^0.4.24;\n\ninterface IAOContent {\n\tfunction create(address _creator, string _baseChallenge, uint256 _fileSize, bytes32 _contentUsageType, address _taoId) external returns (bytes32);\n\n\tfunction isAOContentUsageType(bytes32 _contentId) external view returns (bool);\n\n\tfunction getById(bytes32 _contentId) external view returns (address, uint256, bytes32, address, bytes32, uint8, bytes32, bytes32, string);\n\n\tfunction getBaseChallenge(bytes32 _contentId) external view returns (string);\n}\n",
-	"sourcePath": "/data/jmulyono/ao-contracts/contracts/IAOContent.sol",
+	"sourcePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/IAOContent.sol",
 	"ast": {
-		"absolutePath": "/data/jmulyono/ao-contracts/contracts/IAOContent.sol",
+		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/IAOContent.sol",
 		"exportedSymbols": {
 			"IAOContent": [21789]
 		},
@@ -809,7 +809,7 @@
 		"src": "0:502:39"
 	},
 	"legacyAST": {
-		"absolutePath": "/data/jmulyono/ao-contracts/contracts/IAOContent.sol",
+		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/IAOContent.sol",
 		"exportedSymbols": {
 			"IAOContent": [21789]
 		},
@@ -1490,5 +1490,5 @@
 	},
 	"networks": {},
 	"schemaVersion": "2.0.1",
-	"updatedAt": "2019-04-29T04:49:22.495Z"
+	"updatedAt": "2019-04-29T06:42:12.762Z"
 }
