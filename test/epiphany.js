@@ -2,12 +2,15 @@ var Epiphany = artifacts.require("./Epiphany.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
 var Logos = artifacts.require("./Logos.sol");
+var EthCrypto = require("eth-crypto");
 
 contract("Epiphany", function(accounts) {
 	var epiphany, namefactory, taofactory, logos, nameId, taoId;
 	var theAO = accounts[0];
 	var account1 = accounts[1];
 	var someAddress = accounts[3];
+
+	var nameIdLocalWriterKey = EthCrypto.createIdentity();
 
 	before(async function() {
 		epiphany = await Epiphany.deployed();
@@ -16,9 +19,17 @@ contract("Epiphany", function(accounts) {
 		logos = await Logos.deployed();
 
 		// Create Name
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameIdLocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		nameId = await namefactory.ethAddressToNameId(account1);
 
 		// Mint Logos to nameId

@@ -1,295 +1,271 @@
 {
-  "contractName": "INameAccountRecovery",
-  "abi": [
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "_id",
-          "type": "address"
-        }
-      ],
-      "name": "isCompromised",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    }
-  ],
-  "bytecode": "0x",
-  "deployedBytecode": "0x",
-  "sourceMap": "",
-  "deployedSourceMap": "",
-  "source": "pragma solidity >=0.5.4 <0.6.0;\n\ninterface INameAccountRecovery {\n\tfunction isCompromised(address _id) external view returns (bool);\n}\n",
-  "sourcePath": "/usr/local/ao-contracts/contracts/INameAccountRecovery.sol",
-  "ast": {
-    "absolutePath": "/usr/local/ao-contracts/contracts/INameAccountRecovery.sol",
-    "exportedSymbols": {
-      "INameAccountRecovery": [
-        22400
-      ]
-    },
-    "id": 22401,
-    "nodeType": "SourceUnit",
-    "nodes": [
-      {
-        "id": 22392,
-        "literals": [
-          "solidity",
-          ">=",
-          "0.5",
-          ".4",
-          "<",
-          "0.6",
-          ".0"
-        ],
-        "nodeType": "PragmaDirective",
-        "src": "0:31:49"
-      },
-      {
-        "baseContracts": [],
-        "contractDependencies": [],
-        "contractKind": "interface",
-        "documentation": null,
-        "fullyImplemented": false,
-        "id": 22400,
-        "linearizedBaseContracts": [
-          22400
-        ],
-        "name": "INameAccountRecovery",
-        "nodeType": "ContractDefinition",
-        "nodes": [
-          {
-            "body": null,
-            "documentation": null,
-            "id": 22399,
-            "implemented": false,
-            "kind": "function",
-            "modifiers": [],
-            "name": "isCompromised",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 22395,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 22394,
-                  "name": "_id",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 22399,
-                  "src": "90:11:49",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_address",
-                    "typeString": "address"
-                  },
-                  "typeName": {
-                    "id": 22393,
-                    "name": "address",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "90:7:49",
-                    "stateMutability": "nonpayable",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_address",
-                      "typeString": "address"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "89:13:49"
-            },
-            "returnParameters": {
-              "id": 22398,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 22397,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 22399,
-                  "src": "126:4:49",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bool",
-                    "typeString": "bool"
-                  },
-                  "typeName": {
-                    "id": 22396,
-                    "name": "bool",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "126:4:49",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "125:6:49"
-            },
-            "scope": 22400,
-            "src": "67:65:49",
-            "stateMutability": "view",
-            "superFunction": null,
-            "visibility": "external"
-          }
-        ],
-        "scope": 22401,
-        "src": "33:101:49"
-      }
-    ],
-    "src": "0:135:49"
-  },
-  "legacyAST": {
-    "absolutePath": "/usr/local/ao-contracts/contracts/INameAccountRecovery.sol",
-    "exportedSymbols": {
-      "INameAccountRecovery": [
-        22400
-      ]
-    },
-    "id": 22401,
-    "nodeType": "SourceUnit",
-    "nodes": [
-      {
-        "id": 22392,
-        "literals": [
-          "solidity",
-          ">=",
-          "0.5",
-          ".4",
-          "<",
-          "0.6",
-          ".0"
-        ],
-        "nodeType": "PragmaDirective",
-        "src": "0:31:49"
-      },
-      {
-        "baseContracts": [],
-        "contractDependencies": [],
-        "contractKind": "interface",
-        "documentation": null,
-        "fullyImplemented": false,
-        "id": 22400,
-        "linearizedBaseContracts": [
-          22400
-        ],
-        "name": "INameAccountRecovery",
-        "nodeType": "ContractDefinition",
-        "nodes": [
-          {
-            "body": null,
-            "documentation": null,
-            "id": 22399,
-            "implemented": false,
-            "kind": "function",
-            "modifiers": [],
-            "name": "isCompromised",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 22395,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 22394,
-                  "name": "_id",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 22399,
-                  "src": "90:11:49",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_address",
-                    "typeString": "address"
-                  },
-                  "typeName": {
-                    "id": 22393,
-                    "name": "address",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "90:7:49",
-                    "stateMutability": "nonpayable",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_address",
-                      "typeString": "address"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "89:13:49"
-            },
-            "returnParameters": {
-              "id": 22398,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 22397,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 22399,
-                  "src": "126:4:49",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bool",
-                    "typeString": "bool"
-                  },
-                  "typeName": {
-                    "id": 22396,
-                    "name": "bool",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "126:4:49",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "125:6:49"
-            },
-            "scope": 22400,
-            "src": "67:65:49",
-            "stateMutability": "view",
-            "superFunction": null,
-            "visibility": "external"
-          }
-        ],
-        "scope": 22401,
-        "src": "33:101:49"
-      }
-    ],
-    "src": "0:135:49"
-  },
-  "compiler": {
-    "name": "solc",
-    "version": "0.5.6+commit.b259423e.Emscripten.clang"
-  },
-  "networks": {},
-  "schemaVersion": "3.0.2",
-  "updatedAt": "2019-04-12T01:19:51.540Z",
-  "devdoc": {
-    "methods": {}
-  },
-  "userdoc": {
-    "methods": {}
-  }
+	"contractName": "INameAccountRecovery",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [
+				{
+					"name": "_id",
+					"type": "address"
+				}
+			],
+			"name": "isCompromised",
+			"outputs": [
+				{
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		}
+	],
+	"bytecode": "0x",
+	"deployedBytecode": "0x",
+	"sourceMap": "",
+	"deployedSourceMap": "",
+	"source": "pragma solidity >=0.5.4 <0.6.0;\n\ninterface INameAccountRecovery {\n\tfunction isCompromised(address _id) external view returns (bool);\n}\n",
+	"sourcePath": "/home/jmulyono/ao-contracts/contracts/INameAccountRecovery.sol",
+	"ast": {
+		"absolutePath": "/home/jmulyono/ao-contracts/contracts/INameAccountRecovery.sol",
+		"exportedSymbols": {
+			"INameAccountRecovery": [22400]
+		},
+		"id": 22401,
+		"nodeType": "SourceUnit",
+		"nodes": [
+			{
+				"id": 22392,
+				"literals": ["solidity", ">=", "0.5", ".4", "<", "0.6", ".0"],
+				"nodeType": "PragmaDirective",
+				"src": "0:31:49"
+			},
+			{
+				"baseContracts": [],
+				"contractDependencies": [],
+				"contractKind": "interface",
+				"documentation": null,
+				"fullyImplemented": false,
+				"id": 22400,
+				"linearizedBaseContracts": [22400],
+				"name": "INameAccountRecovery",
+				"nodeType": "ContractDefinition",
+				"nodes": [
+					{
+						"body": null,
+						"documentation": null,
+						"id": 22399,
+						"implemented": false,
+						"kind": "function",
+						"modifiers": [],
+						"name": "isCompromised",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 22395,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 22394,
+									"name": "_id",
+									"nodeType": "VariableDeclaration",
+									"scope": 22399,
+									"src": "90:11:49",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_address",
+										"typeString": "address"
+									},
+									"typeName": {
+										"id": 22393,
+										"name": "address",
+										"nodeType": "ElementaryTypeName",
+										"src": "90:7:49",
+										"stateMutability": "nonpayable",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "89:13:49"
+						},
+						"returnParameters": {
+							"id": 22398,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 22397,
+									"name": "",
+									"nodeType": "VariableDeclaration",
+									"scope": 22399,
+									"src": "126:4:49",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_bool",
+										"typeString": "bool"
+									},
+									"typeName": {
+										"id": 22396,
+										"name": "bool",
+										"nodeType": "ElementaryTypeName",
+										"src": "126:4:49",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bool",
+											"typeString": "bool"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "125:6:49"
+						},
+						"scope": 22400,
+						"src": "67:65:49",
+						"stateMutability": "view",
+						"superFunction": null,
+						"visibility": "external"
+					}
+				],
+				"scope": 22401,
+				"src": "33:101:49"
+			}
+		],
+		"src": "0:135:49"
+	},
+	"legacyAST": {
+		"absolutePath": "/home/jmulyono/ao-contracts/contracts/INameAccountRecovery.sol",
+		"exportedSymbols": {
+			"INameAccountRecovery": [22400]
+		},
+		"id": 22401,
+		"nodeType": "SourceUnit",
+		"nodes": [
+			{
+				"id": 22392,
+				"literals": ["solidity", ">=", "0.5", ".4", "<", "0.6", ".0"],
+				"nodeType": "PragmaDirective",
+				"src": "0:31:49"
+			},
+			{
+				"baseContracts": [],
+				"contractDependencies": [],
+				"contractKind": "interface",
+				"documentation": null,
+				"fullyImplemented": false,
+				"id": 22400,
+				"linearizedBaseContracts": [22400],
+				"name": "INameAccountRecovery",
+				"nodeType": "ContractDefinition",
+				"nodes": [
+					{
+						"body": null,
+						"documentation": null,
+						"id": 22399,
+						"implemented": false,
+						"kind": "function",
+						"modifiers": [],
+						"name": "isCompromised",
+						"nodeType": "FunctionDefinition",
+						"parameters": {
+							"id": 22395,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 22394,
+									"name": "_id",
+									"nodeType": "VariableDeclaration",
+									"scope": 22399,
+									"src": "90:11:49",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_address",
+										"typeString": "address"
+									},
+									"typeName": {
+										"id": 22393,
+										"name": "address",
+										"nodeType": "ElementaryTypeName",
+										"src": "90:7:49",
+										"stateMutability": "nonpayable",
+										"typeDescriptions": {
+											"typeIdentifier": "t_address",
+											"typeString": "address"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "89:13:49"
+						},
+						"returnParameters": {
+							"id": 22398,
+							"nodeType": "ParameterList",
+							"parameters": [
+								{
+									"constant": false,
+									"id": 22397,
+									"name": "",
+									"nodeType": "VariableDeclaration",
+									"scope": 22399,
+									"src": "126:4:49",
+									"stateVariable": false,
+									"storageLocation": "default",
+									"typeDescriptions": {
+										"typeIdentifier": "t_bool",
+										"typeString": "bool"
+									},
+									"typeName": {
+										"id": 22396,
+										"name": "bool",
+										"nodeType": "ElementaryTypeName",
+										"src": "126:4:49",
+										"typeDescriptions": {
+											"typeIdentifier": "t_bool",
+											"typeString": "bool"
+										}
+									},
+									"value": null,
+									"visibility": "internal"
+								}
+							],
+							"src": "125:6:49"
+						},
+						"scope": 22400,
+						"src": "67:65:49",
+						"stateMutability": "view",
+						"superFunction": null,
+						"visibility": "external"
+					}
+				],
+				"scope": 22401,
+				"src": "33:101:49"
+			}
+		],
+		"src": "0:135:49"
+	},
+	"compiler": {
+		"name": "solc",
+		"version": "0.5.4+commit.9549d8ff.Emscripten.clang"
+	},
+	"networks": {},
+	"schemaVersion": "3.0.2",
+	"updatedAt": "2019-05-15T08:19:36.863Z",
+	"devdoc": {
+		"methods": {}
+	},
+	"userdoc": {
+		"methods": {}
+	}
 }

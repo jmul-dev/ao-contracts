@@ -102,6 +102,11 @@ contract("AOPurchaseReceipt", function(accounts) {
 		address: EthCrypto.publicKey.toAddress(EthCrypto.publicKeyByPrivateKey(account5PrivateKey))
 	};
 
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
+	var nameId2LocalWriterKey = EthCrypto.createIdentity();
+	var nameId3LocalWriterKey = EthCrypto.createIdentity();
+	var nameId4LocalWriterKey = EthCrypto.createIdentity();
+
 	before(async function() {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
@@ -128,24 +133,56 @@ contract("AOPurchaseReceipt", function(accounts) {
 		contentUsageType_taoContent = settingValues[3];
 
 		// Create Name
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId1LocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		nameId1 = await namefactory.ethAddressToNameId(account1);
 
-		var result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account2
-		});
+		var result = await namefactory.createName(
+			"delta",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId2LocalWriterKey.address,
+			{
+				from: account2
+			}
+		);
 		nameId2 = await namefactory.ethAddressToNameId(account2);
 
-		var result = await namefactory.createName("echo", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account3
-		});
+		var result = await namefactory.createName(
+			"echo",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId3LocalWriterKey.address,
+			{
+				from: account3
+			}
+		);
 		nameId3 = await namefactory.ethAddressToNameId(account3);
 
-		var result = await namefactory.createName("foxtrot", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account4
-		});
+		var result = await namefactory.createName(
+			"foxtrot",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId4LocalWriterKey.address,
+			{
+				from: account4
+			}
+		);
 		nameId4 = await namefactory.ethAddressToNameId(account4);
 
 		// Mint Logos to nameId1 and nameId2

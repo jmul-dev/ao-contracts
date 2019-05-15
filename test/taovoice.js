@@ -9,6 +9,7 @@ var TAOVoice = artifacts.require("./TAOVoice.sol");
 var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
 
+var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
 
 contract("TAOVoice", function(accounts) {
@@ -31,6 +32,9 @@ contract("TAOVoice", function(accounts) {
 	var someAddress = accounts[3];
 	var whitelistedAddress = accounts[4];
 
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
+	var nameId2LocalWriterKey = EthCrypto.createIdentity();
+
 	before(async function() {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
@@ -48,14 +52,30 @@ contract("TAOVoice", function(accounts) {
 		accountRecoveryLockDuration = settingValues[0];
 
 		// Create Name
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId1LocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		nameId1 = await namefactory.ethAddressToNameId(account1);
 
-		result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account2
-		});
+		result = await namefactory.createName(
+			"delta",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId2LocalWriterKey.address,
+			{
+				from: account2
+			}
+		);
 		nameId2 = await namefactory.ethAddressToNameId(account2);
 
 		// Mint Logos to nameId1

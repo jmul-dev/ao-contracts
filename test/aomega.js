@@ -35,6 +35,9 @@ contract("AOMega", function(accounts) {
 	var recipient = EthCrypto.createIdentity();
 	var account3PrivateKey = "0xf4bab2d2f0c5119cc6aad0735bbf0a017d229cbf430c0041af382b93e713a1c3";
 
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
+	var nameId2LocalWriterKey = EthCrypto.createIdentity();
+
 	before(async function() {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
@@ -81,9 +84,17 @@ contract("AOMega", function(accounts) {
 	contract("The AO Only", function() {
 		before(async function() {
 			// Create Name
-			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account1
-			});
+			var result = await namefactory.createName(
+				"charlie",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId1LocalWriterKey.address,
+				{
+					from: account1
+				}
+			);
 			nameId1 = await namefactory.ethAddressToNameId(account1);
 
 			// Mint Logos to nameId1
@@ -224,14 +235,30 @@ contract("AOMega", function(accounts) {
 			await aomega.setWhitelist(whitelistedAddress, true, { from: theAO });
 
 			// Create Name
-			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account1
-			});
+			var result = await namefactory.createName(
+				"charlie",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId1LocalWriterKey.address,
+				{
+					from: account1
+				}
+			);
 			nameId1 = await namefactory.ethAddressToNameId(account1);
 
-			result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account2
-			});
+			result = await namefactory.createName(
+				"delta",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId2LocalWriterKey.address,
+				{
+					from: account2
+				}
+			);
 			nameId2 = await namefactory.ethAddressToNameId(account2);
 
 			await nametaoposition.setListener(nameId1, nameId2, { from: account1 });

@@ -198,8 +198,9 @@ contract NameFactory is TheAO, INameFactory {
 	 * @param _database The database for this Name
 	 * @param _keyValue The key/value pair to be checked on the database
 	 * @param _contentId The contentId related to this Name
+	 * @param _writerKey The writer public key for this Name
 	 */
-	function createName(string memory _name, string memory _datHash, string memory _database, string memory _keyValue, bytes32 _contentId) public {
+	function createName(string memory _name, string memory _datHash, string memory _database, string memory _keyValue, bytes32 _contentId, address _writerKey) public {
 		require (bytes(_name).length > 0);
 		require (!_nameTAOLookup.isExist(_name));
 
@@ -225,7 +226,7 @@ contract NameFactory is TheAO, INameFactory {
 		require (_nameTAOPosition.initialize(nameId, nameId, nameId, nameId));
 
 		// Store the public key information
-		require (_namePublicKey.initialize(nameId, msg.sender));
+		require (_namePublicKey.initialize(nameId, msg.sender, _writerKey));
 
 		names.push(nameId);
 

@@ -9,6 +9,7 @@ var AOStakedContent = artifacts.require("./AOStakedContent.sol");
 var Logos = artifacts.require("./Logos.sol");
 var NamePublicKey = artifacts.require("./NamePublicKey.sol");
 
+var EthCrypto = require("eth-crypto");
 var BigNumber = require("bignumber.js");
 
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
@@ -51,6 +52,9 @@ contract("AOStakedContent", function(accounts) {
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 	var nullBytesValue = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
+	var nameId2LocalWriterKey = EthCrypto.createIdentity();
+
 	before(async function() {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
@@ -75,14 +79,30 @@ contract("AOStakedContent", function(accounts) {
 		contentUsageType_taoContent = settingValues[3];
 
 		// Create Name
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId1LocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		nameId1 = await namefactory.ethAddressToNameId(account1);
 
-		var result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account2
-		});
+		var result = await namefactory.createName(
+			"delta",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId2LocalWriterKey.address,
+			{
+				from: account2
+			}
+		);
 		nameId2 = await namefactory.ethAddressToNameId(account2);
 
 		// Mint Logos to nameId1 and nameId2

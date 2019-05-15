@@ -95,17 +95,38 @@ var TokenOne = artifacts.require("./TokenOne.sol");
 var TokenTwo = artifacts.require("./TokenTwo.sol");
 var TokenThree = artifacts.require("./TokenThree.sol");
 
+var fs = require("fs");
+function getWriterKey(type) {
+	if (fs.existsSync("../writerKeys/" + type + ".json")) {
+		throw new Error("Missing " + type + " writer key file");
+	}
+	return require("../writerKeys/" + type + ".json");
+}
+
 module.exports = function(deployer, network, accounts) {
-	var primordialAccount, settingAccount, primordialNameId, settingNameId, primordialTAOId, settingTAOId;
+	var primordialAccount,
+		settingAccount,
+		primordialNameId,
+		settingNameId,
+		primordialTAOId,
+		settingTAOId,
+		primordialWriterKey,
+		settingWriterKey;
 	if (network === "rinkeby") {
 		primordialAccount = "0xe80a265742e74e8c52d6ca185edf894edebe033f";
 		settingAccount = "0xa21238ff54391900d002bb85019285bc08ad1ca5";
+		primordialWriterKey = getWriterKey("primordial");
+		settingWriterKey = getWriterKey("setting");
 	} else if (network === "live") {
 		primordialAccount = "0x268c85ef559be52f3749791445dfd9a5abc37186";
 		settingAccount = "0x5a5ee57f51d412018d6da04e66d97ad0e7f02a04";
+		primordialWriterKey = getWriterKey("primordial");
+		settingWriterKey = getWriterKey("setting");
 	} else {
 		primordialAccount = accounts[0];
 		settingAccount = accounts[9];
+		primordialWriterKey = getWriterKey("primordial");
+		settingWriterKey = getWriterKey("setting");
 	}
 
 	var epiphany,
@@ -257,16 +278,21 @@ module.exports = function(deployer, network, accounts) {
 
 	// Deploy Testing ERC20 tokens only in development network
 	if (network === "development") {
-		/*
-		deployer.deploy([
-			[TokenOne, 10 ** 6, "Token One", "TOKENONE"],
-			[TokenTwo, 10 ** 6, "Token Two", "TOKENTWO"],
-			[TokenThree, 10 ** 6, "Token Three", "TOKENTHREE"]
-		]);
-		*/
-		deployer.deploy(TokenOne, 10 ** 6, "Token One", "TOKENONE");
-		deployer.deploy(TokenTwo, 10 ** 6, "Token Two", "TOKENTWO");
-		deployer.deploy(TokenThree, 10 ** 6, "Token Three", "TOKENTHREE");
+		deployer
+			.deploy(TokenOne, 10 ** 6, "Token One", "TOKENONE")
+			.then(async function() {
+				tokenone = await TokenOne.deployed();
+
+				return deployer.deploy(TokenTwo, 10 ** 6, "Token Two", "TOKENTWO");
+			})
+			.then(async function() {
+				tokentwo = await TokenTwo.deployed();
+
+				return deployer.deploy(TokenThree, 10 ** 6, "Token Three", "TOKENTHREE");
+			})
+			.then(async function() {
+				tokenthree = await TokenThree.deployed();
+			});
 	}
 
 	deployer
@@ -734,7 +760,7 @@ module.exports = function(deployer, network, accounts) {
 			 * Create Primordial Name and Associated Name
 			 */
 			try {
-				var result = await namefactory.createName("alpha", "", "", "", web3.utils.toHex(""), {
+				var result = await namefactory.createName("alpha", "", "", "", web3.utils.toHex(""), primordialWriterKey.address, {
 					from: primordialAccount
 				});
 				primordialNameId = await namefactory.ethAddressToNameId(primordialAccount);
@@ -744,7 +770,7 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			try {
-				var result = await namefactory.createName("beta", "", "", "", web3.utils.toHex(""), {
+				var result = await namefactory.createName("beta", "", "", "", web3.utils.toHex(""), settingWriterKey.address, {
 					from: settingAccount
 				});
 				settingNameId = await namefactory.ethAddressToNameId(settingAccount);
@@ -1464,7 +1490,9 @@ module.exports = function(deployer, network, accounts) {
 			// sellCapStatus: no
 			// quantityCapStatus: no
 			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, false, "", false, "", false, "0x0000000000000000000000000000000000000000", "", { from: primordialAccount });
+			await aopool.createPool(10000, true, false, "", false, "", false, "0x0000000000000000000000000000000000000000", "", {
+				from: primordialAccount
+			});
 
 			// Pool #2
 			// price: 10000
@@ -1473,7 +1501,9 @@ module.exports = function(deployer, network, accounts) {
 			// sellCapAmount: 10000000
 			// quantityCapStatus: no
 			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, true, 10000000, false, "", false, "0x0000000000000000000000000000000000000000", "", { from: primordialAccount });
+			await aopool.createPool(10000, true, true, 10000000, false, "", false, "0x0000000000000000000000000000000000000000", "", {
+				from: primordialAccount
+			});
 
 			// Pool #3
 			// price: 10000
@@ -1482,7 +1512,9 @@ module.exports = function(deployer, network, accounts) {
 			// quantityCapStatus: yes
 			// quantityCapAmount: 5000
 			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, false, "", true, 5000, false, "0x0000000000000000000000000000000000000000", "", { from: primordialAccount });
+			await aopool.createPool(10000, true, false, "", true, 5000, false, "0x0000000000000000000000000000000000000000", "", {
+				from: primordialAccount
+			});
 
 			// Pool #4
 			// price: 10000
@@ -1492,7 +1524,9 @@ module.exports = function(deployer, network, accounts) {
 			// quantityCapStatus: yes
 			// quantityCapAmount: 5000
 			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, true, 10000000, true, 5000, false, "0x0000000000000000000000000000000000000000", "", { from: primordialAccount });
+			await aopool.createPool(10000, true, true, 10000000, true, 5000, false, "0x0000000000000000000000000000000000000000", "", {
+				from: primordialAccount
+			});
 
 			// Pool #5
 			// price: 10000
@@ -1502,7 +1536,9 @@ module.exports = function(deployer, network, accounts) {
 			// quantityCapStatus: yes
 			// quantityCapAmount: 5000
 			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, false, true, 10000000, true, 5000, false, "0x0000000000000000000000000000000000000000", "", { from: primordialAccount });
+			await aopool.createPool(10000, false, true, 10000000, true, 5000, false, "0x0000000000000000000000000000000000000000", "", {
+				from: primordialAccount
+			});
 
 			// Link AOETH to AOIon
 			await aoion.setAOETHAddress(aoeth.address, { from: primordialAccount });
@@ -1710,9 +1746,9 @@ module.exports = function(deployer, network, accounts) {
 			await ethos.setWhitelist(primordialAccount, true, { from: primordialAccount });
 			await pathos.setWhitelist(primordialAccount, true, { from: primordialAccount });
 
-			await logos.mint(primordialNameId, 10 ** 12, { from: primordialAccount });
-			await ethos.mint(primordialNameId, 10 ** 12, { from: primordialAccount });
-			await pathos.mint(primordialNameId, 10 ** 12, { from: primordialAccount });
+			await logos.mint(primordialNameId, 1.5 * 10 ** 12, { from: primordialAccount });
+			await ethos.mint(primordialNameId, 1.5 * 10 ** 12, { from: primordialAccount });
+			await pathos.mint(primordialNameId, 1.5 * 10 ** 12, { from: primordialAccount });
 
 			await logos.mint(settingNameId, 10 ** 12, { from: primordialAccount });
 			await ethos.mint(settingNameId, 10 ** 12, { from: primordialAccount });
@@ -1731,6 +1767,14 @@ module.exports = function(deployer, network, accounts) {
 			await taopool.withdrawLogos(ethosLotId, { from: primordialAccount });
 
 			await taopool.stakePathos(primordialTAOId, 8 * 10 ** 3, { from: settingAccount });
+
+			// Test resources
+			if (network === "development") {
+				await web3.eth.sendTransaction({ from: accounts[1], to: primordialTAOId, value: web3.utils.toWei("10", "ether") });
+				await aoion.transfer(primordialTAOId, 10 ** 3, { from: accounts[1] });
+				await aoion.transferPrimordial(primordialTAOId, 10 ** 3, { from: accounts[1] });
+				await tokenone.transfer(primordialTAOId, 10 ** 3, { from: primordialAccount });
+			}
 
 			/**
 			 * --- END ---

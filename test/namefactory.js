@@ -39,6 +39,10 @@ contract("NameFactory", function(accounts) {
 	var account1PrivateKey = "0xfa372b56eac0e71de587267f0a59989719b2325aeb4579912379641cf93ccaab";
 	var account2PrivateKey = "0x6a35c58d0acad0ceca9c03d37aa2d2288d70afe0690f5e5f5e05aeab93b95dad";
 
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
+	var nameId2LocalWriterKey = EthCrypto.createIdentity();
+	var nameId3LocalWriterKey = EthCrypto.createIdentity();
+
 	before(async function() {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
@@ -51,14 +55,30 @@ contract("NameFactory", function(accounts) {
 		nameaccountrecovery = await NameAccountRecovery.deployed();
 
 		// Create Name
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId1LocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		nameId1 = await namefactory.ethAddressToNameId(account1);
 
-		var result = await namefactory.createName("echo", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account3
-		});
+		var result = await namefactory.createName(
+			"echo",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId3LocalWriterKey.address,
+			{
+				from: account3
+			}
+		);
 		nameId3 = await namefactory.ethAddressToNameId(account3);
 
 		// Mint Logos to nameId
@@ -293,9 +313,17 @@ contract("NameFactory", function(accounts) {
 	it("createName() - should be able to create Name", async function() {
 		var canCreateName;
 		try {
-			var result = await namefactory.createName("", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account2
-			});
+			var result = await namefactory.createName(
+				"",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId2LocalWriterKey.address,
+				{
+					from: account2
+				}
+			);
 			canCreateName = true;
 		} catch (e) {
 			canCreateName = false;
@@ -303,9 +331,17 @@ contract("NameFactory", function(accounts) {
 		assert.equal(canCreateName, false, "Can create Name with invalid name");
 
 		try {
-			var result = await namefactory.createName("somename", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account1
-			});
+			var result = await namefactory.createName(
+				"somename",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId1LocalWriterKey.address,
+				{
+					from: account1
+				}
+			);
 			canCreateName = true;
 		} catch (e) {
 			canCreateName = false;
@@ -313,9 +349,17 @@ contract("NameFactory", function(accounts) {
 		assert.equal(canCreateName, false, "Address that has created Name can create another Name");
 
 		try {
-			var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account2
-			});
+			var result = await namefactory.createName(
+				"charlie",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId2LocalWriterKey.address,
+				{
+					from: account2
+				}
+			);
 			canCreateName = true;
 		} catch (e) {
 			canCreateName = false;
@@ -325,9 +369,35 @@ contract("NameFactory", function(accounts) {
 		var totalNamesCountBefore = await namefactory.getTotalNamesCount();
 
 		try {
-			var result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-				from: account2
-			});
+			var result = await namefactory.createName(
+				"delta",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId1LocalWriterKey.address,
+				{
+					from: account2
+				}
+			);
+			canCreateName = true;
+		} catch (e) {
+			canCreateName = false;
+		}
+		assert.equal(canCreateName, false, "Address can create a Name using write public key that is already taken");
+
+		try {
+			var result = await namefactory.createName(
+				"delta",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				"somecontentid",
+				nameId2LocalWriterKey.address,
+				{
+					from: account2
+				}
+			);
 			canCreateName = true;
 		} catch (e) {
 			canCreateName = false;
@@ -455,8 +525,9 @@ contract("NameFactory", function(accounts) {
 		}
 		assert.equal(isValid, true, "validateNameSignature() returns incorrect value - signatureAddress is Name's Default Public Key");
 
-		// Add account1 to NameId2 Public Key
+		// Add newKey to NameId2 Public Key
 		nonce = await namefactory.nonces(nameId2);
+		var newKey = EthCrypto.createIdentity();
 		var signHash = EthCrypto.hash.keccak256([
 			{
 				type: "address",
@@ -468,7 +539,7 @@ contract("NameFactory", function(accounts) {
 			},
 			{
 				type: "address",
-				value: account1
+				value: newKey.address
 			},
 			{
 				type: "uint256",
@@ -476,17 +547,17 @@ contract("NameFactory", function(accounts) {
 			}
 		]);
 
-		var signature = EthCrypto.sign(account1PrivateKey, signHash);
+		var signature = EthCrypto.sign(newKey.privateKey, signHash);
 		var vrs = EthCrypto.vrs.fromString(signature);
 
-		await namepublickey.addKey(nameId2, account1, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+		await namepublickey.addKey(nameId2, newKey.address, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
 
 		nonce = await namefactory.nonces(nameId2);
 
-		signature = createSignature(account1PrivateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(newKey.privateKey, data, nonce.plus(1).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
-			isValid = await namefactory.validateNameSignature(data, nonce.plus(1).toNumber(), account1, "delta", vrs.v, vrs.r, vrs.s);
+			isValid = await namefactory.validateNameSignature(data, nonce.plus(1).toNumber(), newKey.address, "delta", vrs.v, vrs.r, vrs.s);
 			canValidate = true;
 		} catch (e) {
 			canValidate = false;

@@ -7,6 +7,7 @@ var TAOAncestry = artifacts.require("./TAOAncestry.sol");
 var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
 
+var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
 
 contract("TAOAncestry", function(accounts) {
@@ -35,6 +36,10 @@ contract("TAOAncestry", function(accounts) {
 	var whitelistedAddress = accounts[5];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 
+	var nameId1LocalWriterKey = EthCrypto.createIdentity();
+	var nameId2LocalWriterKey = EthCrypto.createIdentity();
+	var nameId3LocalWriterKey = EthCrypto.createIdentity();
+
 	before(async function() {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
@@ -50,19 +55,43 @@ contract("TAOAncestry", function(accounts) {
 		accountRecoveryLockDuration = settingValues[0];
 
 		// Create Name
-		var result = await namefactory.createName("charlie", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account1
-		});
+		var result = await namefactory.createName(
+			"charlie",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId1LocalWriterKey.address,
+			{
+				from: account1
+			}
+		);
 		nameId1 = await namefactory.ethAddressToNameId(account1);
 
-		result = await namefactory.createName("delta", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account2
-		});
+		result = await namefactory.createName(
+			"delta",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId2LocalWriterKey.address,
+			{
+				from: account2
+			}
+		);
 		nameId2 = await namefactory.ethAddressToNameId(account2);
 
-		result = await namefactory.createName("echo", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", {
-			from: account3
-		});
+		result = await namefactory.createName(
+			"echo",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			"somecontentid",
+			nameId3LocalWriterKey.address,
+			{
+				from: account3
+			}
+		);
 		nameId3 = await namefactory.ethAddressToNameId(account3);
 
 		// Mint Logos to nameId
