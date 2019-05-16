@@ -12,9 +12,6 @@ var AOEarning = artifacts.require("./AOEarning.sol");
 var Logos = artifacts.require("./Logos.sol");
 
 var EthCrypto = require("eth-crypto");
-var BigNumber = require("bignumber.js");
-
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
 contract("AOContentHost", function(accounts) {
 	var namefactory,
@@ -145,7 +142,7 @@ contract("AOContentHost", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -158,7 +155,7 @@ contract("AOContentHost", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -171,7 +168,7 @@ contract("AOContentHost", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3LocalWriterKey.address,
 			{
 				from: account3
@@ -184,7 +181,7 @@ contract("AOContentHost", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId4LocalWriterKey.address,
 			{
 				from: account4
@@ -202,7 +199,7 @@ contract("AOContentHost", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -383,15 +380,21 @@ contract("AOContentHost", function(accounts) {
 		storeContentEvent = result.logs[0];
 		contentId3 = storeContentEvent.args.contentId;
 
-		result = await aostakedcontent.create(nameId1, contentId1, 4, 1000, "mega", 100000, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId1, contentId1, 4, 1000, web3.utils.toHex("mega"), 100000, 100000, {
+			from: whitelistedAddress
+		});
 		var stakeContentEvent = result.logs[0];
 		stakedContentId1 = stakeContentEvent.args.stakedContentId;
 
-		result = await aostakedcontent.create(nameId2, contentId2, 0, 0, "", 1000000, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId2, contentId2, 0, 0, web3.utils.toHex(""), 1000000, 100000, {
+			from: whitelistedAddress
+		});
 		stakeContentEvent = result.logs[0];
 		stakedContentId2 = stakeContentEvent.args.stakedContentId;
 
-		result = await aostakedcontent.create(nameId1, contentId3, 1000000, 0, "ao", 0, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId1, contentId3, 1000000, 0, web3.utils.toHex("ao"), 0, 100000, {
+			from: whitelistedAddress
+		});
 		stakeContentEvent = result.logs[0];
 		stakedContentId3 = stakeContentEvent.args.stakedContentId;
 	});
@@ -660,7 +663,7 @@ contract("AOContentHost", function(accounts) {
 		assert.equal(canHostContent, false, "Whitelisted address can host content with inactive StakedContent ID");
 
 		// Add stake to stakedContentId1 again
-		await aostakedcontent.stakeExistingContent(stakedContentId1, 4, 1000, "mega", 100000, { from: account1 });
+		await aostakedcontent.stakeExistingContent(stakedContentId1, 4, 1000, web3.utils.toHex("mega"), 100000, { from: account1 });
 	});
 
 	it("Whitelisted Address - should be able to host content", async function() {
@@ -684,7 +687,7 @@ contract("AOContentHost", function(accounts) {
 			var stakedContent = await aostakedcontent.getById(contentHost[0]);
 			assert.equal(
 				contentHostPrice.toNumber(),
-				stakedContent[2].plus(stakedContent[3]).toNumber(),
+				stakedContent[2].add(stakedContent[3]).toNumber(),
 				"ContentHostPrice() returns incorrect value"
 			);
 		};
@@ -710,7 +713,7 @@ contract("AOContentHost", function(accounts) {
 		assert.equal(canGetContentHostPrice, false, "Contract can get content price of a hosted content with inactive stake");
 
 		// Add stake to stakedContentId1 again
-		await aostakedcontent.stakeExistingContent(stakedContentId1, 4, 1000, "mega", 100000, { from: account1 });
+		await aostakedcontent.stakeExistingContent(stakedContentId1, 4, 1000, web3.utils.toHex("mega"), 100000, { from: account1 });
 
 		await contentHostPrice(contentHostId1);
 		await contentHostPrice(contentHostId2);
@@ -759,7 +762,7 @@ contract("AOContentHost", function(accounts) {
 		assert.equal(canGetContentHostPaidByAO, false, "Contract can get content price of a hosted content with inactive stake");
 
 		// Add stake to stakedContentId1 again
-		await aostakedcontent.stakeExistingContent(stakedContentId1, 4, 1000, "mega", 100000, { from: account1 });
+		await aostakedcontent.stakeExistingContent(stakedContentId1, 4, 1000, web3.utils.toHex("mega"), 100000, { from: account1 });
 
 		await contentHostPaidByAO(contentHostId1);
 		await contentHostPaidByAO(contentHostId2);
@@ -786,7 +789,7 @@ contract("AOContentHost", function(accounts) {
 			contentHostId1,
 			5,
 			0,
-			"mega",
+			web3.utils.toHex("mega"),
 			account3LocalIdentity.publicKey,
 			account3LocalIdentity.address,
 			{ from: account3 }
@@ -798,7 +801,7 @@ contract("AOContentHost", function(accounts) {
 			contentHostId2,
 			5,
 			0,
-			"mega",
+			web3.utils.toHex("mega"),
 			account3LocalIdentity.publicKey,
 			account3LocalIdentity.address,
 			{ from: account3 }
@@ -810,7 +813,7 @@ contract("AOContentHost", function(accounts) {
 			contentHostId3,
 			0,
 			0,
-			"",
+			web3.utils.toHex(""),
 			account3LocalIdentity.publicKey,
 			account3LocalIdentity.address,
 			{ from: account3 }
@@ -1056,7 +1059,7 @@ contract("AOContentHost", function(accounts) {
 			contentHostId4,
 			5,
 			0,
-			"mega",
+			web3.utils.toHex("mega"),
 			account4LocalIdentity.publicKey,
 			account4LocalIdentity.address,
 			{ from: account4 }
@@ -1068,7 +1071,7 @@ contract("AOContentHost", function(accounts) {
 			contentHostId5,
 			0,
 			0,
-			"",
+			web3.utils.toHex(""),
 			account4LocalIdentity.publicKey,
 			account4LocalIdentity.address,
 			{ from: account4 }
@@ -1080,7 +1083,7 @@ contract("AOContentHost", function(accounts) {
 			contentHostId6,
 			0,
 			0,
-			"",
+			web3.utils.toHex(""),
 			account4LocalIdentity.publicKey,
 			account4LocalIdentity.address,
 			{ from: account4 }
