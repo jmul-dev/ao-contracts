@@ -16,6 +16,7 @@ var NamePublicKey = artifacts.require("./NamePublicKey.sol");
 
 var EthCrypto = require("eth-crypto");
 var BigNumber = require("bignumber.js");
+var helper = require("./helpers/truffleTestHelper");
 
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
@@ -141,7 +142,7 @@ contract("AOContentFactory", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -154,7 +155,7 @@ contract("AOContentFactory", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -167,7 +168,7 @@ contract("AOContentFactory", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3LocalWriterKey.address,
 			{
 				from: account3
@@ -185,7 +186,7 @@ contract("AOContentFactory", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -202,7 +203,7 @@ contract("AOContentFactory", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			taoId1,
 			0,
 			false,
@@ -497,15 +498,16 @@ contract("AOContentFactory", function(accounts) {
 	it("stakeAOContent() - should be able to create and stake an AO Content", async function() {
 		var networkIntegerAmount = 5;
 		var networkFractionAmount = 10;
-		var denomination = "mega";
+		var denomination = web3.utils.toHex("mega");
 		var primordialAmount = 1000;
 		var networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
 		var defaultKey = await namepublickey.getDefaultKey(nameId1);
 		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(defaultKey);
 		var profitPercentage = 100000;
 
-		var _event = aocontenthost.HostContent();
-		_event.watch(async function(error, log) {
+		var blockNumber = await web3.eth.getBlockNumber();
+		var _event = aocontenthost.HostContent({ fromBlock: blockNumber, toBlock: "latest" }, async function(error, log) {
+			var _subscription = await _event;
 			if (!error) {
 				if (log.event === "HostContent") {
 					contentId1 = log.args.contentId;
@@ -542,7 +544,7 @@ contract("AOContentFactory", function(accounts) {
 					assert.equal(contentHost[4], account1MetadataDatKey, "ContentHost has incorrect metadataDatKey");
 				}
 			}
-			_event.stopWatching();
+			_subscription.unsubscribe();
 		});
 
 		var canStakeAOContent;
@@ -565,20 +567,24 @@ contract("AOContentFactory", function(accounts) {
 			canStakeAOContent = false;
 		}
 		assert.equal(canStakeAOContent, true, "Account can't create and stake AO Content");
+
+		// Fast forward block
+		await helper.advanceBlock();
 	});
 
 	it("stakeCreativeCommonsContent() - should be able to create and stake a Creative Commons Content", async function() {
 		var networkIntegerAmount = 1;
 		var networkFractionAmount = 0;
-		var denomination = "mega";
+		var denomination = web3.utils.toHex("mega");
 		var primordialAmount = 0;
 		var networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
 		var defaultKey = await namepublickey.getDefaultKey(nameId1);
 		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(defaultKey);
 		var profitPercentage = 0;
 
-		var _event = aocontenthost.HostContent();
-		_event.watch(async function(error, log) {
+		var blockNumber = await web3.eth.getBlockNumber();
+		var _event = aocontenthost.HostContent({ fromBlock: blockNumber, toBlock: "latest" }, async function(error, log) {
+			var _subscription = await _event;
 			if (!error) {
 				if (log.event === "HostContent") {
 					contentId2 = log.args.contentId;
@@ -615,7 +621,7 @@ contract("AOContentFactory", function(accounts) {
 					assert.equal(contentHost[4], account1MetadataDatKey, "ContentHost has incorrect metadataDatKey");
 				}
 			}
-			_event.stopWatching();
+			_subscription.unsubscribe();
 		});
 
 		var canStakeCreativeCommonsContent;
@@ -637,20 +643,24 @@ contract("AOContentFactory", function(accounts) {
 			canStakeCreativeCommonsContent = false;
 		}
 		assert.equal(canStakeCreativeCommonsContent, true, "Account can't create and stake Creative Commons Content");
+
+		// Fast forward block
+		await helper.advanceBlock();
 	});
 
 	it("stakeTAOContent() - should be able to create and stake a T(AO) Content", async function() {
 		var networkIntegerAmount = 0;
 		var networkFractionAmount = 0;
-		var denomination = "";
+		var denomination = web3.utils.toHex("");
 		var primordialAmount = 1000000;
 		var networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
 		var defaultKey = await namepublickey.getDefaultKey(nameId1);
 		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(defaultKey);
 		var profitPercentage = 0;
 
-		var _event = aocontenthost.HostContent();
-		_event.watch(async function(error, log) {
+		var blockNumber = await web3.eth.getBlockNumber();
+		var _event = aocontenthost.HostContent({ fromBlock: blockNumber, toBlock: "latest" }, async function(error, log) {
+			var _subscription = await _event;
 			if (!error) {
 				if (log.event === "HostContent") {
 					contentId3 = log.args.contentId;
@@ -660,7 +670,7 @@ contract("AOContentFactory", function(accounts) {
 					var content = await aocontent.getById(contentId3);
 					assert.equal(content[0], nameId1, "Content has incorrect creator");
 					assert.equal(content[1].toNumber(), fileSize, "Content has incorrect creator");
-					assert.equal(content[2], contentUsageType_taoContent, "Content has incorrect contentUsageType");
+					assert.equal(content[2], contentUsageType_taoContent, "Content has incorrect contentUsageType has to be TAO");
 					assert.equal(content[3], taoId1, "Content has incorrect taoId");
 					assert.equal(content[4], taoContentState_submitted, "Content has incorrect taoContentState");
 					assert.equal(content[5].toNumber(), 0, "Content has incorrect updateTAOContentStateV");
@@ -689,7 +699,7 @@ contract("AOContentFactory", function(accounts) {
 					assert.equal(contentHost[4], account1MetadataDatKey, "ContentHost has incorrect metadataDatKey");
 				}
 			}
-			_event.stopWatching();
+			_subscription.unsubscribe();
 		});
 
 		var canStakeTAOContent;
@@ -712,12 +722,15 @@ contract("AOContentFactory", function(accounts) {
 			canStakeTAOContent = false;
 		}
 		assert.equal(canStakeTAOContent, true, "Account can't create and stake T(AO) Content");
+
+		// Fast forward block
+		await helper.advanceBlock();
 	});
 
 	it("getStakingMetrics() - should return correct staking information of a StakedContent", async function() {
 		var canGetStakingMetrics;
 		try {
-			var stakingMetrics = await aocontentfactory.getStakingMetrics(someAddress);
+			var stakingMetrics = await aocontentfactory.getStakingMetrics(web3.utils.toHex("someid"));
 			canGetStakingMetrics = true;
 		} catch (e) {
 			canGetStakingMetrics = false;
@@ -745,9 +758,9 @@ contract("AOContentFactory", function(accounts) {
 			);
 		};
 
-		await getStakingMetrics(stakedContentId1);
-		await getStakingMetrics(stakedContentId2);
-		await getStakingMetrics(stakedContentId3);
+		await getStakingMetrics(web3.utils.toHex(stakedContentId1));
+		await getStakingMetrics(web3.utils.toHex(stakedContentId2));
+		await getStakingMetrics(web3.utils.toHex(stakedContentId3));
 	});
 
 	it("getEarningMetrics() - should return correct earning information of a StakedContent", async function() {
@@ -756,7 +769,7 @@ contract("AOContentFactory", function(accounts) {
 			contentHostId1,
 			5,
 			1100,
-			"mega",
+			web3.utils.toHex("mega"),
 			account3LocalIdentity.publicKey,
 			account3LocalIdentity.address,
 			{ from: account3 }
@@ -768,7 +781,7 @@ contract("AOContentFactory", function(accounts) {
 			contentHostId2,
 			0,
 			0,
-			"",
+			web3.utils.toHex(""),
 			account3LocalIdentity.publicKey,
 			account3LocalIdentity.address,
 			{ from: account3 }
@@ -780,7 +793,7 @@ contract("AOContentFactory", function(accounts) {
 			contentHostId3,
 			0,
 			0,
-			"",
+			web3.utils.toHex(""),
 			account3LocalIdentity.publicKey,
 			account3LocalIdentity.address,
 			{ from: account3 }
@@ -842,9 +855,9 @@ contract("AOContentFactory", function(accounts) {
 			);
 		};
 
-		await getEarningMetrics(stakedContentId1);
-		await getEarningMetrics(stakedContentId2);
-		await getEarningMetrics(stakedContentId3);
+		await getEarningMetrics(web3.utils.toHex(stakedContentId1));
+		await getEarningMetrics(web3.utils.toHex(stakedContentId2));
+		await getEarningMetrics(web3.utils.toHex(stakedContentId3));
 	});
 
 	it("getContentMetrics() - should return correct staking and earning information of a StakedContent", async function() {
