@@ -16,9 +16,7 @@ var Ethos = artifacts.require("./Ethos.sol");
 var NamePublicKey = artifacts.require("./NamePublicKey.sol");
 
 var EthCrypto = require("eth-crypto");
-var BigNumber = require("bignumber.js");
-
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
+var BN = require("bn.js");
 
 contract("AOEarning", function(accounts) {
 	var library,
@@ -157,16 +155,16 @@ contract("AOEarning", function(accounts) {
 		settingTAOId = await aocontent.settingTAOId();
 
 		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "inflationRate");
-		inflationRate = new BigNumber(settingValues[0]);
+		inflationRate = new BN(settingValues[0]);
 
 		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "theAOCut");
-		theAOCut = new BigNumber(settingValues[0]);
+		theAOCut = new BN(settingValues[0]);
 
 		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "theAOEthosEarnedRate");
-		theAOEthosEarnedRate = new BigNumber(settingValues[0]);
+		theAOEthosEarnedRate = new BN(settingValues[0]);
 
-		percentageDivisor = new BigNumber(await library.PERCENTAGE_DIVISOR());
-		multiplierDivisor = new BigNumber(await library.MULTIPLIER_DIVISOR());
+		percentageDivisor = new BN(await library.PERCENTAGE_DIVISOR());
+		multiplierDivisor = new BN(await library.MULTIPLIER_DIVISOR());
 
 		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "contentUsageType_aoContent");
 		contentUsageType_aoContent = settingValues[3];
@@ -183,7 +181,7 @@ contract("AOEarning", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -196,7 +194,7 @@ contract("AOEarning", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -209,7 +207,7 @@ contract("AOEarning", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3LocalWriterKey.address,
 			{
 				from: account3
@@ -222,7 +220,7 @@ contract("AOEarning", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId4LocalWriterKey.address,
 			{
 				from: account4
@@ -235,7 +233,7 @@ contract("AOEarning", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId5LocalWriterKey.address,
 			{
 				from: account5
@@ -253,7 +251,7 @@ contract("AOEarning", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -302,26 +300,26 @@ contract("AOEarning", function(accounts) {
 		var host = contentHost[2];
 		var stakedContent = await aostakedcontent.getById(stakedContentId);
 		var stakeOwner = stakedContent[1];
-		var stakedNetworkAmount = new BigNumber(stakedContent[2]);
-		var stakedPrimordialAmount = new BigNumber(stakedContent[3]);
-		var stakedPrimordialWeightedMultiplier = new BigNumber(stakedContent[4]);
-		var profitPercentage = new BigNumber(stakedContent[5]);
+		var stakedNetworkAmount = new BN(stakedContent[2]);
+		var stakedPrimordialAmount = new BN(stakedContent[3]);
+		var stakedPrimordialWeightedMultiplier = new BN(stakedContent[4]);
+		var profitPercentage = new BN(stakedContent[5]);
 
 		var isAOContentUsageType = await aocontent.isAOContentUsageType(contentId);
 
-		var contentHostPrice = new BigNumber(await aocontenthost.contentHostPrice(contentHostId));
-		var contentHostPaidByAO = new BigNumber(await aocontenthost.contentHostPaidByAO(contentHostId));
+		var contentHostPrice = new BN(await aocontenthost.contentHostPrice(contentHostId));
+		var contentHostPaidByAO = new BN(await aocontenthost.contentHostPaidByAO(contentHostId));
 
 		var stakeOwnerDefaultKey = await namepublickey.getDefaultKey(stakeOwner);
 		var hostDefaultKey = await namepublickey.getDefaultKey(host);
 
-		var stakeOwnerBalanceBefore = new BigNumber(await aoion.balanceOf(stakeOwnerDefaultKey));
-		var hostBalanceBefore = new BigNumber(await aoion.balanceOf(hostDefaultKey));
-		var theAOBalanceBefore = new BigNumber(await aoion.balanceOf(theAO));
+		var stakeOwnerBalanceBefore = new BN(await aoion.balanceOf(stakeOwnerDefaultKey));
+		var hostBalanceBefore = new BN(await aoion.balanceOf(hostDefaultKey));
+		var theAOBalanceBefore = new BN(await aoion.balanceOf(theAO));
 
-		var stakeOwnerEscrowedBalanceBefore = new BigNumber(await aoion.escrowedBalance(stakeOwnerDefaultKey));
-		var hostEscrowedBalanceBefore = new BigNumber(await aoion.escrowedBalance(hostDefaultKey));
-		var theAOEscrowedBalanceBefore = new BigNumber(await aoion.escrowedBalance(theAO));
+		var stakeOwnerEscrowedBalanceBefore = new BN(await aoion.escrowedBalance(stakeOwnerDefaultKey));
+		var hostEscrowedBalanceBefore = new BN(await aoion.escrowedBalance(hostDefaultKey));
+		var theAOEscrowedBalanceBefore = new BN(await aoion.escrowedBalance(theAO));
 
 		var canBuyContent, buyContentEvent, purchaseReceiptId;
 		try {
@@ -344,9 +342,9 @@ contract("AOEarning", function(accounts) {
 		}
 		assert.equal(canBuyContent, true, "Account can't buy content even though sent ions >= price");
 
-		var stakeOwnerBalanceAfter = new BigNumber(await aoion.balanceOf(stakeOwnerDefaultKey));
-		var hostBalanceAfter = new BigNumber(await aoion.balanceOf(hostDefaultKey));
-		var theAOBalanceAfter = new BigNumber(await aoion.balanceOf(theAO));
+		var stakeOwnerBalanceAfter = new BN(await aoion.balanceOf(stakeOwnerDefaultKey));
+		var hostBalanceAfter = new BN(await aoion.balanceOf(hostDefaultKey));
+		var theAOBalanceAfter = new BN(await aoion.balanceOf(theAO));
 
 		assert.equal(
 			stakeOwnerBalanceAfter.toString(),
@@ -357,38 +355,34 @@ contract("AOEarning", function(accounts) {
 		assert.equal(theAOBalanceAfter.toString(), theAOBalanceBefore.toString(), "The AO has incorrect balance after buying content");
 
 		// Calculate stake owner/host payment earning
-		var stakeOwnerPaymentEarning = isAOContentUsageType
-			? contentHostPrice.times(profitPercentage).div(percentageDivisor)
-			: new BigNumber(0);
-		var hostPaymentEarning = contentHostPrice.minus(stakeOwnerPaymentEarning);
+		var stakeOwnerPaymentEarning = isAOContentUsageType ? contentHostPrice.mul(profitPercentage).div(percentageDivisor) : new BN(0);
+		var hostPaymentEarning = contentHostPrice.sub(stakeOwnerPaymentEarning);
 		var pathosAmount = contentHostPrice
-			.times(percentageDivisor.minus(profitPercentage))
-			.times(inflationRate)
+			.mul(percentageDivisor.sub(profitPercentage))
+			.mul(inflationRate)
 			.div(percentageDivisor)
 			.div(percentageDivisor);
 		var ethosAmount = contentHostPrice
-			.times(profitPercentage)
-			.times(inflationRate)
+			.mul(profitPercentage)
+			.mul(inflationRate)
 			.div(percentageDivisor)
 			.div(percentageDivisor);
-		var theAOPaymentEarning = pathosAmount.plus(ethosAmount.times(theAOEthosEarnedRate).div(percentageDivisor));
+		var theAOPaymentEarning = pathosAmount.add(ethosAmount.mul(theAOEthosEarnedRate).div(percentageDivisor));
 
 		// Calculate inflation bonus
-		var networkBonus = stakedNetworkAmount.times(inflationRate).div(percentageDivisor);
+		var networkBonus = stakedNetworkAmount.mul(inflationRate).div(percentageDivisor);
 
 		var primordialBonus = stakedPrimordialAmount
-			.times(stakedPrimordialWeightedMultiplier)
+			.mul(stakedPrimordialWeightedMultiplier)
 			.div(multiplierDivisor)
-			.times(inflationRate)
+			.mul(inflationRate)
 			.div(percentageDivisor);
-		var inflationBonus = networkBonus.plus(primordialBonus);
+		var inflationBonus = networkBonus.add(primordialBonus);
 
 		// Calculate stake owner/host/The AO inflation bonus
-		var stakeOwnerInflationBonus = isAOContentUsageType
-			? profitPercentage.times(inflationBonus).div(percentageDivisor)
-			: new BigNumber(0);
-		var hostInflationBonus = inflationBonus.minus(stakeOwnerInflationBonus);
-		var theAOInflationBonus = theAOCut.times(inflationBonus).div(percentageDivisor);
+		var stakeOwnerInflationBonus = isAOContentUsageType ? profitPercentage.mul(inflationBonus).div(percentageDivisor) : new BN(0);
+		var hostInflationBonus = inflationBonus.sub(stakeOwnerInflationBonus);
+		var theAOInflationBonus = theAOCut.mul(inflationBonus).div(percentageDivisor);
 
 		// Verify ownerPurchaseReceiptStakeEarning
 		var ownerPurchaseReceiptStakeEarning = await aoearning.ownerPurchaseReceiptStakeEarnings(stakeOwner, purchaseReceiptId);
@@ -466,16 +460,16 @@ contract("AOEarning", function(accounts) {
 			assert.equal(
 				stakeOwnerEscrowedBalanceAfter.toString(),
 				stakeOwnerEscrowedBalanceBefore
-					.plus(contentHostPrice)
-					.plus(inflationBonus)
+					.add(contentHostPrice)
+					.add(inflationBonus)
 					.toString(),
 				"Stake owner has incorrect escrowed balance"
 			);
 			assert.equal(
 				hostEscrowedBalanceAfter.toString(),
 				hostEscrowedBalanceBefore
-					.plus(contentHostPrice)
-					.plus(inflationBonus)
+					.add(contentHostPrice)
+					.add(inflationBonus)
 					.toString(),
 				"Host has incorrect escrowed balance"
 			);
@@ -483,16 +477,16 @@ contract("AOEarning", function(accounts) {
 			assert.equal(
 				stakeOwnerEscrowedBalanceAfter.toString(),
 				stakeOwnerEscrowedBalanceBefore
-					.plus(stakeOwnerPaymentEarning)
-					.plus(stakeOwnerInflationBonus)
+					.add(stakeOwnerPaymentEarning)
+					.add(stakeOwnerInflationBonus)
 					.toString(),
 				"Stake owner has incorrect escrowed balance"
 			);
 			assert.equal(
 				hostEscrowedBalanceAfter.toString(),
 				hostEscrowedBalanceBefore
-					.plus(hostPaymentEarning)
-					.plus(hostInflationBonus)
+					.add(hostPaymentEarning)
+					.add(hostInflationBonus)
 					.toString(),
 				"Host has incorrect escrowed balance"
 			);
@@ -501,8 +495,8 @@ contract("AOEarning", function(accounts) {
 		assert.equal(
 			theAOEscrowedBalanceAfter.toString(),
 			theAOEscrowedBalanceBefore
-				.plus(theAOPaymentEarning)
-				.plus(theAOInflationBonus)
+				.add(theAOPaymentEarning)
+				.add(theAOInflationBonus)
 				.toString(),
 			"The AO has incorrect escrowed balance"
 		);
@@ -618,12 +612,12 @@ contract("AOEarning", function(accounts) {
 
 		assert.equal(
 			stakeOwnerPathosBalanceAfter.toString(),
-			stakeOwnerPathosBalanceBefore.plus(ownerPurchaseReceiptStakeEarningBefore[3]).toString(),
+			stakeOwnerPathosBalanceBefore.add(ownerPurchaseReceiptStakeEarningBefore[3]).toString(),
 			"Stake owner has incorrect pathos balance"
 		);
 		assert.equal(
 			hostEthosBalanceAfter.toString(),
-			hostEthosBalanceBefore.plus(ownerPurchaseReceiptHostEarningBefore[4]).toString(),
+			hostEthosBalanceBefore.add(ownerPurchaseReceiptHostEarningBefore[4]).toString(),
 			"Host has incorrect ethos balance"
 		);
 
@@ -638,20 +632,20 @@ contract("AOEarning", function(accounts) {
 				assert.equal(
 					stakeOwnerBalanceAfter.toString(),
 					stakeOwnerBalanceBefore
-						.plus(ownerPurchaseReceiptStakeEarningBefore[1])
-						.plus(ownerPurchaseReceiptStakeEarningBefore[2])
-						.plus(ownerPurchaseReceiptHostEarningBefore[1])
-						.plus(ownerPurchaseReceiptHostEarningBefore[2])
+						.add(ownerPurchaseReceiptStakeEarningBefore[1])
+						.add(ownerPurchaseReceiptStakeEarningBefore[2])
+						.add(ownerPurchaseReceiptHostEarningBefore[1])
+						.add(ownerPurchaseReceiptHostEarningBefore[2])
 						.toString(),
 					"Stake owner has incorrect balance after request node become host"
 				);
 				assert.equal(
 					hostBalanceAfter.toString(),
 					hostBalanceBefore
-						.plus(ownerPurchaseReceiptStakeEarningBefore[1])
-						.plus(ownerPurchaseReceiptStakeEarningBefore[2])
-						.plus(ownerPurchaseReceiptHostEarningBefore[1])
-						.plus(ownerPurchaseReceiptHostEarningBefore[2])
+						.add(ownerPurchaseReceiptStakeEarningBefore[1])
+						.add(ownerPurchaseReceiptStakeEarningBefore[2])
+						.add(ownerPurchaseReceiptHostEarningBefore[1])
+						.add(ownerPurchaseReceiptHostEarningBefore[2])
 						.toString(),
 					"Host has incorrect balance after request node become host"
 				);
@@ -659,16 +653,16 @@ contract("AOEarning", function(accounts) {
 				assert.equal(
 					stakeOwnerBalanceAfter.toString(),
 					stakeOwnerBalanceBefore
-						.plus(ownerPurchaseReceiptStakeEarningBefore[1])
-						.plus(ownerPurchaseReceiptStakeEarningBefore[2])
+						.add(ownerPurchaseReceiptStakeEarningBefore[1])
+						.add(ownerPurchaseReceiptStakeEarningBefore[2])
 						.toString(),
 					"Stake owner has incorrect balance after request node become host"
 				);
 				assert.equal(
 					hostBalanceAfter.toString(),
 					hostBalanceBefore
-						.plus(ownerPurchaseReceiptHostEarningBefore[1])
-						.plus(ownerPurchaseReceiptHostEarningBefore[2])
+						.add(ownerPurchaseReceiptHostEarningBefore[1])
+						.add(ownerPurchaseReceiptHostEarningBefore[2])
 						.toString(),
 					"Host has incorrect balance after request node become host"
 				);
@@ -679,16 +673,16 @@ contract("AOEarning", function(accounts) {
 				assert.equal(
 					stakeOwnerBalanceAfter.toString(),
 					stakeOwnerBalanceBefore
-						.plus(price)
-						.plus(ownerPurchaseReceiptHostEarningBefore[2])
+						.add(price)
+						.add(ownerPurchaseReceiptHostEarningBefore[2])
 						.toString(),
 					"Stake owner has incorrect balance after request node become host"
 				);
 				assert.equal(
 					hostBalanceAfter.toString(),
 					hostBalanceBefore
-						.plus(price)
-						.plus(ownerPurchaseReceiptHostEarningBefore[2])
+						.add(price)
+						.add(ownerPurchaseReceiptHostEarningBefore[2])
 						.toString(),
 					"Host has incorrect balance after request node become host"
 				);
@@ -701,8 +695,8 @@ contract("AOEarning", function(accounts) {
 				assert.equal(
 					hostBalanceAfter.toString(),
 					hostBalanceBefore
-						.plus(price)
-						.plus(ownerPurchaseReceiptHostEarningBefore[2])
+						.add(price)
+						.add(ownerPurchaseReceiptHostEarningBefore[2])
 						.toString(),
 					"Host has incorrect balance after request node become host"
 				);
@@ -711,8 +705,8 @@ contract("AOEarning", function(accounts) {
 		assert.equal(
 			theAOBalanceAfter.toString(),
 			theAOBalanceBefore
-				.plus(theAOPurchaseReceiptEarningBefore[1])
-				.plus(theAOPurchaseReceiptEarningBefore[2])
+				.add(theAOPurchaseReceiptEarningBefore[1])
+				.add(theAOPurchaseReceiptEarningBefore[2])
 				.toString(),
 			"The AO has incorrect balance after request node become host"
 		);
@@ -727,20 +721,20 @@ contract("AOEarning", function(accounts) {
 			assert.equal(
 				stakeOwnerEscrowedBalanceAfter.toString(),
 				stakeOwnerEscrowedBalanceBefore
-					.minus(ownerPurchaseReceiptStakeEarningBefore[1])
-					.minus(ownerPurchaseReceiptStakeEarningBefore[2])
-					.minus(ownerPurchaseReceiptHostEarningBefore[1])
-					.minus(ownerPurchaseReceiptHostEarningBefore[2])
+					.sub(ownerPurchaseReceiptStakeEarningBefore[1])
+					.sub(ownerPurchaseReceiptStakeEarningBefore[2])
+					.sub(ownerPurchaseReceiptHostEarningBefore[1])
+					.sub(ownerPurchaseReceiptHostEarningBefore[2])
 					.toString(),
 				"Stake owner has incorrect escrowed balance after request node become host"
 			);
 			assert.equal(
 				hostEscrowedBalanceAfter.toString(),
 				hostEscrowedBalanceBefore
-					.minus(ownerPurchaseReceiptStakeEarningBefore[1])
-					.minus(ownerPurchaseReceiptStakeEarningBefore[2])
-					.minus(ownerPurchaseReceiptHostEarningBefore[1])
-					.minus(ownerPurchaseReceiptHostEarningBefore[2])
+					.sub(ownerPurchaseReceiptStakeEarningBefore[1])
+					.sub(ownerPurchaseReceiptStakeEarningBefore[2])
+					.sub(ownerPurchaseReceiptHostEarningBefore[1])
+					.sub(ownerPurchaseReceiptHostEarningBefore[2])
 					.toString(),
 				"Host has incorrect escrowed balance after request node become host"
 			);
@@ -748,16 +742,16 @@ contract("AOEarning", function(accounts) {
 			assert.equal(
 				stakeOwnerEscrowedBalanceAfter.toString(),
 				stakeOwnerEscrowedBalanceBefore
-					.minus(ownerPurchaseReceiptStakeEarningBefore[1])
-					.minus(ownerPurchaseReceiptStakeEarningBefore[2])
+					.sub(ownerPurchaseReceiptStakeEarningBefore[1])
+					.sub(ownerPurchaseReceiptStakeEarningBefore[2])
 					.toString(),
 				"Stake owner has incorrect escrowed balance after request node become host"
 			);
 			assert.equal(
 				hostEscrowedBalanceAfter.toString(),
 				hostEscrowedBalanceBefore
-					.minus(ownerPurchaseReceiptHostEarningBefore[1])
-					.minus(ownerPurchaseReceiptHostEarningBefore[2])
+					.sub(ownerPurchaseReceiptHostEarningBefore[1])
+					.sub(ownerPurchaseReceiptHostEarningBefore[2])
 					.toString(),
 				"Host has incorrect escrowed balance after request node become host"
 			);
@@ -765,8 +759,8 @@ contract("AOEarning", function(accounts) {
 		assert.equal(
 			theAOEscrowedBalanceAfter.toString(),
 			theAOEscrowedBalanceBefore
-				.minus(theAOPurchaseReceiptEarningBefore[1])
-				.minus(theAOPurchaseReceiptEarningBefore[2])
+				.sub(theAOPurchaseReceiptEarningBefore[1])
+				.sub(theAOPurchaseReceiptEarningBefore[2])
 				.toString(),
 			"The AO has incorrect escrowed balance after request node become host"
 		);
@@ -861,24 +855,24 @@ contract("AOEarning", function(accounts) {
 		assert.equal(
 			totalStakedContentEarningAfter.toString(),
 			totalStakedContentEarningBefore
-				.plus(ownerPurchaseReceiptStakeEarningBefore[1])
-				.plus(ownerPurchaseReceiptStakeEarningBefore[2])
+				.add(ownerPurchaseReceiptStakeEarningBefore[1])
+				.add(ownerPurchaseReceiptStakeEarningBefore[2])
 				.toString(),
 			"Contract has incorrect totalStakedContentEarning"
 		);
 		assert.equal(
 			totalContentHostEarningAfter.toString(),
 			totalContentHostEarningBefore
-				.plus(ownerPurchaseReceiptHostEarningBefore[1])
-				.plus(ownerPurchaseReceiptHostEarningBefore[2])
+				.add(ownerPurchaseReceiptHostEarningBefore[1])
+				.add(ownerPurchaseReceiptHostEarningBefore[2])
 				.toString(),
 			"Contract has incorrect totalContentHostEarning"
 		);
 		assert.equal(
 			totalTheAOEarningAfter.toString(),
 			totalTheAOEarningBefore
-				.plus(theAOPurchaseReceiptEarningBefore[1])
-				.plus(theAOPurchaseReceiptEarningBefore[2])
+				.add(theAOPurchaseReceiptEarningBefore[1])
+				.add(theAOPurchaseReceiptEarningBefore[2])
 				.toString(),
 			"Contract has incorrect totalTheAOEarning"
 		);
@@ -887,8 +881,8 @@ contract("AOEarning", function(accounts) {
 		assert.equal(
 			stakeOwner_ownerStakedContentEarningAfter.toString(),
 			stakeOwner_ownerStakedContentEarningBefore
-				.plus(ownerPurchaseReceiptStakeEarningBefore[1])
-				.plus(ownerPurchaseReceiptStakeEarningBefore[2])
+				.add(ownerPurchaseReceiptStakeEarningBefore[1])
+				.add(ownerPurchaseReceiptStakeEarningBefore[2])
 				.toString(),
 			"Contract has incorrect ownerStakedContentEarning"
 		);
@@ -897,8 +891,8 @@ contract("AOEarning", function(accounts) {
 		assert.equal(
 			host_ownerContentHostEarningAfter.toString(),
 			host_ownerContentHostEarningBefore
-				.plus(ownerPurchaseReceiptHostEarningBefore[1])
-				.plus(ownerPurchaseReceiptHostEarningBefore[2])
+				.add(ownerPurchaseReceiptHostEarningBefore[1])
+				.add(ownerPurchaseReceiptHostEarningBefore[2])
 				.toString(),
 			"Contract has incorrect ownerContentHostEarning for host"
 		);
@@ -929,10 +923,10 @@ contract("AOEarning", function(accounts) {
 				assert.equal(
 					stakeOwner_ownerContentPriceEarningAfter.toString(),
 					stakeOwner_ownerContentPriceEarningBefore
-						.plus(ownerPurchaseReceiptStakeEarningBefore[1])
-						.plus(ownerPurchaseReceiptStakeEarningBefore[2])
-						.plus(ownerPurchaseReceiptHostEarningBefore[1])
-						.plus(ownerPurchaseReceiptHostEarningBefore[2])
+						.add(ownerPurchaseReceiptStakeEarningBefore[1])
+						.add(ownerPurchaseReceiptStakeEarningBefore[2])
+						.add(ownerPurchaseReceiptHostEarningBefore[1])
+						.add(ownerPurchaseReceiptHostEarningBefore[2])
 						.toString(),
 					"Contract has incorrect ownerContentPriceEarning for stake owner"
 				);
@@ -940,10 +934,10 @@ contract("AOEarning", function(accounts) {
 				assert.equal(
 					host_ownerContentPriceEarningAfter.toString(),
 					host_ownerContentPriceEarningBefore
-						.plus(ownerPurchaseReceiptStakeEarningBefore[1])
-						.plus(ownerPurchaseReceiptStakeEarningBefore[2])
-						.plus(ownerPurchaseReceiptHostEarningBefore[1])
-						.plus(ownerPurchaseReceiptHostEarningBefore[2])
+						.add(ownerPurchaseReceiptStakeEarningBefore[1])
+						.add(ownerPurchaseReceiptStakeEarningBefore[2])
+						.add(ownerPurchaseReceiptHostEarningBefore[1])
+						.add(ownerPurchaseReceiptHostEarningBefore[2])
 						.toString(),
 					"Contract has incorrect ownerContentPriceEarning for host"
 				);
@@ -951,8 +945,8 @@ contract("AOEarning", function(accounts) {
 				assert.equal(
 					stakeOwner_ownerContentPriceEarningAfter.toString(),
 					stakeOwner_ownerContentPriceEarningBefore
-						.plus(ownerPurchaseReceiptStakeEarningBefore[1])
-						.plus(ownerPurchaseReceiptStakeEarningBefore[2])
+						.add(ownerPurchaseReceiptStakeEarningBefore[1])
+						.add(ownerPurchaseReceiptStakeEarningBefore[2])
 						.toString(),
 					"Contract has incorrect ownerContentPriceEarning for stake owner"
 				);
@@ -960,8 +954,8 @@ contract("AOEarning", function(accounts) {
 				assert.equal(
 					host_ownerContentPriceEarningAfter.toString(),
 					host_ownerContentPriceEarningBefore
-						.plus(ownerPurchaseReceiptHostEarningBefore[1])
-						.plus(ownerPurchaseReceiptHostEarningBefore[2])
+						.add(ownerPurchaseReceiptHostEarningBefore[1])
+						.add(ownerPurchaseReceiptHostEarningBefore[2])
 						.toString(),
 					"Contract has incorrect ownerContentPriceEarning for host"
 				);
@@ -972,10 +966,10 @@ contract("AOEarning", function(accounts) {
 				assert.equal(
 					stakeOwner_ownerNetworkPriceEarningAfter.toString(),
 					stakeOwner_ownerNetworkPriceEarningBefore
-						.plus(ownerPurchaseReceiptStakeEarningBefore[1])
-						.plus(ownerPurchaseReceiptStakeEarningBefore[2])
-						.plus(ownerPurchaseReceiptHostEarningBefore[1])
-						.plus(ownerPurchaseReceiptHostEarningBefore[2])
+						.add(ownerPurchaseReceiptStakeEarningBefore[1])
+						.add(ownerPurchaseReceiptStakeEarningBefore[2])
+						.add(ownerPurchaseReceiptHostEarningBefore[1])
+						.add(ownerPurchaseReceiptHostEarningBefore[2])
 						.toString(),
 					"Contract has incorrect ownerNetworkPriceEarning"
 				);
@@ -983,10 +977,10 @@ contract("AOEarning", function(accounts) {
 				assert.equal(
 					host_ownerNetworkPriceEarningAfter.toString(),
 					host_ownerNetworkPriceEarningBefore
-						.plus(ownerPurchaseReceiptStakeEarningBefore[1])
-						.plus(ownerPurchaseReceiptStakeEarningBefore[2])
-						.plus(ownerPurchaseReceiptHostEarningBefore[1])
-						.plus(ownerPurchaseReceiptHostEarningBefore[2])
+						.add(ownerPurchaseReceiptStakeEarningBefore[1])
+						.add(ownerPurchaseReceiptStakeEarningBefore[2])
+						.add(ownerPurchaseReceiptHostEarningBefore[1])
+						.add(ownerPurchaseReceiptHostEarningBefore[2])
 						.toString(),
 					"Contract has incorrect ownerNetworkPriceEarning"
 				);
@@ -994,8 +988,8 @@ contract("AOEarning", function(accounts) {
 				assert.equal(
 					stakeOwner_ownerNetworkPriceEarningAfter.toString(),
 					stakeOwner_ownerNetworkPriceEarningBefore
-						.plus(ownerPurchaseReceiptStakeEarningBefore[1])
-						.plus(ownerPurchaseReceiptStakeEarningBefore[2])
+						.add(ownerPurchaseReceiptStakeEarningBefore[1])
+						.add(ownerPurchaseReceiptStakeEarningBefore[2])
 						.toString(),
 					"Contract has incorrect ownerNetworkPriceEarning"
 				);
@@ -1003,8 +997,8 @@ contract("AOEarning", function(accounts) {
 				assert.equal(
 					host_ownerNetworkPriceEarningAfter.toString(),
 					host_ownerNetworkPriceEarningBefore
-						.plus(ownerPurchaseReceiptHostEarningBefore[1])
-						.plus(ownerPurchaseReceiptHostEarningBefore[2])
+						.add(ownerPurchaseReceiptHostEarningBefore[1])
+						.add(ownerPurchaseReceiptHostEarningBefore[2])
 						.toString(),
 					"Contract has incorrect ownerNetworkPriceEarning"
 				);
@@ -1026,28 +1020,28 @@ contract("AOEarning", function(accounts) {
 			assert.equal(
 				stakeOwner_ownerInflationBonusAccruedAfter.toString(),
 				stakeOwner_ownerInflationBonusAccruedBefore
-					.plus(ownerPurchaseReceiptStakeEarningBefore[2])
-					.plus(ownerPurchaseReceiptHostEarningBefore[2])
+					.add(ownerPurchaseReceiptStakeEarningBefore[2])
+					.add(ownerPurchaseReceiptHostEarningBefore[2])
 					.toString(),
 				"Contract has incorrect ownerInflationBonusAccrued for stake owner"
 			);
 			assert.equal(
 				host_ownerInflationBonusAccruedAfter.toString(),
 				host_ownerInflationBonusAccruedBefore
-					.plus(ownerPurchaseReceiptStakeEarningBefore[2])
-					.plus(ownerPurchaseReceiptHostEarningBefore[2])
+					.add(ownerPurchaseReceiptStakeEarningBefore[2])
+					.add(ownerPurchaseReceiptHostEarningBefore[2])
 					.toString(),
 				"Contract has incorrect ownerInflationBonusAccrued for host"
 			);
 		} else {
 			assert.equal(
 				stakeOwner_ownerInflationBonusAccruedAfter.toString(),
-				stakeOwner_ownerInflationBonusAccruedBefore.plus(ownerPurchaseReceiptStakeEarningBefore[2]).toString(),
+				stakeOwner_ownerInflationBonusAccruedBefore.add(ownerPurchaseReceiptStakeEarningBefore[2]).toString(),
 				"Contract has incorrect ownerInflationBonusAccrued for stake owner"
 			);
 			assert.equal(
 				host_ownerInflationBonusAccruedAfter.toString(),
-				host_ownerInflationBonusAccruedBefore.plus(ownerPurchaseReceiptHostEarningBefore[2]).toString(),
+				host_ownerInflationBonusAccruedBefore.add(ownerPurchaseReceiptHostEarningBefore[2]).toString(),
 				"Contract has incorrect ownerInflationBonusAccrued for host"
 			);
 		}
@@ -1060,8 +1054,8 @@ contract("AOEarning", function(accounts) {
 		assert.equal(
 			stakedContentStakeEarningAfter.toString(),
 			stakedContentStakeEarningBefore
-				.plus(ownerPurchaseReceiptStakeEarningBefore[1])
-				.plus(ownerPurchaseReceiptStakeEarningBefore[2])
+				.add(ownerPurchaseReceiptStakeEarningBefore[1])
+				.add(ownerPurchaseReceiptStakeEarningBefore[2])
 				.toString(),
 			"Staked content has incorrect stakedContentStakeEarning value"
 		);
@@ -1069,8 +1063,8 @@ contract("AOEarning", function(accounts) {
 		assert.equal(
 			stakedContentHostEarningAfter.toString(),
 			stakedContentHostEarningBefore
-				.plus(ownerPurchaseReceiptHostEarningBefore[1])
-				.plus(ownerPurchaseReceiptHostEarningBefore[2])
+				.add(ownerPurchaseReceiptHostEarningBefore[1])
+				.add(ownerPurchaseReceiptHostEarningBefore[2])
 				.toString(),
 			"Staked content has incorrect stakedContentHostEarning value"
 		);
@@ -1078,16 +1072,16 @@ contract("AOEarning", function(accounts) {
 		assert.equal(
 			stakedContentTheAOEarningAfter.toString(),
 			stakedContentTheAOEarningBefore
-				.plus(theAOPurchaseReceiptEarningBefore[1])
-				.plus(theAOPurchaseReceiptEarningBefore[2])
+				.add(theAOPurchaseReceiptEarningBefore[1])
+				.add(theAOPurchaseReceiptEarningBefore[2])
 				.toString(),
 			"Staked content has incorrect stakedContentTheAOEarning value"
 		);
 		assert.equal(
 			contentHostEarningAfter.toString(),
 			contentHostEarningBefore
-				.plus(ownerPurchaseReceiptHostEarningBefore[1])
-				.plus(ownerPurchaseReceiptHostEarningBefore[2])
+				.add(ownerPurchaseReceiptHostEarningBefore[1])
+				.add(ownerPurchaseReceiptHostEarningBefore[2])
 				.toString(),
 			"Content Host ID has incorrect total earning value"
 		);
@@ -1181,15 +1175,21 @@ contract("AOEarning", function(accounts) {
 		storeContentEvent = result.logs[0];
 		contentId3 = storeContentEvent.args.contentId;
 
-		result = await aostakedcontent.create(nameId1, contentId1, 4, 1000, "mega", 100000, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId1, contentId1, 4, 1000, web3.utils.toHex("mega"), 100000, 100000, {
+			from: whitelistedAddress
+		});
 		var stakeContentEvent = result.logs[0];
 		stakedContentId1 = stakeContentEvent.args.stakedContentId;
 
-		result = await aostakedcontent.create(nameId2, contentId2, 0, 0, "", 1000000, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId2, contentId2, 0, 0, web3.utils.toHex(""), 1000000, 100000, {
+			from: whitelistedAddress
+		});
 		stakeContentEvent = result.logs[0];
 		stakedContentId2 = stakeContentEvent.args.stakedContentId;
 
-		result = await aostakedcontent.create(nameId1, contentId3, 1000000, 0, "ao", 0, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId1, contentId3, 1000000, 0, web3.utils.toHex("ao"), 0, 100000, {
+			from: whitelistedAddress
+		});
 		stakeContentEvent = result.logs[0];
 		stakedContentId3 = stakeContentEvent.args.stakedContentId;
 
@@ -1503,7 +1503,7 @@ contract("AOEarning", function(accounts) {
 			contentHostId1,
 			5,
 			100,
-			"mega",
+			web3.utils.toHex("mega"),
 			account3LocalIdentity.publicKey,
 			account3LocalIdentity.address
 		);
@@ -1512,7 +1512,7 @@ contract("AOEarning", function(accounts) {
 			contentHostId2,
 			5,
 			100,
-			"mega",
+			web3.utils.toHex("mega"),
 			account3LocalIdentity.publicKey,
 			account3LocalIdentity.address
 		);
@@ -1521,7 +1521,7 @@ contract("AOEarning", function(accounts) {
 			contentHostId3,
 			0,
 			0,
-			"",
+			web3.utils.toHex(""),
 			account3LocalIdentity.publicKey,
 			account3LocalIdentity.address
 		);
@@ -1530,7 +1530,7 @@ contract("AOEarning", function(accounts) {
 			contentHostId2,
 			0,
 			0,
-			"",
+			web3.utils.toHex(""),
 			account5LocalIdentity.publicKey,
 			account5LocalIdentity.address
 		);
@@ -1539,7 +1539,7 @@ contract("AOEarning", function(accounts) {
 			contentHostId3,
 			0,
 			0,
-			"",
+			web3.utils.toHex(""),
 			account5LocalIdentity.publicKey,
 			account5LocalIdentity.address
 		);
@@ -1585,7 +1585,7 @@ contract("AOEarning", function(accounts) {
 			contentHostId4,
 			5,
 			100,
-			"mega",
+			web3.utils.toHex("mega"),
 			account4LocalIdentity.publicKey,
 			account4LocalIdentity.address
 		);
@@ -1595,7 +1595,7 @@ contract("AOEarning", function(accounts) {
 			contentHostId5,
 			0,
 			0,
-			"",
+			web3.utils.toHex(""),
 			account4LocalIdentity.publicKey,
 			account4LocalIdentity.address
 		);
@@ -1605,7 +1605,7 @@ contract("AOEarning", function(accounts) {
 			contentHostId6,
 			0,
 			0,
-			"",
+			web3.utils.toHex(""),
 			account4LocalIdentity.publicKey,
 			account4LocalIdentity.address
 		);
