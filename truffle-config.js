@@ -20,7 +20,8 @@ module.exports = {
 			host: "localhost",
 			port: 8545,
 			network_id: "*",
-			gas: 6950000
+			gas: 6950000,
+			websockets: true
 		},
 		ropsten: {
 			host: "localhost", // Connect to geth on the specified
