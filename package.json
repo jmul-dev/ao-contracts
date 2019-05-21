@@ -16,15 +16,17 @@
 	"scripts": {
 		"chain": "ganache-cli -p 8545 -m 'stomach six rural battle middle jazz chalk camera grain render feed job' -g 10000000000 -e 1000 -l 6950000 -i 1985",
 		"compile": "truffle compile",
-		"migrate": "truffle migrate",
-		"deploy": "yarn compile && yarn migrate",
+		"migrate:development": "truffle migrate --network development",
+		"migrate:rinkeby": "truffle migrate --network rinkeby",
+		"migrate:mainnet": "truffle migrate --network mainnet",
 		"test": "truffle test"
 	},
 	"devDependencies": {
 		"ganache-cli": "^6.4.3",
 		"husky": "^1.2.0",
 		"prettier": "1.15.2",
-		"pretty-quick": "^1.8.0"
+		"pretty-quick": "^1.8.0",
+		"truffle": "^5.0.18"
 	},
 	"husky": {
 		"hooks": {
