@@ -15,10 +15,10 @@ var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
 var NamePublicKey = artifacts.require("./NamePublicKey.sol");
 
 var EthCrypto = require("eth-crypto");
-var BigNumber = require("bignumber.js");
+var BN = require("bn.js");
 var helper = require("./helpers/truffleTestHelper");
-
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
+var Web3 = require("web3");
+var _web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
 contract("AOIon & AOIonLot", function(accounts) {
 	var namefactory,
@@ -27,6 +27,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 		logos,
 		aoion,
 		aoionlot,
+		_aoionlot,
 		library,
 		aosetting,
 		aoeth,
@@ -72,6 +73,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 		logos = await Logos.deployed();
 		aoion = await AOIon.deployed();
 		aoionlot = await AOIonLot.deployed();
+		_aoionlot = _web3.eth.contract(aoionlot.abi).at(aoionlot.address);
 		library = await AOLibrary.deployed();
 		aosetting = await AOSetting.deployed();
 		aoeth = await AOETH.deployed();
@@ -109,12 +111,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 		it("should have 0 initial supply", async function() {
 			var totalSupply = await aoion.totalSupply();
-			assert.equal(totalSupply.toNumber(), 0, "Contract has incorrect initial supply");
+			assert.equal(totalSupply.toString(), 0, "Contract has incorrect initial supply");
 		});
 
 		it("should have total of 1125899906842620 Primordial ions for sale", async function() {
-			totalPrimordialForSale = new BigNumber(await aoion.TOTAL_PRIMORDIAL_FOR_SALE());
-			assert.equal(totalPrimordialForSale.toNumber(), 1125899906842620, "Contract has incorrect total primordial for sale");
+			totalPrimordialForSale = new BN(await aoion.TOTAL_PRIMORDIAL_FOR_SALE());
+			assert.equal(totalPrimordialForSale.toString(), 1125899906842620, "Contract has incorrect total primordial for sale");
 		});
 
 		it("should have the correct AO Dev team 1 address", async function() {
@@ -129,26 +131,26 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 		it("should have the correct starting multiplier for calculating primordial multiplier", async function() {
 			var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "startingPrimordialMultiplier");
-			startingPrimordialMultiplier = new BigNumber(settingValues[0]);
-			assert.equal(startingPrimordialMultiplier.toNumber(), 50 * 10 ** 6, "Contract has incorrect startingPrimordialMultiplier");
+			startingPrimordialMultiplier = new BN(settingValues[0]);
+			assert.equal(startingPrimordialMultiplier.toString(), 50 * 10 ** 6, "Contract has incorrect startingPrimordialMultiplier");
 		});
 
 		it("should have the correct ending multiplier for calculating primordial multiplier", async function() {
 			var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "endingPrimordialMultiplier");
-			endingPrimordialMultiplier = new BigNumber(settingValues[0]);
-			assert.equal(endingPrimordialMultiplier.toNumber(), 3 * 10 ** 6, "Contract has incorrect endingPrimordialMultiplier");
+			endingPrimordialMultiplier = new BN(settingValues[0]);
+			assert.equal(endingPrimordialMultiplier.toString(), 3 * 10 ** 6, "Contract has incorrect endingPrimordialMultiplier");
 		});
 
 		it("should have the correct starting network ion bonus multiplier for calculating network ion bonus amount", async function() {
 			var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "startingNetworkBonusMultiplier");
-			startingNetworkBonusMultiplier = new BigNumber(settingValues[0]);
-			assert.equal(startingNetworkBonusMultiplier.toNumber(), 1000000, "Contract has incorrect startingNetworkBonusMultiplier");
+			startingNetworkBonusMultiplier = new BN(settingValues[0]);
+			assert.equal(startingNetworkBonusMultiplier.toString(), 1000000, "Contract has incorrect startingNetworkBonusMultiplier");
 		});
 
 		it("should have the correct ending network ion bonus multiplier for calculating network ion bonus amount", async function() {
 			var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "endingNetworkBonusMultiplier");
-			endingNetworkBonusMultiplier = new BigNumber(settingValues[0]);
-			assert.equal(endingNetworkBonusMultiplier.toNumber(), 250000, "Contract has incorrect endingNetworkBonusMultiplier");
+			endingNetworkBonusMultiplier = new BN(settingValues[0]);
+			assert.equal(endingNetworkBonusMultiplier.toString(), 250000, "Contract has incorrect endingNetworkBonusMultiplier");
 		});
 	});
 
@@ -160,7 +162,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1LocalWriterKey.address,
 				{
 					from: account1
@@ -177,7 +179,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1,
 				0,
 				false,
@@ -318,8 +320,8 @@ contract("AOIon & AOIonLot", function(accounts) {
 			assert.equal(canSetPrices, true, "The AO can't set network ion prices");
 			var sellPrice = await aoion.sellPrice();
 			var buyPrice = await aoion.buyPrice();
-			assert.equal(sellPrice.toNumber(), 2, "Incorrect sell price");
-			assert.equal(buyPrice.toNumber(), 2, "Incorrect buy price");
+			assert.equal(sellPrice.toString(), 2, "Incorrect sell price");
+			assert.equal(buyPrice.toString(), 2, "Incorrect buy price");
 		});
 
 		it("The AO - setAOIonLotAddress() should be able to set AOIonLot address", async function() {
@@ -444,7 +446,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1LocalWriterKey.address,
 				{
 					from: account1
@@ -461,7 +463,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1,
 				0,
 				false,
@@ -573,7 +575,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1LocalWriterKey.address,
 				{
 					from: account1
@@ -586,7 +588,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId2LocalWriterKey.address,
 				{
 					from: account2
@@ -612,14 +614,14 @@ contract("AOIon & AOIonLot", function(accounts) {
 				},
 				{
 					type: "uint256",
-					value: nonce.plus(1).toNumber()
+					value: nonce.add(new BN(1)).toString()
 				}
 			]);
 
 			var signature = EthCrypto.sign(account4PrivateKey, signHash);
 			var vrs = EthCrypto.vrs.fromString(signature);
 
-			await namepublickey.addKey(nameId1, account4, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
+			await namepublickey.addKey(nameId1, account4, nonce.add(new BN(1)).toString(), vrs.v, vrs.r, vrs.s, { from: account1 });
 		});
 
 		it("Whitelisted address - mint()  can mint", async function() {
@@ -645,8 +647,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var balanceAfter = await aoion.balanceOf(account1);
 			var totalSupplyAfter = await aoion.totalSupply();
 
-			assert.equal(balanceAfter.toNumber(), balanceBefore.plus(100).toNumber(), "Account1 has incorrect balance after minting");
-			assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.plus(100).toNumber(), "Contract has incorrect totalSupply");
+			assert.equal(
+				balanceAfter.toString(),
+				balanceBefore.add(new BN(100)).toString(),
+				"Account1 has incorrect balance after minting"
+			);
+			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.add(new BN(100)).toString(), "Contract has incorrect totalSupply");
 		});
 
 		it("WhitelistedAddress - stakeFrom() should be able to stake ions on behalf of others", async function() {
@@ -683,12 +689,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			assert.equal(
 				account1BalanceAfter.toString(),
-				account1BalanceBefore.minus(10).toString(),
+				account1BalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect balance after staking"
 			);
 			assert.equal(
 				account1StakedBalanceAfter.toString(),
-				account1StakedBalanceBefore.plus(10).toString(),
+				account1StakedBalanceBefore.add(new BN(10)).toString(),
 				"Account1 has incorrect staked balance after staking"
 			);
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after staking");
@@ -728,12 +734,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			assert.equal(
 				account1BalanceAfter.toString(),
-				account1BalanceBefore.plus(10).toString(),
+				account1BalanceBefore.add(new BN(10)).toString(),
 				"Account1 has incorrect balance after unstaking"
 			);
 			assert.equal(
 				account1StakedBalanceAfter.toString(),
-				account1StakedBalanceBefore.minus(10).toString(),
+				account1StakedBalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect staked balance after unstaking"
 			);
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after unstaking");
@@ -775,13 +781,13 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			assert.equal(
 				account1BalanceAfter.toString(),
-				account1BalanceBefore.minus(10).toString(),
+				account1BalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect balance after escrow"
 			);
 			assert.equal(account2BalanceAfter.toString(), account2BalanceBefore.toString(), "Account2 has incorrect balance after escrow");
 			assert.equal(
 				account2EscrowedBalanceAfter.toString(),
-				account2EscrowedBalanceBefore.plus(10).toString(),
+				account2EscrowedBalanceBefore.add(new BN(10)).toString(),
 				"Account2 has incorrect escrowed balance after escrow"
 			);
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after escrow");
@@ -819,12 +825,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 			);
 			assert.equal(
 				account1EscrowedBalanceAfter.toString(),
-				account1EscrowedBalanceBefore.plus(10).toString(),
+				account1EscrowedBalanceBefore.add(new BN(10)).toString(),
 				"Account1 has incorrect escrowed balance after mint and escrow"
 			);
 			assert.equal(
 				totalSupplyAfter.toString(),
-				totalSupplyBefore.plus(10).toString(),
+				totalSupplyBefore.add(new BN(10)).toString(),
 				"Contract has incorrect total supply after mint and escrow"
 			);
 		});
@@ -863,12 +869,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			assert.equal(
 				account1BalanceAfter.toString(),
-				account1BalanceBefore.plus(10).toString(),
+				account1BalanceBefore.add(new BN(10)).toString(),
 				"Account1 has incorrect balance after unescrow"
 			);
 			assert.equal(
 				account1EscrowedBalanceAfter.toString(),
-				account1EscrowedBalanceBefore.minus(10).toString(),
+				account1EscrowedBalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect escrowed balance after unescrow"
 			);
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after unescrow");
@@ -906,12 +912,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			assert.equal(
 				account1BalanceAfter.toString(),
-				account1BalanceBefore.minus(10).toString(),
+				account1BalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect balance after burning"
 			);
 			assert.equal(
 				totalSupplyAfter.toString(),
-				totalSupplyBefore.minus(10).toString(),
+				totalSupplyBefore.sub(new BN(10)).toString(),
 				"Contract has incorrect total supply after burning"
 			);
 		});
@@ -952,12 +958,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			assert.equal(
 				account1BalanceAfter.toString(),
-				account1BalanceBefore.minus(10).toString(),
+				account1BalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect balance after transfer"
 			);
 			assert.equal(
 				account2BalanceAfter.toString(),
-				account2BalanceBefore.plus(10).toString(),
+				account2BalanceBefore.add(new BN(10)).toString(),
 				"Account2 has incorrect balance after transfer"
 			);
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after transfer");
@@ -974,7 +980,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 				canBuy = false;
 			}
 			assert.notEqual(canBuy, true, "Contract does not have enough network ion balance to complete user's ion purchase");
-			await aoion.mint(aoion.address, 10 ** 20, { from: whitelistedAddress });
+			await aoion.mint(aoion.address, 10 ** 10, { from: whitelistedAddress });
 
 			var account2BalanceBefore = await aoion.balanceOf(account2);
 			try {
@@ -986,8 +992,8 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var account2BalanceAfter = await aoion.balanceOf(account2);
 			assert.equal(canBuy, true, "Fail buying network ion from contract");
 			assert.equal(
-				account2BalanceAfter.toNumber(),
-				account2BalanceBefore.plus(10).toNumber(),
+				account2BalanceAfter.toString(),
+				account2BalanceBefore.add(new BN(10)).toString(),
 				"Account has incorrect balance after buying ion"
 			);
 		});
@@ -1020,13 +1026,13 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var account2BalanceAfter = await aoion.balanceOf(account2);
 			var contractBalanceAfter = await aoion.balanceOf(aoion.address);
 			assert.equal(
-				account2BalanceAfter.toNumber(),
-				account2BalanceBefore.minus(5).toNumber(),
+				account2BalanceAfter.toString(),
+				account2BalanceBefore.sub(new BN(5)).toString(),
 				"Account has incorrect balance after selling ion"
 			);
 			assert.equal(
-				contractBalanceAfter.toNumber(),
-				contractBalanceBefore.plus(5).toNumber(),
+				contractBalanceAfter.toString(),
+				contractBalanceBefore.add(new BN(5)).toString(),
 				"Contract has incorrect balance after user sell ion"
 			);
 		});
@@ -1038,13 +1044,13 @@ contract("AOIon & AOIonLot", function(accounts) {
 			account1BalanceAfter = await aoion.balanceOf(account1);
 			account2BalanceAfter = await aoion.balanceOf(account2);
 			assert.equal(
-				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.minus(10).toNumber(),
+				account1BalanceAfter.toString(),
+				account1BalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect balance after transfer"
 			);
 			assert.equal(
-				account2BalanceAfter.toNumber(),
-				account2BalanceBefore.plus(10).toNumber(),
+				account2BalanceAfter.toString(),
+				account2BalanceBefore.add(new BN(10)).toString(),
 				"Account2 has incorrect balance after transfer"
 			);
 		});
@@ -1054,8 +1060,8 @@ contract("AOIon & AOIonLot", function(accounts) {
 			await aoion.burn(10, { from: account1 });
 			account1BalanceAfter = await aoion.balanceOf(account1);
 			assert.equal(
-				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.minus(10).toNumber(),
+				account1BalanceAfter.toString(),
+				account1BalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect balance after burn"
 			);
 		});
@@ -1065,8 +1071,8 @@ contract("AOIon & AOIonLot", function(accounts) {
 			await aoion.approve(account2, 10, { from: account1 });
 			var account2AllowanceAfter = await aoion.allowance(account1, account2);
 			assert.equal(
-				account2AllowanceAfter.toNumber(),
-				account2AllowanceBefore.plus(10).toNumber(),
+				account2AllowanceAfter.toString(),
+				account2AllowanceBefore.add(new BN(10)).toString(),
 				"Account2 has incorrect allowance after approve"
 			);
 		});
@@ -1109,18 +1115,18 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var account2BalanceAfter = await aoion.balanceOf(account2);
 			var account2AllowanceAfter = await aoion.allowance(account1, account2);
 			assert.equal(
-				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.minus(5).toNumber(),
+				account1BalanceAfter.toString(),
+				account1BalanceBefore.sub(new BN(5)).toString(),
 				"Account1 has incorrect balance after transferFrom"
 			);
 			assert.equal(
-				account2BalanceAfter.toNumber(),
-				account2BalanceBefore.plus(5).toNumber(),
+				account2BalanceAfter.toString(),
+				account2BalanceBefore.add(new BN(5)).toString(),
 				"Account2 has incorrect balance after transferFrom"
 			);
 			assert.equal(
-				account2AllowanceAfter.toNumber(),
-				account2AllowanceBefore.minus(5).toNumber(),
+				account2AllowanceAfter.toString(),
+				account2AllowanceBefore.sub(new BN(5)).toString(),
 				"Account2 has incorrect allowance after transferFrom"
 			);
 		});
@@ -1158,13 +1164,13 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var account2AllowanceAfter = await aoion.allowance(account1, account2);
 
 			assert.equal(
-				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.minus(5).toNumber(),
+				account1BalanceAfter.toString(),
+				account1BalanceBefore.sub(new BN(5)).toString(),
 				"Account1 has incorrect balance after burnFrom"
 			);
 			assert.equal(
-				account2AllowanceAfter.toNumber(),
-				account2AllowanceBefore.minus(5).toNumber(),
+				account2AllowanceAfter.toString(),
+				account2AllowanceBefore.sub(new BN(5)).toString(),
 				"Account2 has incorrect allowance after burnFrom"
 			);
 		});
@@ -1224,7 +1230,9 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var account1Balance = await aoion.balanceOf(account1);
 
 			try {
-				await aoion.transferBetweenPublicKeys(nameId1, account1, account4, account1Balance.plus(1).toNumber(), { from: account1 });
+				await aoion.transferBetweenPublicKeys(nameId1, account1, account4, account1Balance.add(new BN(1)).toString(), {
+					from: account1
+				});
 				canTransfer = true;
 			} catch (e) {
 				canTransfer = false;
@@ -1246,7 +1254,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 			assert.equal(canTransfer, false, "Compromised Advocate of Name can transfer AO Ion between public keys");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			var account1BalanceBefore = await aoion.balanceOf(account1);
 			var account4BalanceBefore = await aoion.balanceOf(account4);
@@ -1262,23 +1270,23 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var account1BalanceAfter = await aoion.balanceOf(account1);
 			var account4BalanceAfter = await aoion.balanceOf(account4);
 			assert.equal(
-				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.minus(transferAmount).toNumber(),
+				account1BalanceAfter.toString(),
+				account1BalanceBefore.sub(new BN(transferAmount)).toString(),
 				"Account has incorrect balance"
 			);
 			assert.equal(
-				account4BalanceAfter.toNumber(),
-				account4BalanceBefore.plus(transferAmount).toNumber(),
+				account4BalanceAfter.toString(),
+				account4BalanceBefore.add(new BN(transferAmount)).toString(),
 				"Account has incorrect balance"
 			);
 		});
 
 		it("The AO - transferETH() should be able to transfer ETH to an address", async function() {
-			await aoion.buy({ from: account2, value: web3.toWei(2, "ether") });
+			await aoion.buy({ from: account2, value: new BN(10 ** 5) });
 
 			var canTransferEth;
 			try {
-				await aoion.transferEth(recipient.address, web3.toWei(1, "ether"), { from: someAddress });
+				await aoion.transferEth(recipient.address, new BN(10 ** 4), { from: someAddress });
 				canTransferEth = true;
 			} catch (e) {
 				canTransferEth = false;
@@ -1286,7 +1294,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 			assert.equal(canTransferEth, false, "Non-AO can transfer ETH out of contract");
 
 			try {
-				await aoion.transferEth(emptyAddress, web3.toWei(1, "ether"), { from: theAO });
+				await aoion.transferEth(emptyAddress, new BN(10 ** 4), { from: theAO });
 				canTransferEth = true;
 			} catch (e) {
 				canTransferEth = false;
@@ -1294,7 +1302,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 			assert.equal(canTransferEth, false, "The AO can transfer ETH out of contract to invalid address");
 
 			try {
-				await aoion.transferEth(recipient.address, web3.toWei(1000, "ether"), { from: theAO });
+				await aoion.transferEth(recipient.address, new BN(10 ** 8), { from: theAO });
 				canTransferEth = true;
 			} catch (e) {
 				canTransferEth = false;
@@ -1302,7 +1310,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 			assert.equal(canTransferEth, false, "The AO can transfer ETH out of contract more than its available balance");
 
 			try {
-				await aoion.transferEth(recipient.address, web3.toWei(1, "ether"), { from: theAO });
+				await aoion.transferEth(recipient.address, new BN(10 ** 4), { from: theAO });
 				canTransferEth = true;
 			} catch (e) {
 				canTransferEth = false;
@@ -1310,7 +1318,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 			assert.equal(canTransferEth, true, "The AO can't transfer ETH out of contract");
 
 			var recipientBalance = await web3.eth.getBalance(recipient.address);
-			assert.equal(recipientBalance.toNumber(), web3.toWei(1, "ether"), "Recipient has incorrect balance");
+			assert.equal(recipientBalance, 10 ** 4, "Recipient has incorrect balance");
 		});
 	});
 
@@ -1345,33 +1353,33 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var theAONetworkBalanceBefore = await aoion.balanceOf(theAO);
 
 			var primordialBuyPrice = await aoion.primordialBuyPrice();
-			var ionAmount = new BigNumber(amount).div(primordialBuyPrice);
-			if (withEth && new BigNumber(amount).gt(availableETHBefore)) {
-				ionAmount = new BigNumber(availableETHBefore).div(primordialBuyPrice);
+			var ionAmount = new BN(amount).div(primordialBuyPrice);
+			if (withEth && new BN(amount).gt(availableETHBefore)) {
+				ionAmount = new BN(availableETHBefore).div(primordialBuyPrice);
 			}
 
-			if (primordialTotalBoughtBefore.plus(ionAmount).gte(totalPrimordialForSale)) {
-				ionAmount = totalPrimordialForSale.minus(primordialTotalBoughtBefore);
+			if (primordialTotalBoughtBefore.add(ionAmount).gte(totalPrimordialForSale)) {
+				ionAmount = totalPrimordialForSale.sub(primordialTotalBoughtBefore);
 			}
 
 			var hasRemainder = false;
-			if (new BigNumber(amount).gt(ionAmount.times(primordialBuyPrice))) {
+			if (new BN(amount).gt(ionAmount.mul(primordialBuyPrice))) {
 				hasRemainder = true;
 			}
-			var remainderAmount = new BigNumber(0);
+			var remainderAmount = new BN(0);
 
-			var bonus = await aoion.calculateMultiplierAndBonus(ionAmount.toNumber());
+			var bonus = await aoion.calculateMultiplierAndBonus(ionAmount.toString());
 
-			var inverseMultiplier = startingPrimordialMultiplier.minus(bonus[0]);
+			var inverseMultiplier = startingPrimordialMultiplier.sub(bonus[0]);
 			var theAONetworkBonusAmount = startingNetworkBonusMultiplier
-				.minus(bonus[1])
-				.plus(endingNetworkBonusMultiplier)
-				.times(ionAmount)
+				.sub(bonus[1])
+				.add(endingNetworkBonusMultiplier)
+				.mul(ionAmount)
 				.div(percentageDivisor);
 
 			var accountWeightedMultiplierBefore = await aoion.weightedMultiplierByAddress(account);
 
-			var _event = aoionlot.LotCreation();
+			var _event = _aoionlot.LotCreation();
 			_event.watch(async function(error, log) {
 				if (!error) {
 					if (log.args.lotOwner == account) {
@@ -1453,8 +1461,8 @@ contract("AOIon & AOIonLot", function(accounts) {
 			assert.equal(canBuy, true, "Account can't buy primordial ion");
 			assert.notEqual(events, null, "Contract didn't emit events during buy primordial ion transaction");
 
-			var halfAmount = new BigNumber(ionAmount).div(2);
-			var halfTheAONetworkBonusAmount = new BigNumber(theAONetworkBonusAmount).div(2);
+			var halfAmount = new BN(ionAmount).div(new BN(2));
+			var halfTheAONetworkBonusAmount = new BN(theAONetworkBonusAmount).div(new BN(2));
 
 			var accountLotId;
 			for (var i = 0; i < events.length; i++) {
@@ -1466,10 +1474,10 @@ contract("AOIon & AOIonLot", function(accounts) {
 							remainderAmount = _event.args.refundedAmount;
 
 							if (hasRemainder) {
-								assert.isAbove(remainderAmount.toNumber(), 0, "Event has incorrect refundedAmount");
+								assert.isAbove(remainderAmount.toString(), 0, "Event has incorrect refundedAmount");
 							}
 
-							assert.equal(_event.args.payWith.toNumber(), withEth ? 1 : 2, "Event has incorrect payWith value");
+							assert.equal(_event.args.payWith.toString(), withEth ? 1 : 2, "Event has incorrect payWith value");
 						}
 						break;
 					default:
@@ -1486,66 +1494,66 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			if (withEth) {
 				assert.equal(
-					totalEthForPrimordialAfter.toNumber(),
+					totalEthForPrimordialAfter.toString(),
 					totalEthForPrimordialBefore
-						.plus(amount)
-						.minus(remainderAmount)
-						.toNumber(),
+						.add(new BN(amount))
+						.sub(remainderAmount)
+						.toString(),
 					"Contract has incorrect value for totalEthForPrimordial"
 				);
 				assert.equal(
-					availableETHAfter.toNumber(),
-					availablePrimordialForSaleAfter.toNumber() == 1
-						? primordialBuyPrice.toNumber()
-						: availableETHBefore.minus(ionAmount.times(primordialBuyPrice)).toNumber(),
+					availableETHAfter.toString(),
+					availablePrimordialForSaleAfter.toString() == 1
+						? primordialBuyPrice.toString()
+						: availableETHBefore.sub(ionAmount.mul(primordialBuyPrice)).toString(),
 					"Contract has incorrect value for availableETH"
 				);
 				assert.equal(
-					totalRedeemedAOETHAfter.toNumber(),
-					totalRedeemedAOETHBefore.toNumber(),
+					totalRedeemedAOETHAfter.toString(),
+					totalRedeemedAOETHBefore.toString(),
 					"Contract has incorrect value for totalRedeemedAOETH"
 				);
 				assert.equal(
-					accountAOETHBalanceAfter.toNumber(),
-					accountAOETHBalanceBefore.toNumber(),
+					accountAOETHBalanceAfter.toString(),
+					accountAOETHBalanceBefore.toString(),
 					"Account has incorrect AOETH balance"
 				);
-				assert.equal(aoionAOETHBalanceAfter.toNumber(), aoionAOETHBalanceBefore.toNumber(), "AOIon has incorrect AOETH balance");
+				assert.equal(aoionAOETHBalanceAfter.toString(), aoionAOETHBalanceBefore.toString(), "AOIon has incorrect AOETH balance");
 			} else {
 				assert.equal(
-					totalEthForPrimordialAfter.toNumber(),
-					totalEthForPrimordialBefore.toNumber(),
+					totalEthForPrimordialAfter.toString(),
+					totalEthForPrimordialBefore.toString(),
 					"Contract has incorrect value for totalEthForPrimordial"
 				);
-				assert.equal(availableETHAfter.toNumber(), availableETHBefore.toNumber(), "Contract has incorrect value for availableETH");
+				assert.equal(availableETHAfter.toString(), availableETHBefore.toString(), "Contract has incorrect value for availableETH");
 				assert.equal(
-					totalRedeemedAOETHAfter.toNumber(),
+					totalRedeemedAOETHAfter.toString(),
 					totalRedeemedAOETHBefore
-						.plus(amount)
-						.minus(remainderAmount)
-						.toNumber(),
+						.add(new BN(amount))
+						.sub(remainderAmount)
+						.toString(),
 					"Contract has incorrect value for totalRedeemedAOETH"
 				);
 				assert.equal(
-					accountAOETHBalanceAfter.toNumber(),
+					accountAOETHBalanceAfter.toString(),
 					accountAOETHBalanceBefore
-						.minus(amount)
-						.plus(remainderAmount)
-						.toNumber(),
+						.sub(new BN(amount))
+						.add(remainderAmount)
+						.toString(),
 					"Account has incorrect AOETH balance"
 				);
 				assert.equal(
-					aoionAOETHBalanceAfter.toNumber(),
+					aoionAOETHBalanceAfter.toString(),
 					aoionAOETHBalanceBefore
-						.plus(amount)
-						.minus(remainderAmount)
-						.toNumber(),
+						.add(new BN(amount))
+						.sub(remainderAmount)
+						.toString(),
 					"AOIon has incorrect AOETH balance"
 				);
 			}
 			assert.equal(
-				availablePrimordialForSaleAfter.toNumber(),
-				availablePrimordialForSaleBefore.minus(ionAmount).toNumber(),
+				availablePrimordialForSaleAfter.toString(),
+				availablePrimordialForSaleBefore.sub(ionAmount).toString(),
 				"Contract has incorrect value for availablePrimordialForSale"
 			);
 
@@ -1566,53 +1574,57 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var theAOPrimordialBalanceAfter = await aoion.primordialBalanceOf(theAO);
 			var theAONetworkBalanceAfter = await aoion.balanceOf(theAO);
 
-			assert.equal(totalLotsAfter.toString(), totalLotsBefore.plus(3).toString(), "Contract has incorrect totalLots");
+			assert.equal(totalLotsAfter.toString(), totalLotsBefore.add(new BN(3)).toString(), "Contract has incorrect totalLots");
 			assert.equal(
 				primordialTotalBoughtAfter.toString(),
-				primordialTotalBoughtBefore.plus(ionAmount).toString(),
+				primordialTotalBoughtBefore.add(ionAmount).toString(),
 				"Contract has incorrect primordialTotalBought"
 			);
 			assert.equal(
 				primordialTotalSupplyAfter.toString(),
 				primordialTotalSupplyBefore
-					.plus(ionAmount)
-					.plus(halfAmount)
-					.plus(halfAmount)
+					.add(ionAmount)
+					.add(halfAmount)
+					.add(halfAmount)
 					.toString(),
 				"Contract has incorrect primordialTotalSupply"
 			);
 
 			assert.equal(
 				accountPrimordialBalanceAfter.toString(),
-				accountPrimordialBalanceBefore.plus(ionAmount).toString(),
+				accountPrimordialBalanceBefore.add(ionAmount).toString(),
 				"Account has incorrect primordial balance"
 			);
 			assert.equal(
 				accountNetworkBalanceAfter.toString(),
-				accountNetworkBalanceBefore.plus(bonus[2]).toString(),
+				accountNetworkBalanceBefore.add(bonus[2]).toString(),
 				"Account has incorrect network balance"
 			);
-			assert.equal(accountTotalLotsAfter.toString(), accountTotalLotsBefore.plus(1).toString(), "Account has incorrect totalLots");
+			assert.equal(
+				accountTotalLotsAfter.toString(),
+				accountTotalLotsBefore.add(new BN(1)).toString(),
+				"Account has incorrect totalLots"
+			);
 
 			assert.equal(
 				aoDevTeam1PrimordialBalanceAfter.toString(),
-				aoDevTeam1PrimordialBalanceBefore.plus(halfAmount).toString(),
+				aoDevTeam1PrimordialBalanceBefore.add(halfAmount).toString(),
 				"aoDevTeam1 has incorrect primordial balance"
 			);
 			assert.equal(
 				aoDevTeam1NetworkBalanceAfter.toString(),
-				aoDevTeam1NetworkBalanceBefore.plus(halfTheAONetworkBonusAmount).toString(),
+				aoDevTeam1NetworkBalanceBefore.add(halfTheAONetworkBonusAmount).toString(),
 				"aoDevTeam1 has incorrect network balance"
 			);
 
 			assert.equal(
 				aoDevTeam2PrimordialBalanceAfter.toString(),
-				aoDevTeam2PrimordialBalanceBefore.plus(halfAmount).toString(),
+				aoDevTeam2PrimordialBalanceBefore.add(halfAmount).toString(),
 				"aoDevTeam2 has incorrect primordial balance"
 			);
 			assert.equal(
 				aoDevTeam2NetworkBalanceAfter.toString(),
-				aoDevTeam2NetworkBalanceBefore.plus(halfTheAONetworkBonusAmount).toString(),
+				aoDevTeam2NetworkBalanceBefore.add(halfTheAONetworkBonusAmount).toString(),
 				"aoDevTeam2 has incorrect network balance"
 			);
 
@@ -1623,7 +1635,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 			);
 			assert.equal(
 				theAONetworkBalanceAfter.toString(),
-				theAONetworkBalanceBefore.plus(theAONetworkBonusAmount).toString(),
+				theAONetworkBalanceBefore.add(theAONetworkBonusAmount).toString(),
 				"The AO has incorrect network balance"
 			);
 
@@ -1637,10 +1649,10 @@ contract("AOIon & AOIonLot", function(accounts) {
 			accountLots.push(accountLot);
 
 			var newWeightedMultiplier = await library.calculateWeightedMultiplier(
-				accountWeightedMultiplierBefore.toNumber(),
-				accountPrimordialBalanceBefore.toNumber(),
-				accountLot[2].toNumber(),
-				accountLot[3].toNumber()
+				accountWeightedMultiplierBefore.toString(),
+				accountPrimordialBalanceBefore.toString(),
+				accountLot[2].toString(),
+				accountLot[3].toString()
 			);
 
 			var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(account);
@@ -1655,6 +1667,8 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var maxMultiplier = await aoion.maxMultiplierByAddress(account);
 			assert.equal(maxMultiplier.toString(), accountLots[0][2].toString(), "Account has incorrect maxMultiplier");
 
+			await helper.advanceBlock();
+
 			return accountLotId;
 		};
 
@@ -1668,14 +1682,14 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var accountAOETHBalance = await aoeth.balanceOf(account);
 			var aoionAOETHBalance = await aoeth.balanceOf(aoion.address);
 
-			console.log("Total ETH For Primordial", totalEthForPrimordial.toNumber());
-			console.log("Available Primordial For Sale", availablePrimordialForSale.toNumber());
-			console.log("AOETH Total Supply", aoethTotalSupply.toNumber());
-			console.log("Primordial Total Bought", primordialTotalBought.toNumber());
-			console.log("Available ETH", availableETH.toNumber());
-			console.log("Total Redeemed AOETH", totalRedeemedAOETH.toNumber());
-			console.log("Account AOETH", accountAOETHBalance.toNumber());
-			console.log("AOIon AOETH", aoionAOETHBalance.toNumber());
+			console.log("Total ETH For Primordial", totalEthForPrimordial.toString());
+			console.log("Available Primordial For Sale", availablePrimordialForSale.toString());
+			console.log("AOETH Total Supply", aoethTotalSupply.toString());
+			console.log("Primordial Total Bought", primordialTotalBought.toString());
+			console.log("Available ETH", availableETH.toString());
+			console.log("Total Redeemed AOETH", totalRedeemedAOETH.toString());
+			console.log("Account AOETH", accountAOETHBalance.toString());
+			console.log("AOIon AOETH", aoionAOETHBalance.toString());
 		};
 
 		before(async function() {
@@ -1690,7 +1704,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1LocalWriterKey.address,
 				{
 					from: account1
@@ -1703,7 +1717,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId2LocalWriterKey.address,
 				{
 					from: account2
@@ -1729,19 +1743,19 @@ contract("AOIon & AOIonLot", function(accounts) {
 				},
 				{
 					type: "uint256",
-					value: nonce.plus(1).toNumber()
+					value: nonce.add(new BN(1)).toString()
 				}
 			]);
 
 			var signature = EthCrypto.sign(account4PrivateKey, signHash);
 			var vrs = EthCrypto.vrs.fromString(signature);
 
-			await namepublickey.addKey(nameId1, account4, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
+			await namepublickey.addKey(nameId1, account4, nonce.add(new BN(1)).toString(), vrs.v, vrs.r, vrs.s, { from: account1 });
 
 			// Give account 1 some aoeth tokens
 			await aoeth.addERC20Token(tokenone.address, 1, 10 ** 6, { from: theAO });
 			await tokenone.transfer(account1, 10 ** 6, { from: theAO });
-			await tokenone.approveAndCall(aoeth.address, 10 ** 6, "", { from: account1 });
+			await tokenone.approveAndCall(aoeth.address, 10 ** 6, web3.utils.toHex(""), { from: account1 });
 		});
 
 		it("The AO - setPrimordialPrices() can set Primordial prices", async function() {
@@ -1762,8 +1776,8 @@ contract("AOIon & AOIonLot", function(accounts) {
 			assert.equal(canSetPrimordialPrices, true, "The AO can't set Primordial ion prices");
 			var primordialSellPrice = await aoion.primordialSellPrice();
 			var primordialBuyPrice = await aoion.primordialBuyPrice();
-			assert.equal(primordialSellPrice.toNumber(), 100, "Incorrect Primordial sell price");
-			assert.equal(primordialBuyPrice.toNumber(), 100, "Incorrect Primordial buy price");
+			assert.equal(primordialSellPrice.toString(), 100, "Incorrect Primordial sell price");
+			assert.equal(primordialBuyPrice.toString(), 100, "Incorrect Primordial buy price");
 
 			// reset primordial prices
 			await aoion.setPrimordialPrices(0, 10000, { from: theAO });
@@ -1821,12 +1835,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 				canBuy = false;
 			}
 			assert.equal(canBuy, false, "Buy Primordial ion succeeded even though user sent 0 ETH");
-			await buyPrimordial(web3.toWei(2, "ether"), account1, account1Lots, true);
+			await buyPrimordial(web3.utils.toWei("2", "ether"), account1, account1Lots, true);
 		});
 
 		it("buyPrimordial() - should re-calculate existing `account` lots' indexes and update his/her overall weighted index", async function() {
-			await buyPrimordial(web3.toWei(3, "ether"), account1, account1Lots, true);
-			await buyPrimordial(web3.toWei(5, "ether"), account1, account1Lots, true);
+			await buyPrimordial(web3.utils.toWei("3", "ether"), account1, account1Lots, true);
+			await buyPrimordial(web3.utils.toWei("5", "ether"), account1, account1Lots, true);
 		});
 
 		it("buyPrimordialWithAOETH() - buy Primordial ions from contract by sending AOETH", async function() {
@@ -1848,12 +1862,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 		});
 
 		it("should NOT allow buy Primordial if Total Primordial For Sale cap is reached (network exchange has ended)", async function() {
-			var availableETH = new BigNumber(await aoion.availableETH());
-			var primordialBuyPrice = new BigNumber(await aoion.primordialBuyPrice());
+			var availableETH = new BN(await aoion.availableETH());
+			var primordialBuyPrice = new BN(await aoion.primordialBuyPrice());
 			var ionAmount = availableETH.div(primordialBuyPrice);
 
 			// Sending more ETH than we should to check whether or not the user receives the remainder ETH
-			await buyPrimordial(availableETH.toNumber(), account2, account2Lots, true);
+			await buyPrimordial(availableETH.toString(), account2, account2Lots, true);
 
 			var account2PrimordialBalance = await aoion.primordialBalanceOf(account2);
 			assert.equal(
@@ -1867,14 +1881,14 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			// Buy the rest with aoeth
 			var accountAOETHBalance = await aoeth.balanceOf(account1);
-			await buyPrimordial(accountAOETHBalance.toNumber(), account1, account1Lots, false);
+			await buyPrimordial(accountAOETHBalance.toString(), account1, account1Lots, false);
 
 			var networkExchangeEnded = await aoion.networkExchangeEnded();
 			assert.equal(networkExchangeEnded, true, "Network exchange is not ended when total Primordial for sale cap is reached");
 
 			var canBuy;
 			try {
-				await aoion.buyPrimordial({ from: account2, value: web3.toWei(5, "ether") });
+				await aoion.buyPrimordial({ from: account2, value: web3.utils.toWei("5", "ether") });
 				canBuy = true;
 			} catch (e) {
 				canBuy = false;
@@ -1891,7 +1905,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var totalLotsBefore = await aoionlot.totalLots();
 			var primordialTotalSupplyBefore = await aoion.primordialTotalSupply();
 
-			var _event = aoionlot.LotCreation();
+			var _event = _aoionlot.LotCreation();
 			_event.watch(async function(error, log) {
 				if (!error) {
 					if (log.args.lotOwner == account) {
@@ -1914,12 +1928,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 						assert.equal(
 							account1PrimordialBalanceAfter.toString(),
-							account1PrimordialBalanceBefore.minus(100).toString(),
+							account1PrimordialBalanceBefore.sub(new BN(100)).toString(),
 							"Account1 has incorrect primordial balance"
 						);
 						assert.equal(
 							account3PrimordialBalanceAfter.toString(),
-							account3PrimordialBalanceBefore.plus(100).toString(),
+							account3PrimordialBalanceBefore.add(new BN(100)).toString(),
 							"Account3 has incorrect primordial balance"
 						);
 						assert.equal(
@@ -1928,7 +1942,11 @@ contract("AOIon & AOIonLot", function(accounts) {
 							"Account1 has incorrect weighted multiplier"
 						);
 
-						assert.equal(totalLotsAfter.toString(), totalLotsBefore.plus(1).toString(), "Contract has incorrect totalLots");
+						assert.equal(
+							totalLotsAfter.toString(),
+							totalLotsBefore.add(new BN(1)).toString(),
+							"Contract has incorrect totalLots"
+						);
 						assert.equal(
 							primordialTotalSupplyAfter.toString(),
 							primordialTotalSupplyBefore.toString(),
@@ -1945,10 +1963,10 @@ contract("AOIon & AOIonLot", function(accounts) {
 						account3Lots.push(accountLot);
 
 						var newWeightedMultiplier = await library.calculateWeightedMultiplier(
-							account3WeightedMultiplierBefore.toNumber(),
-							account3PrimordialBalanceBefore.toNumber(),
-							accountLot[2].toNumber(),
-							accountLot[3].toNumber()
+							account3WeightedMultiplierBefore.toString(),
+							account3PrimordialBalanceBefore.toString(),
+							accountLot[2].toString(),
+							accountLot[3].toString()
 						);
 
 						assert.equal(
@@ -1972,6 +1990,8 @@ contract("AOIon & AOIonLot", function(accounts) {
 			}
 			assert.equal(canTransfer, true, "Account1 can't transfer primordial ion");
 			assert.notEqual(events, null, "Contract didn't emit events during transfer primordial ion");
+
+			await helper.advanceBlock();
 		});
 
 		it("maxMultiplierByAddress() - should return the max multiplier of an address (the multiplier of the first lot of the account)", async function() {
@@ -2008,14 +2028,14 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var accountMaxMultiplier = await aoion.maxMultiplierByAddress(account1);
 			var canCalculate, multiplierAfterBurn;
 			try {
-				multiplierAfterBurn = await aoion.calculateMultiplierAfterBurn(account1, maxBurnAmount.plus(100).toString());
+				multiplierAfterBurn = await aoion.calculateMultiplierAfterBurn(account1, maxBurnAmount.add(new BN(100)).toString());
 				canCalculate = true;
 			} catch (e) {
 				multiplierAfterBurn = null;
 				canCalculate = false;
 			}
 			assert.equal(canCalculate, false, "calculateMultiplierAfterBurn() returns result even though amount to burn > max burn amount");
-			var burnAmount = maxBurnAmount.minus(10);
+			var burnAmount = maxBurnAmount.sub(new BN(10));
 			try {
 				multiplierAfterBurn = await aoion.calculateMultiplierAfterBurn(account1, burnAmount.toString());
 				canCalculate = true;
@@ -2047,7 +2067,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 				var totalBurnLotsByAddressBefore = await aoionlot.totalBurnLotsByAddress(account);
 				var multiplierAfterBurn = await aoion.calculateMultiplierAfterBurn(account, burnAmount.toString());
 
-				var _event = aoionlot.BurnLotCreation();
+				var _event = _aoionlot.BurnLotCreation();
 				_event.watch(async function(error, log) {
 					if (!error) {
 						var burnLotId = log.args.burnLotId;
@@ -2077,7 +2097,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 				assert.equal(
 					accountPrimordialBalanceAfter.toString(),
-					accountPrimordialBalanceBefore.minus(burnAmount).toString(),
+					accountPrimordialBalanceBefore.sub(burnAmount).toString(),
 					"Account has incorrect primordial balance after burn"
 				);
 				assert.equal(
@@ -2092,39 +2112,41 @@ contract("AOIon & AOIonLot", function(accounts) {
 				);
 				assert.equal(
 					primordialTotalSupplyAfter.toString(),
-					primordialTotalSupplyBefore.minus(burnAmount).toString(),
+					primordialTotalSupplyBefore.sub(burnAmount).toString(),
 					"Contract has incorrect primordialTotalSupply after burn"
 				);
 
 				var totalBurnLotsByAddressAfter = await aoionlot.totalBurnLotsByAddress(account);
 				assert.equal(
-					totalBurnLotsByAddressAfter.toNumber(),
-					totalBurnLotsByAddressBefore.plus(1).toNumber(),
+					totalBurnLotsByAddressAfter.toString(),
+					totalBurnLotsByAddressBefore.add(new BN(1)).toString(),
 					"totalBurnLotsByAddress() returns incorrect value"
 				);
+
+				await helper.advanceBlock();
 			};
 
 			var maxBurnAmount = await aoion.calculateMaximumBurnAmount(account1);
 			var canBurn;
 			try {
-				var result = await aoion.burnPrimordial(maxBurnAmount.plus(10).toString(), { from: account1 });
+				var result = await aoion.burnPrimordial(maxBurnAmount.add(new BN(10)).toString(), { from: account1 });
 				canBurn = true;
 			} catch (e) {
 				canBurn = false;
 			}
 			assert.equal(canBurn, false, "Account can burn more than maximum burn amount");
 
-			await burnPrimordial(account1, new BigNumber(5));
-			await burnPrimordial(account1, new BigNumber(10));
-			await burnPrimordial(account1, new BigNumber(1000));
+			await burnPrimordial(account1, new BN(5));
+			await burnPrimordial(account1, new BN(10));
+			await burnPrimordial(account1, new BN(1000));
 		});
 
 		it("approvePrimordial() - should set Primordial allowance for other address", async function() {
 			var account3PrimordialAllowance = await aoion.primordialAllowance(account1, account3);
-			assert.equal(account3PrimordialAllowance.toNumber(), 0, "Account3 has incorrect Primordial allowance before approve");
+			assert.equal(account3PrimordialAllowance.toString(), 0, "Account3 has incorrect Primordial allowance before approve");
 			await aoion.approvePrimordial(account3, 20, { from: account1 });
 			account3PrimordialAllowance = await aoion.primordialAllowance(account1, account3);
-			assert.equal(account3PrimordialAllowance.toNumber(), 20, "Account3 has incorrect Primordial allowance after approve");
+			assert.equal(account3PrimordialAllowance.toString(), 20, "Account3 has incorrect Primordial allowance after approve");
 		});
 
 		it("transferPrimordialFrom() - should send `_value` Primordial ions to `_to` in behalf of `_from`", async function() {
@@ -2158,7 +2180,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 			}
 			assert.notEqual(canTransfer, true, "Account can transfer primordial on behalf of other account more than its allowance");
 
-			var _event = aoionlot.LotCreation();
+			var _event = _aoionlot.LotCreation();
 			_event.watch(async function(error, log) {
 				if (!error) {
 					if (log.args.lotOwner == account3) {
@@ -2183,10 +2205,10 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 						var account3WeightedMultiplierAfter = await aoion.weightedMultiplierByAddress(account3);
 						var newWeightedMultiplier = await library.calculateWeightedMultiplier(
-							account3WeightedMultiplierBefore.toNumber(),
-							account3PrimordialBalanceBefore.toNumber(),
-							accountLot[2].toNumber(),
-							accountLot[3].toNumber()
+							account3WeightedMultiplierBefore.toString(),
+							account3PrimordialBalanceBefore.toString(),
+							accountLot[2].toString(),
+							accountLot[3].toString()
 						);
 					}
 				}
@@ -2215,12 +2237,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			assert.equal(
 				account1PrimordialBalanceAfter.toString(),
-				account1PrimordialBalanceBefore.minus(10).toString(),
+				account1PrimordialBalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect primordial balance"
 			);
 			assert.equal(
 				account3PrimordialBalanceAfter.toString(),
-				account3PrimordialBalanceBefore.plus(10).toString(),
+				account3PrimordialBalanceBefore.add(new BN(10)).toString(),
 				"Account3 has incorrect primordial balance"
 			);
 			assert.equal(
@@ -2229,7 +2251,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 				"Account1 has incorrect weighted multiplier"
 			);
 
-			assert.equal(totalLotsAfter.toString(), totalLotsBefore.plus(1).toString(), "Contract has incorrect totalLots");
+			assert.equal(totalLotsAfter.toString(), totalLotsBefore.add(new BN(1)).toString(), "Contract has incorrect totalLots");
 			assert.equal(
 				primordialTotalSupplyAfter.toString(),
 				primordialTotalSupplyBefore.toString(),
@@ -2238,9 +2260,11 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			assert.equal(
 				account3PrimordialAllowanceAfter.toString(),
-				account3PrimordialAllowanceBefore.minus(10).toString(),
+				account3PrimordialAllowanceBefore.sub(new BN(10)).toString(),
 				"Account3 has incorrect primordial allowance"
 			);
+
+			await helper.advanceBlock();
 		});
 
 		it("burnPrimordialFrom() - should remove `_value` Primordial ions from the system irreversibly on behalf of `_from` and re-weight multiplier", async function() {
@@ -2252,17 +2276,17 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			var canBurn;
 			try {
-				var result = await aoion.burnPrimordialFrom(account1, maxBurnAmount.plus(10).toString(), { from: account3 });
+				var result = await aoion.burnPrimordialFrom(account1, maxBurnAmount.add(new BN(10)).toString(), { from: account3 });
 				canBurn = true;
 			} catch (e) {
 				canBurn = false;
 			}
 			assert.equal(canBurn, false, "Account can burn more than maximum burn amount");
 
-			var burnAmount = new BigNumber(10);
+			var burnAmount = new BN(10);
 			var multiplierAfterBurn = await aoion.calculateMultiplierAfterBurn(account1, burnAmount.toString());
 
-			var _event = aoionlot.BurnLotCreation();
+			var _event = _aoionlot.BurnLotCreation();
 			_event.watch(async function(error, log) {
 				if (!error) {
 					var burnLotId = log.args.burnLotId;
@@ -2293,7 +2317,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			assert.equal(
 				accountPrimordialBalanceAfter.toString(),
-				accountPrimordialBalanceBefore.minus(burnAmount).toString(),
+				accountPrimordialBalanceBefore.sub(burnAmount).toString(),
 				"Account has incorrect primordial balance after burn"
 			);
 			assert.equal(
@@ -2308,20 +2332,22 @@ contract("AOIon & AOIonLot", function(accounts) {
 			);
 			assert.equal(
 				primordialTotalSupplyAfter.toString(),
-				primordialTotalSupplyBefore.minus(burnAmount).toString(),
+				primordialTotalSupplyBefore.sub(burnAmount).toString(),
 				"Contract has incorrect primordialTotalSupply after burn"
 			);
 			assert.equal(
 				account3PrimordialAllowanceAfter.toString(),
-				account3PrimordialAllowanceBefore.minus(burnAmount).toString(),
+				account3PrimordialAllowanceBefore.sub(burnAmount).toString(),
 				"Account3 has incorrect primordial allowance after burn"
 			);
+
+			await helper.advanceBlock();
 		});
 
 		it("calculateMultiplierAfterConversion() - should return the new multiplier after converting network ion to primordial ion", async function() {
 			var accountPrimordialBalance = await aoion.primordialBalanceOf(account1);
 			var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(account1);
-			var convertAmount = new BigNumber(100);
+			var convertAmount = new BN(100);
 			var multiplierAfterConversion = await aoion.calculateMultiplierAfterConversion(account1, convertAmount.toString());
 
 			var _multiplierAfterConversion = await library.calculateMultiplierAfterConversion(
@@ -2349,7 +2375,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 				var multiplierAfterConversion = await aoion.calculateMultiplierAfterConversion(account, convertAmount.toString());
 
-				var _event = aoionlot.ConvertLotCreation();
+				var _event = _aoionlot.ConvertLotCreation();
 				_event.watch(async function(error, log) {
 					if (!error) {
 						var convertLotId = log.args.convertLotId;
@@ -2381,12 +2407,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 				assert.equal(
 					accountNetworkBalanceAfter.toString(),
-					accountNetworkBalanceBefore.minus(convertAmount).toString(),
+					accountNetworkBalanceBefore.sub(convertAmount).toString(),
 					"Account has incorrect network balance after conversion"
 				);
 				assert.equal(
 					accountPrimordialBalanceAfter.toString(),
-					accountPrimordialBalanceBefore.plus(convertAmount).toString(),
+					accountPrimordialBalanceBefore.add(convertAmount).toString(),
 					"Account has incorrect primordial balance after conversion"
 				);
 				assert.equal(
@@ -2401,21 +2427,23 @@ contract("AOIon & AOIonLot", function(accounts) {
 				);
 				assert.equal(
 					networkTotalSupplyAfter.toString(),
-					networkTotalSupplyBefore.minus(convertAmount).toString(),
+					networkTotalSupplyBefore.sub(convertAmount).toString(),
 					"Contract has incorrect network total supply after conversion"
 				);
 				assert.equal(
 					primordialTotalSupplyAfter.toString(),
-					primordialTotalSupplyBefore.plus(convertAmount).toString(),
+					primordialTotalSupplyBefore.add(convertAmount).toString(),
 					"Contract has incorrect primordial total supply after conversion"
 				);
 
 				var totalConvertLotsByAddressAfter = await aoionlot.totalConvertLotsByAddress(account);
 				assert.equal(
-					totalConvertLotsByAddressAfter.toNumber(),
-					totalConvertLotsByAddressBefore.plus(1).toNumber(),
+					totalConvertLotsByAddressAfter.toString(),
+					totalConvertLotsByAddressBefore.add(new BN(1)).toString(),
 					"totalConvertLotsByAddress() returns incorrect value"
 				);
+
+				await helper.advanceBlock();
 			};
 
 			var canConvert;
@@ -2427,21 +2455,21 @@ contract("AOIon & AOIonLot", function(accounts) {
 			}
 			assert.equal(canConvert, false, "Account can convert more network ions than available balance");
 
-			await convertToPrimordial(account1, new BigNumber(500));
-			await convertToPrimordial(account1, new BigNumber(10));
-			await convertToPrimordial(account1, new BigNumber(400));
+			await convertToPrimordial(account1, new BN(500));
+			await convertToPrimordial(account1, new BN(10));
+			await convertToPrimordial(account1, new BN(400));
 		});
 
 		it("totalLotsByAddress() - should return the correct total lots owned by an address", async function() {
 			var account1TotalLots = await aoionlot.totalLotsByAddress(account1);
 			var account2TotalLots = await aoionlot.totalLotsByAddress(account2);
 			assert.equal(
-				account1TotalLots.toNumber(),
+				account1TotalLots.toString(),
 				account1Lots.length,
 				"totalLotsByAddress() returns incorrect total lots for Account1"
 			);
 			assert.equal(
-				account2TotalLots.toNumber(),
+				account2TotalLots.toString(),
 				account2Lots.length,
 				"totalLotsByAddress() returns incorrect total lots for Account2"
 			);
@@ -2531,7 +2559,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			assert.equal(
 				account1PrimordialBalanceAfter.toString(),
-				account1PrimordialBalanceBefore.minus(10).toString(),
+				account1PrimordialBalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect Primordial ions balance after staking"
 			);
 			assert.equal(
@@ -2541,7 +2569,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 			);
 			assert.equal(
 				account1PrimordialStakedBalanceAfter.toString(),
-				account1PrimordialStakedBalanceBefore.plus(10).toString(),
+				account1PrimordialStakedBalanceBefore.add(new BN(10)).toString(),
 				"Account1 has incorrect Primordial ions staked balance after staking"
 			);
 			assert.equal(
@@ -2593,7 +2621,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			assert.equal(
 				account1PrimordialBalanceAfter.toString(),
-				account1PrimordialBalanceBefore.plus(10).toString(),
+				account1PrimordialBalanceBefore.add(new BN(10)).toString(),
 				"Account1 has incorrect Primordial ions balance after unstaking"
 			);
 			assert.equal(
@@ -2603,7 +2631,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 			);
 			assert.equal(
 				account1PrimordialStakedBalanceAfter.toString(),
-				account1PrimordialStakedBalanceBefore.minus(10).toString(),
+				account1PrimordialStakedBalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect Primordial ions staked balance after unstaking"
 			);
 			assert.equal(
@@ -2643,7 +2671,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 			}
 			assert.notEqual(canTransfer, true, "Non-whitelisted address can transfer primordial ion");
 
-			var _event = aoionlot.LotCreation();
+			var _event = _aoionlot.LotCreation();
 			_event.watch(async function(error, log) {
 				if (!error) {
 					if (log.args.lotOwner == account3) {
@@ -2669,10 +2697,10 @@ contract("AOIon & AOIonLot", function(accounts) {
 						account3Lots.push(accountLot);
 
 						var newWeightedMultiplier = await library.calculateWeightedMultiplier(
-							account3WeightedMultiplierBefore.toNumber(),
-							account3PrimordialBalanceBefore.toNumber(),
-							accountLot[2].toNumber(),
-							accountLot[3].toNumber()
+							account3WeightedMultiplierBefore.toString(),
+							account3PrimordialBalanceBefore.toString(),
+							accountLot[2].toString(),
+							accountLot[3].toString()
 						);
 						assert.equal(
 							account3WeightedMultiplierAfter.toString(),
@@ -2704,12 +2732,12 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 			assert.equal(
 				account1PrimordialBalanceAfter.toString(),
-				account1PrimordialBalanceBefore.minus(10).toString(),
+				account1PrimordialBalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect primordial balance"
 			);
 			assert.equal(
 				account3PrimordialBalanceAfter.toString(),
-				account3PrimordialBalanceBefore.plus(10).toString(),
+				account3PrimordialBalanceBefore.add(new BN(10)).toString(),
 				"Account3 has incorrect primordial balance"
 			);
 			assert.equal(
@@ -2718,12 +2746,14 @@ contract("AOIon & AOIonLot", function(accounts) {
 				"Account1 has incorrect weighted multiplier"
 			);
 
-			assert.equal(totalLotsAfter.toString(), totalLotsBefore.plus(1).toString(), "Contract has incorrect totalLots");
+			assert.equal(totalLotsAfter.toString(), totalLotsBefore.add(new BN(1)).toString(), "Contract has incorrect totalLots");
 			assert.equal(
 				primordialTotalSupplyAfter.toString(),
 				primordialTotalSupplyBefore.toString(),
 				"Contract has incorrect primordialTotalSupply"
 			);
+
+			await helper.advanceBlock();
 		});
 
 		it("transferPrimordialBetweenPublicKeys() - should be able to transfer AO+ ions between public keys in a Name", async function() {
@@ -2765,7 +2795,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var account1Balance = await aoion.primordialBalanceOf(account1);
 
 			try {
-				await aoion.transferPrimordialBetweenPublicKeys(nameId1, account1, account4, account1Balance.plus(1).toNumber(), {
+				await aoion.transferPrimordialBetweenPublicKeys(nameId1, account1, account4, account1Balance.add(new BN(1)).toString(), {
 					from: account1
 				});
 				canTransfer = true;
@@ -2789,7 +2819,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 			assert.equal(canTransfer, false, "Compromised Advocate of Name can transfer AO Ion between public keys");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			var account1BalanceBefore = await aoion.primordialBalanceOf(account1);
 			var account4BalanceBefore = await aoion.primordialBalanceOf(account4);
@@ -2806,18 +2836,18 @@ contract("AOIon & AOIonLot", function(accounts) {
 			var account1BalanceAfter = await aoion.primordialBalanceOf(account1);
 			var account4BalanceAfter = await aoion.primordialBalanceOf(account4);
 			assert.equal(
-				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.minus(transferAmount).toNumber(),
+				account1BalanceAfter.toString(),
+				account1BalanceBefore.sub(new BN(transferAmount)).toString(),
 				"Account has incorrect primordial balance"
 			);
 			assert.equal(
-				account4BalanceAfter.toNumber(),
-				account4BalanceBefore.plus(transferAmount).toNumber(),
+				account4BalanceAfter.toString(),
+				account4BalanceBefore.add(new BN(transferAmount)).toString(),
 				"Account has incorrect primordial balance"
 			);
 
 			var totalLotsAfter = await aoionlot.totalLots();
-			assert.equal(totalLotsAfter.toString(), totalLotsBefore.plus(1).toString(), "Contract has incorrect totalLots");
+			assert.equal(totalLotsAfter.toString(), totalLotsBefore.add(new BN(1)).toString(), "Contract has incorrect totalLots");
 		});
 	});
 });

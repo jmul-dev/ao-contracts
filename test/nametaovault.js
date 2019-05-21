@@ -10,11 +10,9 @@ var TokenOne = artifacts.require("./TokenOne.sol");
 var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
 
-var BigNumber = require("bignumber.js");
+var BN = require("bn.js");
 var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
-
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
 contract("NameTAOVault", function(accounts) {
 	var namefactory,
@@ -40,6 +38,7 @@ contract("NameTAOVault", function(accounts) {
 	var whitelistedAddress = accounts[5];
 	var recipient = EthCrypto.createIdentity();
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
+	var sendValue = new BN(10 ** 5);
 
 	var nameId1LocalWriterKey = EthCrypto.createIdentity();
 	var nameId2LocalWriterKey = EthCrypto.createIdentity();
@@ -66,7 +65,7 @@ contract("NameTAOVault", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -79,7 +78,7 @@ contract("NameTAOVault", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -97,7 +96,7 @@ contract("NameTAOVault", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -114,7 +113,7 @@ contract("NameTAOVault", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2,
 			0,
 			false,
@@ -129,7 +128,7 @@ contract("NameTAOVault", function(accounts) {
 		await aoion.setWhitelist(theAO, true, { from: theAO });
 		await aoion.mint(accountWithBalance, 10 ** 9, { from: theAO }); // 1,000,000,000 AO ION
 		var buyPrice = await aoion.primordialBuyPrice();
-		await aoion.buyPrimordial({ from: accountWithBalance, value: buyPrice.times(1000).toNumber() }); // Buy 1000 AO+
+		await aoion.buyPrimordial({ from: accountWithBalance, value: buyPrice.mul(new BN(1000)).toString() }); // Buy 1000 AO+
 
 		await nametaoposition.setListener(nameId1, nameId2, { from: account1 });
 		await nametaoposition.setListener(nameId2, nameId1, { from: account2 });
@@ -280,7 +279,7 @@ contract("NameTAOVault", function(accounts) {
 		var ethBalanceBefore = await nametaovault.ethBalanceOf(nameId2);
 		var canSendEth;
 		try {
-			await web3.eth.sendTransaction({ from: accountWithBalance, to: nameId2, value: web3.toWei(1, "ether") });
+			await web3.eth.sendTransaction({ from: accountWithBalance, to: nameId2, value: sendValue });
 			canSendEth = true;
 		} catch (e) {
 			canSendEth = false;
@@ -288,15 +287,11 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canSendEth, true, "Can't send ETH to a Name");
 
 		var ethBalanceAfter = await nametaovault.ethBalanceOf(nameId2);
-		assert.equal(
-			ethBalanceAfter.toNumber(),
-			ethBalanceBefore.plus(web3.toWei(1, "ether")).toNumber(),
-			"Name has incorrect ETH balance"
-		);
+		assert.equal(ethBalanceAfter.toNumber(), ethBalanceBefore.add(sendValue).toNumber(), "Name has incorrect ETH balance");
 
 		ethBalanceBefore = await nametaovault.ethBalanceOf(taoId2);
 		try {
-			await web3.eth.sendTransaction({ from: accountWithBalance, to: taoId2, value: web3.toWei(1, "ether") });
+			await web3.eth.sendTransaction({ from: accountWithBalance, to: taoId2, value: sendValue });
 			canSendEth = true;
 		} catch (e) {
 			canSendEth = false;
@@ -304,7 +299,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canSendEth, true, "Can't send ETH to a TAO");
 
 		ethBalanceAfter = await nametaovault.ethBalanceOf(taoId2);
-		assert.equal(ethBalanceAfter.toNumber(), ethBalanceBefore.plus(web3.toWei(1, "ether")).toNumber(), "TAO has incorrect ETH balance");
+		assert.equal(ethBalanceAfter.toNumber(), ethBalanceBefore.add(sendValue).toNumber(), "TAO has incorrect ETH balance");
 	});
 
 	it("erc20BalanceOf() - should be able to get the ERC20 Token balance of a Name/TAO", async function() {
@@ -319,25 +314,17 @@ contract("NameTAOVault", function(accounts) {
 
 		var erc20BalanceBefore = await nametaovault.erc20BalanceOf(tokenone.address, nameId2);
 
-		await tokenone.transfer(nameId2, web3.toWei(1, "ether"), { from: theAO });
+		await tokenone.transfer(nameId2, sendValue, { from: theAO });
 
 		var erc20BalanceAfter = await nametaovault.erc20BalanceOf(tokenone.address, nameId2);
-		assert.equal(
-			erc20BalanceAfter.toNumber(),
-			erc20BalanceBefore.plus(web3.toWei(1, "ether")).toNumber(),
-			"Name has incorrect ERC20 Token balance"
-		);
+		assert.equal(erc20BalanceAfter.toNumber(), erc20BalanceBefore.add(sendValue).toNumber(), "Name has incorrect ERC20 Token balance");
 
 		erc20BalanceBefore = await nametaovault.erc20BalanceOf(tokenone.address, taoId2);
 
-		await tokenone.transfer(taoId2, web3.toWei(1, "ether"), { from: theAO });
+		await tokenone.transfer(taoId2, sendValue, { from: theAO });
 
 		erc20BalanceAfter = await nametaovault.erc20BalanceOf(tokenone.address, taoId2);
-		assert.equal(
-			erc20BalanceAfter.toNumber(),
-			erc20BalanceBefore.plus(web3.toWei(1, "ether")).toNumber(),
-			"TAO has incorrect ERC20 Token balance"
-		);
+		assert.equal(erc20BalanceAfter.toNumber(), erc20BalanceBefore.add(sendValue).toNumber(), "TAO has incorrect ERC20 Token balance");
 	});
 
 	it("AOBalanceOf() - should be able to get the AO Ion balance of a Name/TAO", async function() {
@@ -355,14 +342,14 @@ contract("NameTAOVault", function(accounts) {
 		await aoion.transfer(nameId2, 1000, { from: accountWithBalance });
 
 		var AOBalanceAfter = await nametaovault.AOBalanceOf(nameId2);
-		assert.equal(AOBalanceAfter.toNumber(), AOBalanceBefore.plus(1000).toNumber(), "Name has incorrect AO Ion balance");
+		assert.equal(AOBalanceAfter.toNumber(), AOBalanceBefore.add(new BN(1000)).toNumber(), "Name has incorrect AO Ion balance");
 
 		AOBalanceBefore = await nametaovault.AOBalanceOf(taoId2);
 
 		await aoion.transfer(taoId2, 1000, { from: accountWithBalance });
 
 		AOBalanceAfter = await nametaovault.AOBalanceOf(taoId2);
-		assert.equal(AOBalanceAfter.toNumber(), AOBalanceBefore.plus(1000).toNumber(), "TAO has incorrect AO Ion balance");
+		assert.equal(AOBalanceAfter.toNumber(), AOBalanceBefore.add(new BN(1000)).toNumber(), "TAO has incorrect AO Ion balance");
 	});
 
 	it("primordialAOBalanceOf() - should be able to get the primordial AO+ Ion balance of a Name/TAO", async function() {
@@ -382,7 +369,7 @@ contract("NameTAOVault", function(accounts) {
 		var primordialAOBalanceAfter = await nametaovault.primordialAOBalanceOf(nameId2);
 		assert.equal(
 			primordialAOBalanceAfter.toNumber(),
-			primordialAOBalanceBefore.plus(100).toNumber(),
+			primordialAOBalanceBefore.add(new BN(100)).toNumber(),
 			"Name has incorrect primordial AO+ Ion balance"
 		);
 
@@ -393,7 +380,7 @@ contract("NameTAOVault", function(accounts) {
 		primordialAOBalanceAfter = await nametaovault.primordialAOBalanceOf(taoId2);
 		assert.equal(
 			primordialAOBalanceAfter.toNumber(),
-			primordialAOBalanceBefore.plus(100).toNumber(),
+			primordialAOBalanceBefore.add(new BN(100)).toNumber(),
 			"TAO has incorrect primordial AO+ Ion balance"
 		);
 	});
@@ -401,7 +388,7 @@ contract("NameTAOVault", function(accounts) {
 	it("transferEth() - only Advocate of Name/TAO can transfer ETH to an address", async function() {
 		var canTransfer;
 		try {
-			await nametaovault.transferEth(someAddress, recipient.address, web3.toWei(0.1, "ether"), { from: account2 });
+			await nametaovault.transferEth(someAddress, recipient.address, sendValue, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -409,7 +396,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Can transfer ETH from non-Name/TAO");
 
 		try {
-			await nametaovault.transferEth(nameId1, recipient.address, web3.toWei(0.1, "ether"), { from: account1 });
+			await nametaovault.transferEth(nameId1, recipient.address, sendValue, { from: account1 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -417,7 +404,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Advocate of Name can transfer ETH from Name with no balance");
 
 		try {
-			await nametaovault.transferEth(nameId2, emptyAddress, web3.toWei(0.1, "ether"), { from: account2 });
+			await nametaovault.transferEth(nameId2, emptyAddress, sendValue, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -425,7 +412,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Advocate of Name can transfer ETH to invalid address");
 
 		try {
-			await nametaovault.transferEth(nameId2, recipient.address, web3.toWei(10, "ether"), { from: account2 });
+			await nametaovault.transferEth(nameId2, recipient.address, new BN(10 ** 18), { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -433,7 +420,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Advocate of Name can transfer ETH more than its owned balance");
 
 		try {
-			await nametaovault.transferEth(nameId2, recipient.address, web3.toWei(0.1, "ether"), { from: account1 });
+			await nametaovault.transferEth(nameId2, recipient.address, sendValue, { from: account1 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -447,7 +434,7 @@ contract("NameTAOVault", function(accounts) {
 		await helper.advanceTimeAndBlock(1000);
 
 		try {
-			await nametaovault.transferEth(nameId2, recipient.address, web3.toWei(0.1, "ether"), { from: account2 });
+			await nametaovault.transferEth(nameId2, recipient.address, sendValue, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -455,7 +442,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Compromised Advocate of Name can transfer ETH from Name");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		// Listener submit account recovery for nameId1
 		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
@@ -464,7 +451,7 @@ contract("NameTAOVault", function(accounts) {
 		await helper.advanceTimeAndBlock(1000);
 
 		try {
-			await nametaovault.transferEth(nameId2, nameId1, web3.toWei(0.1, "ether"), { from: account2 });
+			await nametaovault.transferEth(nameId2, nameId1, sendValue, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -472,12 +459,12 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Advocate of Name can transfer ETH to compromised Name");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var senderBalanceBefore = await nametaovault.ethBalanceOf(nameId2);
 		var recipientBalanceBefore = await web3.eth.getBalance(recipient.address);
 		try {
-			await nametaovault.transferEth(nameId2, recipient.address, web3.toWei(0.1, "ether"), { from: account2 });
+			await nametaovault.transferEth(nameId2, recipient.address, sendValue, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -487,21 +474,13 @@ contract("NameTAOVault", function(accounts) {
 		var senderBalanceAfter = await nametaovault.ethBalanceOf(nameId2);
 		var recipientBalanceAfter = await web3.eth.getBalance(recipient.address);
 
-		assert.equal(
-			senderBalanceAfter.toNumber(),
-			senderBalanceBefore.minus(web3.toWei(0.1, "ether")).toNumber(),
-			"Sender has incorrect balance"
-		);
-		assert.equal(
-			recipientBalanceAfter.toNumber(),
-			recipientBalanceBefore.plus(web3.toWei(0.1, "ether")).toNumber(),
-			"Recipient has incorrect balance"
-		);
+		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.sub(sendValue).toNumber(), "Sender has incorrect balance");
+		assert.equal(recipientBalanceAfter, new BN(recipientBalanceBefore).add(sendValue).toNumber(), "Recipient has incorrect balance");
 
 		senderBalanceBefore = await nametaovault.ethBalanceOf(taoId2);
 		recipientBalanceBefore = await web3.eth.getBalance(recipient.address);
 		try {
-			await nametaovault.transferEth(taoId2, recipient.address, web3.toWei(0.1, "ether"), { from: account2 });
+			await nametaovault.transferEth(taoId2, recipient.address, sendValue, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -511,22 +490,14 @@ contract("NameTAOVault", function(accounts) {
 		senderBalanceAfter = await nametaovault.ethBalanceOf(taoId2);
 		recipientBalanceAfter = await web3.eth.getBalance(recipient.address);
 
-		assert.equal(
-			senderBalanceAfter.toNumber(),
-			senderBalanceBefore.minus(web3.toWei(0.1, "ether")).toNumber(),
-			"Sender has incorrect balance"
-		);
-		assert.equal(
-			recipientBalanceAfter.toNumber(),
-			recipientBalanceBefore.plus(web3.toWei(0.1, "ether")).toNumber(),
-			"Recipient has incorrect balance"
-		);
+		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.sub(sendValue).toNumber(), "Sender has incorrect balance");
+		assert.equal(recipientBalanceAfter, new BN(recipientBalanceBefore).add(sendValue).toNumber(), "Recipient has incorrect balance");
 	});
 
 	it("transferERC20() - only Advocate of Name/TAO can transfer ERC20 Token to an address", async function() {
 		var canTransfer;
 		try {
-			await nametaovault.transferERC20(tokenone.address, someAddress, recipient.address, web3.toWei(0.1, "ether"), {
+			await nametaovault.transferERC20(tokenone.address, someAddress, recipient.address, sendValue, {
 				from: account2
 			});
 			canTransfer = true;
@@ -536,7 +507,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Can transfer ERC20 Token from non-Name/TAO");
 
 		try {
-			await nametaovault.transferERC20(someAddress, nameId2, recipient.address, web3.toWei(0.1, "ether"), { from: account2 });
+			await nametaovault.transferERC20(someAddress, nameId2, recipient.address, sendValue, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -544,7 +515,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Advocate can transfer invalid ERC20 Token");
 
 		try {
-			await nametaovault.transferERC20(tokenone.address, nameId1, recipient.address, web3.toWei(0.1, "ether"), { from: account1 });
+			await nametaovault.transferERC20(tokenone.address, nameId1, recipient.address, sendValue, { from: account1 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -552,7 +523,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Advocate of Name can transfer ERC20 Token from Name with no balance");
 
 		try {
-			await nametaovault.transferERC20(tokenone.address, nameId2, emptyAddress, web3.toWei(0.1, "ether"), { from: account2 });
+			await nametaovault.transferERC20(tokenone.address, nameId2, emptyAddress, sendValue, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -560,7 +531,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Advocate of Name can transfer ERC20 Token to invalid address");
 
 		try {
-			await nametaovault.transferERC20(tokenone.address, nameId2, recipient.address, web3.toWei(10, "ether"), { from: account2 });
+			await nametaovault.transferERC20(tokenone.address, nameId2, recipient.address, new BN(10 ** 20), { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -568,7 +539,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Advocate of Name can transfer ERC20 Token more than its owned balance");
 
 		try {
-			await nametaovault.transferERC20(tokenone.address, nameId2, recipient.address, web3.toWei(0.1, "ether"), { from: account1 });
+			await nametaovault.transferERC20(tokenone.address, nameId2, recipient.address, sendValue, { from: account1 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -582,7 +553,7 @@ contract("NameTAOVault", function(accounts) {
 		await helper.advanceTimeAndBlock(1000);
 
 		try {
-			await nametaovault.transferERC20(tokenone.address, nameId2, recipient.address, web3.toWei(0.1, "ether"), { from: account2 });
+			await nametaovault.transferERC20(tokenone.address, nameId2, recipient.address, sendValue, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -590,7 +561,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Compromised Advocate of Name can transfer ERC 20");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		// Listener submit account recovery for nameId1
 		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
@@ -599,7 +570,7 @@ contract("NameTAOVault", function(accounts) {
 		await helper.advanceTimeAndBlock(1000);
 
 		try {
-			await nametaovault.transferERC20(tokenone.address, nameId2, nameId1, web3.toWei(0.1, "ether"), { from: account2 });
+			await nametaovault.transferERC20(tokenone.address, nameId2, nameId1, sendValue, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -607,12 +578,12 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Advocate of Name can transfer ERC20 to compromised Name");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var senderBalanceBefore = await nametaovault.erc20BalanceOf(tokenone.address, nameId2);
 		var recipientBalanceBefore = await tokenone.balanceOf(recipient.address);
 		try {
-			await nametaovault.transferERC20(tokenone.address, nameId2, recipient.address, web3.toWei(0.1, "ether"), { from: account2 });
+			await nametaovault.transferERC20(tokenone.address, nameId2, recipient.address, sendValue, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -622,21 +593,13 @@ contract("NameTAOVault", function(accounts) {
 		var senderBalanceAfter = await nametaovault.erc20BalanceOf(tokenone.address, nameId2);
 		var recipientBalanceAfter = await tokenone.balanceOf(recipient.address);
 
-		assert.equal(
-			senderBalanceAfter.toNumber(),
-			senderBalanceBefore.minus(web3.toWei(0.1, "ether")).toNumber(),
-			"Sender has incorrect balance"
-		);
-		assert.equal(
-			recipientBalanceAfter.toNumber(),
-			recipientBalanceBefore.plus(web3.toWei(0.1, "ether")).toNumber(),
-			"Recipient has incorrect balance"
-		);
+		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.sub(sendValue).toNumber(), "Sender has incorrect balance");
+		assert.equal(recipientBalanceAfter.toNumber(), recipientBalanceBefore.add(sendValue).toNumber(), "Recipient has incorrect balance");
 
 		senderBalanceBefore = await nametaovault.erc20BalanceOf(tokenone.address, taoId2);
 		recipientBalanceBefore = await tokenone.balanceOf(recipient.address);
 		try {
-			await nametaovault.transferERC20(tokenone.address, taoId2, recipient.address, web3.toWei(0.1, "ether"), { from: account2 });
+			await nametaovault.transferERC20(tokenone.address, taoId2, recipient.address, sendValue, { from: account2 });
 			canTransfer = true;
 		} catch (e) {
 			canTransfer = false;
@@ -646,16 +609,8 @@ contract("NameTAOVault", function(accounts) {
 		senderBalanceAfter = await nametaovault.erc20BalanceOf(tokenone.address, taoId2);
 		recipientBalanceAfter = await tokenone.balanceOf(recipient.address);
 
-		assert.equal(
-			senderBalanceAfter.toNumber(),
-			senderBalanceBefore.minus(web3.toWei(0.1, "ether")).toNumber(),
-			"Sender has incorrect balance"
-		);
-		assert.equal(
-			recipientBalanceAfter.toNumber(),
-			recipientBalanceBefore.plus(web3.toWei(0.1, "ether")).toNumber(),
-			"Recipient has incorrect balance"
-		);
+		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.sub(sendValue).toNumber(), "Sender has incorrect balance");
+		assert.equal(recipientBalanceAfter.toNumber(), recipientBalanceBefore.add(sendValue).toNumber(), "Recipient has incorrect balance");
 	});
 
 	it("transferAO() - only Advocate of Name/TAO can transfer AO Ion to an address", async function() {
@@ -715,7 +670,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Compromised Advocate of Name can transfer AO");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		// Listener submit account recovery for nameId1
 		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
@@ -732,7 +687,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Advocate of Name can transfer AO to compromised Name");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var senderBalanceBefore = await nametaovault.AOBalanceOf(nameId2);
 		var recipientBalanceBefore = await aoion.balanceOf(recipient.address);
@@ -747,8 +702,12 @@ contract("NameTAOVault", function(accounts) {
 		var senderBalanceAfter = await nametaovault.AOBalanceOf(nameId2);
 		var recipientBalanceAfter = await aoion.balanceOf(recipient.address);
 
-		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.minus(10).toNumber(), "Sender has incorrect balance");
-		assert.equal(recipientBalanceAfter.toNumber(), recipientBalanceBefore.plus(10).toNumber(), "Recipient has incorrect balance");
+		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.sub(new BN(10)).toNumber(), "Sender has incorrect balance");
+		assert.equal(
+			recipientBalanceAfter.toNumber(),
+			recipientBalanceBefore.add(new BN(10)).toNumber(),
+			"Recipient has incorrect balance"
+		);
 
 		senderBalanceBefore = await nametaovault.AOBalanceOf(taoId2);
 		recipientBalanceBefore = await aoion.balanceOf(recipient.address);
@@ -763,8 +722,12 @@ contract("NameTAOVault", function(accounts) {
 		senderBalanceAfter = await nametaovault.AOBalanceOf(taoId2);
 		recipientBalanceAfter = await aoion.balanceOf(recipient.address);
 
-		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.minus(10).toNumber(), "Sender has incorrect balance");
-		assert.equal(recipientBalanceAfter.toNumber(), recipientBalanceBefore.plus(10).toNumber(), "Recipient has incorrect balance");
+		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.sub(new BN(10)).toNumber(), "Sender has incorrect balance");
+		assert.equal(
+			recipientBalanceAfter.toNumber(),
+			recipientBalanceBefore.add(new BN(10)).toNumber(),
+			"Recipient has incorrect balance"
+		);
 	});
 
 	it("transferPrimordialAO() - only Advocate of Name/TAO can transfer Primordial AO+ Ion to an address", async function() {
@@ -824,7 +787,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Compromised Advocate of Name can transfer primordial AO+");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		// Listener submit account recovery for nameId1
 		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
@@ -841,7 +804,7 @@ contract("NameTAOVault", function(accounts) {
 		assert.equal(canTransfer, false, "Advocate of Name can transfer primordial AO+ to compromised Name");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var senderBalanceBefore = await nametaovault.primordialAOBalanceOf(nameId2);
 		var recipientBalanceBefore = await aoion.primordialBalanceOf(recipient.address);
@@ -856,8 +819,12 @@ contract("NameTAOVault", function(accounts) {
 		var senderBalanceAfter = await nametaovault.primordialAOBalanceOf(nameId2);
 		var recipientBalanceAfter = await aoion.primordialBalanceOf(recipient.address);
 
-		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.minus(10).toNumber(), "Sender has incorrect balance");
-		assert.equal(recipientBalanceAfter.toNumber(), recipientBalanceBefore.plus(10).toNumber(), "Recipient has incorrect balance");
+		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.sub(new BN(10)).toNumber(), "Sender has incorrect balance");
+		assert.equal(
+			recipientBalanceAfter.toNumber(),
+			recipientBalanceBefore.add(new BN(10)).toNumber(),
+			"Recipient has incorrect balance"
+		);
 
 		senderBalanceBefore = await nametaovault.primordialAOBalanceOf(taoId2);
 		recipientBalanceBefore = await aoion.primordialBalanceOf(recipient.address);
@@ -872,7 +839,11 @@ contract("NameTAOVault", function(accounts) {
 		senderBalanceAfter = await nametaovault.primordialAOBalanceOf(taoId2);
 		recipientBalanceAfter = await aoion.primordialBalanceOf(recipient.address);
 
-		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.minus(10).toNumber(), "Sender has incorrect balance");
-		assert.equal(recipientBalanceAfter.toNumber(), recipientBalanceBefore.plus(10).toNumber(), "Recipient has incorrect balance");
+		assert.equal(senderBalanceAfter.toNumber(), senderBalanceBefore.sub(new BN(10)).toNumber(), "Sender has incorrect balance");
+		assert.equal(
+			recipientBalanceAfter.toNumber(),
+			recipientBalanceBefore.add(new BN(10)).toNumber(),
+			"Recipient has incorrect balance"
+		);
 	});
 });

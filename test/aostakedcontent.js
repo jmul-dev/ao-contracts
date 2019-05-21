@@ -10,9 +10,7 @@ var Logos = artifacts.require("./Logos.sol");
 var NamePublicKey = artifacts.require("./NamePublicKey.sol");
 
 var EthCrypto = require("eth-crypto");
-var BigNumber = require("bignumber.js");
-
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
+var BN = require("bn.js");
 
 contract("AOStakedContent", function(accounts) {
 	var namefactory,
@@ -84,7 +82,7 @@ contract("AOStakedContent", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -97,7 +95,7 @@ contract("AOStakedContent", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -115,7 +113,7 @@ contract("AOStakedContent", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -132,7 +130,7 @@ contract("AOStakedContent", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			taoId1,
 			0,
 			false,
@@ -149,7 +147,7 @@ contract("AOStakedContent", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2,
 			0,
 			false,
@@ -220,7 +218,7 @@ contract("AOStakedContent", function(accounts) {
 		}
 		assert.equal(canStake, true, "Whitelisted address can't stake content");
 
-		var networkAmount = new BigNumber(0);
+		var networkAmount = new BN(0);
 		if (networkIntegerAmount > 0 || networkFractionAmount > 0) {
 			networkAmount = await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination);
 		}
@@ -250,12 +248,12 @@ contract("AOStakedContent", function(accounts) {
 
 		assert.equal(
 			accountBalanceAfter.toString(),
-			accountBalanceBefore.minus(networkAmount).toString(),
+			accountBalanceBefore.sub(networkAmount).toString(),
 			"account has incorrect balance after staking"
 		);
 		assert.equal(
 			accountStakedBalanceAfter.toString(),
-			accountStakedBalanceBefore.plus(networkAmount).toString(),
+			accountStakedBalanceBefore.add(networkAmount).toString(),
 			"account has incorrect staked balance after staking"
 		);
 		assert.equal(
@@ -265,12 +263,12 @@ contract("AOStakedContent", function(accounts) {
 		);
 		assert.equal(
 			accountPrimordialBalanceAfter.toString(),
-			accountPrimordialBalanceBefore.minus(primordialAmount).toString(),
+			accountPrimordialBalanceBefore.sub(new BN(primordialAmount)).toString(),
 			"account has incorrect primordial balance after staking"
 		);
 		assert.equal(
 			accountPrimordialStakedBalanceAfter.toString(),
-			accountPrimordialStakedBalanceBefore.plus(primordialAmount).toString(),
+			accountPrimordialStakedBalanceBefore.add(new BN(primordialAmount)).toString(),
 			"account has incorrect staked primordial balance after staking"
 		);
 
@@ -297,7 +295,7 @@ contract("AOStakedContent", function(accounts) {
 		var networkAmount =
 			networkIntegerAmount > 0 || networkFractionAmount > 0
 				? await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination)
-				: 0;
+				: new BN(0);
 
 		var canUnstakePartial;
 		try {
@@ -327,12 +325,12 @@ contract("AOStakedContent", function(accounts) {
 
 		assert.equal(
 			stakedContentAfter[2].toString(),
-			stakedContentBefore[2].minus(networkAmount).toString(),
+			stakedContentBefore[2].sub(networkAmount).toString(),
 			"Staked content has incorrect networkAmount after unstaking"
 		);
 		assert.equal(
 			stakedContentAfter[3].toString(),
-			stakedContentBefore[3].minus(primordialAmount).toString(),
+			stakedContentBefore[3].sub(new BN(primordialAmount)).toString(),
 			"Staked content has incorrect primordialAmount after unstaking"
 		);
 		assert.equal(
@@ -343,12 +341,12 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(stakedContentAfter[6], true, "Staked content has incorrect status after unstaking");
 		assert.equal(
 			accountBalanceAfter.toString(),
-			accountBalanceBefore.plus(networkAmount).toString(),
+			accountBalanceBefore.add(networkAmount).toString(),
 			"Account has incorrect balance after unstaking"
 		);
 		assert.equal(
 			accountStakedBalanceAfter.toString(),
-			accountStakedBalanceBefore.minus(networkAmount).toString(),
+			accountStakedBalanceBefore.sub(networkAmount).toString(),
 			"Account has incorrect staked balance after unstaking"
 		);
 		assert.equal(
@@ -358,12 +356,12 @@ contract("AOStakedContent", function(accounts) {
 		);
 		assert.equal(
 			accountPrimordialBalanceAfter.toString(),
-			accountPrimordialBalanceBefore.plus(primordialAmount).toString(),
+			accountPrimordialBalanceBefore.add(new BN(primordialAmount)).toString(),
 			"Account has incorrect primordial balance after unstaking"
 		);
 		assert.equal(
 			accountPrimordialStakedBalanceAfter.toString(),
-			accountPrimordialStakedBalanceBefore.minus(primordialAmount).toString(),
+			accountPrimordialStakedBalanceBefore.sub(new BN(primordialAmount)).toString(),
 			"Account has incorrect primordial staked balance after unstaking"
 		);
 	};
@@ -403,12 +401,12 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(stakedContentAfter[6], false, "Staked content has incorrect status after unstaking");
 		assert.equal(
 			accountBalanceAfter.toString(),
-			accountBalanceBefore.plus(networkAmount).toString(),
+			accountBalanceBefore.add(networkAmount).toString(),
 			"Account has incorrect balance after unstaking"
 		);
 		assert.equal(
 			accountStakedBalanceAfter.toString(),
-			accountStakedBalanceBefore.minus(networkAmount).toString(),
+			accountStakedBalanceBefore.sub(networkAmount).toString(),
 			"Account has incorrect staked balance after unstaking"
 		);
 		assert.equal(
@@ -418,12 +416,12 @@ contract("AOStakedContent", function(accounts) {
 		);
 		assert.equal(
 			accountPrimordialBalanceAfter.toString(),
-			accountPrimordialBalanceBefore.plus(primordialAmount).toString(),
+			accountPrimordialBalanceBefore.add(new BN(primordialAmount)).toString(),
 			"Account has incorrect primordial balance after unstaking"
 		);
 		assert.equal(
 			accountPrimordialStakedBalanceAfter.toString(),
-			accountPrimordialStakedBalanceBefore.minus(primordialAmount).toString(),
+			accountPrimordialStakedBalanceBefore.sub(new BN(primordialAmount)).toString(),
 			"Account has incorrect primordial staked balance after unstaking"
 		);
 	};
@@ -469,7 +467,7 @@ contract("AOStakedContent", function(accounts) {
 		var networkAmount =
 			networkIntegerAmount > 0 || networkFractionAmount > 0
 				? await aotreasury.toBase(networkIntegerAmount, networkFractionAmount, denomination)
-				: 0;
+				: new BN(0);
 
 		var stakedContentAfter = await aostakedcontent.getById(stakedContentId);
 		var accountBalanceAfter = await aoion.balanceOf(defaultKey);
@@ -480,12 +478,12 @@ contract("AOStakedContent", function(accounts) {
 
 		assert.equal(
 			stakedContentAfter[2].toString(),
-			stakedContentBefore[2].plus(networkAmount).toString(),
+			stakedContentBefore[2].add(networkAmount).toString(),
 			"stakedContentById returns incorrect networkAmount"
 		);
 		assert.equal(
 			stakedContentAfter[3].toString(),
-			stakedContentBefore[3].plus(primordialAmount).toString(),
+			stakedContentBefore[3].add(new BN(primordialAmount)).toString(),
 			"stakedContentById returns incorrect primordialAmount"
 		);
 		assert.equal(
@@ -497,12 +495,12 @@ contract("AOStakedContent", function(accounts) {
 
 		assert.equal(
 			accountBalanceAfter.toString(),
-			accountBalanceBefore.minus(networkAmount).toString(),
+			accountBalanceBefore.sub(networkAmount).toString(),
 			"account has incorrect balance after staking"
 		);
 		assert.equal(
 			accountStakedBalanceAfter.toString(),
-			accountStakedBalanceBefore.plus(networkAmount).toString(),
+			accountStakedBalanceBefore.add(networkAmount).toString(),
 			"account has incorrect staked balance after staking"
 		);
 		assert.equal(
@@ -512,12 +510,12 @@ contract("AOStakedContent", function(accounts) {
 		);
 		assert.equal(
 			accountPrimordialBalanceAfter.toString(),
-			accountPrimordialBalanceBefore.minus(primordialAmount).toString(),
+			accountPrimordialBalanceBefore.sub(new BN(primordialAmount)).toString(),
 			"account has incorrect primordial balance after staking"
 		);
 		assert.equal(
 			accountPrimordialStakedBalanceAfter.toString(),
-			accountPrimordialStakedBalanceBefore.plus(primordialAmount).toString(),
+			accountPrimordialStakedBalanceBefore.add(new BN(primordialAmount)).toString(),
 			"account has incorrect staked primordial balance after staking"
 		);
 	};
@@ -698,7 +696,7 @@ contract("AOStakedContent", function(accounts) {
 	it("Whitelisted Address - should not be able to stake content with invalid params", async function() {
 		var canStake, stakeContentEvent, stakedContentId;
 		try {
-			var result = await aostakedcontent.create(nameId1, contentId1, 1000000, 0, "ao", 0, 80000, {
+			var result = await aostakedcontent.create(nameId1, contentId1, 1000000, 0, web3.utils.toHex("ao"), 0, 80000, {
 				from: someAddress
 			});
 			canStake = true;
@@ -712,7 +710,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Non-whitelisted address can stake content");
 
 		try {
-			var result = await aostakedcontent.create(account1, contentId1, 1000000, 0, "ao", 0, 80000, {
+			var result = await aostakedcontent.create(account1, contentId1, 1000000, 0, web3.utils.toHex("ao"), 0, 80000, {
 				from: whitelisteedAddress
 			});
 			canStake = true;
@@ -726,7 +724,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Whitelisted address can stake content even though stake owner is not a Name");
 
 		try {
-			var result = await aostakedcontent.create(nameId2, contentId1, 1000000, 0, "ao", 0, 80000, {
+			var result = await aostakedcontent.create(nameId2, contentId1, 1000000, 0, web3.utils.toHex("ao"), 0, 80000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -744,7 +742,7 @@ contract("AOStakedContent", function(accounts) {
 		);
 
 		try {
-			var result = await aostakedcontent.create(nameId1, "someid", 1000000, 0, "ao", 0, 80000, {
+			var result = await aostakedcontent.create(nameId1, web3.utils.toHex("someid"), 1000000, 0, web3.utils.toHex("ao"), 0, 80000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -758,7 +756,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Whitelisted address can stake content for non-existing content ID");
 
 		try {
-			var result = await aostakedcontent.create(nameId1, contentId1, 100000, 0, "ao", 2000, 80000, {
+			var result = await aostakedcontent.create(nameId1, contentId1, 100000, 0, web3.utils.toHex("ao"), 2000, 80000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -772,7 +770,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Whitelisted address can stake content with price less than fileSize");
 
 		try {
-			var result = await aostakedcontent.create(nameId1, contentId1, 1000000, 0, "deca", 0, 80000, {
+			var result = await aostakedcontent.create(nameId1, contentId1, 1000000, 0, web3.utils.toHex("deca"), 0, 80000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -786,7 +784,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Whitelisted address can stake content with invalid denomination");
 
 		try {
-			var result = await aostakedcontent.create(nameId1, contentId1, 10 ** 10, 0, "ao", 0, 80000, {
+			var result = await aostakedcontent.create(nameId1, contentId1, 10 ** 10, 0, web3.utils.toHex("ao"), 0, 80000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -800,7 +798,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Whitelisted address can stake content with more than owned AO balance");
 
 		try {
-			var result = await aostakedcontent.create(nameId1, contentId1, 0, 0, "ao", 10 ** 10, 80000, {
+			var result = await aostakedcontent.create(nameId1, contentId1, 0, 0, web3.utils.toHex("ao"), 10 ** 10, 80000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -814,7 +812,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Whitelisted address can stake content with more than owned AO+ balance");
 
 		try {
-			var result = await aostakedcontent.create(nameId1, contentId1, 1000000, 0, "ao", 0, 10000000, {
+			var result = await aostakedcontent.create(nameId1, contentId1, 1000000, 0, web3.utils.toHex("ao"), 0, 10000000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -828,7 +826,7 @@ contract("AOStakedContent", function(accounts) {
 		assert.equal(canStake, false, "Whitelisted address can stake content with invalid profitPercentage");
 
 		try {
-			var result = await aostakedcontent.create(nameId2, contentId2, 2, 0, "mega", 1000, 10000000, {
+			var result = await aostakedcontent.create(nameId2, contentId2, 2, 0, web3.utils.toHex("mega"), 1000, 10000000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -846,7 +844,7 @@ contract("AOStakedContent", function(accounts) {
 		);
 
 		try {
-			var result = await aostakedcontent.create(nameId1, contentId3, 2, 0, "mega", 1000, 10000000, {
+			var result = await aostakedcontent.create(nameId1, contentId3, 2, 0, web3.utils.toHex("mega"), 1000, 10000000, {
 				from: whitelistedAddress
 			});
 			canStake = true;
@@ -861,15 +859,15 @@ contract("AOStakedContent", function(accounts) {
 	});
 
 	it("Whitelisted Address - should be able to stake content", async function() {
-		stakedContentId1 = await create(nameId1, contentId1, 4, 1000, "mega", 100000, 100000);
-		stakedContentId2 = await create(nameId2, contentId2, 0, 0, "", 1000000, 100000);
-		stakedContentId3 = await create(nameId1, contentId3, 1000000, 0, "ao", 0, 100000);
+		stakedContentId1 = await create(nameId1, contentId1, 4, 1000, web3.utils.toHex("mega"), 100000, 100000);
+		stakedContentId2 = await create(nameId2, contentId2, 0, 0, web3.utils.toHex(""), 1000000, 100000);
+		stakedContentId3 = await create(nameId1, contentId3, 1000000, 0, web3.utils.toHex("ao"), 0, 100000);
 	});
 
 	it("setProfitPercentage() - should NOT be able to set profit percentage on non-existing staked content", async function() {
 		var canSetProfitPercentage;
 		try {
-			await aostakedcontent.setProfitPercentage("someid", 100, { from: account1 });
+			await aostakedcontent.setProfitPercentage(web3.utils.toHex("someid"), 100, { from: account1 });
 			canSetProfitPercentage = true;
 		} catch (e) {
 			canSetProfitPercentage = false;
@@ -932,7 +930,9 @@ contract("AOStakedContent", function(accounts) {
 	it("unstakePartialContent() - should NOT be able to partially unstake non-existing staked content", async function() {
 		var canUnstakePartial;
 		try {
-			await aostakedcontent.unstakePartialContent("someid", 10, 10, "kilo", 10, { from: account1 });
+			await aostakedcontent.unstakePartialContent(web3.utils.toHex("someid"), 10, 10, web3.utils.toHex("kilo"), 10, {
+				from: account1
+			});
 			canUnstakePartial = true;
 		} catch (e) {
 			canUnstakePartial = false;
@@ -943,7 +943,7 @@ contract("AOStakedContent", function(accounts) {
 	it("unstakePartialContent() - should NOT be able to partially unstake existing staked content if stake owner is not the same as the sender", async function() {
 		var canUnstakePartial;
 		try {
-			await aostakedcontent.unstakePartialContent(stakedContentId1, 10, 0, "kilo", 0, { from: account2 });
+			await aostakedcontent.unstakePartialContent(stakedContentId1, 10, 0, web3.utils.toHex("kilo"), 0, { from: account2 });
 
 			canUnstakePartial = true;
 		} catch (e) {
@@ -955,7 +955,7 @@ contract("AOStakedContent", function(accounts) {
 	it("unstakePartialContent() - should NOT be able to partially unstake existing staked content if the requested unstake amount is more than the balance of the staked amount", async function() {
 		var canUnstakePartial;
 		try {
-			await aostakedcontent.unstakePartialContent(stakedContentId1, 10, 0, "giga", 10000000, { from: account1 });
+			await aostakedcontent.unstakePartialContent(stakedContentId1, 10, 0, web3.utils.toHex("giga"), 10000000, { from: account1 });
 			canUnstakePartial = true;
 		} catch (e) {
 			canUnstakePartial = false;
@@ -964,15 +964,15 @@ contract("AOStakedContent", function(accounts) {
 	});
 
 	it("unstakePartialContent() - should be able to partially unstake only network ions from existing staked content", async function() {
-		await unstakePartialContent(account1, stakedContentId1, 1, 10, "kilo", 0);
+		await unstakePartialContent(account1, stakedContentId1, 1, 10, web3.utils.toHex("kilo"), 0);
 	});
 
 	it("unstakePartialContent() - should be able to partially unstake only primordial ions from existing staked content", async function() {
-		await unstakePartialContent(account1, stakedContentId1, 0, 0, "", 10);
+		await unstakePartialContent(account1, stakedContentId1, 0, 0, web3.utils.toHex(""), 10);
 	});
 
 	it("unstakePartialContent() - should be able to partially unstake both network and primordial ions from existing staked content", async function() {
-		await unstakePartialContent(account1, stakedContentId1, 1, 10, "kilo", 10);
+		await unstakePartialContent(account1, stakedContentId1, 1, 10, web3.utils.toHex("kilo"), 10);
 	});
 
 	it("unstakePartialContent() - should NOT be able to partially unstake existing non-AO Content, i.e Creative Commons/T(AO) Content", async function() {
@@ -1002,14 +1002,14 @@ contract("AOStakedContent", function(accounts) {
 			assert.notEqual(canUnstakePartial, true, "Stake owner can partially unstake non-AO Content.");
 		};
 
-		await unstakePartialContent(account2, stakedContentId2, 1, 0, "kilo", 10);
-		await unstakePartialContent(account1, stakedContentId3, 1, 0, "kilo", 10);
+		await unstakePartialContent(account2, stakedContentId2, 1, 0, web3.utils.toHex("kilo"), 10);
+		await unstakePartialContent(account1, stakedContentId3, 1, 0, web3.utils.toHex("kilo"), 10);
 	});
 
 	it("unstakeContent() - should NOT be able to unstake non-existing staked content", async function() {
 		var canUnstake;
 		try {
-			await aostakedcontent.unstakeContent("someid", { from: account1 });
+			await aostakedcontent.unstakeContent(web3.utils.toHex("someid"), { from: account1 });
 			canUnstake = true;
 		} catch (e) {
 			canUnstake = false;
@@ -1043,7 +1043,7 @@ contract("AOStakedContent", function(accounts) {
 	it("stakeExistingContent() - should NOT be able to stake non-existing staked content", async function() {
 		var canStakeExisting;
 		try {
-			await aostakedcontent.stakeExistingContent("someid", 5, 10, "mega", 10, { from: account1 });
+			await aostakedcontent.stakeExistingContent(web3.utils.toHex("someid"), 5, 10, web3.utils.toHex("mega"), 10, { from: account1 });
 			canStakeExisting = true;
 		} catch (e) {
 			canStakeExisting = false;
@@ -1054,7 +1054,7 @@ contract("AOStakedContent", function(accounts) {
 	it("stakeExistingContent() - should NOT be able to stake existing staked content if the stake owner is not the same as the sender", async function() {
 		var canStakeExisting;
 		try {
-			await aostakedcontent.stakeExistingContent(stakedContentId1, 1, 0, "mega", 0, { from: account2 });
+			await aostakedcontent.stakeExistingContent(stakedContentId1, 1, 0, web3.utils.toHex("mega"), 0, { from: account2 });
 			canStakeExisting = true;
 		} catch (e) {
 			canStakeExisting = false;
@@ -1088,17 +1088,17 @@ contract("AOStakedContent", function(accounts) {
 			assert.notEqual(canStakeExisting, true, "Stake owner can stake less than filesize");
 		};
 
-		await stakeExistingContent(account1, stakedContentId1, 30, 0, "ao", 0);
-		await stakeExistingContent(account1, stakedContentId1, 0, 0, "", 30);
-		await stakeExistingContent(account1, stakedContentId1, 30, 0, "ao", 30);
+		await stakeExistingContent(account1, stakedContentId1, 30, 0, web3.utils.toHex("ao"), 0);
+		await stakeExistingContent(account1, stakedContentId1, 0, 0, web3.utils.toHex(""), 30);
+		await stakeExistingContent(account1, stakedContentId1, 30, 0, web3.utils.toHex("ao"), 30);
 
-		await stakeExistingContent(account2, stakedContentId2, 30, 0, "ao", 0);
-		await stakeExistingContent(account2, stakedContentId2, 0, 0, "", 30);
-		await stakeExistingContent(account2, stakedContentId2, 30, 0, "ao", 30);
+		await stakeExistingContent(account2, stakedContentId2, 30, 0, web3.utils.toHex("ao"), 0);
+		await stakeExistingContent(account2, stakedContentId2, 0, 0, web3.utils.toHex(""), 30);
+		await stakeExistingContent(account2, stakedContentId2, 30, 0, web3.utils.toHex("ao"), 30);
 
-		await stakeExistingContent(account1, stakedContentId3, 30, 0, "ao", 0);
-		await stakeExistingContent(account1, stakedContentId3, 0, 0, "", 30);
-		await stakeExistingContent(account1, stakedContentId3, 30, 0, "ao", 30);
+		await stakeExistingContent(account1, stakedContentId3, 30, 0, web3.utils.toHex("ao"), 0);
+		await stakeExistingContent(account1, stakedContentId3, 0, 0, web3.utils.toHex(""), 30);
+		await stakeExistingContent(account1, stakedContentId3, 30, 0, web3.utils.toHex("ao"), 30);
 	});
 
 	it("stakeExistingContent() - should not be able to stake more than file size for non-AO Content", async function() {
@@ -1127,17 +1127,17 @@ contract("AOStakedContent", function(accounts) {
 			assert.notEqual(canStakeExisting, true, "Stake owner can stake more than filesize");
 		};
 
-		await stakeExistingContent(account2, stakedContentId2, 3, 0, "mega", 0);
-		await stakeExistingContent(account2, stakedContentId2, 0, 0, "", 3000000);
+		await stakeExistingContent(account2, stakedContentId2, 3, 0, web3.utils.toHex("mega"), 0);
+		await stakeExistingContent(account2, stakedContentId2, 0, 0, web3.utils.toHex(""), 3000000);
 
-		await stakeExistingContent(account1, stakedContentId3, 3, 0, "mega", 0);
-		await stakeExistingContent(account1, stakedContentId3, 0, 0, "", 3000000);
+		await stakeExistingContent(account1, stakedContentId3, 3, 0, web3.utils.toHex("mega"), 0);
+		await stakeExistingContent(account1, stakedContentId3, 0, 0, web3.utils.toHex(""), 3000000);
 	});
 
 	it("stakeExistingContent() - should be able to stake only network ions on existing staked content", async function() {
-		await stakeExistingContent(account1, stakedContentId1, 1, 0, "mega", 0);
-		await stakeExistingContent(account2, stakedContentId2, 1, 0, "mega", 0);
-		await stakeExistingContent(account1, stakedContentId3, 1, 0, "mega", 0);
+		await stakeExistingContent(account1, stakedContentId1, 1, 0, web3.utils.toHex("mega"), 0);
+		await stakeExistingContent(account2, stakedContentId2, 1, 0, web3.utils.toHex("mega"), 0);
+		await stakeExistingContent(account1, stakedContentId3, 1, 0, web3.utils.toHex("mega"), 0);
 
 		// unstake them again for next test
 		await aostakedcontent.unstakeContent(stakedContentId1, { from: account1 });
@@ -1146,9 +1146,9 @@ contract("AOStakedContent", function(accounts) {
 	});
 
 	it("stakeExistingContent() - should be able to stake only primordial ions on existing staked content", async function() {
-		await stakeExistingContent(account1, stakedContentId1, 0, 0, "", 1000000);
-		await stakeExistingContent(account2, stakedContentId2, 0, 0, "", 1000000);
-		await stakeExistingContent(account1, stakedContentId3, 0, 0, "", 1000000);
+		await stakeExistingContent(account1, stakedContentId1, 0, 0, web3.utils.toHex(""), 1000000);
+		await stakeExistingContent(account2, stakedContentId2, 0, 0, web3.utils.toHex(""), 1000000);
+		await stakeExistingContent(account1, stakedContentId3, 0, 0, web3.utils.toHex(""), 1000000);
 
 		// unstake them again for next test
 		await aostakedcontent.unstakeContent(stakedContentId1, { from: account1 });
@@ -1157,9 +1157,9 @@ contract("AOStakedContent", function(accounts) {
 	});
 
 	it("stakeExistingContent() - should be able to stake both network and primordial ions on existing staked content", async function() {
-		await stakeExistingContent(account1, stakedContentId1, 2, 10, "kilo", 1000000);
-		await stakeExistingContent(account2, stakedContentId2, 500, 0, "kilo", 500000);
-		await stakeExistingContent(account1, stakedContentId3, 0, 300000, "mega", 700000);
+		await stakeExistingContent(account1, stakedContentId1, 2, 10, web3.utils.toHex("kilo"), 1000000);
+		await stakeExistingContent(account2, stakedContentId2, 500, 0, web3.utils.toHex("kilo"), 500000);
+		await stakeExistingContent(account1, stakedContentId3, 0, 300000, web3.utils.toHex("mega"), 700000);
 	});
 
 	it("isActive() - check whether or not a staked content is active", async function() {

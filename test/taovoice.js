@@ -11,6 +11,7 @@ var AOSetting = artifacts.require("./AOSetting.sol");
 
 var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
+var BN = require("bn.js");
 
 contract("TAOVoice", function(accounts) {
 	var namefactory,
@@ -57,7 +58,7 @@ contract("TAOVoice", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -70,7 +71,7 @@ contract("TAOVoice", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -87,7 +88,7 @@ contract("TAOVoice", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -275,7 +276,7 @@ contract("TAOVoice", function(accounts) {
 		assert.equal(canStake, false, "Compromised Name can stake Voice on a TAO");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nameBalanceBefore = await voice.balanceOf(nameId1);
 		var taoBalanceBefore = await voice.balanceOf(taoId);
@@ -294,16 +295,16 @@ contract("TAOVoice", function(accounts) {
 		var taoStakedBalanceAfter = await voice.taoStakedBalance(nameId1, taoId);
 		var nameStakedBalanceAfter = await voice.stakedBalance(nameId1);
 
-		assert.equal(nameBalanceAfter.toNumber(), nameBalanceBefore.minus(800000).toNumber(), "Name has incorrect balance");
-		assert.equal(taoBalanceAfter.toNumber(), taoBalanceBefore.plus(800000).toNumber(), "TAO has incorrect balance");
+		assert.equal(nameBalanceAfter.toNumber(), nameBalanceBefore.sub(new BN(800000)).toNumber(), "Name has incorrect balance");
+		assert.equal(taoBalanceAfter.toNumber(), taoBalanceBefore.add(new BN(800000)).toNumber(), "TAO has incorrect balance");
 		assert.equal(
 			taoStakedBalanceAfter.toNumber(),
-			taoStakedBalanceBefore.plus(800000).toNumber(),
+			taoStakedBalanceBefore.add(new BN(800000)).toNumber(),
 			"taoStakedBalance has incorrect balance"
 		);
 		assert.equal(
 			nameStakedBalanceAfter.toNumber(),
-			nameStakedBalanceBefore.plus(800000).toNumber(),
+			nameStakedBalanceBefore.add(new BN(800000)).toNumber(),
 			"stakedBalance() has incorrect balance"
 		);
 
@@ -357,7 +358,7 @@ contract("TAOVoice", function(accounts) {
 		assert.equal(canUnstake, false, "Compromised Name can unstake Voice from a TAO");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nameBalanceBefore = await voice.balanceOf(nameId1);
 		var taoBalanceBefore = await voice.balanceOf(taoId);
@@ -376,16 +377,16 @@ contract("TAOVoice", function(accounts) {
 		var taoStakedBalanceAfter = await voice.taoStakedBalance(nameId1, taoId);
 		var nameStakedBalanceAfter = await voice.stakedBalance(nameId1);
 
-		assert.equal(nameBalanceAfter.toNumber(), nameBalanceBefore.plus(600000).toNumber(), "Name has incorrect balance");
-		assert.equal(taoBalanceAfter.toNumber(), taoBalanceBefore.minus(600000).toNumber(), "TAO has incorrect balance");
+		assert.equal(nameBalanceAfter.toNumber(), nameBalanceBefore.add(new BN(600000)).toNumber(), "Name has incorrect balance");
+		assert.equal(taoBalanceAfter.toNumber(), taoBalanceBefore.sub(new BN(600000)).toNumber(), "TAO has incorrect balance");
 		assert.equal(
 			taoStakedBalanceAfter.toNumber(),
-			taoStakedBalanceBefore.minus(600000).toNumber(),
+			taoStakedBalanceBefore.sub(new BN(600000)).toNumber(),
 			"taoStakedBalance has incorrect balance"
 		);
 		assert.equal(
 			nameStakedBalanceAfter.toNumber(),
-			nameStakedBalanceBefore.minus(600000).toNumber(),
+			nameStakedBalanceBefore.sub(new BN(600000)).toNumber(),
 			"stakedBalance() has incorrect balance"
 		);
 

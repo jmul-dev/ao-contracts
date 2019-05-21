@@ -16,6 +16,7 @@ var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
 var Logos = artifacts.require("./Logos.sol");
 
 var EthCrypto = require("eth-crypto");
+var BN = require("bn.js");
 
 contract("AOTreasury", function(accounts) {
 	var aotreasury,
@@ -68,7 +69,7 @@ contract("AOTreasury", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameIdLocalWriterKey.address,
 			{
 				from: account1
@@ -85,7 +86,7 @@ contract("AOTreasury", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -99,16 +100,16 @@ contract("AOTreasury", function(accounts) {
 	});
 
 	it("should have all of AO denominations", async function() {
-		ao = await aotreasury.getDenominationByName("ao");
-		kilo = await aotreasury.getDenominationByName("kilo");
-		mega = await aotreasury.getDenominationByName("mega");
-		giga = await aotreasury.getDenominationByName("giga");
-		tera = await aotreasury.getDenominationByName("tera");
-		peta = await aotreasury.getDenominationByName("peta");
-		exa = await aotreasury.getDenominationByName("exa");
-		zetta = await aotreasury.getDenominationByName("zetta");
-		yotta = await aotreasury.getDenominationByName("yotta");
-		xona = await aotreasury.getDenominationByName("xona");
+		ao = await aotreasury.getDenominationByName(web3.utils.toHex("ao"));
+		kilo = await aotreasury.getDenominationByName(web3.utils.toHex("kilo"));
+		mega = await aotreasury.getDenominationByName(web3.utils.toHex("mega"));
+		giga = await aotreasury.getDenominationByName(web3.utils.toHex("giga"));
+		tera = await aotreasury.getDenominationByName(web3.utils.toHex("tera"));
+		peta = await aotreasury.getDenominationByName(web3.utils.toHex("peta"));
+		exa = await aotreasury.getDenominationByName(web3.utils.toHex("exa"));
+		zetta = await aotreasury.getDenominationByName(web3.utils.toHex("zetta"));
+		yotta = await aotreasury.getDenominationByName(web3.utils.toHex("yotta"));
+		xona = await aotreasury.getDenominationByName(web3.utils.toHex("xona"));
 
 		assert.equal(ao[1], aoion.address, "contract is missing ao from list of denominations");
 		assert.equal(kilo[1], aokilo.address, "contract is missing kilo from list of denominations");
@@ -191,21 +192,21 @@ contract("AOTreasury", function(accounts) {
 	it("The AO - addDenomination() should be able to can add denomination", async function() {
 		var canAdd;
 		try {
-			await aotreasury.addDenomination("deno", someAddress, { from: account2 });
+			await aotreasury.addDenomination(web3.utils.toHex("deno"), someAddress, { from: account2 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
 		assert.notEqual(canAdd, true, "Others can add denomination");
 		try {
-			await aotreasury.addDenomination("kilo", someAddress, { from: account1 });
+			await aotreasury.addDenomination(web3.utils.toHex("kilo"), someAddress, { from: account1 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
 		assert.notEqual(canAdd, true, "The AO can re-add existing denomination");
 		try {
-			await aotreasury.addDenomination("deno", someAddress, { from: account1 });
+			await aotreasury.addDenomination(web3.utils.toHex("deno"), someAddress, { from: account1 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -216,63 +217,63 @@ contract("AOTreasury", function(accounts) {
 	it("The AO - updateDenomination() should be able to update denomination", async function() {
 		var canUpdate;
 		try {
-			await aotreasury.updateDenomination("kilo", aokilo.address, { from: account2 });
+			await aotreasury.updateDenomination(web3.utils.toHex("kilo"), aokilo.address, { from: account2 });
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
 		}
 		assert.notEqual(canUpdate, true, "Others can update denomination");
 		try {
-			await aotreasury.updateDenomination("deca", someAddress, { from: account1 });
+			await aotreasury.updateDenomination(web3.utils.toHex("deca"), someAddress, { from: account1 });
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
 		}
 		assert.notEqual(canUpdate, true, "The AO can update non-existing denomination");
 		try {
-			await aotreasury.updateDenomination("kilo", someAddress, { from: account1 });
+			await aotreasury.updateDenomination(web3.utils.toHex("kilo"), someAddress, { from: account1 });
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
 		}
 		assert.notEqual(canUpdate, true, "The AO can set invalid denomination address");
 		try {
-			await aotreasury.updateDenomination("kilo", aokilo.address, { from: account1 });
+			await aotreasury.updateDenomination(web3.utils.toHex("kilo"), aokilo.address, { from: account1 });
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
 		}
 		assert.equal(canUpdate, true, "The AO can't update denomination");
-		var kilo = await aotreasury.getDenominationByName("kilo");
+		var kilo = await aotreasury.getDenominationByName(web3.utils.toHex("kilo"));
 		assert.equal(kilo[1], aokilo.address, "Denomination has incorrect denomination address after update");
 	});
 
 	it("isDenominationExist() - should check whether or not a denomination exist", async function() {
-		var isDenominationExist = await aotreasury.isDenominationExist("kilo");
+		var isDenominationExist = await aotreasury.isDenominationExist(web3.utils.toHex("kilo"));
 		assert.equal(isDenominationExist, true, "isDenominationExist() returns incorrect value");
 
-		isDenominationExist = await aotreasury.isDenominationExist("deca");
+		isDenominationExist = await aotreasury.isDenominationExist(web3.utils.toHex("deca"));
 		assert.equal(isDenominationExist, false, "isDenominationExist() returns incorrect value");
 	});
 
 	it("getDenominationByName() - should return denomination info given a denomination name", async function() {
 		var canGetDenominationByName;
 		try {
-			var denomination = await aotreasury.getDenominationByName("deca");
+			var denomination = await aotreasury.getDenominationByName(web3.utils.toHex("deca"));
 			canGetDenominationByName = true;
 		} catch (e) {
 			canGetDenominationByName = false;
 		}
 		assert.equal(canGetDenominationByName, false, "getDenominationByName() can get info of a non-existing denomination");
 
-		var denomination = await aotreasury.getDenominationByName("kilo");
+		var denomination = await aotreasury.getDenominationByName(web3.utils.toHex("kilo"));
 		var name = await aokilo.name();
 		var symbol = await aokilo.symbol();
 		var decimals = await aokilo.decimals();
 		var powerOfTen = await aokilo.powerOfTen();
 
 		assert.equal(
-			web3.toAscii(denomination[0]).replace(/\0/g, ""),
+			web3.utils.toAscii(denomination[0]).replace(/\0/g, ""),
 			"kilo",
 			"getDenominationByName() returns incorrect value for denomination internal name"
 		);
@@ -300,7 +301,7 @@ contract("AOTreasury", function(accounts) {
 		var powerOfTen = await aokilo.powerOfTen();
 
 		assert.equal(
-			web3.toAscii(denomination[0]).replace(/\0/g, ""),
+			web3.utils.toAscii(denomination[0]).replace(/\0/g, ""),
 			"kilo",
 			"getDenominationByIndex() returns incorrect value for denomination internal name"
 		);
@@ -319,7 +320,7 @@ contract("AOTreasury", function(accounts) {
 		var powerOfTen = await aoion.powerOfTen();
 
 		assert.equal(
-			web3.toAscii(denomination[0]).replace(/\0/g, ""),
+			web3.utils.toAscii(denomination[0]).replace(/\0/g, ""),
 			"ao",
 			"getBaseDenomination() returns incorrect value for denomination internal name"
 		);
@@ -331,43 +332,43 @@ contract("AOTreasury", function(accounts) {
 	});
 
 	it("toBase() should return correct amount", async function() {
-		var kiloToBase = await aotreasury.toBase(9, 1, "kilo");
+		var kiloToBase = await aotreasury.toBase(9, 1, web3.utils.toHex("kilo"));
 		assert.equal(kiloToBase.toNumber(), 9001, "toBase kilo return wrong amount of ion");
-		kiloToBase = await aotreasury.toBase(9, 20, "kilo");
+		kiloToBase = await aotreasury.toBase(9, 20, web3.utils.toHex("kilo"));
 		assert.equal(kiloToBase.toNumber(), 9020, "toBase kilo return wrong amount of ion");
-		kiloToBase = await aotreasury.toBase(9, 100, "kilo");
+		kiloToBase = await aotreasury.toBase(9, 100, web3.utils.toHex("kilo"));
 		assert.equal(kiloToBase.toNumber(), 9100, "toBase kilo return wrong amount of ion");
 
-		var megaToBase = await aotreasury.toBase(9, 123, "mega");
-		var gigaToBase = await aotreasury.toBase(9, 123, "giga");
-		var teraToBase = await aotreasury.toBase(9, 123, "tera");
-		var petaToBase = await aotreasury.toBase(9, 123, "peta");
-		var exaToBase = await aotreasury.toBase(9, 123, "exa");
-		var zettaToBase = await aotreasury.toBase(9, 123, "zetta");
-		var yottaToBase = await aotreasury.toBase(9, 123, "yotta");
-		var xonaToBase = await aotreasury.toBase(9, 123, "xona");
+		var megaToBase = await aotreasury.toBase(9, 123, web3.utils.toHex("mega"));
+		var gigaToBase = await aotreasury.toBase(9, 123, web3.utils.toHex("giga"));
+		var teraToBase = await aotreasury.toBase(9, 123, web3.utils.toHex("tera"));
+		var petaToBase = await aotreasury.toBase(9, 123, web3.utils.toHex("peta"));
+		var exaToBase = await aotreasury.toBase(9, 123, web3.utils.toHex("exa"));
+		var zettaToBase = await aotreasury.toBase(9, 123, web3.utils.toHex("zetta"));
+		var yottaToBase = await aotreasury.toBase(9, 123, web3.utils.toHex("yotta"));
+		var xonaToBase = await aotreasury.toBase(9, 123, web3.utils.toHex("xona"));
 
 		assert.equal(megaToBase.toNumber(), 9000123, "toBase mega return wrong amount of ion");
 		assert.equal(gigaToBase.toNumber(), 9000000123, "toBase giga return wrong amount of ion");
 		assert.equal(teraToBase.toNumber(), 9000000000123, "toBase tera return wrong amount of ion");
-		assert.equal(petaToBase.toNumber(), "9000000000000123", "toBase peta return wrong amount of ion");
-		assert.equal(exaToBase.toNumber(), "9000000000000000123", "toBase exa return wrong amount of ion");
-		assert.equal(zettaToBase.toNumber(), "9000000000000000000123", "toBase zetta return wrong amount of ion");
-		assert.equal(yottaToBase.toNumber(), "9000000000000000000000123", "toBase yotta return wrong amount of ion");
-		assert.equal(xonaToBase.toNumber(), "9000000000000000000000000123", "toBase xona return wrong amount of ion");
+		assert.equal(petaToBase.toString(), "9000000000000123", "toBase peta return wrong amount of ion");
+		assert.equal(exaToBase.toString(), "9000000000000000123", "toBase exa return wrong amount of ion");
+		assert.equal(zettaToBase.toString(), "9000000000000000000123", "toBase zetta return wrong amount of ion");
+		assert.equal(yottaToBase.toString(), "9000000000000000000000123", "toBase yotta return wrong amount of ion");
+		assert.equal(xonaToBase.toString(), "9000000000000000000000000123", "toBase xona return wrong amount of ion");
 	});
 
 	it("fromBase() should return correct amount", async function() {
-		var baseToAo = await aotreasury.fromBase(9001, "ao");
-		var baseToKilo = await aotreasury.fromBase(9123, "kilo");
-		var baseToMega = await aotreasury.fromBase(1203, "mega");
-		var baseToGiga = await aotreasury.fromBase(9123456789, "giga");
-		var baseToTera = await aotreasury.fromBase(9123456789123, "tera");
-		var baseToPeta = await aotreasury.fromBase("9123456789123456", "peta");
-		var baseToExa = await aotreasury.fromBase("9123456789123456789", "exa");
-		var baseToZetta = await aotreasury.fromBase("9123456789123456789123", "zetta");
-		var baseToYotta = await aotreasury.fromBase("9123456789123456789123456", "yotta");
-		var baseToXona = await aotreasury.fromBase("9000000000123456789123456789", "xona");
+		var baseToAo = await aotreasury.fromBase(9001, web3.utils.toHex("ao"));
+		var baseToKilo = await aotreasury.fromBase(9123, web3.utils.toHex("kilo"));
+		var baseToMega = await aotreasury.fromBase(1203, web3.utils.toHex("mega"));
+		var baseToGiga = await aotreasury.fromBase(9123456789, web3.utils.toHex("giga"));
+		var baseToTera = await aotreasury.fromBase(9123456789123, web3.utils.toHex("tera"));
+		var baseToPeta = await aotreasury.fromBase("9123456789123456", web3.utils.toHex("peta"));
+		var baseToExa = await aotreasury.fromBase("9123456789123456789", web3.utils.toHex("exa"));
+		var baseToZetta = await aotreasury.fromBase("9123456789123456789123", web3.utils.toHex("zetta"));
+		var baseToYotta = await aotreasury.fromBase("9123456789123456789123456", web3.utils.toHex("yotta"));
+		var baseToXona = await aotreasury.fromBase("9000000000123456789123456789", web3.utils.toHex("xona"));
 
 		assert.equal(baseToAo[0].toNumber(), 9001, "fromBase ao return wrong integer");
 		assert.equal(baseToAo[1].toNumber(), 0, "fromBase ao return wrong fraction");
@@ -380,20 +381,24 @@ contract("AOTreasury", function(accounts) {
 		assert.equal(baseToTera[0].toNumber(), 9, "fromBase tera return wrong integer");
 		assert.equal(baseToTera[1].toNumber(), 123456789123, "fromBase tera return wrong fraction");
 		assert.equal(baseToPeta[0].toNumber(), 9, "fromBase peta return wrong integer");
-		assert.equal(baseToPeta[1].toNumber(), "123456789123456", "fromBase peta return wrong fraction");
+		assert.equal(baseToPeta[1].toString(), "123456789123456", "fromBase peta return wrong fraction");
 		assert.equal(baseToExa[0].toNumber(), 9, "fromBase exa return wrong integer");
-		assert.equal(baseToExa[1].toNumber(), "123456789123456789", "fromBase exa return wrong fraction");
+		assert.equal(baseToExa[1].toString(), "123456789123456789", "fromBase exa return wrong fraction");
 		assert.equal(baseToZetta[0].toNumber(), 9, "fromBase zetta return wrong integer");
-		assert.equal(baseToZetta[1].toNumber(), "123456789123456789123", "fromBase zetta return wrong fraction");
+		assert.equal(baseToZetta[1].toString(), "123456789123456789123", "fromBase zetta return wrong fraction");
 		assert.equal(baseToYotta[0].toNumber(), 9, "fromBase yotta return wrong integer");
-		assert.equal(baseToYotta[1].toNumber(), "123456789123456789123456", "fromBase yotta return wrong fraction");
+		assert.equal(baseToYotta[1].toString(), "123456789123456789123456", "fromBase yotta return wrong fraction");
 		assert.equal(baseToXona[0].toNumber(), 9, "fromBase xona return wrong integer");
-		assert.equal(baseToXona[1].toNumber(), "123456789123456789", "fromBase xona return wrong fraction");
+		assert.equal(baseToXona[1].toString(), "123456789123456789", "fromBase xona return wrong fraction");
 	});
 
 	it("toHighestDenomination() - should return the correct highest possible denomination given a base amount", async function() {
 		var highestDenomination = await aotreasury.toHighestDenomination(10);
-		assert.equal(web3.toAscii(highestDenomination[0]).replace(/\0/g, ""), "ao", "Highest denomination returns incorrect denomination");
+		assert.equal(
+			web3.utils.toAscii(highestDenomination[0]).replace(/\0/g, ""),
+			"ao",
+			"Highest denomination returns incorrect denomination"
+		);
 		assert.equal(highestDenomination[1], ao[1], "Highest denomination returns incorrect denomination address");
 		assert.equal(highestDenomination[2].toNumber(), 10, "Highest denomination returns incorrect integer amount");
 		assert.equal(highestDenomination[3].toNumber(), 0, "Highest denomination returns incorrect fraction amount");
@@ -408,7 +413,7 @@ contract("AOTreasury", function(accounts) {
 
 		var highestDenomination = await aotreasury.toHighestDenomination(28340394);
 		assert.equal(
-			web3.toAscii(highestDenomination[0]).replace(/\0/g, ""),
+			web3.utils.toAscii(highestDenomination[0]).replace(/\0/g, ""),
 			"mega",
 			"Highest denomination returns incorrect denomination"
 		);
@@ -431,7 +436,7 @@ contract("AOTreasury", function(accounts) {
 
 		var canExchange, exchangeDenominationEvent, exchangeId;
 		try {
-			var result = await aotreasury.exchangeDenomination(50, "deca", "ao", { from: account1 });
+			var result = await aotreasury.exchangeDenomination(50, web3.utils.toHex("deca"), web3.utils.toHex("ao"), { from: account1 });
 			exchangeDenominationEvent = result.logs[0];
 			exchangeId = exchangeDenominationEvent.args.exchangeId;
 			canExchange = true;
@@ -443,7 +448,7 @@ contract("AOTreasury", function(accounts) {
 		assert.notEqual(canExchange, true, "Contract can exchange ion from invalid origin denomination");
 
 		try {
-			var result = await aotreasury.exchangeDenomination(50, "ao", "deca", { from: account1 });
+			var result = await aotreasury.exchangeDenomination(50, web3.utils.toHex("ao"), web3.utils.toHex("deca"), { from: account1 });
 			exchangeDenominationEvent = result.logs[0];
 			exchangeId = exchangeDenominationEvent.args.exchangeId;
 			canExchange = true;
@@ -455,7 +460,7 @@ contract("AOTreasury", function(accounts) {
 		assert.notEqual(canExchange, true, "Contract can exchange ion to invalid target denomination");
 
 		try {
-			var result = await aotreasury.exchangeDenomination(1000, "ao", "kilo", { from: account1 });
+			var result = await aotreasury.exchangeDenomination(1000, web3.utils.toHex("ao"), web3.utils.toHex("kilo"), { from: account1 });
 			exchangeDenominationEvent = result.logs[0];
 			exchangeId = exchangeDenominationEvent.args.exchangeId;
 			canExchange = true;
@@ -470,7 +475,7 @@ contract("AOTreasury", function(accounts) {
 		var account1KiloBalanceBefore = await aokilo.balanceOf(account1);
 
 		try {
-			var result = await aotreasury.exchangeDenomination(50, "ao", "kilo", { from: account1 });
+			var result = await aotreasury.exchangeDenomination(50, web3.utils.toHex("ao"), web3.utils.toHex("kilo"), { from: account1 });
 			exchangeDenominationEvent = result.logs[0];
 			exchangeId = exchangeDenominationEvent.args.exchangeId;
 			canExchange = true;
@@ -485,12 +490,12 @@ contract("AOTreasury", function(accounts) {
 
 		assert.equal(
 			account1AoBalanceAfter.toNumber(),
-			account1AoBalanceBefore.minus(50).toNumber(),
+			account1AoBalanceBefore.sub(new BN(50)).toNumber(),
 			"Account1 has incorrect AO ion balance after exchanging"
 		);
 		assert.equal(
 			account1KiloBalanceAfter.toNumber(),
-			account1KiloBalanceBefore.plus(50).toNumber(),
+			account1KiloBalanceBefore.add(new BN(50)).toNumber(),
 			"Account1 has incorrect AO Kilo balance after exchanging"
 		);
 

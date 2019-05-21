@@ -9,6 +9,7 @@ var AOSetting = artifacts.require("./AOSetting.sol");
 
 var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
+var BN = require("bn.js");
 
 contract("NamePublicKey", function(accounts) {
 	var namefactory,
@@ -106,7 +107,7 @@ contract("NamePublicKey", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -119,7 +120,7 @@ contract("NamePublicKey", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3LocalWriterKey.address,
 			{
 				from: account3
@@ -136,7 +137,7 @@ contract("NamePublicKey", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -304,7 +305,7 @@ contract("NamePublicKey", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				someAddress,
 				{
 					from: account2
@@ -323,7 +324,7 @@ contract("NamePublicKey", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId2LocalWriterKey.address,
 				{
 					from: account2
@@ -363,12 +364,12 @@ contract("NamePublicKey", function(accounts) {
 
 	it("addKey() - Advocate of Name should be able to add public key to list", async function() {
 		var nonce = await namefactory.nonces(nameId2);
-		var signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonce.plus(1).toNumber());
+		var signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonce.add(new BN(1)).toNumber());
 		var vrs = EthCrypto.vrs.fromString(signature);
 
 		var canAdd;
 		try {
-			await namepublickey.addKey(someAddress, newKey, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
+			await namepublickey.addKey(someAddress, newKey, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -376,7 +377,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Can add public key to a non-existing Name");
 
 		try {
-			await namepublickey.addKey(nameId2, newKey, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
+			await namepublickey.addKey(nameId2, newKey, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -384,7 +385,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Non-Advocate of Name can add new public key");
 
 		try {
-			await namepublickey.addKey(nameId2, emptyAddress, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+			await namepublickey.addKey(nameId2, emptyAddress, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -400,7 +401,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Advocate of Name can add public key with invalid nonce");
 
 		try {
-			await namepublickey.addKey(nameId2, newKey, nonce.plus(1).toNumber(), "", vrs.r, vrs.s, { from: account2 });
+			await namepublickey.addKey(nameId2, newKey, nonce.add(new BN(1)).toNumber(), "", vrs.r, vrs.s, { from: account2 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -408,7 +409,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Advocate of Name can add public key with invalid v part of signature");
 
 		try {
-			await namepublickey.addKey(nameId2, newKey, nonce.plus(1).toNumber(), vrs.v, "", vrs.s, { from: account2 });
+			await namepublickey.addKey(nameId2, newKey, nonce.add(new BN(1)).toNumber(), vrs.v, "", vrs.s, { from: account2 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -416,7 +417,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Advocate of Name can add public key with invalid r part of signature");
 
 		try {
-			await namepublickey.addKey(nameId2, newKey, nonce.plus(1).toNumber(), vrs.v, vrs.r, "", { from: account2 });
+			await namepublickey.addKey(nameId2, newKey, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, "", { from: account2 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -424,16 +425,16 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Advocate of Name can add public key with invalid s part of signature");
 
 		try {
-			signature = createAddKeySignature(account2PrivateKey, nameId2, account2, nonce.plus(1).toNumber());
+			signature = createAddKeySignature(account2PrivateKey, nameId2, account2, nonce.add(new BN(1)).toNumber());
 			vrs = EthCrypto.vrs.fromString(signature);
-			await namepublickey.addKey(nameId2, account2, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+			await namepublickey.addKey(nameId2, account2, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
 		assert.equal(canAdd, false, "Advocate of Name can add duplicate public key");
 
-		var signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonce.plus(1).toNumber());
+		var signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonce.add(new BN(1)).toNumber());
 		var vrs = EthCrypto.vrs.fromString(signature);
 
 		// Listener submit account recovery for nameId2
@@ -444,9 +445,9 @@ contract("NamePublicKey", function(accounts) {
 
 		try {
 			nonce = await namefactory.nonces(nameId2);
-			signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonce.plus(1).toNumber());
+			signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonce.add(new BN(1)).toNumber());
 			vrs = EthCrypto.vrs.fromString(signature);
-			await namepublickey.addKey(nameId2, newKey, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+			await namepublickey.addKey(nameId2, newKey, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -454,16 +455,16 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Compromised Advocate of Name can add public key");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nonceBefore = await namefactory.nonces(nameId2);
 		var getTotalPublicKeysCountBefore = await namepublickey.getTotalPublicKeysCount(nameId2);
 
 		try {
-			signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonceBefore.plus(1).toNumber());
+			signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonceBefore.add(new BN(1)).toNumber());
 			vrs = EthCrypto.vrs.fromString(signature);
 
-			await namepublickey.addKey(nameId2, newKey, nonceBefore.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+			await namepublickey.addKey(nameId2, newKey, nonceBefore.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -471,7 +472,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, true, "Advocate of Name can't add public key");
 
 		var nonceAfter = await namefactory.nonces(nameId2);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "Name has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "Name has incorrect nonce");
 
 		var isKeyExist = await namepublickey.isKeyExist(nameId2, newKey);
 		assert.equal(isKeyExist, true, "isKeyExist() returns incorrect value");
@@ -479,7 +480,7 @@ contract("NamePublicKey", function(accounts) {
 		var getTotalPublicKeysCountAfter = await namepublickey.getTotalPublicKeysCount(nameId2);
 		assert.equal(
 			getTotalPublicKeysCountAfter.toNumber(),
-			getTotalPublicKeysCountBefore.plus(1).toNumber(),
+			getTotalPublicKeysCountBefore.add(new BN(1)).toNumber(),
 			"getTotalPublicKeysCount() returns incorrect value"
 		);
 
@@ -546,7 +547,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canRemove, false, "Compromised Advocate of Name can remove public key");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nonceBefore = await namefactory.nonces(nameId2);
 		var getTotalPublicKeysCountBefore = await namepublickey.getTotalPublicKeysCount(nameId2);
@@ -560,7 +561,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canRemove, true, "Advocate of Name can't remove public key");
 
 		var nonceAfter = await namefactory.nonces(nameId2);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "Name has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "Name has incorrect nonce");
 
 		var isKeyExist = await namepublickey.isKeyExist(nameId2, newKey);
 		assert.equal(isKeyExist, false, "isKeyExist() returns incorrect value");
@@ -568,7 +569,7 @@ contract("NamePublicKey", function(accounts) {
 		var getTotalPublicKeysCountAfter = await namepublickey.getTotalPublicKeysCount(nameId2);
 		assert.equal(
 			getTotalPublicKeysCountAfter.toNumber(),
-			getTotalPublicKeysCountBefore.minus(1).toNumber(),
+			getTotalPublicKeysCountBefore.sub(new BN(1)).toNumber(),
 			"getTotalPublicKeysCount() returns incorrect value"
 		);
 
@@ -578,10 +579,10 @@ contract("NamePublicKey", function(accounts) {
 
 	it("setDefaultKey() - should be able to set a default public key from existing public key list", async function() {
 		var nonce = await namefactory.nonces(nameId2);
-		var signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonce.plus(1).toNumber());
+		var signature = createAddKeySignature(newKeyPrivateKey, nameId2, newKey, nonce.add(new BN(1)).toNumber());
 		var vrs = EthCrypto.vrs.fromString(signature);
 
-		await namepublickey.addKey(nameId2, newKey, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+		await namepublickey.addKey(nameId2, newKey, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
 
 		var signature = createSetKeySignature(account2PrivateKey, nameId2, newKey);
 		var vrs = EthCrypto.vrs.fromString(signature);
@@ -650,7 +651,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canSetDefault, false, "Compromised Advocate of Name can set default public key");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nonceBefore = await namefactory.nonces(nameId2);
 
@@ -663,7 +664,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canSetDefault, true, "Advocate of Name can't set default public key");
 
 		var nonceAfter = await namefactory.nonces(nameId2);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "Name has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "Name has incorrect nonce");
 
 		var getDefaultKey = await namepublickey.getDefaultKey(nameId2);
 		assert.equal(getDefaultKey.toLowerCase(), newKey.toLowerCase(), "getDefaultKey() returns incorrect value");
@@ -738,7 +739,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canSetWriter, false, "Compromised Advocate of Name can set writer public key");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nonceBefore = await namefactory.nonces(nameId2);
 
@@ -751,7 +752,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canSetWriter, true, "Advocate of Name can't set writer public key");
 
 		var nonceAfter = await namefactory.nonces(nameId2);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "Name has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "Name has incorrect nonce");
 
 		var getWriterKey = await namepublickey.getWriterKey(nameId2);
 		assert.equal(getWriterKey.toLowerCase(), newKey.toLowerCase(), "getWriterKey() returns incorrect value");
@@ -763,12 +764,12 @@ contract("NamePublicKey", function(accounts) {
 	it("addSetWriterKey() - Advocate of Name should be able to add key and set it as writerKey for a Name", async function() {
 		var newKey = EthCrypto.createIdentity();
 		var nonce = await namefactory.nonces(nameId2);
-		var signature = createAddKeySignature(newKey.privateKey, nameId2, newKey.address, nonce.plus(1).toNumber());
+		var signature = createAddKeySignature(newKey.privateKey, nameId2, newKey.address, nonce.add(new BN(1)).toNumber());
 		var vrs = EthCrypto.vrs.fromString(signature);
 
 		var canAdd;
 		try {
-			await namepublickey.addSetWriterKey(someAddress, newKey.address, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, {
+			await namepublickey.addSetWriterKey(someAddress, newKey.address, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, {
 				from: account1
 			});
 			canAdd = true;
@@ -778,7 +779,9 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Can add/set writer key to a non-existing Name");
 
 		try {
-			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
+			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, {
+				from: account1
+			});
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -786,7 +789,9 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Non-Advocate of Name can add/set writer key");
 
 		try {
-			await namepublickey.addSetWriterKey(nameId2, emptyAddress, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+			await namepublickey.addSetWriterKey(nameId2, emptyAddress, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, {
+				from: account2
+			});
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -802,7 +807,9 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Advocate of Name can add/set writer key with invalid nonce");
 
 		try {
-			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.plus(1).toNumber(), "", vrs.r, vrs.s, { from: account2 });
+			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.add(new BN(1)).toNumber(), "", vrs.r, vrs.s, {
+				from: account2
+			});
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -810,7 +817,9 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Advocate of Name can add/set writer key with invalid v part of signature");
 
 		try {
-			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.plus(1).toNumber(), vrs.v, "", vrs.s, { from: account2 });
+			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.add(new BN(1)).toNumber(), vrs.v, "", vrs.s, {
+				from: account2
+			});
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -818,7 +827,9 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Advocate of Name can add/set writer key with invalid r part of signature");
 
 		try {
-			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.plus(1).toNumber(), vrs.v, vrs.r, "", { from: account2 });
+			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, "", {
+				from: account2
+			});
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -826,16 +837,18 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Advocate of Name can add/set writer key with invalid s part of signature");
 
 		try {
-			signature = createAddKeySignature(account2PrivateKey, nameId2, account2, nonce.plus(1).toNumber());
+			signature = createAddKeySignature(account2PrivateKey, nameId2, account2, nonce.add(new BN(1)).toNumber());
 			vrs = EthCrypto.vrs.fromString(signature);
-			await namepublickey.addSetWriterKey(nameId2, account2, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+			await namepublickey.addSetWriterKey(nameId2, account2, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, {
+				from: account2
+			});
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
 		assert.equal(canAdd, false, "Advocate of Name can add/set duplicate writer key");
 
-		var signature = createAddKeySignature(newKey.privateKey, nameId2, newKey.address, nonce.plus(1).toNumber());
+		var signature = createAddKeySignature(newKey.privateKey, nameId2, newKey.address, nonce.add(new BN(1)).toNumber());
 		var vrs = EthCrypto.vrs.fromString(signature);
 
 		// Listener submit account recovery for nameId2
@@ -846,9 +859,11 @@ contract("NamePublicKey", function(accounts) {
 
 		try {
 			nonce = await namefactory.nonces(nameId2);
-			signature = createAddKeySignature(newKey.privateKey, nameId2, newKey.address, nonce.plus(1).toNumber());
+			signature = createAddKeySignature(newKey.privateKey, nameId2, newKey.address, nonce.add(new BN(1)).toNumber());
 			vrs = EthCrypto.vrs.fromString(signature);
-			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, {
+				from: account2
+			});
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -856,16 +871,16 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, false, "Compromised Advocate of Name can add public key");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nonceBefore = await namefactory.nonces(nameId2);
 		var getTotalPublicKeysCountBefore = await namepublickey.getTotalPublicKeysCount(nameId2);
 
 		try {
-			signature = createAddKeySignature(newKey.privateKey, nameId2, newKey.address, nonceBefore.plus(1).toNumber());
+			signature = createAddKeySignature(newKey.privateKey, nameId2, newKey.address, nonceBefore.add(new BN(1)).toNumber());
 			vrs = EthCrypto.vrs.fromString(signature);
 
-			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonceBefore.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, {
+			await namepublickey.addSetWriterKey(nameId2, newKey.address, nonceBefore.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, {
 				from: account2
 			});
 			canAdd = true;
@@ -875,7 +890,7 @@ contract("NamePublicKey", function(accounts) {
 		assert.equal(canAdd, true, "Advocate of Name can't add public key");
 
 		var nonceAfter = await namefactory.nonces(nameId2);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(2).toNumber(), "Name has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(2)).toNumber(), "Name has incorrect nonce");
 
 		var isKeyExist = await namepublickey.isKeyExist(nameId2, newKey.address);
 		assert.equal(isKeyExist, true, "isKeyExist() returns incorrect value");
@@ -883,7 +898,7 @@ contract("NamePublicKey", function(accounts) {
 		var getTotalPublicKeysCountAfter = await namepublickey.getTotalPublicKeysCount(nameId2);
 		assert.equal(
 			getTotalPublicKeysCountAfter.toNumber(),
-			getTotalPublicKeysCountBefore.plus(1).toNumber(),
+			getTotalPublicKeysCountBefore.add(new BN(1)).toNumber(),
 			"getTotalPublicKeysCount() returns incorrect value"
 		);
 

@@ -13,6 +13,7 @@ var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
 
 var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
+var BN = require("bn.js");
 
 contract("NameTAOPosition", function(accounts) {
 	var namefactory,
@@ -87,7 +88,7 @@ contract("NameTAOPosition", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -100,7 +101,7 @@ contract("NameTAOPosition", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3LocalWriterKey.address,
 			{
 				from: account3
@@ -113,7 +114,7 @@ contract("NameTAOPosition", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId4LocalWriterKey.address,
 			{
 				from: account4
@@ -126,7 +127,7 @@ contract("NameTAOPosition", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId5LocalWriterKey.address,
 			{
 				from: account5
@@ -156,7 +157,7 @@ contract("NameTAOPosition", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -189,7 +190,7 @@ contract("NameTAOPosition", function(accounts) {
 		var totalTAOAdvocateChallengesAfter = await nametaoposition.totalTAOAdvocateChallenges();
 		assert.equal(
 			totalTAOAdvocateChallengesAfter.toNumber(),
-			totalTAOAdvocateChallengesBefore.plus(1).toNumber(),
+			totalTAOAdvocateChallengesBefore.add(new BN(1)).toNumber(),
 			"Contract has incorrect totalTAOAdvocateChallenges value"
 		);
 
@@ -203,12 +204,12 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(getTAOAdvocateChallengeById[2], false, "getTAOAdvocateChallengeById() returns incorrect value for completed status");
 		assert.equal(
 			getTAOAdvocateChallengeById[4],
-			getTAOAdvocateChallengeById[3].plus(challengeTAOAdvocateLockDuration).toNumber(),
+			getTAOAdvocateChallengeById[3].add(challengeTAOAdvocateLockDuration).toNumber(),
 			"getTAOAdvocateChallengeById() returns incorrect value for lockedUntilTimestamp"
 		);
 		assert.equal(
 			getTAOAdvocateChallengeById[5],
-			getTAOAdvocateChallengeById[4].plus(challengeTAOAdvocateCompleteDuration).toNumber(),
+			getTAOAdvocateChallengeById[4].add(challengeTAOAdvocateCompleteDuration).toNumber(),
 			"getTAOAdvocateChallengeById() returns incorrect value for completeBeforeTimestamp"
 		);
 		return challengeId;
@@ -419,7 +420,7 @@ contract("NameTAOPosition", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -441,7 +442,7 @@ contract("NameTAOPosition", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2,
 			0,
 			false,
@@ -517,7 +518,7 @@ contract("NameTAOPosition", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			taoId2,
 			0,
 			false,
@@ -537,7 +538,7 @@ contract("NameTAOPosition", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			taoId2,
 			0,
 			false,
@@ -565,7 +566,7 @@ contract("NameTAOPosition", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			taoId2,
 			0,
 			false,
@@ -651,12 +652,12 @@ contract("NameTAOPosition", function(accounts) {
 		var nameId2_advocatedTAOLogosAfter = await logos.advocatedTAOLogos(nameId2, taoId2);
 		assert.equal(
 			nameId2_totalAdvocatedTAOLogosAfter.toNumber(),
-			nameId2_totalAdvocatedTAOLogosBefore.plus(quantity).toNumber(),
+			nameId2_totalAdvocatedTAOLogosBefore.add(new BN(quantity)).toNumber(),
 			"Name has incorrect totalAdvocatedTAOLogos"
 		);
 		assert.equal(
 			nameId2_advocatedTAOLogosAfter.toNumber(),
-			nameId2_advocatedTAOLogosBefore.plus(quantity).toNumber(),
+			nameId2_advocatedTAOLogosBefore.add(new BN(quantity)).toNumber(),
 			"Name has incorrect advocatedTAOLogos of a TAO"
 		);
 
@@ -681,7 +682,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canSetAdvocate, false, "Advocate can set new Advocate using a compromised Name");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		// Listener submit account recovery for nameId2
 		await nametaoposition.setListener(nameId2, nameId1, { from: account2 });
@@ -699,7 +700,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canSetAdvocate, false, "Compromised Advocate can set new Advocate");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nonceBefore = await taofactory.nonces(taoId2);
 		try {
@@ -711,7 +712,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canSetAdvocate, true, "Current Advocate of TAO can't set new Advocate");
 
 		var nonceAfter = await taofactory.nonces(taoId2);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "TAO has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "TAO has incorrect nonce");
 
 		var getAdvocate = await nametaoposition.getAdvocate(taoId2);
 		assert.equal(getAdvocate, nameId3, "TAO has incorrect Advocate");
@@ -723,19 +724,19 @@ contract("NameTAOPosition", function(accounts) {
 
 		assert.equal(
 			nameId2_totalAdvocatedTAOLogosAfter.toNumber(),
-			nameId2_totalAdvocatedTAOLogosBefore.minus(nameId2_advocatedTAOLogosBefore).toNumber(),
+			nameId2_totalAdvocatedTAOLogosBefore.sub(nameId2_advocatedTAOLogosBefore).toNumber(),
 			"Name has incorrect totalAdvocatedTAOLogos"
 		);
 		assert.equal(nameId2_advocatedTAOLogosAfter.toNumber(), 0, "Name has incorrect advocatedTAOLogos of a TAO");
 
 		assert.equal(
 			nameId3_totalAdvocatedTAOLogosAfter.toNumber(),
-			nameId3_totalAdvocatedTAOLogosBefore.plus(nameId2_advocatedTAOLogosBefore).toNumber(),
+			nameId3_totalAdvocatedTAOLogosBefore.add(nameId2_advocatedTAOLogosBefore).toNumber(),
 			"Name has incorrect totalAdvocatedTAOLogos"
 		);
 		assert.equal(
 			nameId3_advocatedTAOLogosAfter.toNumber(),
-			nameId3_advocatedTAOLogosBefore.plus(nameId2_advocatedTAOLogosBefore).toNumber(),
+			nameId3_advocatedTAOLogosBefore.add(nameId2_advocatedTAOLogosBefore).toNumber(),
 			"Name has incorrect advocatedTAOLogos of a TAO"
 		);
 
@@ -792,7 +793,7 @@ contract("NameTAOPosition", function(accounts) {
 		var getAdvocate = await nametaoposition.getAdvocate(taoId4);
 		assert.equal(getAdvocate, nameId3, "TAO has incorrect Advocate");
 
-		await logos.mint(nameId2, nameLogosBalance.plus(10 ** 6).toNumber(), { from: theAO });
+		await logos.mint(nameId2, nameLogosBalance.add(new BN(10 ** 6)).toNumber(), { from: theAO });
 
 		var nameId2_totalAdvocatedTAOLogosBefore = await logos.totalAdvocatedTAOLogos(nameId2);
 		var nameId2_advocatedTAOLogosBefore = await logos.advocatedTAOLogos(nameId2, taoId2);
@@ -814,7 +815,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canReplace, false, "Compromised Parent can replace child TAO's Advocate with himself");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nonceBefore = await taofactory.nonces(taoId4);
 		try {
@@ -826,7 +827,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canReplace, true, "Advocate of Parent TAO can't replace child TAO's Advocate with himself");
 
 		var nonceAfter = await taofactory.nonces(taoId4);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "TAO has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "TAO has incorrect nonce");
 
 		getAdvocate = await nametaoposition.getAdvocate(taoId4);
 		assert.equal(getAdvocate, nameId2, "TAO has incorrect Advocate");
@@ -838,18 +839,18 @@ contract("NameTAOPosition", function(accounts) {
 
 		assert.equal(
 			nameId2_totalAdvocatedTAOLogosAfter.toNumber(),
-			nameId2_totalAdvocatedTAOLogosBefore.plus(nameId3_advocatedTAOLogosBefore).toNumber(),
+			nameId2_totalAdvocatedTAOLogosBefore.add(nameId3_advocatedTAOLogosBefore).toNumber(),
 			"Name has incorrect totalAdvocatedTAOLogos"
 		);
 		assert.equal(
 			nameId2_advocatedTAOLogosAfter.toNumber(),
-			nameId2_advocatedTAOLogosBefore.plus(nameId3_advocatedTAOLogosBefore).toNumber(),
+			nameId2_advocatedTAOLogosBefore.add(nameId3_advocatedTAOLogosBefore).toNumber(),
 			"Name has incorrect advocatedTAOLogos of a TAO"
 		);
 
 		assert.equal(
 			nameId3_totalAdvocatedTAOLogosAfter.toNumber(),
-			nameId3_totalAdvocatedTAOLogosBefore.minus(nameId3_advocatedTAOLogosBefore).toNumber(),
+			nameId3_totalAdvocatedTAOLogosBefore.sub(nameId3_advocatedTAOLogosBefore).toNumber(),
 			"Name has incorrect totalAdvocatedTAOLogos"
 		);
 		assert.equal(nameId3_advocatedTAOLogosAfter.toNumber(), 0, "Name has incorrect advocatedTAOLogos of a TAO");
@@ -896,7 +897,7 @@ contract("NameTAOPosition", function(accounts) {
 
 		// Mint more logos challenger
 		var currentAdvocateLogosBalance = await logos.balanceOf(nameId3);
-		await logos.mint(nameId2, currentAdvocateLogosBalance.plus(10 ** 3).toNumber(), { from: theAO });
+		await logos.mint(nameId2, currentAdvocateLogosBalance.add(new BN(10 ** 3)).toNumber(), { from: theAO });
 
 		// Listener submit account recovery for nameId2
 		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account1 });
@@ -913,7 +914,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canChallenge, false, "Compromised Name can challenge current TAO's Advocate");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		challengeId1 = await challengeTAOAdvocate(taoId1, account2);
 		challengeId2 = await challengeTAOAdvocate(taoId4, account2);
@@ -923,10 +924,10 @@ contract("NameTAOPosition", function(accounts) {
 	it("completeTAOAdvocateChallenge() - challenger should be able to complete the TAO Advocate challenge", async function() {
 		var canComplete;
 
-		var getChallengeStatus = await nametaoposition.getChallengeStatus("someid", account2);
+		var getChallengeStatus = await nametaoposition.getChallengeStatus(web3.utils.toHex("someid"), account2);
 		assert.equal(getChallengeStatus.toNumber(), 2, "getChallengeStatus() returns incorrect value");
 		try {
-			await nametaoposition.completeTAOAdvocateChallenge("someid", { from: account2 });
+			await nametaoposition.completeTAOAdvocateChallenge(web3.utils.toHex("someid"), { from: account2 });
 			canComplete = true;
 		} catch (e) {
 			canComplete = false;
@@ -969,10 +970,10 @@ contract("NameTAOPosition", function(accounts) {
 
 		if (accountRecoveryLockDuration.gt(challengeTAOAdvocateLockDuration)) {
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 		} else {
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(challengeTAOAdvocateLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(challengeTAOAdvocateLockDuration.add(new BN(100)).toNumber());
 		}
 
 		getChallengeStatus = await nametaoposition.getChallengeStatus(challengeId1, account2);
@@ -992,7 +993,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canComplete, true, "Challenger can't complete challenge");
 
 		var nonceAfter = await taofactory.nonces(taoId1);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "TAO has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "TAO has incorrect nonce");
 
 		var getAdvocate = await nametaoposition.getAdvocate(taoId1);
 		assert.equal(getAdvocate, nameId2, "TAO has incorrect Advocate");
@@ -1001,7 +1002,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(getTAOAdvocateChallengeById[2], true, "getTAOAdvocateChallengeById() returns incorrect value for completed status");
 
 		getChallengeStatus = await nametaoposition.getChallengeStatus(challengeId1, account2);
-		assert.equal(getChallengeStatus.toNumber(), 5, "getChallengeStatus() returns incorrect value");
+		assert.equal(getChallengeStatus.toNumber(), 6, "getChallengeStatus() returns incorrect value");
 		try {
 			await nametaoposition.completeTAOAdvocateChallenge(challengeId1, { from: account2 });
 			canComplete = true;
@@ -1018,7 +1019,7 @@ contract("NameTAOPosition", function(accounts) {
 		await logos.mint(nameId3, 10 ** 10, { from: theAO });
 
 		getChallengeStatus = await nametaoposition.getChallengeStatus(challengeId2, account2);
-		assert.equal(getChallengeStatus.toNumber(), 6, "getChallengeStatus() returns incorrect value");
+		assert.equal(getChallengeStatus.toNumber(), 7, "getChallengeStatus() returns incorrect value");
 
 		try {
 			await nametaoposition.completeTAOAdvocateChallenge(challengeId2, { from: account2 });
@@ -1037,10 +1038,10 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(getChallengeStatus.toNumber(), 1, "getChallengeStatus() returns incorrect value");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(challengeTAOAdvocateCompleteDuration.plus(10 * 86400).toNumber());
+		await helper.advanceTimeAndBlock(challengeTAOAdvocateCompleteDuration.add(new BN(10 * 86400)).toNumber());
 
 		getChallengeStatus = await nametaoposition.getChallengeStatus(challengeId3, account2);
-		assert.equal(getChallengeStatus.toNumber(), 4, "getChallengeStatus() returns incorrect value");
+		assert.equal(getChallengeStatus.toNumber(), 5, "getChallengeStatus() returns incorrect value");
 
 		try {
 			await nametaoposition.completeTAOAdvocateChallenge(challengeId3, { from: account2 });
@@ -1098,7 +1099,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canSet, true, "Advocate can't set Listener");
 
 		var nonceAfter = await namefactory.nonces(nameId1);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "Name has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "Name has incorrect nonce");
 
 		var getListener = await nametaoposition.getListener(nameId1);
 		assert.equal(getListener, nameId2, "Name has incorrect Advocate");
@@ -1118,7 +1119,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canSet, false, "Compromised Advocate can set Listener");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		// Listener submit account recovery for nameId2
 		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account1 });
@@ -1135,7 +1136,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canSet, false, "Advocate can set Listener that is currently compromised");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		nonceBefore = await taofactory.nonces(taoId1);
 		try {
@@ -1147,7 +1148,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canSet, true, "Advocate can't set Listener");
 
 		nonceAfter = await taofactory.nonces(taoId1);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "TAO has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "TAO has incorrect nonce");
 
 		getListener = await nametaoposition.getListener(taoId1);
 		assert.equal(getListener, nameId2, "TAO has incorrect Advocate");
@@ -1162,7 +1163,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canSet, true, "Advocate can't set Listener");
 
 		nonceAfter = await taofactory.nonces(taoId1);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "TAO has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "TAO has incorrect nonce");
 
 		getListener = await nametaoposition.getListener(taoId1);
 		assert.equal(getListener, taoId2, "TAO has incorrect Advocate");
@@ -1228,7 +1229,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canSet, false, "Compromised Advocate can set Speaker");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		// Listener submit account recovery for nameId2
 		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account1 });
@@ -1245,7 +1246,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canSet, false, "Advocate can set Speaker that is currently compromised");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nonceBefore = await namefactory.nonces(nameId1);
 		try {
@@ -1257,7 +1258,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canSet, true, "Advocate can't set Speaker");
 
 		var nonceAfter = await namefactory.nonces(nameId1);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "Name has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "Name has incorrect nonce");
 
 		var getSpeaker = await nametaoposition.getSpeaker(nameId1);
 		assert.equal(getSpeaker, nameId2, "Name has incorrect Advocate");
@@ -1272,7 +1273,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canSet, true, "Advocate can't set Speaker");
 
 		nonceAfter = await taofactory.nonces(taoId1);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "TAO has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "TAO has incorrect nonce");
 
 		getSpeaker = await nametaoposition.getSpeaker(taoId1);
 		assert.equal(getSpeaker, nameId2, "TAO has incorrect Advocate");
@@ -1287,7 +1288,7 @@ contract("NameTAOPosition", function(accounts) {
 		assert.equal(canSet, true, "Advocate can't set Speaker");
 
 		nonceAfter = await taofactory.nonces(taoId1);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "TAO has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "TAO has incorrect nonce");
 
 		getSpeaker = await nametaoposition.getSpeaker(taoId1);
 		assert.equal(getSpeaker, taoId2, "TAO has incorrect Advocate");

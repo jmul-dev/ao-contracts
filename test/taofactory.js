@@ -11,6 +11,7 @@ var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
 
 var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
+var BN = require("bn.js");
 
 contract("TAOFactory", function(accounts) {
 	var namefactory,
@@ -77,7 +78,7 @@ contract("TAOFactory", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -90,7 +91,7 @@ contract("TAOFactory", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -103,7 +104,7 @@ contract("TAOFactory", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3LocalWriterKey.address,
 			{
 				from: account3
@@ -116,7 +117,7 @@ contract("TAOFactory", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId4LocalWriterKey.address,
 			{
 				from: account4
@@ -133,7 +134,7 @@ contract("TAOFactory", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			10,
 			false,
@@ -451,7 +452,7 @@ contract("TAOFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1,
 				0,
 				false,
@@ -472,7 +473,7 @@ contract("TAOFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1,
 				0,
 				false,
@@ -493,7 +494,7 @@ contract("TAOFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1,
 				0,
 				false,
@@ -514,7 +515,7 @@ contract("TAOFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId2,
 				0,
 				false,
@@ -535,7 +536,7 @@ contract("TAOFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				taoId1,
 				0,
 				false,
@@ -564,7 +565,7 @@ contract("TAOFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId2,
 				0,
 				false,
@@ -584,7 +585,7 @@ contract("TAOFactory", function(accounts) {
 		assert.equal(canCreateTAO, false, "Compromised Name can create TAO");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		// Add a TAO
 		var totalTAOsCountBefore = await taofactory.getTotalTAOsCount();
@@ -594,7 +595,7 @@ contract("TAOFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId2,
 				0,
 				false,
@@ -616,7 +617,7 @@ contract("TAOFactory", function(accounts) {
 		var totalTAOsCountAfter = await taofactory.getTotalTAOsCount();
 		assert.equal(
 			totalTAOsCountAfter.toNumber(),
-			totalTAOsCountBefore.plus(1).toNumber(),
+			totalTAOsCountBefore.add(new BN(1)).toNumber(),
 			"getTotalTAOsCount() returns incorrect value"
 		);
 
@@ -639,7 +640,7 @@ contract("TAOFactory", function(accounts) {
 		assert.equal(getTAO[3], "somedathash", "getTAO() returns incorrect datHash");
 		assert.equal(getTAO[4], "somedatabase", "getTAO() returns incorrect database");
 		assert.equal(getTAO[5], "somekeyvalue", "getTAO() returns incorrect keyValue");
-		assert.equal(web3.toAscii(getTAO[6]).replace(/\0/g, ""), "somecontentid", "getTAO() returns incorrect contentId");
+		assert.equal(web3.utils.toAscii(getTAO[6]).replace(/\0/g, ""), "somecontentid", "getTAO() returns incorrect contentId");
 		assert.equal(getTAO[7].toNumber(), 0, "getTAO() returns incorrect typeId");
 
 		var taoIds = await taofactory.getTAOIds(0, totalTAOsCountAfter.toNumber());
@@ -653,7 +654,7 @@ contract("TAOFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				taoId2,
 				0,
 				false,
@@ -675,7 +676,7 @@ contract("TAOFactory", function(accounts) {
 		totalTAOsCountAfter = await taofactory.getTotalTAOsCount();
 		assert.equal(
 			totalTAOsCountAfter.toNumber(),
-			totalTAOsCountBefore.plus(1).toNumber(),
+			totalTAOsCountBefore.add(new BN(1)).toNumber(),
 			"getTotalTAOsCount() returns incorrect value"
 		);
 
@@ -698,7 +699,7 @@ contract("TAOFactory", function(accounts) {
 		assert.equal(getTAO[3], "somedathash", "getTAO() returns incorrect datHash");
 		assert.equal(getTAO[4], "somedatabase", "getTAO() returns incorrect database");
 		assert.equal(getTAO[5], "somekeyvalue", "getTAO() returns incorrect keyValue");
-		assert.equal(web3.toAscii(getTAO[6]).replace(/\0/g, ""), "somecontentid", "getTAO() returns incorrect contentId");
+		assert.equal(web3.utils.toAscii(getTAO[6]).replace(/\0/g, ""), "somecontentid", "getTAO() returns incorrect contentId");
 		assert.equal(getTAO[7].toNumber(), 0, "getTAO() returns incorrect typeId");
 
 		taoIds = await taofactory.getTAOIds(0, totalTAOsCountAfter.toNumber());
@@ -718,7 +719,7 @@ contract("TAOFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				taoId1,
 				0,
 				false,
@@ -740,7 +741,7 @@ contract("TAOFactory", function(accounts) {
 		totalTAOsCountAfter = await taofactory.getTotalTAOsCount();
 		assert.equal(
 			totalTAOsCountAfter.toNumber(),
-			totalTAOsCountBefore.plus(1).toNumber(),
+			totalTAOsCountBefore.add(new BN(1)).toNumber(),
 			"getTotalTAOsCount() returns incorrect value"
 		);
 
@@ -763,7 +764,7 @@ contract("TAOFactory", function(accounts) {
 		assert.equal(getTAO[3], "somedathash", "getTAO() returns incorrect datHash");
 		assert.equal(getTAO[4], "somedatabase", "getTAO() returns incorrect database");
 		assert.equal(getTAO[5], "somekeyvalue", "getTAO() returns incorrect keyValue");
-		assert.equal(web3.toAscii(getTAO[6]).replace(/\0/g, ""), "somecontentid", "getTAO() returns incorrect contentId");
+		assert.equal(web3.utils.toAscii(getTAO[6]).replace(/\0/g, ""), "somecontentid", "getTAO() returns incorrect contentId");
 		assert.equal(getTAO[7].toNumber(), 0, "getTAO() returns incorrect typeId");
 
 		taoIds = await taofactory.getTAOIds(0, totalTAOsCountAfter.toNumber());
@@ -786,12 +787,20 @@ contract("TAOFactory", function(accounts) {
 		var data = "somedata";
 		var nonce = await taofactory.nonces(taoId2);
 
-		var signature = createSignature(account2PrivateKey, data, nonce.plus(1).toNumber());
+		var signature = createSignature(account2PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		var vrs = EthCrypto.vrs.fromString(signature);
 
 		var canValidate, isValid;
 		try {
-			isValid = await taofactory.validateTAOSignature(data, nonce.plus(1).toNumber(), account2, "somename", vrs.v, vrs.r, vrs.s);
+			isValid = await taofactory.validateTAOSignature(
+				data,
+				nonce.add(new BN(1)).toNumber(),
+				account2,
+				"somename",
+				vrs.v,
+				vrs.r,
+				vrs.s
+			);
 			canValidate = true;
 		} catch (e) {
 			canValidate = false;
@@ -809,12 +818,12 @@ contract("TAOFactory", function(accounts) {
 		// Incorrect nonce
 		verifyInvalidSignature(isValid);
 
-		signature = createSignature(account1PrivateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(account1PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
 			isValid = await taofactory.validateTAOSignature(
 				data,
-				nonce.plus(1).toNumber(),
+				nonce.add(new BN(1)).toNumber(),
 				account2,
 				"Delta's TAO #1",
 				vrs.v,
@@ -828,12 +837,12 @@ contract("TAOFactory", function(accounts) {
 		// signatureAddress != validateAddress
 		verifyInvalidSignature(isValid);
 
-		signature = createSignature(account1PrivateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(account1PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
 			isValid = await taofactory.validateTAOSignature(
 				data,
-				nonce.plus(1).toNumber(),
+				nonce.add(new BN(1)).toNumber(),
 				account1,
 				"Delta's TAO #1",
 				vrs.v,
@@ -847,12 +856,12 @@ contract("TAOFactory", function(accounts) {
 		// validateAddress is not any of TAO's Position
 		verifyInvalidSignature(isValid);
 
-		signature = createSignature(account1PrivateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(account1PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
 			isValid = await taofactory.validateTAOSignature(
 				data,
-				nonce.plus(1).toNumber(),
+				nonce.add(new BN(1)).toNumber(),
 				emptyAddress,
 				"Delta's TAO #1",
 				vrs.v,
@@ -866,12 +875,12 @@ contract("TAOFactory", function(accounts) {
 		// signatureAddress is not any of TAO's Position
 		verifyInvalidSignature(isValid);
 
-		signature = createSignature(account2PrivateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(account2PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
 			isValid = await taofactory.validateTAOSignature(
 				data,
-				nonce.plus(1).toNumber(),
+				nonce.add(new BN(1)).toNumber(),
 				account2,
 				"Delta's TAO #1",
 				vrs.v,
@@ -887,12 +896,12 @@ contract("TAOFactory", function(accounts) {
 		assert.equal(isValid[1], "delta", "validateTAOSignature() returns incorrect Name's name that created the signature");
 		assert.equal(isValid[2].toNumber(), 1, "validateTAOSignature() returns incorrect Name's name that created the signature");
 
-		signature = createSignature(account2PrivateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(account2PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
 			isValid = await taofactory.validateTAOSignature(
 				data,
-				nonce.plus(1).toNumber(),
+				nonce.add(new BN(1)).toNumber(),
 				emptyAddress,
 				"Delta's TAO #1",
 				vrs.v,
@@ -912,12 +921,12 @@ contract("TAOFactory", function(accounts) {
 		await nametaoposition.setListener(taoId2, nameId3, { from: account2 });
 		nonce = await taofactory.nonces(taoId2);
 
-		signature = createSignature(account3PrivateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(account3PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
 			isValid = await taofactory.validateTAOSignature(
 				data,
-				nonce.plus(1).toNumber(),
+				nonce.add(new BN(1)).toNumber(),
 				account3,
 				"Delta's TAO #1",
 				vrs.v,
@@ -936,7 +945,7 @@ contract("TAOFactory", function(accounts) {
 		try {
 			isValid = await taofactory.validateTAOSignature(
 				data,
-				nonce.plus(1).toNumber(),
+				nonce.add(new BN(1)).toNumber(),
 				emptyAddress,
 				"Delta's TAO #1",
 				vrs.v,
@@ -956,12 +965,12 @@ contract("TAOFactory", function(accounts) {
 		await nametaoposition.setSpeaker(taoId2, nameId4, { from: account2 });
 		nonce = await taofactory.nonces(taoId2);
 
-		signature = createSignature(account4PrivateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(account4PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
 			isValid = await taofactory.validateTAOSignature(
 				data,
-				nonce.plus(1).toNumber(),
+				nonce.add(new BN(1)).toNumber(),
 				account4,
 				"Delta's TAO #1",
 				vrs.v,
@@ -980,7 +989,7 @@ contract("TAOFactory", function(accounts) {
 		try {
 			isValid = await taofactory.validateTAOSignature(
 				data,
-				nonce.plus(1).toNumber(),
+				nonce.add(new BN(1)).toNumber(),
 				emptyAddress,
 				"Delta's TAO #1",
 				vrs.v,

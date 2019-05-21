@@ -24,7 +24,7 @@ contract("Epiphany", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameIdLocalWriterKey.address,
 			{
 				from: account1
@@ -36,9 +36,20 @@ contract("Epiphany", function(accounts) {
 		await logos.setWhitelist(theAO, true, { from: theAO });
 		await logos.mint(nameId, 10 ** 12, { from: theAO });
 
-		result = await taofactory.createTAO("newTAO", "somedathash", "somedatabase", "somekeyvalue", "somecontentid", nameId, 0, false, 0, {
-			from: account1
-		});
+		result = await taofactory.createTAO(
+			"newTAO",
+			"somedathash",
+			"somedatabase",
+			"somekeyvalue",
+			web3.utils.toHex("somecontentid"),
+			nameId,
+			0,
+			false,
+			0,
+			{
+				from: account1
+			}
+		);
 		var createTAOEvent = result.logs[0];
 		taoId = createTAOEvent.args.taoId;
 	});

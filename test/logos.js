@@ -7,6 +7,7 @@ var AOSetting = artifacts.require("./AOSetting.sol");
 
 var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
+var BN = require("bn.js");
 
 contract("Logos", function(accounts) {
 	var namefactory,
@@ -55,7 +56,7 @@ contract("Logos", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -68,7 +69,7 @@ contract("Logos", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -81,7 +82,7 @@ contract("Logos", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3LocalWriterKey.address,
 			{
 				from: account3
@@ -94,7 +95,7 @@ contract("Logos", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId4LocalWriterKey.address,
 			{
 				from: account4
@@ -147,7 +148,7 @@ contract("Logos", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -164,7 +165,7 @@ contract("Logos", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2,
 			0,
 			false,
@@ -503,7 +504,7 @@ contract("Logos", function(accounts) {
 		assert.equal(canPositionFrom, false, "Advocate of Name can position Logos on other Name even though the from Name is compromised");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		// Listener submit account recovery for nameId2
 		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
@@ -520,7 +521,7 @@ contract("Logos", function(accounts) {
 		assert.equal(canPositionFrom, false, "Advocate of Name can position Logos on other Name even though the to Name is compromised");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nameId1AvailableToPositionAmountBefore = await logos.availableToPositionAmount(nameId1);
 		var nameId2SumBalanceBefore = await logos.sumBalanceOf(nameId2);
@@ -538,12 +539,12 @@ contract("Logos", function(accounts) {
 
 		assert.equal(
 			nameId1AvailableToPositionAmountAfter.toNumber(),
-			nameId1AvailableToPositionAmountBefore.minus(100).toNumber(),
+			nameId1AvailableToPositionAmountBefore.sub(new BN(100)).toNumber(),
 			"Name has incorrect available to position amount after positioning logos on other Name"
 		);
 		assert.equal(
 			nameId2SumBalanceAfter.toNumber(),
-			nameId2SumBalanceBefore.plus(100).toNumber(),
+			nameId2SumBalanceBefore.add(new BN(100)).toNumber(),
 			"Name has incorrect sum balance after receiving position logos from other Name"
 		);
 
@@ -610,7 +611,7 @@ contract("Logos", function(accounts) {
 		);
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		// Listener submit account recovery for nameId2
 		await nameaccountrecovery.submitAccountRecovery(nameId2, { from: account3 });
@@ -631,7 +632,7 @@ contract("Logos", function(accounts) {
 		);
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nameId1AvailableToPositionAmountBefore = await logos.availableToPositionAmount(nameId1);
 		var nameId2SumBalanceBefore = await logos.sumBalanceOf(nameId2);
@@ -649,12 +650,12 @@ contract("Logos", function(accounts) {
 
 		assert.equal(
 			nameId1AvailableToPositionAmountAfter.toNumber(),
-			nameId1AvailableToPositionAmountBefore.plus(100).toNumber(),
+			nameId1AvailableToPositionAmountBefore.add(new BN(100)).toNumber(),
 			"Name has incorrect available to position amount after unpositioning logos from other Name"
 		);
 		assert.equal(
 			nameId2SumBalanceAfter.toNumber(),
-			nameId2SumBalanceBefore.minus(100).toNumber(),
+			nameId2SumBalanceBefore.sub(new BN(100)).toNumber(),
 			"Name has incorrect sum balance after other Name unposition logos"
 		);
 
@@ -698,7 +699,7 @@ contract("Logos", function(accounts) {
 		var nameId1SumBalanceAfter = await logos.sumBalanceOf(nameId1);
 		assert.equal(
 			nameId1SumBalanceAfter.toNumber(),
-			nameId1SumBalanceBefore.plus(10).toNumber(),
+			nameId1SumBalanceBefore.add(new BN(10)).toNumber(),
 			"Advocate of TAO has incorrect Logos after receiving advocated TAO Logos"
 		);
 
@@ -772,12 +773,12 @@ contract("Logos", function(accounts) {
 
 		assert.equal(
 			nameId1SumBalanceAfter.toNumber(),
-			nameId1SumBalanceBefore.minus(10).toNumber(),
+			nameId1SumBalanceBefore.sub(new BN(10)).toNumber(),
 			"Name has incorrect Logos after transferring advocated TAO Logos"
 		);
 		assert.equal(
 			nameId2SumBalanceAfter.toNumber(),
-			nameId2SumBalanceBefore.plus(10).toNumber(),
+			nameId2SumBalanceBefore.add(new BN(10)).toNumber(),
 			"Advocate of TAO has incorrect Logos after receiving transferred advocated TAO Logos"
 		);
 	});

@@ -9,6 +9,7 @@ var AOSetting = artifacts.require("./AOSetting.sol");
 
 var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
+var BN = require("bn.js");
 
 contract("TAOAncestry", function(accounts) {
 	var namefactory,
@@ -60,7 +61,7 @@ contract("TAOAncestry", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -73,7 +74,7 @@ contract("TAOAncestry", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -86,7 +87,7 @@ contract("TAOAncestry", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3LocalWriterKey.address,
 			{
 				from: account3
@@ -104,7 +105,7 @@ contract("TAOAncestry", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -258,7 +259,7 @@ contract("TAOAncestry", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2,
 			0,
 			false,
@@ -325,7 +326,7 @@ contract("TAOAncestry", function(accounts) {
 		assert.equal(canUpdateChildMinLogos, false, "Compormised Advocate of TAO can update childMinLogos");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nonceBefore = await taofactory.nonces(taoId2);
 		try {
@@ -337,7 +338,7 @@ contract("TAOAncestry", function(accounts) {
 		assert.equal(canUpdateChildMinLogos, true, "Advocate of TAO can't update childMinLogos");
 
 		var nonceAfter = await taofactory.nonces(taoId2);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "TAO has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "TAO has incorrect nonce");
 
 		ancestry = await taoancestry.getAncestryById(taoId2);
 		assert.equal(ancestry[1].toNumber(), childMinLogos, "getAncestryById() returns incorrect childMinLogos");
@@ -354,7 +355,7 @@ contract("TAOAncestry", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			taoId2,
 			0,
 			false,
@@ -367,7 +368,7 @@ contract("TAOAncestry", function(accounts) {
 		taoId3 = createTAOEvent.args.taoId;
 
 		var nonceAfter = await taofactory.nonces(taoId2);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "Parent TAO has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "Parent TAO has incorrect nonce");
 
 		var isExist = await taoancestry.isExist(taoId3);
 		assert.equal(isExist, true, "isExist() returns incorrect value");
@@ -381,7 +382,7 @@ contract("TAOAncestry", function(accounts) {
 		var ancestryAfter = await taoancestry.getAncestryById(taoId2);
 		assert.equal(
 			ancestryAfter[2].toNumber(),
-			ancestryBefore[2].plus(1).toNumber(),
+			ancestryBefore[2].add(new BN(1)).toNumber(),
 			"getAncestryById() returns incorrect totalChildren"
 		);
 
@@ -401,7 +402,7 @@ contract("TAOAncestry", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				taoId2,
 				0,
 				false,
@@ -433,7 +434,7 @@ contract("TAOAncestry", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			taoId2,
 			0,
 			false,
@@ -535,7 +536,7 @@ contract("TAOAncestry", function(accounts) {
 		assert.equal(canApprove, false, "Compromised Advocate of parent TAO can approve child TAO");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var ancestryBefore = await taoancestry.getAncestryById(taoId2);
 		var nonceBefore = await taofactory.nonces(taoId2);
@@ -549,12 +550,12 @@ contract("TAOAncestry", function(accounts) {
 		assert.equal(canApprove, true, "Advocate of parent TAO can't approve child TAO");
 
 		var nonceAfter = await taofactory.nonces(taoId2);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "TAO has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "TAO has incorrect nonce");
 
 		var ancestryAfter = await taoancestry.getAncestryById(taoId2);
 		assert.equal(
 			ancestryAfter[2].toNumber(),
-			ancestryBefore[2].plus(1).toNumber(),
+			ancestryBefore[2].add(new BN(1)).toNumber(),
 			"getAncestryById() returns incorrect totalChildren"
 		);
 
@@ -611,7 +612,7 @@ contract("TAOAncestry", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			taoId2,
 			0,
 			false,
@@ -646,7 +647,7 @@ contract("TAOAncestry", function(accounts) {
 		assert.equal(canRemove, false, "Compromised Advocate of parent TAO can remove child TAO");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var ancestryBefore = await taoancestry.getAncestryById(taoId2);
 		var nonceBefore = await taofactory.nonces(taoId2);
@@ -660,12 +661,12 @@ contract("TAOAncestry", function(accounts) {
 		assert.equal(canRemove, true, "Advocate of parent TAO can't remove child TAO");
 
 		var nonceAfter = await taofactory.nonces(taoId2);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "TAO has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "TAO has incorrect nonce");
 
 		var ancestryAfter = await taoancestry.getAncestryById(taoId2);
 		assert.equal(
 			ancestryAfter[2].toNumber(),
-			ancestryBefore[2].minus(1).toNumber(),
+			ancestryBefore[2].sub(new BN(1)).toNumber(),
 			"getAncestryById() returns incorrect totalChildren"
 		);
 

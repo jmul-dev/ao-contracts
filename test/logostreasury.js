@@ -13,8 +13,10 @@ var LogosTreasury = artifacts.require("./LogosTreasury.sol");
 var NameFactory = artifacts.require("./NameFactory.sol");
 var TAOFactory = artifacts.require("./TAOFactory.sol");
 var NameTAOPosition = artifacts.require("./NameTAOPosition.sol");
+var Logos = artifacts.require("./Logos.sol");
 
 var EthCrypto = require("eth-crypto");
+var BN = require("bn.js");
 
 contract("LogosTreasury", function(accounts) {
 	var logostreasury,
@@ -31,6 +33,7 @@ contract("LogosTreasury", function(accounts) {
 		namefactory,
 		taofactory,
 		nametaoposition,
+		logos,
 		nameId1,
 		taoId1;
 	var theAO = accounts[0];
@@ -58,6 +61,7 @@ contract("LogosTreasury", function(accounts) {
 		namefactory = await NameFactory.deployed();
 		taofactory = await TAOFactory.deployed();
 		nametaoposition = await NameTAOPosition.deployed();
+		logos = await Logos.deployed();
 
 		// Create Name
 		var result = await namefactory.createName(
@@ -65,7 +69,7 @@ contract("LogosTreasury", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameIdLocalWriterKey.address,
 			{
 				from: account1
@@ -82,7 +86,7 @@ contract("LogosTreasury", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -96,16 +100,16 @@ contract("LogosTreasury", function(accounts) {
 	});
 
 	it("should have all of Logos denominations", async function() {
-		base = await logostreasury.getDenominationByName("logos");
-		kilo = await logostreasury.getDenominationByName("kilo");
-		mega = await logostreasury.getDenominationByName("mega");
-		giga = await logostreasury.getDenominationByName("giga");
-		tera = await logostreasury.getDenominationByName("tera");
-		peta = await logostreasury.getDenominationByName("peta");
-		exa = await logostreasury.getDenominationByName("exa");
-		zetta = await logostreasury.getDenominationByName("zetta");
-		yotta = await logostreasury.getDenominationByName("yotta");
-		xona = await logostreasury.getDenominationByName("xona");
+		base = await logostreasury.getDenominationByName(web3.utils.toHex("logos"));
+		kilo = await logostreasury.getDenominationByName(web3.utils.toHex("kilo"));
+		mega = await logostreasury.getDenominationByName(web3.utils.toHex("mega"));
+		giga = await logostreasury.getDenominationByName(web3.utils.toHex("giga"));
+		tera = await logostreasury.getDenominationByName(web3.utils.toHex("tera"));
+		peta = await logostreasury.getDenominationByName(web3.utils.toHex("peta"));
+		exa = await logostreasury.getDenominationByName(web3.utils.toHex("exa"));
+		zetta = await logostreasury.getDenominationByName(web3.utils.toHex("zetta"));
+		yotta = await logostreasury.getDenominationByName(web3.utils.toHex("yotta"));
+		xona = await logostreasury.getDenominationByName(web3.utils.toHex("xona"));
 
 		assert.equal(base[1], logos.address, "contract is missing logos from list of denominations");
 		assert.equal(kilo[1], logoskilo.address, "contract is missing kilo from list of denominations");
@@ -210,21 +214,21 @@ contract("LogosTreasury", function(accounts) {
 	it("The AO - addDenomination() should be able to can add denomination", async function() {
 		var canAdd;
 		try {
-			await logostreasury.addDenomination("deno", someAddress, { from: account2 });
+			await logostreasury.addDenomination(web3.utils.toHex("deno"), someAddress, { from: account2 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
 		assert.notEqual(canAdd, true, "Others can add denomination");
 		try {
-			await logostreasury.addDenomination("kilo", someAddress, { from: account1 });
+			await logostreasury.addDenomination(web3.utils.toHex("kilo"), someAddress, { from: account1 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
 		}
 		assert.notEqual(canAdd, true, "The AO can re-add existing denomination");
 		try {
-			await logostreasury.addDenomination("deno", someAddress, { from: account1 });
+			await logostreasury.addDenomination(web3.utils.toHex("deno"), someAddress, { from: account1 });
 			canAdd = true;
 		} catch (e) {
 			canAdd = false;
@@ -235,63 +239,63 @@ contract("LogosTreasury", function(accounts) {
 	it("The AO - updateDenomination() should be able to update denomination", async function() {
 		var canUpdate;
 		try {
-			await logostreasury.updateDenomination("kilo", logoskilo.address, { from: account2 });
+			await logostreasury.updateDenomination(web3.utils.toHex("kilo"), logoskilo.address, { from: account2 });
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
 		}
 		assert.notEqual(canUpdate, true, "Others can update denomination");
 		try {
-			await logostreasury.updateDenomination("deca", someAddress, { from: account1 });
+			await logostreasury.updateDenomination(web3.utils.toHex("deca"), someAddress, { from: account1 });
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
 		}
 		assert.notEqual(canUpdate, true, "The AO can update non-existing denomination");
 		try {
-			await logostreasury.updateDenomination("kilo", someAddress, { from: account1 });
+			await logostreasury.updateDenomination(web3.utils.toHex("kilo"), someAddress, { from: account1 });
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
 		}
 		assert.notEqual(canUpdate, true, "The AO can set invalid denomination address");
 		try {
-			await logostreasury.updateDenomination("kilo", logoskilo.address, { from: account1 });
+			await logostreasury.updateDenomination(web3.utils.toHex("kilo"), logoskilo.address, { from: account1 });
 			canUpdate = true;
 		} catch (e) {
 			canUpdate = false;
 		}
 		assert.equal(canUpdate, true, "The AO can't update denomination");
-		var kilo = await logostreasury.getDenominationByName("kilo");
+		var kilo = await logostreasury.getDenominationByName(web3.utils.toHex("kilo"));
 		assert.equal(kilo[1], logoskilo.address, "Denomination has incorrect denomination address after update");
 	});
 
 	it("isDenominationExist() - should check whether or not a denomination exist", async function() {
-		var isDenominationExist = await logostreasury.isDenominationExist("kilo");
+		var isDenominationExist = await logostreasury.isDenominationExist(web3.utils.toHex("kilo"));
 		assert.equal(isDenominationExist, true, "isDenominationExist() returns incorrect value");
 
-		isDenominationExist = await logostreasury.isDenominationExist("deca");
+		isDenominationExist = await logostreasury.isDenominationExist(web3.utils.toHex("deca"));
 		assert.equal(isDenominationExist, false, "isDenominationExist() returns incorrect value");
 	});
 
 	it("getDenominationByName() - should return denomination info given a denomination name", async function() {
 		var canGetDenominationByName;
 		try {
-			var denomination = await logostreasury.getDenominationByName("deca");
+			var denomination = await logostreasury.getDenominationByName(web3.utils.toHex("deca"));
 			canGetDenominationByName = true;
 		} catch (e) {
 			canGetDenominationByName = false;
 		}
 		assert.equal(canGetDenominationByName, false, "getDenominationByName() can get info of a non-existing denomination");
 
-		var denomination = await logostreasury.getDenominationByName("kilo");
+		var denomination = await logostreasury.getDenominationByName(web3.utils.toHex("kilo"));
 		var name = await logoskilo.name();
 		var symbol = await logoskilo.symbol();
 		var decimals = await logoskilo.decimals();
 		var powerOfTen = await logoskilo.powerOfTen();
 
 		assert.equal(
-			web3.toAscii(denomination[0]).replace(/\0/g, ""),
+			web3.utils.toAscii(denomination[0]).replace(/\0/g, ""),
 			"kilo",
 			"getDenominationByName() returns incorrect value for denomination internal name"
 		);
@@ -319,7 +323,7 @@ contract("LogosTreasury", function(accounts) {
 		var powerOfTen = await logoskilo.powerOfTen();
 
 		assert.equal(
-			web3.toAscii(denomination[0]).replace(/\0/g, ""),
+			web3.utils.toAscii(denomination[0]).replace(/\0/g, ""),
 			"kilo",
 			"getDenominationByIndex() returns incorrect value for denomination internal name"
 		);
@@ -338,7 +342,7 @@ contract("LogosTreasury", function(accounts) {
 		var powerOfTen = await logos.powerOfTen();
 
 		assert.equal(
-			web3.toAscii(denomination[0]).replace(/\0/g, ""),
+			web3.utils.toAscii(denomination[0]).replace(/\0/g, ""),
 			"logos",
 			"getBaseDenomination() returns incorrect value for denomination internal name"
 		);
@@ -350,43 +354,43 @@ contract("LogosTreasury", function(accounts) {
 	});
 
 	it("toBase() should return correct amount", async function() {
-		var kiloToBase = await logostreasury.toBase(9, 1, "kilo");
+		var kiloToBase = await logostreasury.toBase(9, 1, web3.utils.toHex("kilo"));
 		assert.equal(kiloToBase.toNumber(), 9001, "toBase kilo return wrong amount of Logos");
-		kiloToBase = await logostreasury.toBase(9, 20, "kilo");
+		kiloToBase = await logostreasury.toBase(9, 20, web3.utils.toHex("kilo"));
 		assert.equal(kiloToBase.toNumber(), 9020, "toBase kilo return wrong amount of Logos");
-		kiloToBase = await logostreasury.toBase(9, 100, "kilo");
+		kiloToBase = await logostreasury.toBase(9, 100, web3.utils.toHex("kilo"));
 		assert.equal(kiloToBase.toNumber(), 9100, "toBase kilo return wrong amount of Logos");
 
-		var megaToBase = await logostreasury.toBase(9, 123, "mega");
-		var gigaToBase = await logostreasury.toBase(9, 123, "giga");
-		var teraToBase = await logostreasury.toBase(9, 123, "tera");
-		var petaToBase = await logostreasury.toBase(9, 123, "peta");
-		var exaToBase = await logostreasury.toBase(9, 123, "exa");
-		var zettaToBase = await logostreasury.toBase(9, 123, "zetta");
-		var yottaToBase = await logostreasury.toBase(9, 123, "yotta");
-		var xonaToBase = await logostreasury.toBase(9, 123, "xona");
+		var megaToBase = await logostreasury.toBase(9, 123, web3.utils.toHex("mega"));
+		var gigaToBase = await logostreasury.toBase(9, 123, web3.utils.toHex("giga"));
+		var teraToBase = await logostreasury.toBase(9, 123, web3.utils.toHex("tera"));
+		var petaToBase = await logostreasury.toBase(9, 123, web3.utils.toHex("peta"));
+		var exaToBase = await logostreasury.toBase(9, 123, web3.utils.toHex("exa"));
+		var zettaToBase = await logostreasury.toBase(9, 123, web3.utils.toHex("zetta"));
+		var yottaToBase = await logostreasury.toBase(9, 123, web3.utils.toHex("yotta"));
+		var xonaToBase = await logostreasury.toBase(9, 123, web3.utils.toHex("xona"));
 
 		assert.equal(megaToBase.toNumber(), 9000123, "toBase mega return wrong amount of Logos");
 		assert.equal(gigaToBase.toNumber(), 9000000123, "toBase giga return wrong amount of Logos");
 		assert.equal(teraToBase.toNumber(), 9000000000123, "toBase tera return wrong amount of Logos");
-		assert.equal(petaToBase.toNumber(), "9000000000000123", "toBase peta return wrong amount of Logos");
-		assert.equal(exaToBase.toNumber(), "9000000000000000123", "toBase exa return wrong amount of Logos");
-		assert.equal(zettaToBase.toNumber(), "9000000000000000000123", "toBase zetta return wrong amount of Logos");
-		assert.equal(yottaToBase.toNumber(), "9000000000000000000000123", "toBase yotta return wrong amount of Logos");
-		assert.equal(xonaToBase.toNumber(), "9000000000000000000000000123", "toBase xona return wrong amount of Logos");
+		assert.equal(petaToBase.toString(), "9000000000000123", "toBase peta return wrong amount of Logos");
+		assert.equal(exaToBase.toString(), "9000000000000000123", "toBase exa return wrong amount of Logos");
+		assert.equal(zettaToBase.toString(), "9000000000000000000123", "toBase zetta return wrong amount of Logos");
+		assert.equal(yottaToBase.toString(), "9000000000000000000000123", "toBase yotta return wrong amount of Logos");
+		assert.equal(xonaToBase.toString(), "9000000000000000000000000123", "toBase xona return wrong amount of Logos");
 	});
 
 	it("fromBase() should return correct amount", async function() {
-		var baseTologos = await logostreasury.fromBase(9001, "logos");
-		var baseToKilo = await logostreasury.fromBase(9123, "kilo");
-		var baseToMega = await logostreasury.fromBase(1203, "mega");
-		var baseToGiga = await logostreasury.fromBase(9123456789, "giga");
-		var baseToTera = await logostreasury.fromBase(9123456789123, "tera");
-		var baseToPeta = await logostreasury.fromBase("9123456789123456", "peta");
-		var baseToExa = await logostreasury.fromBase("9123456789123456789", "exa");
-		var baseToZetta = await logostreasury.fromBase("9123456789123456789123", "zetta");
-		var baseToYotta = await logostreasury.fromBase("9123456789123456789123456", "yotta");
-		var baseToXona = await logostreasury.fromBase("9000000000123456789123456789", "xona");
+		var baseTologos = await logostreasury.fromBase(9001, web3.utils.toHex("logos"));
+		var baseToKilo = await logostreasury.fromBase(9123, web3.utils.toHex("kilo"));
+		var baseToMega = await logostreasury.fromBase(1203, web3.utils.toHex("mega"));
+		var baseToGiga = await logostreasury.fromBase(9123456789, web3.utils.toHex("giga"));
+		var baseToTera = await logostreasury.fromBase(9123456789123, web3.utils.toHex("tera"));
+		var baseToPeta = await logostreasury.fromBase("9123456789123456", web3.utils.toHex("peta"));
+		var baseToExa = await logostreasury.fromBase("9123456789123456789", web3.utils.toHex("exa"));
+		var baseToZetta = await logostreasury.fromBase("9123456789123456789123", web3.utils.toHex("zetta"));
+		var baseToYotta = await logostreasury.fromBase("9123456789123456789123456", web3.utils.toHex("yotta"));
+		var baseToXona = await logostreasury.fromBase("9000000000123456789123456789", web3.utils.toHex("xona"));
 
 		assert.equal(baseTologos[0].toNumber(), 9001, "fromBase logos return wrong integer");
 		assert.equal(baseTologos[1].toNumber(), 0, "fromBase logos return wrong fraction");
@@ -399,21 +403,21 @@ contract("LogosTreasury", function(accounts) {
 		assert.equal(baseToTera[0].toNumber(), 9, "fromBase tera return wrong integer");
 		assert.equal(baseToTera[1].toNumber(), 123456789123, "fromBase tera return wrong fraction");
 		assert.equal(baseToPeta[0].toNumber(), 9, "fromBase peta return wrong integer");
-		assert.equal(baseToPeta[1].toNumber(), "123456789123456", "fromBase peta return wrong fraction");
+		assert.equal(baseToPeta[1].toString(), "123456789123456", "fromBase peta return wrong fraction");
 		assert.equal(baseToExa[0].toNumber(), 9, "fromBase exa return wrong integer");
-		assert.equal(baseToExa[1].toNumber(), "123456789123456789", "fromBase exa return wrong fraction");
+		assert.equal(baseToExa[1].toString(), "123456789123456789", "fromBase exa return wrong fraction");
 		assert.equal(baseToZetta[0].toNumber(), 9, "fromBase zetta return wrong integer");
-		assert.equal(baseToZetta[1].toNumber(), "123456789123456789123", "fromBase zetta return wrong fraction");
+		assert.equal(baseToZetta[1].toString(), "123456789123456789123", "fromBase zetta return wrong fraction");
 		assert.equal(baseToYotta[0].toNumber(), 9, "fromBase yotta return wrong integer");
-		assert.equal(baseToYotta[1].toNumber(), "123456789123456789123456", "fromBase yotta return wrong fraction");
+		assert.equal(baseToYotta[1].toString(), "123456789123456789123456", "fromBase yotta return wrong fraction");
 		assert.equal(baseToXona[0].toNumber(), 9, "fromBase xona return wrong integer");
-		assert.equal(baseToXona[1].toNumber(), "123456789123456789", "fromBase xona return wrong fraction");
+		assert.equal(baseToXona[1].toString(), "123456789123456789", "fromBase xona return wrong fraction");
 	});
 
 	it("toHighestDenomination() - should return the correct highest possible denomination given a base amount", async function() {
 		var highestDenomination = await logostreasury.toHighestDenomination(10);
 		assert.equal(
-			web3.toAscii(highestDenomination[0]).replace(/\0/g, ""),
+			web3.utils.toAscii(highestDenomination[0]).replace(/\0/g, ""),
 			"logos",
 			"Highest denomination returns incorrect denomination"
 		);
@@ -431,7 +435,7 @@ contract("LogosTreasury", function(accounts) {
 
 		var highestDenomination = await logostreasury.toHighestDenomination(28340394);
 		assert.equal(
-			web3.toAscii(highestDenomination[0]).replace(/\0/g, ""),
+			web3.utils.toAscii(highestDenomination[0]).replace(/\0/g, ""),
 			"mega",
 			"Highest denomination returns incorrect denomination"
 		);
@@ -449,9 +453,14 @@ contract("LogosTreasury", function(accounts) {
 	});
 
 	it("exchangeDenomination() - should exchange Logos from `fromDenominationName` to `toDenominationName` correctly", async function() {
+		await logos.setWhitelist(theAO, true, { from: theAO });
+		await logos.mint(nameId1, 100, { from: theAO });
+
 		var canExchange, exchangeDenominationEvent, exchangeId;
 		try {
-			var result = await logostreasury.exchangeDenomination(50, "deca", "logos", { from: account1 });
+			var result = await logostreasury.exchangeDenomination(50, web3.utils.toHex("deca"), web3.utils.toHex("logos"), {
+				from: account1
+			});
 			exchangeDenominationEvent = result.logs[0];
 			exchangeId = exchangeDenominationEvent.args.exchangeId;
 			canExchange = true;
@@ -463,7 +472,9 @@ contract("LogosTreasury", function(accounts) {
 		assert.notEqual(canExchange, true, "Contract can exchange Logos from invalid origin denomination");
 
 		try {
-			var result = await logostreasury.exchangeDenomination(50, "logos", "deca", { from: account1 });
+			var result = await logostreasury.exchangeDenomination(50, web3.utils.toHex("logos"), web3.utils.toHex("deca"), {
+				from: account1
+			});
 			exchangeDenominationEvent = result.logs[0];
 			exchangeId = exchangeDenominationEvent.args.exchangeId;
 			canExchange = true;
@@ -475,7 +486,9 @@ contract("LogosTreasury", function(accounts) {
 		assert.notEqual(canExchange, true, "Contract can exchange Logos to invalid target denomination");
 
 		try {
-			var result = await logostreasury.exchangeDenomination(10 ** 20, "logos", "kilo", { from: account1 });
+			var result = await logostreasury.exchangeDenomination(10 ** 20, web3.utils.toHex("logos"), web3.utils.toHex("kilo"), {
+				from: account1
+			});
 			exchangeDenominationEvent = result.logs[0];
 			exchangeId = exchangeDenominationEvent.args.exchangeId;
 			canExchange = true;
@@ -490,7 +503,9 @@ contract("LogosTreasury", function(accounts) {
 		var nameId1KiloBalanceBefore = await logoskilo.balanceOf(nameId1);
 
 		try {
-			var result = await logostreasury.exchangeDenomination(50, "logos", "kilo", { from: account1 });
+			var result = await logostreasury.exchangeDenomination(50, web3.utils.toHex("logos"), web3.utils.toHex("kilo"), {
+				from: account1
+			});
 			exchangeDenominationEvent = result.logs[0];
 			exchangeId = exchangeDenominationEvent.args.exchangeId;
 			canExchange = true;
@@ -505,12 +520,12 @@ contract("LogosTreasury", function(accounts) {
 
 		assert.equal(
 			nameId1LogosBalanceAfter.toNumber(),
-			nameId1LogosBalanceBefore.minus(50).toNumber(),
+			nameId1LogosBalanceBefore.sub(new BN(50)).toNumber(),
 			"NameId1 has incorrect Logos balance after exchanging"
 		);
 		assert.equal(
 			nameId1KiloBalanceAfter.toNumber(),
-			nameId1KiloBalanceBefore.plus(50).toNumber(),
+			nameId1KiloBalanceBefore.add(new BN(50)).toNumber(),
 			"NameId1 has incorrect Logos Kilo  balance after exchanging"
 		);
 
@@ -522,6 +537,6 @@ contract("LogosTreasury", function(accounts) {
 		assert.equal(denominationExchange[2], logoskilo.address, "DenominationExchange returns incorrect toDenominationAddress");
 		assert.equal(denominationExchange[3], fromSymbol, "DenominationExchange returns incorrect from denomination symbol");
 		assert.equal(denominationExchange[4], toSymbol, "DenominationExchange returns incorrect to denomination symbol");
-		assert.equal(denominationExchange[5], 50, "DenominationExchange returns incorrect to amount exchanged");
+		assert.equal(denominationExchange[5], 50, "DenominationExchange returns incorrect amount exchanged");
 	});
 });

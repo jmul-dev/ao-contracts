@@ -9,6 +9,7 @@ var AOSetting = artifacts.require("./AOSetting.sol");
 
 var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
+var BN = require("bn.js");
 
 contract("NameAccountRecovery", function(accounts) {
 	var namefactory,
@@ -58,7 +59,7 @@ contract("NameAccountRecovery", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -71,7 +72,7 @@ contract("NameAccountRecovery", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -84,7 +85,7 @@ contract("NameAccountRecovery", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3LocalWriterKey.address,
 			{
 				from: account3
@@ -103,7 +104,7 @@ contract("NameAccountRecovery", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -320,7 +321,7 @@ contract("NameAccountRecovery", function(accounts) {
 		assert.equal(canSubmit, false, "Compromised Listener of Name can submit account recovery");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nonceBefore = await namefactory.nonces(nameId1);
 		try {
@@ -332,13 +333,13 @@ contract("NameAccountRecovery", function(accounts) {
 		assert.equal(canSubmit, true, "Listener of Name can't submit account recovery");
 
 		var nonceAfter = await namefactory.nonces(nameId1);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "Name has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "Name has incorrect nonce");
 
 		var accountRecovery = await nameaccountrecovery.getAccountRecovery(nameId1);
 		assert.equal(accountRecovery[0], true, "getAccountRecovery() returns incorrect submitted status");
 		assert.isAbove(accountRecovery[1].toNumber(), 0, "getAccountRecovery() returns incorrect submittedTimestamp value");
 		assert.equal(
-			accountRecovery[2].minus(accountRecovery[1]).toNumber(),
+			accountRecovery[2].sub(accountRecovery[1]).toNumber(),
 			accountRecoveryLockDuration.toNumber(),
 			"getAccountRecovery() returns incorrect lockedUntilTimestamp value"
 		);
@@ -369,7 +370,7 @@ contract("NameAccountRecovery", function(accounts) {
 		assert.equal(isCompromised, false, "isCompromised() returns incorrect value");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		// If the time has passed the lockedUntilTimestamp, then the Name should be no longer compromised
 		isCompromised = await nameaccountrecovery.isCompromised(nameId1);
@@ -383,7 +384,7 @@ contract("NameAccountRecovery", function(accounts) {
 		var canSet;
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 		try {
 			await nameaccountrecovery.setNameNewAddress(nameId1, account4, { from: account3 });
 			canSet = true;
@@ -408,7 +409,7 @@ contract("NameAccountRecovery", function(accounts) {
 		assert.equal(canSet, false, "Compromised Speaker of Name can set Name's new address");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		//Re-submit account recovery again for the next test
 		await nameaccountrecovery.submitAccountRecovery(nameId1, { from: account2 });
@@ -451,9 +452,9 @@ contract("NameAccountRecovery", function(accounts) {
 
 		var nonceAfter = await namefactory.nonces(nameId1);
 		if (isKeyExistBefore) {
-			assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "Name has incorrect nonce");
+			assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "Name has incorrect nonce");
 		} else {
-			assert.equal(nonceAfter.toNumber(), nonceBefore.plus(2).toNumber(), "Name has incorrect nonce");
+			assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(2)).toNumber(), "Name has incorrect nonce");
 		}
 
 		var accountRecovery = await nameaccountrecovery.getAccountRecovery(nameId1);

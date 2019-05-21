@@ -10,6 +10,7 @@ var NamePublicKey = artifacts.require("./NamePublicKey.sol");
 
 var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
+var BN = require("bn.js");
 
 contract("AOTera", function(accounts) {
 	var namefactory,
@@ -89,7 +90,7 @@ contract("AOTera", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1LocalWriterKey.address,
 				{
 					from: account1
@@ -106,7 +107,7 @@ contract("AOTera", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1,
 				0,
 				false,
@@ -240,7 +241,7 @@ contract("AOTera", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1LocalWriterKey.address,
 				{
 					from: account1
@@ -253,7 +254,7 @@ contract("AOTera", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId2LocalWriterKey.address,
 				{
 					from: account2
@@ -279,14 +280,14 @@ contract("AOTera", function(accounts) {
 				},
 				{
 					type: "uint256",
-					value: nonce.plus(1).toNumber()
+					value: nonce.add(new BN(1)).toNumber()
 				}
 			]);
 
 			var signature = EthCrypto.sign(account3PrivateKey, signHash);
 			var vrs = EthCrypto.vrs.fromString(signature);
 
-			await namepublickey.addKey(nameId1, account3, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
+			await namepublickey.addKey(nameId1, account3, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, { from: account1 });
 		});
 
 		it("Whitelisted address - mint()  can mint", async function() {
@@ -312,8 +313,12 @@ contract("AOTera", function(accounts) {
 			var balanceAfter = await aotera.balanceOf(account1);
 			var totalSupplyAfter = await aotera.totalSupply();
 
-			assert.equal(balanceAfter.toNumber(), balanceBefore.plus(100).toNumber(), "Account1 has incorrect balance after minting");
-			assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.plus(100).toNumber(), "Contract has incorrect totalSupply");
+			assert.equal(
+				balanceAfter.toNumber(),
+				balanceBefore.add(new BN(100)).toNumber(),
+				"Account1 has incorrect balance after minting"
+			);
+			assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.add(new BN(100)).toNumber(), "Contract has incorrect totalSupply");
 		});
 
 		it("WhitelistedAddress - stakeFrom() should be able to stake ions on behalf of others", async function() {
@@ -350,12 +355,12 @@ contract("AOTera", function(accounts) {
 
 			assert.equal(
 				account1BalanceAfter.toString(),
-				account1BalanceBefore.minus(10).toString(),
+				account1BalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect balance after staking"
 			);
 			assert.equal(
 				account1StakedBalanceAfter.toString(),
-				account1StakedBalanceBefore.plus(10).toString(),
+				account1StakedBalanceBefore.add(new BN(10)).toString(),
 				"Account1 has incorrect staked balance after staking"
 			);
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after staking");
@@ -395,12 +400,12 @@ contract("AOTera", function(accounts) {
 
 			assert.equal(
 				account1BalanceAfter.toString(),
-				account1BalanceBefore.plus(10).toString(),
+				account1BalanceBefore.add(new BN(10)).toString(),
 				"Account1 has incorrect balance after unstaking"
 			);
 			assert.equal(
 				account1StakedBalanceAfter.toString(),
-				account1StakedBalanceBefore.minus(10).toString(),
+				account1StakedBalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect staked balance after unstaking"
 			);
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after unstaking");
@@ -442,13 +447,13 @@ contract("AOTera", function(accounts) {
 
 			assert.equal(
 				account1BalanceAfter.toString(),
-				account1BalanceBefore.minus(10).toString(),
+				account1BalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect balance after escrow"
 			);
 			assert.equal(account2BalanceAfter.toString(), account2BalanceBefore.toString(), "Account2 has incorrect balance after escrow");
 			assert.equal(
 				account2EscrowedBalanceAfter.toString(),
-				account2EscrowedBalanceBefore.plus(10).toString(),
+				account2EscrowedBalanceBefore.add(new BN(10)).toString(),
 				"Account2 has incorrect escrowed balance after escrow"
 			);
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after escrow");
@@ -486,12 +491,12 @@ contract("AOTera", function(accounts) {
 			);
 			assert.equal(
 				account1EscrowedBalanceAfter.toString(),
-				account1EscrowedBalanceBefore.plus(10).toString(),
+				account1EscrowedBalanceBefore.add(new BN(10)).toString(),
 				"Account1 has incorrect escrowed balance after mint and escrow"
 			);
 			assert.equal(
 				totalSupplyAfter.toString(),
-				totalSupplyBefore.plus(10).toString(),
+				totalSupplyBefore.add(new BN(10)).toString(),
 				"Contract has incorrect total supply after mint and escrow"
 			);
 		});
@@ -530,12 +535,12 @@ contract("AOTera", function(accounts) {
 
 			assert.equal(
 				account1BalanceAfter.toString(),
-				account1BalanceBefore.plus(10).toString(),
+				account1BalanceBefore.add(new BN(10)).toString(),
 				"Account1 has incorrect balance after unescrow"
 			);
 			assert.equal(
 				account1EscrowedBalanceAfter.toString(),
-				account1EscrowedBalanceBefore.minus(10).toString(),
+				account1EscrowedBalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect escrowed balance after unescrow"
 			);
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after unescrow");
@@ -573,12 +578,12 @@ contract("AOTera", function(accounts) {
 
 			assert.equal(
 				account1BalanceAfter.toString(),
-				account1BalanceBefore.minus(10).toString(),
+				account1BalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect balance after burning"
 			);
 			assert.equal(
 				totalSupplyAfter.toString(),
-				totalSupplyBefore.minus(10).toString(),
+				totalSupplyBefore.sub(new BN(10)).toString(),
 				"Contract has incorrect total supply after burning"
 			);
 		});
@@ -619,12 +624,12 @@ contract("AOTera", function(accounts) {
 
 			assert.equal(
 				account1BalanceAfter.toString(),
-				account1BalanceBefore.minus(10).toString(),
+				account1BalanceBefore.sub(new BN(10)).toString(),
 				"Account1 has incorrect balance after transfer"
 			);
 			assert.equal(
 				account2BalanceAfter.toString(),
-				account2BalanceBefore.plus(10).toString(),
+				account2BalanceBefore.add(new BN(10)).toString(),
 				"Account2 has incorrect balance after transfer"
 			);
 			assert.equal(totalSupplyAfter.toString(), totalSupplyBefore.toString(), "Contract has incorrect total supply after transfer");
@@ -641,7 +646,7 @@ contract("AOTera", function(accounts) {
 				canBuy = false;
 			}
 			assert.notEqual(canBuy, true, "Contract does not have enough network ion balance to complete user's ion purchase");
-			await aotera.mint(aotera.address, 10 ** 20, { from: whitelistedAddress });
+			await aotera.mint(aotera.address, 10 ** 10, { from: whitelistedAddress });
 
 			var account2BalanceBefore = await aotera.balanceOf(account2);
 			try {
@@ -654,7 +659,7 @@ contract("AOTera", function(accounts) {
 			assert.equal(canBuy, true, "Fail buying network ion from contract");
 			assert.equal(
 				account2BalanceAfter.toNumber(),
-				account2BalanceBefore.plus(10).toNumber(),
+				account2BalanceBefore.add(new BN(10)).toNumber(),
 				"Account has incorrect balance after buying ion"
 			);
 		});
@@ -688,12 +693,12 @@ contract("AOTera", function(accounts) {
 			var contractBalanceAfter = await aotera.balanceOf(aotera.address);
 			assert.equal(
 				account2BalanceAfter.toNumber(),
-				account2BalanceBefore.minus(5).toNumber(),
+				account2BalanceBefore.sub(new BN(5)).toNumber(),
 				"Account has incorrect balance after selling ion"
 			);
 			assert.equal(
 				contractBalanceAfter.toNumber(),
-				contractBalanceBefore.plus(5).toNumber(),
+				contractBalanceBefore.add(new BN(5)).toNumber(),
 				"Contract has incorrect balance after user sell ion"
 			);
 		});
@@ -706,12 +711,12 @@ contract("AOTera", function(accounts) {
 			account2BalanceAfter = await aotera.balanceOf(account2);
 			assert.equal(
 				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.minus(10).toNumber(),
+				account1BalanceBefore.sub(new BN(10)).toNumber(),
 				"Account1 has incorrect balance after transfer"
 			);
 			assert.equal(
 				account2BalanceAfter.toNumber(),
-				account2BalanceBefore.plus(10).toNumber(),
+				account2BalanceBefore.add(new BN(10)).toNumber(),
 				"Account2 has incorrect balance after transfer"
 			);
 		});
@@ -722,7 +727,7 @@ contract("AOTera", function(accounts) {
 			account1BalanceAfter = await aotera.balanceOf(account1);
 			assert.equal(
 				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.minus(10).toNumber(),
+				account1BalanceBefore.sub(new BN(10)).toNumber(),
 				"Account1 has incorrect balance after burn"
 			);
 		});
@@ -733,7 +738,7 @@ contract("AOTera", function(accounts) {
 			var account2AllowanceAfter = await aotera.allowance(account1, account2);
 			assert.equal(
 				account2AllowanceAfter.toNumber(),
-				account2AllowanceBefore.plus(10).toNumber(),
+				account2AllowanceBefore.add(new BN(10)).toNumber(),
 				"Account2 has incorrect allowance after approve"
 			);
 		});
@@ -777,17 +782,17 @@ contract("AOTera", function(accounts) {
 			var account2AllowanceAfter = await aotera.allowance(account1, account2);
 			assert.equal(
 				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.minus(5).toNumber(),
+				account1BalanceBefore.sub(new BN(5)).toNumber(),
 				"Account1 has incorrect balance after transferFrom"
 			);
 			assert.equal(
 				account2BalanceAfter.toNumber(),
-				account2BalanceBefore.plus(5).toNumber(),
+				account2BalanceBefore.add(new BN(5)).toNumber(),
 				"Account2 has incorrect balance after transferFrom"
 			);
 			assert.equal(
 				account2AllowanceAfter.toNumber(),
-				account2AllowanceBefore.minus(5).toNumber(),
+				account2AllowanceBefore.sub(new BN(5)).toNumber(),
 				"Account2 has incorrect allowance after transferFrom"
 			);
 		});
@@ -826,12 +831,12 @@ contract("AOTera", function(accounts) {
 
 			assert.equal(
 				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.minus(5).toNumber(),
+				account1BalanceBefore.sub(new BN(5)).toNumber(),
 				"Account1 has incorrect balance after burnFrom"
 			);
 			assert.equal(
 				account2AllowanceAfter.toNumber(),
-				account2AllowanceBefore.minus(5).toNumber(),
+				account2AllowanceBefore.sub(new BN(5)).toNumber(),
 				"Account2 has incorrect allowance after burnFrom"
 			);
 		});
@@ -891,7 +896,7 @@ contract("AOTera", function(accounts) {
 			var account1Balance = await aotera.balanceOf(account1);
 
 			try {
-				await aotera.transferBetweenPublicKeys(nameId1, account1, account3, account1Balance.plus(1).toNumber(), { from: account1 });
+				await aotera.transferBetweenPublicKeys(nameId1, account1, account3, account1Balance.add(1).toNumber(), { from: account1 });
 				canTransfer = true;
 			} catch (e) {
 				canTransfer = false;
@@ -913,7 +918,7 @@ contract("AOTera", function(accounts) {
 			assert.equal(canTransfer, false, "Compromised Advocate of Name can transfer AO Ion between public keys");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			var account1BalanceBefore = await aotera.balanceOf(account1);
 			var account3BalanceBefore = await aotera.balanceOf(account3);
@@ -930,22 +935,22 @@ contract("AOTera", function(accounts) {
 			var account3BalanceAfter = await aotera.balanceOf(account3);
 			assert.equal(
 				account1BalanceAfter.toNumber(),
-				account1BalanceBefore.minus(transferAmount).toNumber(),
+				account1BalanceBefore.sub(new BN(transferAmount)).toNumber(),
 				"Account has incorrect balance"
 			);
 			assert.equal(
 				account3BalanceAfter.toNumber(),
-				account3BalanceBefore.plus(transferAmount).toNumber(),
+				account3BalanceBefore.add(new BN(transferAmount)).toNumber(),
 				"Account has incorrect balance"
 			);
 		});
 
 		it("The AO - transferETH() should be able to transfer ETH to an address", async function() {
-			await aotera.buy({ from: account2, value: web3.toWei(2, "ether") });
+			await aotera.buy({ from: account2, value: new BN(10 ** 5) });
 
 			var canTransferEth;
 			try {
-				await aotera.transferEth(recipient.address, web3.toWei(1, "ether"), { from: someAddress });
+				await aotera.transferEth(recipient.address, new BN(10 ** 4), { from: someAddress });
 				canTransferEth = true;
 			} catch (e) {
 				canTransferEth = false;
@@ -953,7 +958,7 @@ contract("AOTera", function(accounts) {
 			assert.equal(canTransferEth, false, "Non-AO can transfer ETH out of contract");
 
 			try {
-				await aotera.transferEth(emptyAddress, web3.toWei(1, "ether"), { from: theAO });
+				await aotera.transferEth(emptyAddress, new BN(10 ** 4), { from: theAO });
 				canTransferEth = true;
 			} catch (e) {
 				canTransferEth = false;
@@ -961,7 +966,7 @@ contract("AOTera", function(accounts) {
 			assert.equal(canTransferEth, false, "The AO can transfer ETH out of contract to invalid address");
 
 			try {
-				await aotera.transferEth(recipient.address, web3.toWei(1000, "ether"), { from: theAO });
+				await aotera.transferEth(recipient.address, new BN(10 ** 8), { from: theAO });
 				canTransferEth = true;
 			} catch (e) {
 				canTransferEth = false;
@@ -969,7 +974,7 @@ contract("AOTera", function(accounts) {
 			assert.equal(canTransferEth, false, "The AO can transfer ETH out of contract more than its available balance");
 
 			try {
-				await aotera.transferEth(recipient.address, web3.toWei(1, "ether"), { from: theAO });
+				await aotera.transferEth(recipient.address, new BN(10 ** 4), { from: theAO });
 				canTransferEth = true;
 			} catch (e) {
 				canTransferEth = false;
@@ -977,7 +982,7 @@ contract("AOTera", function(accounts) {
 			assert.equal(canTransferEth, true, "The AO can't transfer ETH out of contract");
 
 			var recipientBalance = await web3.eth.getBalance(recipient.address);
-			assert.equal(recipientBalance.toNumber(), web3.toWei(1, "ether"), "Recipient has incorrect balance");
+			assert.equal(recipientBalance, 10 ** 4, "Recipient has incorrect balance");
 		});
 	});
 });

@@ -10,6 +10,7 @@ var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
 
 var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
+var BN = require("bn.js");
 
 contract("NameFactory", function(accounts) {
 	var namefactory,
@@ -60,7 +61,7 @@ contract("NameFactory", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -73,7 +74,7 @@ contract("NameFactory", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3LocalWriterKey.address,
 			{
 				from: account3
@@ -90,7 +91,7 @@ contract("NameFactory", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -318,7 +319,7 @@ contract("NameFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId2LocalWriterKey.address,
 				{
 					from: account2
@@ -336,7 +337,7 @@ contract("NameFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1LocalWriterKey.address,
 				{
 					from: account1
@@ -354,7 +355,7 @@ contract("NameFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId2LocalWriterKey.address,
 				{
 					from: account2
@@ -374,7 +375,7 @@ contract("NameFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1LocalWriterKey.address,
 				{
 					from: account2
@@ -392,7 +393,7 @@ contract("NameFactory", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId2LocalWriterKey.address,
 				{
 					from: account2
@@ -424,7 +425,7 @@ contract("NameFactory", function(accounts) {
 		var totalNamesCountAfter = await namefactory.getTotalNamesCount();
 		assert.equal(
 			totalNamesCountAfter.toNumber(),
-			totalNamesCountBefore.plus(1).toNumber(),
+			totalNamesCountBefore.add(new BN(1)).toNumber(),
 			"getTotalNamesCount() returns incorrect value"
 		);
 
@@ -434,7 +435,7 @@ contract("NameFactory", function(accounts) {
 		assert.equal(getName[2], "somedathash", "getName() returns incorrect datHash");
 		assert.equal(getName[3], "somedatabase", "getName() returns incorrect database");
 		assert.equal(getName[4], "somekeyvalue", "getName() returns incorrect keyValue");
-		assert.equal(web3.toAscii(getName[5]).replace(/\0/g, ""), "somecontentid", "getName() returns incorrect contentId");
+		assert.equal(web3.utils.toAscii(getName[5]).replace(/\0/g, ""), "somecontentid", "getName() returns incorrect contentId");
 		assert.equal(getName[6].toNumber(), 1, "getName() returns incorrect typeId");
 
 		var nameIds = await namefactory.getNameIds(0, totalNamesCountAfter.toNumber());
@@ -445,12 +446,20 @@ contract("NameFactory", function(accounts) {
 		var data = "somedata";
 		var nonce = await namefactory.nonces(nameId2);
 
-		var signature = createSignature(account2PrivateKey, data, nonce.plus(1).toNumber());
+		var signature = createSignature(account2PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		var vrs = EthCrypto.vrs.fromString(signature);
 
 		var canValidate, isValid;
 		try {
-			isValid = await namefactory.validateNameSignature(data, nonce.plus(1).toNumber(), account2, "somename", vrs.v, vrs.r, vrs.s);
+			isValid = await namefactory.validateNameSignature(
+				data,
+				nonce.add(new BN(1)).toNumber(),
+				account2,
+				"somename",
+				vrs.v,
+				vrs.r,
+				vrs.s
+			);
 			canValidate = true;
 		} catch (e) {
 			canValidate = false;
@@ -467,30 +476,54 @@ contract("NameFactory", function(accounts) {
 		}
 		assert.equal(isValid, false, "validateNameSignature() returns incorrect value - incorrect nonce");
 
-		signature = createSignature(account1PrivateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(account1PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
-			isValid = await namefactory.validateNameSignature(data, nonce.plus(1).toNumber(), account2, "delta", vrs.v, vrs.r, vrs.s);
+			isValid = await namefactory.validateNameSignature(
+				data,
+				nonce.add(new BN(1)).toNumber(),
+				account2,
+				"delta",
+				vrs.v,
+				vrs.r,
+				vrs.s
+			);
 			canValidate = true;
 		} catch (e) {
 			canValidate = false;
 		}
 		assert.equal(isValid, false, "validateNameSignature() returns incorrect value - signatureAddress != validateAddress");
 
-		signature = createSignature(account1PrivateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(account1PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
-			isValid = await namefactory.validateNameSignature(data, nonce.plus(1).toNumber(), account1, "delta", vrs.v, vrs.r, vrs.s);
+			isValid = await namefactory.validateNameSignature(
+				data,
+				nonce.add(new BN(1)).toNumber(),
+				account1,
+				"delta",
+				vrs.v,
+				vrs.r,
+				vrs.s
+			);
 			canValidate = true;
 		} catch (e) {
 			canValidate = false;
 		}
 		assert.equal(isValid, false, "validateNameSignature() returns incorrect value - validateAddress is not in Name's Public Key list");
 
-		signature = createSignature(account1PrivateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(account1PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
-			isValid = await namefactory.validateNameSignature(data, nonce.plus(1).toNumber(), emptyAddress, "delta", vrs.v, vrs.r, vrs.s);
+			isValid = await namefactory.validateNameSignature(
+				data,
+				nonce.add(new BN(1)).toNumber(),
+				emptyAddress,
+				"delta",
+				vrs.v,
+				vrs.r,
+				vrs.s
+			);
 			canValidate = true;
 		} catch (e) {
 			canValidate = false;
@@ -501,10 +534,18 @@ contract("NameFactory", function(accounts) {
 			"validateNameSignature() returns incorrect value - signatureAddress is not the Name's Default Public Key"
 		);
 
-		signature = createSignature(account2PrivateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(account2PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
-			isValid = await namefactory.validateNameSignature(data, nonce.plus(1).toNumber(), account2, "delta", vrs.v, vrs.r, vrs.s);
+			isValid = await namefactory.validateNameSignature(
+				data,
+				nonce.add(new BN(1)).toNumber(),
+				account2,
+				"delta",
+				vrs.v,
+				vrs.r,
+				vrs.s
+			);
 			canValidate = true;
 		} catch (e) {
 			canValidate = false;
@@ -515,10 +556,18 @@ contract("NameFactory", function(accounts) {
 			"validateNameSignature() returns incorrect value - signatureAddress == validateAddress and validateAddress is in Name's PublicKey list"
 		);
 
-		signature = createSignature(account2PrivateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(account2PrivateKey, data, nonce.add(new BN(1)).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
-			isValid = await namefactory.validateNameSignature(data, nonce.plus(1).toNumber(), emptyAddress, "delta", vrs.v, vrs.r, vrs.s);
+			isValid = await namefactory.validateNameSignature(
+				data,
+				nonce.add(new BN(1)).toNumber(),
+				emptyAddress,
+				"delta",
+				vrs.v,
+				vrs.r,
+				vrs.s
+			);
 			canValidate = true;
 		} catch (e) {
 			canValidate = false;
@@ -543,21 +592,29 @@ contract("NameFactory", function(accounts) {
 			},
 			{
 				type: "uint256",
-				value: nonce.plus(1).toNumber()
+				value: nonce.add(new BN(1)).toNumber()
 			}
 		]);
 
 		var signature = EthCrypto.sign(newKey.privateKey, signHash);
 		var vrs = EthCrypto.vrs.fromString(signature);
 
-		await namepublickey.addKey(nameId2, newKey.address, nonce.plus(1).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
+		await namepublickey.addKey(nameId2, newKey.address, nonce.add(new BN(1)).toNumber(), vrs.v, vrs.r, vrs.s, { from: account2 });
 
 		nonce = await namefactory.nonces(nameId2);
 
-		signature = createSignature(newKey.privateKey, data, nonce.plus(1).toNumber());
+		signature = createSignature(newKey.privateKey, data, nonce.add(new BN(1)).toNumber());
 		vrs = EthCrypto.vrs.fromString(signature);
 		try {
-			isValid = await namefactory.validateNameSignature(data, nonce.plus(1).toNumber(), newKey.address, "delta", vrs.v, vrs.r, vrs.s);
+			isValid = await namefactory.validateNameSignature(
+				data,
+				nonce.add(new BN(1)).toNumber(),
+				newKey.address,
+				"delta",
+				vrs.v,
+				vrs.r,
+				vrs.s
+			);
 			canValidate = true;
 		} catch (e) {
 			canValidate = false;

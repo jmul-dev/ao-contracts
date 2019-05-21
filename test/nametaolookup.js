@@ -5,6 +5,7 @@ var Logos = artifacts.require("./Logos.sol");
 
 var NameTAOLookup = artifacts.require("./NameTAOLookup.sol");
 var EthCrypto = require("eth-crypto");
+var BN = require("bn.js");
 
 contract("NameTAOLookup", function(accounts) {
 	var namefactory, taofactory, nametaoposition, logos, nameId1, nameId2, taoId1, taoId2, taoId3, nametaolookup;
@@ -31,7 +32,7 @@ contract("NameTAOLookup", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -48,7 +49,7 @@ contract("NameTAOLookup", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -180,7 +181,7 @@ contract("NameTAOLookup", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -196,7 +197,7 @@ contract("NameTAOLookup", function(accounts) {
 		assert.equal(getIdByName, nameId2, "getIdByName() returns incorrect value");
 
 		var totalNamesAfter = await nametaolookup.totalNames();
-		assert.equal(totalNamesAfter.toNumber(), totalNamesBefore.plus(1).toNumber(), "Contract has incorrect totalNames value");
+		assert.equal(totalNamesAfter.toNumber(), totalNamesBefore.add(new BN(1)).toNumber(), "Contract has incorrect totalNames value");
 
 		var totalTAOsBefore = await nametaolookup.totalTAOs();
 
@@ -205,7 +206,7 @@ contract("NameTAOLookup", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2,
 			0,
 			false,
@@ -218,7 +219,7 @@ contract("NameTAOLookup", function(accounts) {
 		taoId2 = createTAOEvent.args.taoId;
 
 		var totalTAOsAfter = await nametaolookup.totalTAOs();
-		assert.equal(totalTAOsAfter.toNumber(), totalTAOsBefore.plus(1).toNumber(), "Contract has incorrect totalTAOs value");
+		assert.equal(totalTAOsAfter.toNumber(), totalTAOsBefore.add(new BN(1)).toNumber(), "Contract has incorrect totalTAOs value");
 
 		isExist = await nametaolookup.isExist("Delta's TAO #1");
 		assert.equal(isExist, true, "isExist() returns incorrect value");
@@ -233,7 +234,7 @@ contract("NameTAOLookup", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			taoId2,
 			0,
 			false,
@@ -246,7 +247,7 @@ contract("NameTAOLookup", function(accounts) {
 		taoId3 = createTAOEvent.args.taoId;
 
 		totalTAOsAfter = await nametaolookup.totalTAOs();
-		assert.equal(totalTAOsAfter.toNumber(), totalTAOsBefore.plus(1).toNumber(), "Contract has incorrect totalTAOs value");
+		assert.equal(totalTAOsAfter.toNumber(), totalTAOsBefore.add(new BN(1)).toNumber(), "Contract has incorrect totalTAOs value");
 
 		isExist = await nametaolookup.isExist("Delta's TAO #2");
 		assert.equal(isExist, true, "isExist() returns incorrect value");

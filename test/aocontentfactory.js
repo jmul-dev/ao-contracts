@@ -15,10 +15,9 @@ var Logos = artifacts.require("./Logos.sol");
 var NamePublicKey = artifacts.require("./NamePublicKey.sol");
 
 var EthCrypto = require("eth-crypto");
-var BigNumber = require("bignumber.js");
 var helper = require("./helpers/truffleTestHelper");
-
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
+var Web3 = require("web3");
+var _web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
 contract("AOContentFactory", function(accounts) {
 	var library,
@@ -31,6 +30,7 @@ contract("AOContentFactory", function(accounts) {
 		aocontent,
 		aostakedcontent,
 		aocontenthost,
+		_aocontenthost,
 		aopurchasereceipt,
 		aoearning,
 		aocontentfactory,
@@ -123,6 +123,8 @@ contract("AOContentFactory", function(accounts) {
 		namepublickey = await NamePublicKey.deployed();
 
 		settingTAOId = await aocontent.settingTAOId();
+
+		_aocontenthost = _web3.eth.contract(aocontenthost.abi).at(aocontenthost.address);
 
 		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "contentUsageType_aoContent");
 		contentUsageType_aoContent = settingValues[3];
@@ -505,9 +507,8 @@ contract("AOContentFactory", function(accounts) {
 		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(defaultKey);
 		var profitPercentage = 100000;
 
-		var blockNumber = await web3.eth.getBlockNumber();
-		var _event = aocontenthost.HostContent({ fromBlock: blockNumber, toBlock: "latest" }, async function(error, log) {
-			var _subscription = await _event;
+		var _event = _aocontenthost.HostContent();
+		_event.watch(async function(error, log) {
 			if (!error) {
 				if (log.event === "HostContent") {
 					contentId1 = log.args.contentId;
@@ -544,7 +545,7 @@ contract("AOContentFactory", function(accounts) {
 					assert.equal(contentHost[4], account1MetadataDatKey, "ContentHost has incorrect metadataDatKey");
 				}
 			}
-			_subscription.unsubscribe();
+			_event.stopWatching();
 		});
 
 		var canStakeAOContent;
@@ -568,7 +569,6 @@ contract("AOContentFactory", function(accounts) {
 		}
 		assert.equal(canStakeAOContent, true, "Account can't create and stake AO Content");
 
-		// Fast forward block
 		await helper.advanceBlock();
 	});
 
@@ -582,9 +582,8 @@ contract("AOContentFactory", function(accounts) {
 		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(defaultKey);
 		var profitPercentage = 0;
 
-		var blockNumber = await web3.eth.getBlockNumber();
-		var _event = aocontenthost.HostContent({ fromBlock: blockNumber, toBlock: "latest" }, async function(error, log) {
-			var _subscription = await _event;
+		var _event = _aocontenthost.HostContent();
+		_event.watch(async function(error, log) {
 			if (!error) {
 				if (log.event === "HostContent") {
 					contentId2 = log.args.contentId;
@@ -621,7 +620,7 @@ contract("AOContentFactory", function(accounts) {
 					assert.equal(contentHost[4], account1MetadataDatKey, "ContentHost has incorrect metadataDatKey");
 				}
 			}
-			_subscription.unsubscribe();
+			_event.stopWatching();
 		});
 
 		var canStakeCreativeCommonsContent;
@@ -644,7 +643,6 @@ contract("AOContentFactory", function(accounts) {
 		}
 		assert.equal(canStakeCreativeCommonsContent, true, "Account can't create and stake Creative Commons Content");
 
-		// Fast forward block
 		await helper.advanceBlock();
 	});
 
@@ -658,9 +656,8 @@ contract("AOContentFactory", function(accounts) {
 		var accountWeightedMultiplier = await aoion.weightedMultiplierByAddress(defaultKey);
 		var profitPercentage = 0;
 
-		var blockNumber = await web3.eth.getBlockNumber();
-		var _event = aocontenthost.HostContent({ fromBlock: blockNumber, toBlock: "latest" }, async function(error, log) {
-			var _subscription = await _event;
+		var _event = _aocontenthost.HostContent();
+		_event.watch(async function(error, log) {
 			if (!error) {
 				if (log.event === "HostContent") {
 					contentId3 = log.args.contentId;
@@ -699,7 +696,7 @@ contract("AOContentFactory", function(accounts) {
 					assert.equal(contentHost[4], account1MetadataDatKey, "ContentHost has incorrect metadataDatKey");
 				}
 			}
-			_subscription.unsubscribe();
+			_event.stopWatching();
 		});
 
 		var canStakeTAOContent;
@@ -723,7 +720,6 @@ contract("AOContentFactory", function(accounts) {
 		}
 		assert.equal(canStakeTAOContent, true, "Account can't create and stake T(AO) Content");
 
-		// Fast forward block
 		await helper.advanceBlock();
 	});
 

@@ -13,6 +13,7 @@ var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
 
 var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
+var BN = require("bn.js");
 
 contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts) {
 	var namefactory,
@@ -73,7 +74,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 	var uintValue = 10;
 	var boolValue = true;
 	var addressValue = accounts[8];
-	var bytesValue = "somebytesvalue";
+	var bytesValue = web3.utils.toHex("somebytesvalue");
 	var nullBytesValue = "0x0000000000000000000000000000000000000000000000000000000000000000";
 	var stringValue = "somestringvalue";
 
@@ -141,7 +142,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1LocalWriterKey.address,
 				{
 					from: account1
@@ -158,7 +159,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId,
 				0,
 				false,
@@ -334,7 +335,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1LocalWriterKey.address,
 				{
 					from: account1
@@ -351,7 +352,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId,
 				0,
 				false,
@@ -549,7 +550,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1LocalWriterKey.address,
 				{
 					from: account1
@@ -566,7 +567,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId,
 				0,
 				false,
@@ -744,7 +745,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId1LocalWriterKey.address,
 				{
 					from: account1
@@ -757,7 +758,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId2LocalWriterKey.address,
 				{
 					from: account2
@@ -770,7 +771,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId3LocalWriterKey.address,
 				{
 					from: account3
@@ -783,7 +784,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId4LocalWriterKey.address,
 				{
 					from: account4
@@ -802,7 +803,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				creatorTAONameId,
 				0,
 				false,
@@ -819,7 +820,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				creatorTAONameId,
 				0,
 				false,
@@ -836,7 +837,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				creatorTAONameId,
 				0,
 				false,
@@ -949,7 +950,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canAdd, false, "Compromised Advocate of Creator TAO can create setting");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosetting.addUintSetting(settingName, uintValue, creatorTAOId, associatedTAOId, extraData, {
@@ -972,7 +973,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			var totalSettingAfter = await aosetting.totalSetting();
 			assert.equal(
 				totalSettingAfter.toNumber(),
-				totalSettingBefore.plus(1).toNumber(),
+				totalSettingBefore.add(new BN(1)).toNumber(),
 				"Contract has incorrect totalSetting after adding setting"
 			);
 
@@ -1162,7 +1163,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canAdd, false, "Compromised Advocate of Creator TAO can create setting");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosetting.addBoolSetting(settingName, boolValue, creatorTAOId, associatedTAOId, extraData, {
@@ -1185,7 +1186,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			var totalSettingAfter = await aosetting.totalSetting();
 			assert.equal(
 				totalSettingAfter.toNumber(),
-				totalSettingBefore.plus(1).toNumber(),
+				totalSettingBefore.add(new BN(1)).toNumber(),
 				"Contract has incorrect totalSetting after adding setting"
 			);
 
@@ -1375,7 +1376,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canAdd, false, "Compromised Advocate of Creator TAO can create setting");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosetting.addAddressSetting(settingName, addressValue, creatorTAOId, associatedTAOId, extraData, {
@@ -1398,7 +1399,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			var totalSettingAfter = await aosetting.totalSetting();
 			assert.equal(
 				totalSettingAfter.toNumber(),
-				totalSettingBefore.plus(1).toNumber(),
+				totalSettingBefore.add(new BN(1)).toNumber(),
 				"Contract has incorrect totalSetting after adding setting"
 			);
 
@@ -1588,7 +1589,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canAdd, false, "Compromised Advocate of Creator TAO can create setting");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosetting.addBytesSetting(settingName, bytesValue, creatorTAOId, associatedTAOId, extraData, {
@@ -1611,7 +1612,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			var totalSettingAfter = await aosetting.totalSetting();
 			assert.equal(
 				totalSettingAfter.toNumber(),
-				totalSettingBefore.plus(1).toNumber(),
+				totalSettingBefore.add(new BN(1)).toNumber(),
 				"Contract has incorrect totalSetting after adding setting"
 			);
 
@@ -1801,7 +1802,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canAdd, false, "Compromised Advocate of Creator TAO can create setting");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosetting.addStringSetting(settingName, stringValue, creatorTAOId, associatedTAOId, extraData, {
@@ -1824,7 +1825,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			var totalSettingAfter = await aosetting.totalSetting();
 			assert.equal(
 				totalSettingAfter.toNumber(),
-				totalSettingBefore.plus(1).toNumber(),
+				totalSettingBefore.add(new BN(1)).toNumber(),
 				"Contract has incorrect totalSetting after adding setting"
 			);
 
@@ -1967,7 +1968,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canApprove, false, "Compromised Advocate of setting's Associated TAO can approve setting creation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			// Approve settingId1
 			try {
@@ -2099,7 +2100,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canFinalize, false, "Compromised Advocate can finalize setting creation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosetting.finalizeSettingCreation(settingId1, { from: account1 });
@@ -2180,7 +2181,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canApprove, false, "Compromised Advocate of setting's Associated TAO can approve setting creation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			// Approve settingId2
 			try {
@@ -2292,7 +2293,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canFinalize, false, "Compromised Advocate can finalize setting creation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosetting.finalizeSettingCreation(settingId2, { from: account1 });
@@ -2373,7 +2374,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canApprove, false, "Compromised Advocate of setting's Associated TAO can approve setting creation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			// Approve settingId3
 			try {
@@ -2485,7 +2486,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canFinalize, false, "Compromiseed Advocate can finalize setting creation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosetting.finalizeSettingCreation(settingId3, { from: account1 });
@@ -2566,7 +2567,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canApprove, false, "Compromised Advocate of setting's Associated TAO can approve setting creation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			// Approve settingId4
 			try {
@@ -2678,7 +2679,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canFinalize, false, "Compromised Advocate can finalize setting creation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosetting.finalizeSettingCreation(settingId4, { from: account1 });
@@ -2759,7 +2760,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canApprove, false, "Compromised Advocate of setting's Associated TAO can approve setting creation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			// Approve settingId5
 			try {
@@ -2871,7 +2872,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canFinalize, false, "Compromised Advocate can finalize setting creation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosetting.finalizeSettingCreation(settingId5, { from: account1 });
@@ -3143,7 +3144,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canUpdate, false, "Compromised Advocate can update uint setting");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosettingupdate.updateUintSetting(
@@ -3459,7 +3460,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canUpdate, false, "Compromised Advocate can update bool setting");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosettingupdate.updateBoolSetting(
@@ -3775,7 +3776,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canUpdate, false, "Compromised Advocate can update address setting");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosettingupdate.updateAddressSetting(
@@ -4090,7 +4091,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canUpdate, false, "Compromised Advocate can update bytes32 setting");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosettingupdate.updateBytesSetting(
@@ -4406,7 +4407,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canUpdate, false, "Compromised Advocate can update string setting");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosettingupdate.updateStringSetting(
@@ -4541,7 +4542,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canApprove, false, "Compromised Advocate of setting's Proposal TAO can approve setting update");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			// Approve settingId1
 			try {
@@ -4598,7 +4599,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canApprove, false, "Compromised Advocate of setting's Proposal TAO can approve setting update");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			// Approve settingId2
 			try {
@@ -4655,7 +4656,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canApprove, false, "Compromised Advocate of setting's Proposal TAO can approve setting update");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			// Approve settingId3
 			try {
@@ -4712,7 +4713,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canApprove, false, "Compromised Advocate of setting's Proposal TAO can approve setting update");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			// Approve settingId4
 			try {
@@ -4769,7 +4770,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canApprove, false, "Compromised Advocate of setting's Proposal TAO can approve setting update");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			// Approve settingId5
 			try {
@@ -4855,7 +4856,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canFinalize, false, "Compromised Advocate can finalize setting update");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosettingupdate.finalizeSettingUpdate(settingId1, { from: account2 });
@@ -4945,7 +4946,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canFinalize, false, "Compromised Advocate can finalize setting update");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosettingupdate.finalizeSettingUpdate(settingId2, { from: account2 });
@@ -5035,7 +5036,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canFinalize, false, "Compromised Advocate can finalize setting update");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosettingupdate.finalizeSettingUpdate(settingId3, { from: account2 });
@@ -5125,7 +5126,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canFinalize, false, "Compromised Advocate can finalize setting update");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosettingupdate.finalizeSettingUpdate(settingId4, { from: account2 });
@@ -5215,7 +5216,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canFinalize, false, "Compromised Advocate can finalize setting update");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosettingupdate.finalizeSettingUpdate(settingId5, { from: account2 });
@@ -5688,7 +5689,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canAdd, false, "Compromised Advocate of Creator TAO can create setting deprecation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosettingdeprecation.addSettingDeprecation(
@@ -5803,7 +5804,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canAdd, false, "Compromised Advocate of Creator TAO can create setting deprecation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			// Add deprecation for settingId2
 			try {
@@ -5870,7 +5871,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canApprove, false, "Compromised Advocate of setting's Associated TAO can approve setting deprecation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			// Approve settingId1
 			try {
@@ -5918,7 +5919,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canApprove, false, "Compromised Advocate of setting's Associated TAO can approve setting deprecation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			// Reject settingId2
 			try {
@@ -6008,7 +6009,7 @@ contract("AOSetting / AOSettingUpdate / AOSettingDeprecation", function(accounts
 			assert.equal(canFinalize, false, "Compromised Advocate can finalize setting deprecation");
 
 			// Fast forward the time
-			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+			await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 			try {
 				var result = await aosettingdeprecation.finalizeSettingDeprecation(settingId1, { from: account1 });

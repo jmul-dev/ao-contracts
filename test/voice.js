@@ -5,6 +5,7 @@ var Logos = artifacts.require("./Logos.sol");
 
 var Voice = artifacts.require("./Voice.sol");
 var EthCrypto = require("eth-crypto");
+var BN = require("bn.js");
 
 contract("Voice", function(accounts) {
 	var namefactory, taofactory, nametaoposition, logos, nameId1, nameId2, taoId1, voice;
@@ -33,7 +34,7 @@ contract("Voice", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -50,7 +51,7 @@ contract("Voice", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -166,7 +167,7 @@ contract("Voice", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -175,7 +176,7 @@ contract("Voice", function(accounts) {
 		nameId2 = await namefactory.ethAddressToNameId(account2);
 
 		var totalSupplyAfter = await voice.totalSupply();
-		assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.plus(maxSupplyPerName).toNumber(), "Voice has incorrect totalSupply");
+		assert.equal(totalSupplyAfter.toNumber(), totalSupplyBefore.add(maxSupplyPerName).toNumber(), "Voice has incorrect totalSupply");
 
 		var nameBalance = await voice.balanceOf(nameId2);
 		assert.equal(nameBalance.toNumber(), maxSupplyPerName.toNumber(), "Name has incorrect balance");
@@ -243,16 +244,16 @@ contract("Voice", function(accounts) {
 		var taoStakedBalanceAfter = await voice.taoStakedBalance(nameId1, taoId1);
 		var nameStakedBalanceAfter = await voice.stakedBalance(nameId1);
 
-		assert.equal(nameBalanceAfter.toNumber(), nameBalanceBefore.minus(800000).toNumber(), "Name has incorrect balance");
-		assert.equal(taoBalanceAfter.toNumber(), taoBalanceBefore.plus(800000).toNumber(), "TAO has incorrect balance");
+		assert.equal(nameBalanceAfter.toNumber(), nameBalanceBefore.sub(new BN(800000)).toNumber(), "Name has incorrect balance");
+		assert.equal(taoBalanceAfter.toNumber(), taoBalanceBefore.add(new BN(800000)).toNumber(), "TAO has incorrect balance");
 		assert.equal(
 			taoStakedBalanceAfter.toNumber(),
-			taoStakedBalanceBefore.plus(800000).toNumber(),
+			taoStakedBalanceBefore.add(new BN(800000)).toNumber(),
 			"taoStakedBalance has incorrect balance"
 		);
 		assert.equal(
 			nameStakedBalanceAfter.toNumber(),
-			nameStakedBalanceBefore.plus(800000).toNumber(),
+			nameStakedBalanceBefore.add(new BN(800000)).toNumber(),
 			"stakedBalance() has incorrect balance"
 		);
 
@@ -316,16 +317,16 @@ contract("Voice", function(accounts) {
 		var taoStakedBalanceAfter = await voice.taoStakedBalance(nameId1, taoId1);
 		var nameStakedBalanceAfter = await voice.stakedBalance(nameId1);
 
-		assert.equal(nameBalanceAfter.toNumber(), nameBalanceBefore.plus(600000).toNumber(), "Name has incorrect balance");
-		assert.equal(taoBalanceAfter.toNumber(), taoBalanceBefore.minus(600000).toNumber(), "TAO has incorrect balance");
+		assert.equal(nameBalanceAfter.toNumber(), nameBalanceBefore.add(new BN(600000)).toNumber(), "Name has incorrect balance");
+		assert.equal(taoBalanceAfter.toNumber(), taoBalanceBefore.sub(new BN(600000)).toNumber(), "TAO has incorrect balance");
 		assert.equal(
 			taoStakedBalanceAfter.toNumber(),
-			taoStakedBalanceBefore.minus(600000).toNumber(),
+			taoStakedBalanceBefore.sub(new BN(600000)).toNumber(),
 			"taoStakedBalance has incorrect balance"
 		);
 		assert.equal(
 			nameStakedBalanceAfter.toNumber(),
-			nameStakedBalanceBefore.minus(600000).toNumber(),
+			nameStakedBalanceBefore.sub(new BN(600000)).toNumber(),
 			"stakedBalance() has incorrect balance"
 		);
 

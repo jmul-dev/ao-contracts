@@ -37,7 +37,7 @@ contract("AOSettingValue", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameIdLocalWriterKey.address,
 			{
 				from: account1
@@ -54,7 +54,7 @@ contract("AOSettingValue", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId,
 			0,
 			false,
@@ -136,7 +136,7 @@ contract("AOSettingValue", function(accounts) {
 	it("Whitelisted address - setPendingValue() can set pending value", async function() {
 		var canSetPendingValue;
 		try {
-			await aosettingvalue.setPendingValue(settingId, addressValue, boolValue, bytesValue, stringValue, uintValue, {
+			await aosettingvalue.setPendingValue(settingId, addressValue, boolValue, web3.utils.toHex(bytesValue), stringValue, uintValue, {
 				from: someAddress
 			});
 			canSetPendingValue = true;
@@ -146,7 +146,7 @@ contract("AOSettingValue", function(accounts) {
 		assert.equal(canSetPendingValue, false, "Non-whitelisted address can set pending value");
 
 		try {
-			await aosettingvalue.setPendingValue(settingId, addressValue, boolValue, bytesValue, stringValue, uintValue, {
+			await aosettingvalue.setPendingValue(settingId, addressValue, boolValue, web3.utils.toHex(bytesValue), stringValue, uintValue, {
 				from: whitelistedAddress
 			});
 			canSetPendingValue = true;
@@ -158,7 +158,7 @@ contract("AOSettingValue", function(accounts) {
 		var pendingValue = await aosettingvalue.pendingValue(settingId);
 		assert.equal(pendingValue[0], addressValue, "pendingValue() returns incorrect addressValue");
 		assert.equal(pendingValue[1], boolValue, "pendingValue() returns incorrect boolValue");
-		assert.equal(web3.toAscii(pendingValue[2]).replace(/\0/g, ""), bytesValue, "pendingValue() returns incorrect bytesValue");
+		assert.equal(web3.utils.toAscii(pendingValue[2]).replace(/\0/g, ""), bytesValue, "pendingValue() returns incorrect bytesValue");
 		assert.equal(pendingValue[3], stringValue, "pendingValue() returns incorrect stringValue");
 		assert.equal(pendingValue[4].toNumber(), uintValue, "pendingValue() returns incorrect uintValue");
 	});
@@ -184,14 +184,14 @@ contract("AOSettingValue", function(accounts) {
 		var settingValue = await aosettingvalue.settingValue(settingId);
 		assert.equal(settingValue[0], addressValue, "settingValue() returns incorrect addressValue");
 		assert.equal(settingValue[1], boolValue, "settingValue() returns incorrect boolValue");
-		assert.equal(web3.toAscii(settingValue[2]).replace(/\0/g, ""), bytesValue, "settingValue() returns incorrect bytesValue");
+		assert.equal(web3.utils.toAscii(settingValue[2]).replace(/\0/g, ""), bytesValue, "settingValue() returns incorrect bytesValue");
 		assert.equal(settingValue[3], stringValue, "settingValue() returns incorrect stringValue");
 		assert.equal(settingValue[4].toNumber(), uintValue, "settingValue() returns incorrect uintValue");
 
 		var pendingValue = await aosettingvalue.pendingValue(settingId);
 		assert.equal(pendingValue[0], emptyAddress, "pendingValue() returns incorrect addressValue");
 		assert.equal(pendingValue[1], false, "pendingValue() returns incorrect boolValue");
-		assert.equal(web3.toAscii(pendingValue[2]).replace(/\0/g, ""), "", "pendingValue() returns incorrect bytesValue");
+		assert.equal(web3.utils.toAscii(pendingValue[2]).replace(/\0/g, ""), "", "pendingValue() returns incorrect bytesValue");
 		assert.equal(pendingValue[3], "", "pendingValue() returns incorrect stringValue");
 		assert.equal(pendingValue[4].toNumber(), 0, "pendingValue() returns incorrect uintValue");
 	});

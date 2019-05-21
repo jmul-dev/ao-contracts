@@ -10,9 +10,10 @@ var TokenTwo = artifacts.require("./TokenTwo.sol");
 var TokenThree = artifacts.require("./TokenThree.sol");
 
 var EthCrypto = require("eth-crypto");
-var BigNumber = require("bignumber.js");
-
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
+var BN = require("bn.js");
+var helper = require("./helpers/truffleTestHelper");
+var Web3 = require("web3");
+var _web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
 contract("AOETH", function(accounts) {
 	var namefactory,
@@ -22,6 +23,7 @@ contract("AOETH", function(accounts) {
 		nameId,
 		taoId,
 		aoeth,
+		_aoeth,
 		aoion,
 		tokenone,
 		tokentwo,
@@ -44,6 +46,7 @@ contract("AOETH", function(accounts) {
 		nametaoposition = await NameTAOPosition.deployed();
 		logos = await Logos.deployed();
 		aoeth = await AOETH.deployed();
+		_aoeth = _web3.eth.contract(aoeth.abi).at(aoeth.address);
 		aoion = await AOIon.deployed();
 		tokenone = await TokenOne.deployed();
 		tokentwo = await TokenTwo.deployed();
@@ -55,7 +58,7 @@ contract("AOETH", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameIdLocalWriterKey.address,
 			{
 				from: account1
@@ -72,7 +75,7 @@ contract("AOETH", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId,
 			0,
 			false,
@@ -207,8 +210,12 @@ contract("AOETH", function(accounts) {
 		var accountBalanceAfter = await tokenone.balanceOf(account1);
 		var aoethBalanceAfter = await tokenone.balanceOf(aoeth.address);
 
-		assert.equal(accountBalanceAfter.toNumber(), accountBalanceBefore.plus(100).toNumber(), "Account has incorrect ERC20 balance");
-		assert.equal(aoethBalanceAfter.toNumber(), aoethBalanceBefore.minus(100).toNumber(), "AOETH has incorrect ERC20 balance");
+		assert.equal(
+			accountBalanceAfter.toNumber(),
+			accountBalanceBefore.add(new BN(100)).toNumber(),
+			"Account has incorrect ERC20 balance"
+		);
+		assert.equal(aoethBalanceAfter.toNumber(), aoethBalanceBefore.sub(new BN(100)).toNumber(), "AOETH has incorrect ERC20 balance");
 	});
 
 	it("The AO - addERC20Token() should not be able to add ERC20 Token to the list with invalid params", async function() {
@@ -262,7 +269,7 @@ contract("AOETH", function(accounts) {
 			var totalERC20TokensAfter = await aoeth.totalERC20Tokens();
 			assert.equal(
 				totalERC20TokensAfter.toNumber(),
-				totalERC20TokensBefore.plus(1).toNumber(),
+				totalERC20TokensBefore.add(new BN(1)).toNumber(),
 				"Contract has incorrect value for totalERC20Tokens"
 			);
 
@@ -436,7 +443,7 @@ contract("AOETH", function(accounts) {
 
 		var canReceiveApproval;
 		try {
-			await tokenthree.approveAndCall(aoeth.address, 10 ** 3, "", { from: theAO });
+			await tokenthree.approveAndCall(aoeth.address, 10 ** 3, web3.utils.toHex(""), { from: theAO });
 			canReceiveApproval = true;
 		} catch (e) {
 			canReceiveApproval = false;
@@ -508,14 +515,14 @@ contract("AOETH", function(accounts) {
 		var totalTokenExchangesBefore = await aoeth.totalTokenExchanges();
 		var totalAddressTokenExchangesBefore = await aoeth.totalAddressTokenExchanges(theAO);
 
-		var sentAmount = new BigNumber(10 ** 5);
-		var price = new BigNumber(tokenBefore[3]);
+		var sentAmount = new BN(10 ** 5);
+		var price = tokenBefore[3];
 		var amountToTransfer = sentAmount.div(price);
 
 		var tokenName = await tokenone.name();
 		var tokenSymbol = await tokenone.symbol();
 
-		var _event = aoeth.ExchangeToken();
+		var _event = _aoeth.ExchangeToken();
 		_event.watch(async function(error, log) {
 			if (!error) {
 				if (log.event === "ExchangeToken" && log.args.tokenAddress == tokenone.address) {
@@ -534,14 +541,18 @@ contract("AOETH", function(accounts) {
 						amountToTransfer.toNumber(),
 						"TokenExchange has incorrect value for receivedAmount"
 					);
-					assert.equal(web3.toAscii(exchange[7]).replace(/\0/g, ""), "", "TokenExchange has incorrect value for extraData");
+					assert.equal(
+						web3.utils.hexToAscii(exchange[7]).replace(/\0/g, ""),
+						"",
+						"TokenExchange has incorrect value for extraData"
+					);
 				}
 			}
 			_event.stopWatching();
 		});
 
 		// Approve 100000 ERC20 Tokens
-		await tokenone.approveAndCall(aoeth.address, sentAmount.toNumber(), "", { from: theAO });
+		await tokenone.approveAndCall(aoeth.address, sentAmount.toString(), web3.utils.toHex(""), { from: theAO });
 
 		var availableETHAfter = await aoion.availableETH();
 		var accountTokenBalanceAfter = await tokenone.balanceOf(theAO);
@@ -553,46 +564,48 @@ contract("AOETH", function(accounts) {
 		var totalAddressTokenExchangesAfter = await aoeth.totalAddressTokenExchanges(theAO);
 
 		assert.equal(
-			availableETHAfter.toNumber(),
-			availableETHBefore.minus(amountToTransfer).toNumber(),
+			availableETHAfter.toString(),
+			availableETHBefore.sub(amountToTransfer).toString(),
 			"availableETH() returns incorrect value"
 		);
 
 		assert.equal(
-			accountTokenBalanceAfter.toNumber(),
-			accountTokenBalanceBefore.minus(sentAmount).toNumber(),
+			accountTokenBalanceAfter.toString(),
+			accountTokenBalanceBefore.sub(sentAmount).toString(),
 			"Account has incorrect ERC20 Token balance"
 		);
 		assert.equal(
-			aoEthTokenBalanceAfter.toNumber(),
-			aoEthTokenBalanceBefore.plus(sentAmount).toNumber(),
+			aoEthTokenBalanceAfter.toString(),
+			aoEthTokenBalanceBefore.add(sentAmount).toString(),
 			"AOETH has incorrect ERC20 Token Balance"
 		);
 		assert.equal(
-			aoEthTotalSupplyAfter.toNumber(),
-			aoEthTotalSupplyBefore.plus(amountToTransfer).toNumber(),
+			aoEthTotalSupplyAfter.toString(),
+			aoEthTotalSupplyBefore.add(amountToTransfer).toString(),
 			"AOETH has incorrect totalSupply"
 		);
 		assert.equal(
-			tokenAfter[5].toNumber(),
-			tokenBefore[5].plus(amountToTransfer).toNumber(),
+			tokenAfter[5].toString(),
+			tokenBefore[5].add(amountToTransfer).toString(),
 			"getByAddress() returns incorrect exchangedQuantity"
 		);
 		assert.equal(
-			accountAoEthBalanceAfter.toNumber(),
-			accountAoEthBalanceBefore.plus(amountToTransfer).toNumber(),
+			accountAoEthBalanceAfter.toString(),
+			accountAoEthBalanceBefore.add(amountToTransfer).toString(),
 			"Account has incorrect AOETH balance"
 		);
 		assert.equal(
-			totalTokenExchangesAfter.toNumber(),
-			totalTokenExchangesBefore.plus(1).toNumber(),
+			totalTokenExchangesAfter.toString(),
+			totalTokenExchangesBefore.add(new BN(1)).toString(),
 			"Contract has incorrect totalTokenExchanges"
 		);
 		assert.equal(
-			totalAddressTokenExchangesAfter.toNumber(),
-			totalAddressTokenExchangesBefore.plus(1).toNumber(),
+			totalAddressTokenExchangesAfter.toString(),
+			totalAddressTokenExchangesBefore.add(new BN(1)).toString(),
 			"Contract has incorrect totalAddressTokenExchanges"
 		);
+
+		await helper.advanceBlock();
 	});
 
 	it("receiveApproval() - should be able to send out AOETH to user when receiving approval from ERC20 token - Token Two", async function() {
@@ -605,14 +618,14 @@ contract("AOETH", function(accounts) {
 		var totalTokenExchangesBefore = await aoeth.totalTokenExchanges();
 		var totalAddressTokenExchangesBefore = await aoeth.totalAddressTokenExchanges(theAO);
 
-		var sentAmount = new BigNumber(100);
-		var price = new BigNumber(tokenBefore[3]);
+		var sentAmount = new BN(100);
+		var price = new BN(tokenBefore[3]);
 		var amountToTransfer = sentAmount.div(price);
 
 		var tokenName = await tokentwo.name();
 		var tokenSymbol = await tokentwo.symbol();
 
-		var _event = aoeth.ExchangeToken();
+		var _event = _aoeth.ExchangeToken();
 		_event.watch(async function(error, log) {
 			if (!error) {
 				if (log.event === "ExchangeToken" && log.args.tokenAddress == tokentwo.address) {
@@ -631,14 +644,18 @@ contract("AOETH", function(accounts) {
 						amountToTransfer.toNumber(),
 						"TokenExchange has incorrect value for receivedAmount"
 					);
-					assert.equal(web3.toAscii(exchange[7]).replace(/\0/g, ""), "", "TokenExchange has incorrect value for extraData");
+					assert.equal(
+						web3.utils.hexToAscii(exchange[7]).replace(/\0/g, ""),
+						"",
+						"TokenExchange has incorrect value for extraData"
+					);
 				}
 			}
 			_event.stopWatching();
 		});
 
 		// Approve 100 ERC20 Tokens
-		await tokentwo.approveAndCall(aoeth.address, sentAmount.toNumber(), "", { from: theAO });
+		await tokentwo.approveAndCall(aoeth.address, sentAmount.toString(), web3.utils.toHex(""), { from: theAO });
 
 		var availableETHAfter = await aoion.availableETH();
 		var accountTokenBalanceAfter = await tokentwo.balanceOf(theAO);
@@ -650,46 +667,48 @@ contract("AOETH", function(accounts) {
 		var totalAddressTokenExchangesAfter = await aoeth.totalAddressTokenExchanges(theAO);
 
 		assert.equal(
-			availableETHAfter.toNumber(),
-			availableETHBefore.minus(amountToTransfer).toNumber(),
+			availableETHAfter.toString(),
+			availableETHBefore.sub(amountToTransfer).toString(),
 			"availableETH() returns incorrect value"
 		);
 
 		assert.equal(
-			accountTokenBalanceAfter.toNumber(),
-			accountTokenBalanceBefore.minus(sentAmount).toNumber(),
+			accountTokenBalanceAfter.toString(),
+			accountTokenBalanceBefore.sub(sentAmount).toString(),
 			"Account has incorrect ERC20 Token balance"
 		);
 		assert.equal(
-			aoEthTokenBalanceAfter.toNumber(),
-			aoEthTokenBalanceBefore.plus(sentAmount).toNumber(),
+			aoEthTokenBalanceAfter.toString(),
+			aoEthTokenBalanceBefore.add(sentAmount).toString(),
 			"AOETH has incorrect ERC20 Token Balance"
 		);
 		assert.equal(
-			aoEthTotalSupplyAfter.toNumber(),
-			aoEthTotalSupplyBefore.plus(amountToTransfer).toNumber(),
+			aoEthTotalSupplyAfter.toString(),
+			aoEthTotalSupplyBefore.add(amountToTransfer).toString(),
 			"AOETH has incorrect totalSupply"
 		);
 		assert.equal(
-			tokenAfter[5].toNumber(),
-			tokenBefore[5].plus(amountToTransfer).toNumber(),
+			tokenAfter[5].toString(),
+			tokenBefore[5].add(amountToTransfer).toString(),
 			"getByAddress() returns incorrect exchangedQuantity"
 		);
 		assert.equal(
-			accountAoEthBalanceAfter.toNumber(),
-			accountAoEthBalanceBefore.plus(amountToTransfer).toNumber(),
+			accountAoEthBalanceAfter.toString(),
+			accountAoEthBalanceBefore.add(amountToTransfer).toString(),
 			"Account has incorrect AOETH balance"
 		);
 		assert.equal(
-			totalTokenExchangesAfter.toNumber(),
-			totalTokenExchangesBefore.plus(1).toNumber(),
+			totalTokenExchangesAfter.toString(),
+			totalTokenExchangesBefore.add(new BN(1)).toString(),
 			"Contract has incorrect totalTokenExchanges"
 		);
 		assert.equal(
-			totalAddressTokenExchangesAfter.toNumber(),
-			totalAddressTokenExchangesBefore.plus(1).toNumber(),
+			totalAddressTokenExchangesAfter.toString(),
+			totalAddressTokenExchangesBefore.add(new BN(1)).toString(),
 			"Contract has incorrect totalAddressTokenExchanges"
 		);
+
+		await helper.advanceBlock();
 	});
 
 	it("Whitelisted address - should be able to transfer token from an address to another address", async function() {
@@ -723,7 +742,7 @@ contract("AOETH", function(accounts) {
 		var theAOBalanceAfter = await aoeth.balanceOf(theAO);
 		var accountBalanceAfter = await aoeth.balanceOf(account1);
 
-		assert.equal(theAOBalanceAfter.toNumber(), theAOBalanceBefore.minus(10).toNumber(), "The AO has incorrect balance");
-		assert.equal(accountBalanceAfter.toNumber(), accountBalanceBefore.plus(10).toNumber(), "Account has incorrect balance");
+		assert.equal(theAOBalanceAfter.toNumber(), theAOBalanceBefore.sub(new BN(10)).toNumber(), "The AO has incorrect balance");
+		assert.equal(accountBalanceAfter.toNumber(), accountBalanceBefore.add(new BN(10)).toNumber(), "Account has incorrect balance");
 	});
 });

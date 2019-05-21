@@ -11,10 +11,8 @@ var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
 var AOSetting = artifacts.require("./AOSetting.sol");
 
 var EthCrypto = require("eth-crypto");
-var BigNumber = require("bignumber.js");
+var BN = require("bn.js");
 var helper = require("./helpers/truffleTestHelper");
-
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
 
 contract("TAOPool", function(accounts) {
 	var namefactory,
@@ -86,7 +84,7 @@ contract("TAOPool", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -99,7 +97,7 @@ contract("TAOPool", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -112,7 +110,7 @@ contract("TAOPool", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3LocalWriterKey.address,
 			{
 				from: account3
@@ -125,7 +123,7 @@ contract("TAOPool", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId4LocalWriterKey.address,
 			{
 				from: account4
@@ -138,7 +136,7 @@ contract("TAOPool", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId5LocalWriterKey.address,
 			{
 				from: account5
@@ -151,7 +149,7 @@ contract("TAOPool", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId6LocalWriterKey.address,
 			{
 				from: account6
@@ -180,7 +178,7 @@ contract("TAOPool", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -235,34 +233,46 @@ contract("TAOPool", function(accounts) {
 
 		assert.equal(
 			contractTotalEthosLotAfter.toNumber(),
-			contractTotalEthosLotBefore.plus(1).toNumber(),
+			contractTotalEthosLotBefore.add(new BN(1)).toNumber(),
 			"Contract has incorrect contractTotalEthosLot"
 		);
 		assert.equal(
 			contractTotalEthosAfter.toNumber(),
-			contractTotalEthosBefore.plus(quantity).toNumber(),
+			contractTotalEthosBefore.add(new BN(quantity)).toNumber(),
 			"Contract has incorrect contractTotalEthos"
 		);
 
-		assert.equal(poolTotalEthosLotAfter.toNumber(), poolTotalEthosLotBefore.plus(1).toNumber(), "Pool has incorrect total Ethos Lot");
-		assert.equal(ownerTotalEthosLotAfter.toNumber(), ownerTotalEthosLotBefore.plus(1).toNumber(), "Name has incorrect total Ethos Lot");
+		assert.equal(
+			poolTotalEthosLotAfter.toNumber(),
+			poolTotalEthosLotBefore.add(new BN(1)).toNumber(),
+			"Pool has incorrect total Ethos Lot"
+		);
+		assert.equal(
+			ownerTotalEthosLotAfter.toNumber(),
+			ownerTotalEthosLotBefore.add(new BN(1)).toNumber(),
+			"Name has incorrect total Ethos Lot"
+		);
 
 		assert.equal(
 			nameTotalEthosStakedAfter.toNumber(),
-			nameTotalEthosStakedBefore.plus(quantity).toNumber(),
+			nameTotalEthosStakedBefore.add(new BN(quantity)).toNumber(),
 			"Name has incorrect totalEthosStaked value"
 		);
 		assert.equal(
 			namePoolEthosStakedAfter.toNumber(),
-			namePoolEthosStakedBefore.plus(quantity).toNumber(),
+			namePoolEthosStakedBefore.add(new BN(quantity)).toNumber(),
 			"Name has incorrect namePoolEthosStaked value"
 		);
 		assert.equal(
 			nameEthosBalanceAfter.toNumber(),
-			nameEthosBalanceBefore.minus(quantity).toNumber(),
+			nameEthosBalanceBefore.sub(new BN(quantity)).toNumber(),
 			"Name has incorrect Ethos balance"
 		);
-		assert.equal(taoEthosBalanceAfter.toNumber(), taoEthosBalanceBefore.plus(quantity).toNumber(), "TAO has incorrect Ethos balance");
+		assert.equal(
+			taoEthosBalanceAfter.toNumber(),
+			taoEthosBalanceBefore.add(new BN(quantity)).toNumber(),
+			"TAO has incorrect Ethos balance"
+		);
 
 		var ethosLot = await taopool.ethosLots(ethosLotId);
 		assert.equal(ethosLot[0], ethosLotId, "EthosLot has incorrect ethosLotId");
@@ -272,7 +282,7 @@ contract("TAOPool", function(accounts) {
 		assert.equal(ethosLot[4].toNumber(), taoEthosBalanceBefore.toNumber(), "EthosLot has incorrect poolPreStakeSnapshot");
 		assert.equal(
 			ethosLot[5].toNumber(),
-			taoEthosBalanceBefore.plus(quantity).toNumber(),
+			taoEthosBalanceBefore.add(new BN(quantity)).toNumber(),
 			"EthosLot has incorrect poolStakeLotSnapshot"
 		);
 		assert.equal(ethosLot[6].toNumber(), quantity, "EthosLot has incorrect lotValueInLogos");
@@ -317,50 +327,50 @@ contract("TAOPool", function(accounts) {
 
 		assert.equal(
 			contractTotalPathosStakeAfter.toNumber(),
-			contractTotalPathosStakeBefore.plus(1).toNumber(),
+			contractTotalPathosStakeBefore.add(new BN(1)).toNumber(),
 			"Contract has incorrect contractTotalPathosStake"
 		);
 
 		assert.equal(
 			contractTotalPathosAfter.toNumber(),
-			contractTotalPathosBefore.plus(quantity).toNumber(),
+			contractTotalPathosBefore.add(new BN(quantity)).toNumber(),
 			"Contract has incorrect contractTotalPathos"
 		);
 
 		assert.equal(
 			nameTotalPathosStakedAfter.toNumber(),
-			nameTotalPathosStakedBefore.plus(quantity).toNumber(),
+			nameTotalPathosStakedBefore.add(new BN(quantity)).toNumber(),
 			"Name has incorrect totalPathosStaked value"
 		);
 		assert.equal(
 			namePoolPathosStakedAfter.toNumber(),
-			namePoolPathosStakedBefore.plus(quantity).toNumber(),
+			namePoolPathosStakedBefore.add(new BN(quantity)).toNumber(),
 			"Name has incorrect namePoolPathosStaked value"
 		);
 		assert.equal(
 			namePathosBalanceAfter.toNumber(),
-			namePathosBalanceBefore.minus(quantity).toNumber(),
+			namePathosBalanceBefore.sub(new BN(quantity)).toNumber(),
 			"Name has incorrect Pathos balance"
 		);
 		assert.equal(
 			taoPathosBalanceAfter.toNumber(),
-			taoPathosBalanceBefore.plus(quantity).toNumber(),
+			taoPathosBalanceBefore.add(new BN(quantity)).toNumber(),
 			"TAO has incorrect Pathos balance"
 		);
 		assert.equal(
 			availablePathosToStakeAfter.toNumber(),
-			availablePathosToStakeBefore.minus(quantity).toNumber(),
+			availablePathosToStakeBefore.sub(new BN(quantity)).toNumber(),
 			"availablePathosToStake() returns incorrect value"
 		);
 
 		assert.equal(
 			advocatedTAOLogosAfter.toNumber(),
-			advocatedTAOLogosBefore.plus(quantity).toNumber(),
+			advocatedTAOLogosBefore.add(new BN(quantity)).toNumber(),
 			"advocatedTAOLogos() returns incorrect value"
 		);
 		assert.equal(
 			totalAdvocatedTAOLogosAfter.toNumber(),
-			totalAdvocatedTAOLogosBefore.plus(quantity).toNumber(),
+			totalAdvocatedTAOLogosBefore.add(new BN(quantity)).toNumber(),
 			"advocatedTAOLogos() returns incorrect value"
 		);
 	};
@@ -397,40 +407,40 @@ contract("TAOPool", function(accounts) {
 
 		assert.equal(
 			ethosLotAfter[6].toNumber(),
-			ethosLotBefore[6].minus(lotLogosAvailableToWithdrawBefore).toNumber(),
+			ethosLotBefore[6].sub(lotLogosAvailableToWithdrawBefore).toNumber(),
 			"Ethos Lot has incorrect lotValueInLogos"
 		);
 		assert.equal(
 			ethosLotAfter[7].toNumber(),
-			ethosLotBefore[7].plus(lotLogosAvailableToWithdrawBefore).toNumber(),
+			ethosLotBefore[7].add(lotLogosAvailableToWithdrawBefore).toNumber(),
 			"Ethos Lot has incorrect logosWithdrawn"
 		);
 
 		assert.equal(
 			nameLogosAfter.toNumber(),
-			nameLogosBefore.plus(lotLogosAvailableToWithdrawBefore).toNumber(),
+			nameLogosBefore.add(lotLogosAvailableToWithdrawBefore).toNumber(),
 			"Name has incorrect Logos balance"
 		);
 		assert.equal(
 			contractTotalLogosWithdrawnAfter.toNumber(),
-			contractTotalLogosWithdrawnBefore.plus(lotLogosAvailableToWithdrawBefore).toNumber(),
+			contractTotalLogosWithdrawnBefore.add(lotLogosAvailableToWithdrawBefore).toNumber(),
 			"Contract has incorrect contractTotalLogosWithdrawn"
 		);
 		assert.equal(
 			poolTotalLogosWithdrawnAfter.toNumber(),
-			poolTotalLogosWithdrawnBefore.plus(lotLogosAvailableToWithdrawBefore).toNumber(),
+			poolTotalLogosWithdrawnBefore.add(lotLogosAvailableToWithdrawBefore).toNumber(),
 			"Contract has incorrect poolTotalLogosWithdrawn"
 		);
 		assert.equal(lotLogosAvailableToWithdrawAfter.toNumber(), 0, "lotLogosAvailableToWithdraw() returns incorrect value");
 
 		assert.equal(
 			nameTotalLogosWithdrawnAfter.toNumber(),
-			nameTotalLogosWithdrawnBefore.plus(lotLogosAvailableToWithdrawBefore).toNumber(),
+			nameTotalLogosWithdrawnBefore.add(lotLogosAvailableToWithdrawBefore).toNumber(),
 			"Name has incorrect totalLogosWithdrawn value"
 		);
 		assert.equal(
 			namePoolLogosWithdrawnAfter.toNumber(),
-			namePoolLogosWithdrawnBefore.plus(lotLogosAvailableToWithdrawBefore).toNumber(),
+			namePoolLogosWithdrawnBefore.add(lotLogosAvailableToWithdrawBefore).toNumber(),
 			"Name has incorrect namePoolLogosWithdrawn value"
 		);
 	};
@@ -641,7 +651,7 @@ contract("TAOPool", function(accounts) {
 				"somedathash",
 				"somedatabase",
 				"somekeyvalue",
-				"somecontentid",
+				web3.utils.toHex("somecontentid"),
 				nameId2,
 				0,
 				true,
@@ -666,7 +676,7 @@ contract("TAOPool", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2,
 			childMinLogos,
 			ethosCapStatus,
@@ -697,7 +707,7 @@ contract("TAOPool", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3,
 			childMinLogos,
 			ethosCapStatus,
@@ -752,7 +762,7 @@ contract("TAOPool", function(accounts) {
 		assert.equal(canUpdatePoolStatus, false, "Compromised Advocate of TAO can update Pool status");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nonceBefore = await taofactory.nonces(taoId2);
 
@@ -765,7 +775,7 @@ contract("TAOPool", function(accounts) {
 		assert.equal(canUpdatePoolStatus, true, "Advocate of TAO can't update Pool status");
 
 		var nonceAfter = await taofactory.nonces(taoId2);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "TAO has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "TAO has incorrect nonce");
 
 		var pool = await taopool.pools(taoId2);
 		assert.equal(pool[3], false, "Pool has incorrect status");
@@ -830,7 +840,7 @@ contract("TAOPool", function(accounts) {
 		assert.equal(canUpdate, false, "Compromised Advocate of TAO can update Pool's Ethos cap");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		var nonceBefore = await taofactory.nonces(taoId2);
 		try {
@@ -842,7 +852,7 @@ contract("TAOPool", function(accounts) {
 		assert.equal(canUpdate, true, "Advocate of TAO can't update Pool's Ethos cap");
 
 		var nonceAfter = await taofactory.nonces(taoId2);
-		assert.equal(nonceAfter.toNumber(), nonceBefore.plus(1).toNumber(), "TAO has incorrect nonce");
+		assert.equal(nonceAfter.toNumber(), nonceBefore.add(new BN(1)).toNumber(), "TAO has incorrect nonce");
 
 		var pool = await taopool.pools(taoId2);
 		assert.equal(pool[1], true, "Pool has incorrect ethosCapStatus");
@@ -904,7 +914,7 @@ contract("TAOPool", function(accounts) {
 		assert.equal(canStakeEthos, false, "Compromised Name can stake Ethos on a TAO");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		ethosLotId1 = await stakeEthos(taoId2, 500, account4, nameId4EthosLots);
 		ethosLotId2 = await stakeEthos(taoId2, 500, account5, nameId5EthosLots);
@@ -938,7 +948,7 @@ contract("TAOPool", function(accounts) {
 
 	it("ownerEthosLotIds() - should return all the Ethos Lot IDs of a Name", async function() {
 		var nameId4TotalEthosLot = await taopool.ownerTotalEthosLot(nameId4);
-		var ethosLots = await taopool.ownerEthosLotIds(nameId4, 0, nameId4TotalEthosLot.minus(1).toString());
+		var ethosLots = await taopool.ownerEthosLotIds(nameId4, 0, nameId4TotalEthosLot.sub(new BN(1)).toString());
 		var isEqual =
 			ethosLots.length === nameId4EthosLots.length &&
 			ethosLots.every(function(value, index) {
@@ -947,7 +957,7 @@ contract("TAOPool", function(accounts) {
 		assert.equal(isEqual, true, "ownerEthosLotIds() return incorrect EthosLot IDs");
 
 		var nameId5TotalEthosLot = await taopool.ownerTotalEthosLot(nameId5);
-		var ethosLots = await taopool.ownerEthosLotIds(nameId5, 0, nameId5TotalEthosLot.minus(1).toString());
+		var ethosLots = await taopool.ownerEthosLotIds(nameId5, 0, nameId5TotalEthosLot.sub(new BN(1)).toString());
 		var isEqual =
 			ethosLots.length === nameId5EthosLots.length &&
 			ethosLots.every(function(value, index) {
@@ -956,7 +966,7 @@ contract("TAOPool", function(accounts) {
 		assert.equal(isEqual, true, "ownerEthosLotIds() return incorrect EthosLot IDs");
 
 		var nameId6TotalEthosLot = await taopool.ownerTotalEthosLot(nameId6);
-		var ethosLots = await taopool.ownerEthosLotIds(nameId6, 0, nameId6TotalEthosLot.minus(1).toString());
+		var ethosLots = await taopool.ownerEthosLotIds(nameId6, 0, nameId6TotalEthosLot.sub(new BN(1)).toString());
 		var isEqual =
 			ethosLots.length === nameId6EthosLots.length &&
 			ethosLots.every(function(value, index) {
@@ -980,7 +990,7 @@ contract("TAOPool", function(accounts) {
 		var pathosBalance = await pathos.balanceOf(taoId2);
 		assert.equal(
 			availablePathosToStake.toNumber(),
-			ethosBalance.minus(pathosBalance).toNumber(),
+			ethosBalance.sub(pathosBalance).toNumber(),
 			"availablePathosToStake() returns incorrect value"
 		);
 
@@ -1045,7 +1055,7 @@ contract("TAOPool", function(accounts) {
 		assert.equal(canStakePathos, false, "Compromised Name can stake Pathos on a TAO");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		// Fast forward the time
 		await helper.advanceTimeAndBlock(1000);
@@ -1056,7 +1066,7 @@ contract("TAOPool", function(accounts) {
 		// Try staking Pathos more than available amount to fill, i.e TAO's Ethos - TAO's Pathos >= quantity
 		var availablePathosToStake = await taopool.availablePathosToStake(taoId2);
 		try {
-			var result = await taopool.stakePathos(taoId2, availablePathosToStake.plus(10).toNumber(), { from: account4 });
+			var result = await taopool.stakePathos(taoId2, availablePathosToStake.add(new BN(10)).toNumber(), { from: account4 });
 			canStakePathos = true;
 		} catch (e) {
 			canStakePathos = false;
@@ -1130,7 +1140,7 @@ contract("TAOPool", function(accounts) {
 		assert.equal(canWithdrawLogos, false, "Compromised Name can withdraw Logos from Ethos Lot");
 
 		// Fast forward the time
-		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.plus(100).toNumber());
+		await helper.advanceTimeAndBlock(accountRecoveryLockDuration.add(new BN(100)).toNumber());
 
 		await withdrawLogos(ethosLotId1, account4);
 		await withdrawLogos(ethosLotId2, account5);

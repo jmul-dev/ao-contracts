@@ -12,9 +12,7 @@ var AOEarning = artifacts.require("./AOEarning.sol");
 var Logos = artifacts.require("./Logos.sol");
 
 var EthCrypto = require("eth-crypto");
-var BigNumber = require("bignumber.js");
-
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
+var BN = require("bn.js");
 
 contract("AOPurchaseReceipt", function(accounts) {
 	var namefactory,
@@ -138,7 +136,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -151,7 +149,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -164,7 +162,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3LocalWriterKey.address,
 			{
 				from: account3
@@ -177,7 +175,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId4LocalWriterKey.address,
 			{
 				from: account4
@@ -195,7 +193,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -238,7 +236,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		publicAddress
 	) {
 		var nameId = await namefactory.ethAddressToNameId(account);
-		var accountBalanceBefore = new BigNumber(await aoion.balanceOf(account));
+		var accountBalanceBefore = new BN(await aoion.balanceOf(account));
 		var contentHost = await aocontenthost.getById(contentHostId);
 		var stakedContentId = contentHost[0];
 		var contentId = contentHost[1];
@@ -248,8 +246,8 @@ contract("AOPurchaseReceipt", function(accounts) {
 
 		var isAOContentUsageType = await aocontent.isAOContentUsageType(contentId);
 
-		var contentHostPrice = new BigNumber(await aocontenthost.contentHostPrice(contentHostId));
-		var contentHostPaidByAO = new BigNumber(await aocontenthost.contentHostPaidByAO(contentHostId));
+		var contentHostPrice = new BN(await aocontenthost.contentHostPrice(contentHostId));
+		var contentHostPaidByAO = new BN(await aocontenthost.contentHostPaidByAO(contentHostId));
 
 		var canBuyContent, buyContentEvent, purchaseReceiptId;
 		try {
@@ -283,17 +281,17 @@ contract("AOPurchaseReceipt", function(accounts) {
 		assert.equal(purchaseReceipt[4].toNumber(), contentHostPrice.toNumber(), "PurchaseReceipt has incorrect price");
 		assert.equal(
 			purchaseReceipt[5].toNumber(),
-			contentHostPrice.minus(contentHostPaidByAO).toNumber(),
+			contentHostPrice.sub(contentHostPaidByAO).toNumber(),
 			"PurchaseReceipt has incorrect amountPaidByBuyer"
 		);
 		assert.equal(purchaseReceipt[6].toNumber(), contentHostPaidByAO.toNumber(), "PurchaseReceipt has incorrect amountPaidByAO");
 		assert.equal(purchaseReceipt[7], publicKey, "PurchaseReceipt has incorrect publicKey");
 		assert.equal(purchaseReceipt[8].toLowerCase(), publicAddress.toLowerCase(), "PurchaseReceipt has incorrect publicAddress");
 
-		var accountBalanceAfter = new BigNumber(await aoion.balanceOf(account));
+		var accountBalanceAfter = new BN(await aoion.balanceOf(account));
 		assert.equal(
 			accountBalanceAfter.toString(),
-			isAOContentUsageType ? accountBalanceBefore.minus(contentHostPrice).toString() : accountBalanceBefore.toString(),
+			isAOContentUsageType ? accountBalanceBefore.sub(contentHostPrice).toString() : accountBalanceBefore.toString(),
 			"Account has incorrect balance after buying content"
 		);
 
@@ -378,15 +376,21 @@ contract("AOPurchaseReceipt", function(accounts) {
 		storeContentEvent = result.logs[0];
 		contentId3 = storeContentEvent.args.contentId;
 
-		result = await aostakedcontent.create(nameId1, contentId1, 4, 1000, "mega", 100000, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId1, contentId1, 4, 1000, web3.utils.toHex("mega"), 100000, 100000, {
+			from: whitelistedAddress
+		});
 		var stakeContentEvent = result.logs[0];
 		stakedContentId1 = stakeContentEvent.args.stakedContentId;
 
-		result = await aostakedcontent.create(nameId2, contentId2, 0, 0, "", 1000000, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId2, contentId2, 0, 0, web3.utils.toHex(""), 1000000, 100000, {
+			from: whitelistedAddress
+		});
 		stakeContentEvent = result.logs[0];
 		stakedContentId2 = stakeContentEvent.args.stakedContentId;
 
-		result = await aostakedcontent.create(nameId1, contentId3, 1000000, 0, "ao", 0, 100000, { from: whitelistedAddress });
+		result = await aostakedcontent.create(nameId1, contentId3, 1000000, 0, web3.utils.toHex("ao"), 0, 100000, {
+			from: whitelistedAddress
+		});
 		stakeContentEvent = result.logs[0];
 		stakedContentId3 = stakeContentEvent.args.stakedContentId;
 
@@ -591,7 +595,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 				someaddress,
 				5,
 				0,
-				"mega",
+				web3.utils.toHex("mega"),
 				account3LocalIdentity.publicKey,
 				account3LocalIdentity.address,
 				{ from: account3 }
@@ -611,7 +615,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 				contentId1,
 				1,
 				0,
-				"mega",
+				web3.utils.toHex("mega"),
 				account3LocalIdentity.publicKey,
 				account3LocalIdentity.address,
 				{ from: account3 }
@@ -627,7 +631,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 		assert.equal(canBuyContent, false, "Account can buy hosted content and send ions < price");
 
 		try {
-			var result = await aopurchasereceipt.buyContent(contentId1, 5, 0, "mega", "", account3LocalIdentity.address, {
+			var result = await aopurchasereceipt.buyContent(contentId1, 5, 0, web3.utils.toHex("mega"), "", account3LocalIdentity.address, {
 				from: account3
 			});
 			canBuyContent = true;
@@ -641,9 +645,17 @@ contract("AOPurchaseReceipt", function(accounts) {
 		assert.equal(canBuyContent, false, "Account can buy hosted content with invalid publicKey");
 
 		try {
-			var result = await aopurchasereceipt.buyContent(contentId1, 5, 0, "mega", account3LocalIdentity.publicKey, "", {
-				from: account3
-			});
+			var result = await aopurchasereceipt.buyContent(
+				contentId1,
+				5,
+				0,
+				web3.utils.toHex("mega"),
+				account3LocalIdentity.publicKey,
+				emptyAddress,
+				{
+					from: account3
+				}
+			);
 			canBuyContent = true;
 			buyContentEvent = result.logs[0];
 			purchaseReceiptId = buyContentEvent.args.purchaseReceiptId;
@@ -659,7 +671,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 				contentId1,
 				5,
 				0,
-				"mega",
+				web3.utils.toHex("mega"),
 				account1LocalIdentity.publicKey,
 				account1LocalIdentity.address,
 				{ from: account1 }
@@ -679,7 +691,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 				contentId1,
 				5,
 				0,
-				"mega",
+				web3.utils.toHex("mega"),
 				account4LocalIdentity.publicKey,
 				account4LocalIdentity.address,
 				{ from: account4 }
@@ -699,7 +711,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 				contentId1,
 				5,
 				0,
-				"mega",
+				web3.utils.toHex("mega"),
 				account5LocalIdentity.publicKey,
 				account5LocalIdentity.address,
 				{ from: account5 }
@@ -721,7 +733,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 			contentHostId1,
 			5,
 			100,
-			"mega",
+			web3.utils.toHex("mega"),
 			account3LocalIdentity.publicKey,
 			account3LocalIdentity.address
 		);
@@ -730,7 +742,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 			contentHostId2,
 			5,
 			100,
-			"mega",
+			web3.utils.toHex("mega"),
 			account3LocalIdentity.publicKey,
 			account3LocalIdentity.address
 		);
@@ -739,7 +751,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 			contentHostId3,
 			0,
 			0,
-			"",
+			web3.utils.toHex(""),
 			account3LocalIdentity.publicKey,
 			account3LocalIdentity.address
 		);
@@ -748,7 +760,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 			contentHostId2,
 			0,
 			0,
-			"",
+			web3.utils.toHex(""),
 			account4LocalIdentity.publicKey,
 			account4LocalIdentity.address
 		);
@@ -757,7 +769,7 @@ contract("AOPurchaseReceipt", function(accounts) {
 			contentHostId3,
 			0,
 			0,
-			"",
+			web3.utils.toHex(""),
 			account4LocalIdentity.publicKey,
 			account4LocalIdentity.address
 		);

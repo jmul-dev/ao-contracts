@@ -8,8 +8,7 @@ var AOIon = artifacts.require("./AOIon.sol");
 var TokenOne = artifacts.require("./TokenOne.sol");
 
 var EthCrypto = require("eth-crypto");
-var BigNumber = require("bignumber.js");
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1, EXPONENTIAL_AT: [-10, 40] }); // no rounding
+var BN = require("bn.js");
 
 contract("AOPool", function(accounts) {
 	var namefactory,
@@ -75,7 +74,7 @@ contract("AOPool", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameIdLocalWriterKey.address,
 			{
 				from: account1
@@ -92,7 +91,7 @@ contract("AOPool", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId,
 			0,
 			false,
@@ -151,32 +150,32 @@ contract("AOPool", function(accounts) {
 		assert.equal(canCreatePool, true, "The AO can't create Pool");
 
 		var totalPoolAfter = await aopool.totalPool();
-		assert.equal(totalPoolAfter.toString(), totalPoolBefore.plus(1).toString(), "Contract has incorrect totalPool value");
+		assert.equal(totalPoolAfter.toString(), totalPoolBefore.add(new BN(1)).toString(), "Contract has incorrect totalPool value");
 
 		assert.equal(poolId.toString(), totalPoolAfter.toString(), "CreatePool event has incorrect poolId");
 
 		var pool = await aopool.pools(poolId.toString());
-		assert.equal(pool[0].toString(), new BigNumber(price).toString(), "Pool has incorrect price");
+		assert.equal(pool[0].toString(), new BN(price).toString(), "Pool has incorrect price");
 		assert.equal(pool[1], status, "Pool has incorrect status");
 		assert.equal(pool[2], sellCapStatus, "Pool has incorrect sellCapStatus");
 		if (sellCapStatus) {
-			assert.equal(pool[3].toString(), new BigNumber(sellCapAmount).toString(), "Pool has incorrect sellCapAmount");
+			assert.equal(pool[3].toString(), new BN(sellCapAmount).toString(), "Pool has incorrect sellCapAmount");
 		} else {
-			assert.equal(pool[3].toString(), new BigNumber(0).toString(), "Pool has incorrect sellCapAmount");
+			assert.equal(pool[3].toString(), new BN(0).toString(), "Pool has incorrect sellCapAmount");
 		}
 		assert.equal(pool[4], quantityCapStatus, "Pool has incorrect quantityCapStatus");
 		if (quantityCapStatus) {
-			assert.equal(pool[5].toString(), new BigNumber(quantityCapAmount).toString(), "Pool has incorrect quantityCapAmount");
+			assert.equal(pool[5].toString(), new BN(quantityCapAmount).toString(), "Pool has incorrect quantityCapAmount");
 		} else {
-			assert.equal(pool[5].toString(), new BigNumber(0).toString(), "Pool has incorrect quantityCapAmount");
+			assert.equal(pool[5].toString(), new BN(0).toString(), "Pool has incorrect quantityCapAmount");
 		}
 		assert.equal(pool[6], erc20CounterAsset, "Pool has incorrect erc20CounterAsset");
 		if (erc20CounterAsset) {
 			assert.equal(pool[7], erc20TokenAddress, "Pool has incorrect erc20TokenAddress");
-			assert.equal(pool[8].toString(), new BigNumber(erc20TokenMultiplier).toString(), "Pool has incorrect erc20TokenMultiplier");
+			assert.equal(pool[8].toString(), new BN(erc20TokenMultiplier).toString(), "Pool has incorrect erc20TokenMultiplier");
 		} else {
 			assert.equal(pool[7], emptyAddress, "Pool has incorrect erc20TokenAddress");
-			assert.equal(pool[8].toString(), new BigNumber(0).toString(), "Pool has incorrect erc20TokenMultiplier");
+			assert.equal(pool[8].toString(), new BN(0).toString(), "Pool has incorrect erc20TokenMultiplier");
 		}
 		assert.equal(pool[9], account, "Pool has incorrect adminAddress");
 		return poolId;
@@ -218,38 +217,42 @@ contract("AOPool", function(accounts) {
 		var accountNetworkBalanceAfter = await aoion.balanceOf(account);
 		var poolNetworkBalanceAfter = await aoion.balanceOf(aopool.address);
 
-		assert.equal(contractTotalLotAfter.toString(), contractTotalLotBefore.plus(1).toString(), "Contract has incorrect total Lot");
-		assert.equal(poolTotalLotAfter.toString(), poolTotalLotBefore.plus(1).toString(), "Pool has incorrect total Lot");
-		assert.equal(ownerTotalLotAfter.toString(), ownerTotalLotBefore.plus(1).toString(), "Account has incorrect total Lot");
+		assert.equal(
+			contractTotalLotAfter.toString(),
+			contractTotalLotBefore.add(new BN(1)).toString(),
+			"Contract has incorrect total Lot"
+		);
+		assert.equal(poolTotalLotAfter.toString(), poolTotalLotBefore.add(new BN(1)).toString(), "Pool has incorrect total Lot");
+		assert.equal(ownerTotalLotAfter.toString(), ownerTotalLotBefore.add(new BN(1)).toString(), "Account has incorrect total Lot");
 		assert.equal(
 			poolTotalQuantityAfter.toString(),
-			poolTotalQuantityBefore.plus(quantity).toString(),
+			poolTotalQuantityBefore.add(new BN(quantity)).toString(),
 			"Pool has incorrect total quantity"
 		);
-		assert.equal(poolTotalSellAfter.toString(), poolTotalSellBefore.plus(quantity).toString(), "Pool has incorrect total sell");
+		assert.equal(poolTotalSellAfter.toString(), poolTotalSellBefore.add(new BN(quantity)).toString(), "Pool has incorrect total sell");
 		assert.equal(
 			totalPutOnSaleAfter.toString(),
-			totalPutOnSaleBefore.plus(quantity).toString(),
+			totalPutOnSaleBefore.add(new BN(quantity)).toString(),
 			"Account has incorrect totalPutOnSale"
 		);
 		assert.equal(
 			contractTotalQuantityAfter.toString(),
-			contractTotalQuantityBefore.plus(quantity).toString(),
+			contractTotalQuantityBefore.add(new BN(quantity)).toString(),
 			"Contract has incorrect total quantity"
 		);
 		assert.equal(
 			contractTotalSellAfter.toString(),
-			contractTotalSellBefore.plus(quantity).toString(),
+			contractTotalSellBefore.add(new BN(quantity)).toString(),
 			"Contract has incorrect total sell"
 		);
 		assert.equal(
 			accountNetworkBalanceAfter.toString(),
-			accountNetworkBalanceBefore.minus(quantity).toString(),
+			accountNetworkBalanceBefore.sub(new BN(quantity)).toString(),
 			"Account has incorrect network ion balance"
 		);
 		assert.equal(
 			poolNetworkBalanceAfter.toString(),
-			poolNetworkBalanceBefore.plus(quantity).toString(),
+			poolNetworkBalanceBefore.add(new BN(quantity)).toString(),
 			"Pool has incorrect network ion balance"
 		);
 
@@ -259,11 +262,11 @@ contract("AOPool", function(accounts) {
 		assert.equal(lot[2].toString(), quantity, "Lot has incorrect lotQuantity");
 		assert.equal(lot[3].toString(), poolId, "Lot has incorrect poolId");
 		assert.equal(lot[4].toString(), poolTotalSellBefore.toString(), "Lot has incorrect poolPreSellSnapshot");
-		assert.equal(lot[5].toString(), poolTotalSellBefore.plus(quantity).toString(), "Lot has incorrect poolSellLotSnapshot");
-		assert.equal(lot[6].toString(), new BigNumber(quantity).times(price).toString(), "Lot has incorrect lotValueInCounterAsset");
+		assert.equal(lot[5].toString(), poolTotalSellBefore.add(new BN(quantity)).toString(), "Lot has incorrect poolSellLotSnapshot");
+		assert.equal(lot[6].toString(), new BN(quantity).mul(new BN(price)).toString(), "Lot has incorrect lotValueInCounterAsset");
 		assert.equal(lot[7].toString(), 0, "Lot has incorrect counterAssetWithdrawn");
 		assert.equal(lot[8].toString(), 0, "Lot has incorrect ionWithdrawn");
-		assert.isAbove(lot[9].toNumber(), 0, "Lot has incorrect timestamp");
+		assert.isAbove(lot[9].toNumber(), 0, "Lot has incorrect multamp");
 
 		accountLots.push(lotId);
 		return lotId;
@@ -303,39 +306,39 @@ contract("AOPool", function(accounts) {
 
 		assert.equal(
 			poolTotalQuantityAfter.toString(),
-			poolTotalQuantityBefore.minus(quantity).toString(),
+			poolTotalQuantityBefore.sub(new BN(quantity)).toString(),
 			"Pool has incorrect total quantity"
 		);
-		assert.equal(poolTotalBuyAfter.toString(), poolTotalBuyBefore.plus(quantity).toString(), "Pool has incorrect total buy");
+		assert.equal(poolTotalBuyAfter.toString(), poolTotalBuyBefore.add(new BN(quantity)).toString(), "Pool has incorrect total buy");
 		assert.equal(
 			poolEthereumBalanceAfter.toString(),
-			poolEthereumBalanceBefore.plus(quantity * price).toString(),
+			poolEthereumBalanceBefore.add(new BN(quantity * price)).toString(),
 			"Pool has incorrect ethereum balance"
 		);
 		assert.equal(
 			contractTotalQuantityAfter.toString(),
-			contractTotalQuantityBefore.minus(quantity).toString(),
+			contractTotalQuantityBefore.sub(new BN(quantity)).toString(),
 			"Contract has incorrect total quantity"
 		);
 		assert.equal(
 			contractTotalBuyAfter.toString(),
-			contractTotalBuyBefore.plus(quantity).toString(),
+			contractTotalBuyBefore.add(new BN(quantity)).toString(),
 			"Contract has incorrect total buy"
 		);
 		assert.equal(
 			contractEthereumBalanceAfter.toString(),
-			contractEthereumBalanceBefore.plus(quantity * price).toString(),
+			contractEthereumBalanceBefore.add(new BN(quantity * price)).toString(),
 			"Contract has incorrect ethereum balance"
 		);
-		assert.equal(totalBoughtAfter.toString(), totalBoughtBefore.plus(quantity).toString(), "Account has incorrect totalBought");
+		assert.equal(totalBoughtAfter.toString(), totalBoughtBefore.add(new BN(quantity)).toString(), "Account has incorrect totalBought");
 		assert.equal(
 			accountNetworkBalanceAfter.toString(),
-			accountNetworkBalanceBefore.plus(quantity).toString(),
+			accountNetworkBalanceBefore.add(new BN(quantity)).toString(),
 			"Account has incorrect network ion balance"
 		);
 		assert.equal(
 			poolNetworkBalanceAfter.toString(),
-			poolNetworkBalanceBefore.minus(quantity).toString(),
+			poolNetworkBalanceBefore.sub(new BN(quantity)).toString(),
 			"Pool has incorrect network ion balance"
 		);
 	};
@@ -374,42 +377,42 @@ contract("AOPool", function(accounts) {
 
 		assert.equal(
 			lotAfter[6].toString(),
-			lotBefore[6].minus(availableToWithdrawBefore[1]).toString(),
+			lotBefore[6].sub(availableToWithdrawBefore[1]).toString(),
 			"Lot has incorrect lotValueInCounterAsset"
 		);
 		assert.equal(
 			lotAfter[7].toString(),
-			lotBefore[7].plus(availableToWithdrawBefore[1]).toString(),
+			lotBefore[7].add(availableToWithdrawBefore[1]).toString(),
 			"Lot has incorrect counterAssetWithdrawn"
 		);
 		assert.equal(
 			poolEthereumBalanceAfter.toString(),
-			poolEthereumBalanceBefore.minus(availableToWithdrawBefore[1]).toString(),
+			poolEthereumBalanceBefore.sub(availableToWithdrawBefore[1]).toString(),
 			"Pool has incorrect ethereum balance"
 		);
 		assert.equal(
 			poolTotalEthereumWithdrawnAfter.toString(),
-			poolTotalEthereumWithdrawnBefore.plus(availableToWithdrawBefore[1]).toString(),
+			poolTotalEthereumWithdrawnBefore.add(availableToWithdrawBefore[1]).toString(),
 			"Pool has incorrect total ethereum withdrawn"
 		);
 		assert.equal(
 			contractEthereumBalanceAfter.toString(),
-			contractEthereumBalanceBefore.minus(availableToWithdrawBefore[1]).toString(),
+			contractEthereumBalanceBefore.sub(availableToWithdrawBefore[1]).toString(),
 			"Contract has incorrect ethereum balance"
 		);
 		assert.equal(
 			contractTotalEthereumWithdrawnAfter.toString(),
-			contractTotalEthereumWithdrawnBefore.plus(availableToWithdrawBefore[1]).toString(),
+			contractTotalEthereumWithdrawnBefore.add(availableToWithdrawBefore[1]).toString(),
 			"Contract has incorrect total ethereum withdrawn"
 		);
 		assert.equal(
 			totalSoldAfter.toString(),
-			totalSoldBefore.plus(availableToWithdrawBefore[0]).toString(),
+			totalSoldBefore.add(availableToWithdrawBefore[0]).toString(),
 			"Account has incorrect total sold"
 		);
 		assert.equal(
 			totalEthereumWithdrawnAfter.toString(),
-			totalEthereumWithdrawnBefore.plus(availableToWithdrawBefore[1]).toString(),
+			totalEthereumWithdrawnBefore.add(availableToWithdrawBefore[1]).toString(),
 			"Account has incorrect total ethereum withdrawn"
 		);
 
@@ -460,44 +463,44 @@ contract("AOPool", function(accounts) {
 		assert.equal(lotAfter[5].toString(), lotBefore[5].toString(), "Lot has incorrect poolSellLotSnapshot");
 		assert.equal(
 			lotAfter[6].toString(),
-			lotBefore[6].minus(new BigNumber(quantity).times(price)).toString(),
+			lotBefore[6].sub(new BN(quantity).mul(new BN(price))).toString(),
 			"Lot has incorrect lotValueInCounterAsset"
 		);
-		assert.equal(lotAfter[8].toString(), lotBefore[8].plus(quantity).toString(), "Lot has incorrect ionWithdrawn");
+		assert.equal(lotAfter[8].toString(), lotBefore[8].add(new BN(quantity)).toString(), "Lot has incorrect ionWithdrawn");
 
 		assert.equal(
 			poolTotalQuantityAfter.toString(),
-			poolTotalQuantityBefore.minus(quantity).toString(),
+			poolTotalQuantityBefore.sub(new BN(quantity)).toString(),
 			"Pool has incorrect total quantity"
 		);
 		assert.equal(
 			contractTotalQuantityAfter.toString(),
-			contractTotalQuantityBefore.minus(quantity).toString(),
+			contractTotalQuantityBefore.sub(new BN(quantity)).toString(),
 			"Contract has incorrect total quantity"
 		);
 		assert.equal(
 			poolTotalWithdrawnAfter.toString(),
-			poolTotalWithdrawnBefore.plus(quantity).toString(),
+			poolTotalWithdrawnBefore.add(new BN(quantity)).toString(),
 			"Pool has incorrect total withdrawn"
 		);
 		assert.equal(
 			contractTotalWithdrawnAfter.toString(),
-			contractTotalWithdrawnBefore.plus(quantity).toString(),
+			contractTotalWithdrawnBefore.add(new BN(quantity)).toString(),
 			"Contract has incorrect total withdrawn"
 		);
 		assert.equal(
 			totalPutOnSaleAfter.toString(),
-			totalPutOnSaleBefore.minus(quantity).toString(),
+			totalPutOnSaleBefore.sub(new BN(quantity)).toString(),
 			"Account has incorrect total put on sale"
 		);
 		assert.equal(
 			accountNetworkBalanceAfter.toString(),
-			accountNetworkBalanceBefore.plus(quantity).toString(),
+			accountNetworkBalanceBefore.add(new BN(quantity)).toString(),
 			"Account has incorrect network ion balance"
 		);
 		assert.equal(
 			poolNetworkBalanceAfter.toString(),
-			poolNetworkBalanceBefore.minus(quantity).toString(),
+			poolNetworkBalanceBefore.sub(new BN(quantity)).toString(),
 			"Pool has incorrect network ion balance"
 		);
 	};
@@ -624,8 +627,12 @@ contract("AOPool", function(accounts) {
 		var accountBalanceAfter = await tokenone.balanceOf(account1);
 		var aopoolBalanceAfter = await tokenone.balanceOf(aopool.address);
 
-		assert.equal(accountBalanceAfter.toNumber(), accountBalanceBefore.plus(100).toNumber(), "Account has incorrect ERC20 balance");
-		assert.equal(aopoolBalanceAfter.toNumber(), aopoolBalanceBefore.minus(100).toNumber(), "aopool has incorrect ERC20 balance");
+		assert.equal(
+			accountBalanceAfter.toNumber(),
+			accountBalanceBefore.add(new BN(100)).toNumber(),
+			"Account has incorrect ERC20 balance"
+		);
+		assert.equal(aopoolBalanceAfter.toNumber(), aopoolBalanceBefore.sub(new BN(100)).toNumber(), "aopool has incorrect ERC20 balance");
 	});
 
 	it("createPool() - only The AO can create Pool", async function() {
@@ -870,25 +877,25 @@ contract("AOPool", function(accounts) {
 		// no sell cap
 		// no quantity cap
 		// is ethereum
-		poolId6 = await createPool(price, status, false, sellCapAmount, false, quantityCapAmount, false, "", "", account1);
+		poolId6 = await createPool(price, status, false, sellCapAmount, false, quantityCapAmount, false, emptyAddress, 0, account1);
 
 		// pool active
 		// has sell cap
 		// no quantity cap
 		// is ethereum
-		poolId7 = await createPool(price, status, true, sellCapAmount, false, quantityCapAmount, false, "", "", account1);
+		poolId7 = await createPool(price, status, true, sellCapAmount, false, quantityCapAmount, false, emptyAddress, 0, account1);
 
 		// pool active
 		// no sell cap
 		// has quantity cap
 		// is ethereum
-		poolId8 = await createPool(price, status, false, sellCapAmount, true, quantityCapAmount, false, "", "", account1);
+		poolId8 = await createPool(price, status, false, sellCapAmount, true, quantityCapAmount, false, emptyAddress, 0, account1);
 
 		// pool active
 		// has sell cap
 		// has quantity cap
 		// is ethereum
-		poolId9 = await createPool(price, status, true, sellCapAmount, true, quantityCapAmount, false, "", "", account1);
+		poolId9 = await createPool(price, status, true, sellCapAmount, true, quantityCapAmount, false, emptyAddress, 0, account1);
 	});
 
 	it("updatePoolStatus() - only Pool's admin can start/stop a Pool", async function() {
@@ -1092,7 +1099,7 @@ contract("AOPool", function(accounts) {
 
 	it("ownerLotIds() - should return all the Lot IDs of an account", async function() {
 		var account1TotalLot = await aopool.ownerTotalLot(account1);
-		var lots = await aopool.ownerLotIds(account1, 0, account1TotalLot.minus(1).toString());
+		var lots = await aopool.ownerLotIds(account1, 0, account1TotalLot.sub(new BN(1)).toString());
 		var isEqual =
 			lots.length === account1Lots.length &&
 			lots.every(function(value, index) {
@@ -1101,7 +1108,7 @@ contract("AOPool", function(accounts) {
 		assert.equal(isEqual, true, "ownerLotIds() return incorrect Lot IDs");
 
 		var account2TotalLot = await aopool.ownerTotalLot(account2);
-		var lots = await aopool.ownerLotIds(account2, 0, account2TotalLot.minus(1).toString());
+		var lots = await aopool.ownerLotIds(account2, 0, account2TotalLot.sub(new BN(1)).toString());
 		var isEqual =
 			lots.length === account2Lots.length &&
 			lots.every(function(value, index) {
@@ -1110,7 +1117,7 @@ contract("AOPool", function(accounts) {
 		assert.equal(isEqual, true, "ownerLotIds() return incorrect Lot IDs");
 
 		var account3TotalLot = await aopool.ownerTotalLot(account3);
-		var lots = await aopool.ownerLotIds(account3, 0, account3TotalLot.minus(1).toString());
+		var lots = await aopool.ownerLotIds(account3, 0, account3TotalLot.sub(new BN(1)).toString());
 		var isEqual =
 			lots.length === account3Lots.length &&
 			lots.every(function(value, index) {
@@ -1119,7 +1126,7 @@ contract("AOPool", function(accounts) {
 		assert.equal(isEqual, true, "ownerLotIds() return incorrect Lot IDs");
 
 		var account4TotalLot = await aopool.ownerTotalLot(account4);
-		var lots = await aopool.ownerLotIds(account4, 0, account4TotalLot.minus(1).toString());
+		var lots = await aopool.ownerLotIds(account4, 0, account4TotalLot.sub(new BN(1)).toString());
 		var isEqual =
 			lots.length === account4Lots.length &&
 			lots.every(function(value, index) {
@@ -1128,7 +1135,7 @@ contract("AOPool", function(accounts) {
 		assert.equal(isEqual, true, "ownerLotIds() return incorrect Lot IDs");
 
 		var account5TotalLot = await aopool.ownerTotalLot(account5);
-		var lots = await aopool.ownerLotIds(account5, 0, account5TotalLot.minus(1).toString());
+		var lots = await aopool.ownerLotIds(account5, 0, account5TotalLot.sub(new BN(1)).toString());
 		var isEqual =
 			lots.length === account5Lots.length &&
 			lots.every(function(value, index) {
@@ -1151,11 +1158,11 @@ contract("AOPool", function(accounts) {
 
 		var poolTotalQuantity = await aopool.poolTotalQuantity(poolId6.toString());
 		try {
-			var result = await aopool.buyWithEth(poolId6.toString(), poolTotalQuantity.plus(1).toString(), 10000, {
+			var result = await aopool.buyWithEth(poolId6.toString(), poolTotalQuantity.add(new BN(1)).toString(), 10000, {
 				from: account1,
 				value: poolTotalQuantity
-					.plus(1)
-					.times(10000)
+					.add(new BN(1))
+					.mul(new BN(10000))
 					.toString()
 			});
 			buyWithEthEvent = result.logs[0];
@@ -1363,7 +1370,11 @@ contract("AOPool", function(accounts) {
 		var price = pool[0];
 
 		assert.equal(lot[6].toString(), 0, "Lot has incorrect lotValueInCounterAsset");
-		assert.equal(lot[7].toString(), lot[2].times(price).minus(lot[8].times(price)), "Lot has incorrect counterAssetWithdrawn");
+		assert.equal(
+			lot[7].toString(),
+			lot[2].mul(new BN(price)).sub(lot[8].mul(new BN(price))),
+			"Lot has incorrect counterAssetWithdrawn"
+		);
 		assert.equal(lot[8].toString(), 5, "Lot has incorrect ionWithdrawn");
 
 		var lotId3AvailableToWithdraw = await aopool.lotEthAvailableToWithdraw(lotId3);
@@ -1376,7 +1387,7 @@ contract("AOPool", function(accounts) {
 
 		assert.equal(
 			lot[7].toString(),
-			new BigNumber(5).times(price).minus(lot[8].times(price)),
+			new BN(5).mul(new BN(price)).sub(lot[8].mul(new BN(price))),
 			"Lot has incorrect counterAssetWithdrawn"
 		);
 
@@ -1395,7 +1406,11 @@ contract("AOPool", function(accounts) {
 		var price = pool[0];
 
 		assert.equal(lot[6].toString(), 0, "Lot has incorrect lotValueInCounterAsset");
-		assert.equal(lot[7].toString(), lot[2].times(price).minus(lot[8].times(price)), "Lot has incorrect counterAssetWithdrawn");
+		assert.equal(
+			lot[7].toString(),
+			lot[2].mul(new BN(price)).sub(lot[8].mul(new BN(price))),
+			"Lot has incorrect counterAssetWithdrawn"
+		);
 		assert.equal(lot[8].toString(), 0, "Lot has incorrect ionWithdrawn");
 
 		var lotId4AvailableToWithdraw = await aopool.lotEthAvailableToWithdraw(lotId4);
@@ -1407,7 +1422,11 @@ contract("AOPool", function(accounts) {
 		var price = pool[0];
 
 		assert.equal(lot[6].toString(), 0, "Lot has incorrect lotValueInCounterAsset");
-		assert.equal(lot[7].toString(), lot[2].times(price).minus(lot[8].times(price)), "Lot has incorrect counterAssetWithdrawn");
+		assert.equal(
+			lot[7].toString(),
+			lot[2].mul(new BN(price)).sub(lot[8].mul(new BN(price))),
+			"Lot has incorrect counterAssetWithdrawn"
+		);
 		assert.equal(lot[8].toString(), 20, "Lot has incorrect ionWithdrawn");
 
 		var lotId5AvailableToWithdraw = await aopool.lotEthAvailableToWithdraw(lotId5);
@@ -1419,7 +1438,11 @@ contract("AOPool", function(accounts) {
 		var price = pool[0];
 
 		assert.equal(lot[6].toString(), 0, "Lot has incorrect lotValueInCounterAsset");
-		assert.equal(lot[7].toString(), lot[2].times(price).minus(lot[8].times(price)), "Lot has incorrect counterAssetWithdrawn");
+		assert.equal(
+			lot[7].toString(),
+			lot[2].mul(new BN(price)).sub(lot[8].mul(new BN(price))),
+			"Lot has incorrect counterAssetWithdrawn"
+		);
 		assert.equal(lot[8].toString(), 4, "Lot has incorrect ionWithdrawn");
 
 		var lotId7AvailableToWithdraw = await aopool.lotEthAvailableToWithdraw(lotId7);
@@ -1432,13 +1455,13 @@ contract("AOPool", function(accounts) {
 
 		assert.equal(
 			lot[7].toString(),
-			new BigNumber(28).times(price).minus(lot[8].times(price)),
+			new BN(28).mul(new BN(price)).sub(lot[8].mul(new BN(price))),
 			"Lot has incorrect counterAssetWithdrawn"
 		);
 	});
 
 	it("stress testing to calculate gas cost for withdrawing Eth on last Lot especially when there is ion withdrawn from the Lots before the last Lot", async function() {
-		var poolId = await createPool(1000, true, false, "", false, "", false, "", "", account1);
+		var poolId = await createPool(1000, true, false, 0, false, 0, false, emptyAddress, 0, account1);
 		var pool = await aopool.pools(poolId.toString());
 
 		var lots = [];

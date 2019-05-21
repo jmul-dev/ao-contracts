@@ -8,8 +8,7 @@ var AOContent = artifacts.require("./AOContent.sol");
 var TAO = artifacts.require("./TAO.sol");
 
 var EthCrypto = require("eth-crypto");
-var BigNumber = require("bignumber.js");
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: 1 }); // no rounding
+var BN = require("bn.js");
 
 contract("AOLibrary", function(accounts) {
 	var library,
@@ -47,7 +46,7 @@ contract("AOLibrary", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -64,7 +63,7 @@ contract("AOLibrary", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1,
 			0,
 			false,
@@ -168,14 +167,14 @@ contract("AOLibrary", function(accounts) {
 	});
 
 	it("calculateWeightedMultiplier() - should calculate and return correct weighted multiplier", async function() {
-		var M1 = new BigNumber(1500000);
-		var P1 = new BigNumber(200);
-		var M2 = new BigNumber(3000000);
-		var P2 = new BigNumber(100);
+		var M1 = new BN(1500000);
+		var P1 = new BN(200);
+		var M2 = new BN(3000000);
+		var P2 = new BN(100);
 		var weightedMultiplier = await library.calculateWeightedMultiplier(M1.toString(), P1.toString(), M2.toString(), P2.toString());
-		var _weightedMultiplier = M1.times(P1)
-			.plus(M2.times(P2))
-			.div(P1.plus(P2));
+		var _weightedMultiplier = M1.mul(P1)
+			.add(M2.mul(P2))
+			.div(P1.add(P2));
 		assert.equal(weightedMultiplier.toNumber(), _weightedMultiplier.toString(), "Library returns incorrect weighted multiplier");
 
 		var weightedMultiplier = await library.calculateWeightedMultiplier(0, 0, M2.toString(), P2.toString());
@@ -183,17 +182,17 @@ contract("AOLibrary", function(accounts) {
 	});
 
 	it("calculatePrimordialMultiplier() - should calculate and return the correct primoridial multiplier on a given lot", async function() {
-		var P = new BigNumber(50);
-		var T = new BigNumber(1000);
-		var M = new BigNumber(300);
-		var S = new BigNumber(50).times(multiplierDivisor);
-		var E = new BigNumber(3).times(multiplierDivisor);
+		var P = new BN(50);
+		var T = new BN(1000);
+		var M = new BN(300);
+		var S = new BN(50).mul(multiplierDivisor);
+		var E = new BN(3).mul(multiplierDivisor);
 		var multiplier = await library.calculatePrimordialMultiplier(P.toString(), T.toString(), M.toString(), S.toString(), E.toString());
 
 		// Multiplier = (1 - ((M + P/2) / T)) x (S-E)
 		// Let temp = M + (P/2)
 		// Multiplier = (1 - (temp / T)) x (S-E)
-		var temp = M.plus(P.div(2));
+		var temp = M.add(P.div(new BN(2)));
 
 		/**
 		 * Multiply multiplier with multiplierDivisor/multiplierDivisor to account for 6 decimals
@@ -203,7 +202,7 @@ contract("AOLibrary", function(accounts) {
 		 * Take out the division by multiplierDivisor for now and include in later calculation
 		 * Multiplier = (multiplierDivisor - ((multiplierDivisor * temp) / T)) * (S-E)
 		 */
-		var _multiplier = multiplierDivisor.minus(multiplierDivisor.times(temp).div(T)).times(S.minus(E));
+		var _multiplier = multiplierDivisor.sub(multiplierDivisor.mul(temp).div(T)).mul(S.sub(E));
 		/**
 		 * Since _startingMultiplier and _endingMultiplier are in 6 decimals
 		 * Need to divide multiplier by multiplierDivisor
@@ -214,11 +213,11 @@ contract("AOLibrary", function(accounts) {
 	});
 
 	it("calculateNetworkBonusPercentage() - should calculate and return the correct network ion bonus percentage on a given lot", async function() {
-		var P = new BigNumber(50);
-		var T = new BigNumber(1000);
-		var M = new BigNumber(300);
-		var Bs = new BigNumber(1000000);
-		var Be = new BigNumber(250000);
+		var P = new BN(50);
+		var T = new BN(1000);
+		var M = new BN(300);
+		var Bs = new BN(1000000);
+		var Be = new BN(250000);
 		var bonusPercentage = await library.calculateNetworkBonusPercentage(
 			P.toString(),
 			T.toString(),
@@ -230,7 +229,7 @@ contract("AOLibrary", function(accounts) {
 		// B% = (1 - ((M + P/2) / T)) x (Bs-Be)
 		// Let temp = M + (P/2)
 		// B% = (1 - (temp / T)) x (Bs-Be)
-		var temp = M.plus(P.div(2));
+		var temp = M.add(P.div(new BN(2)));
 
 		/**
 		 * Multiply B% with percentageDivisor/percentageDivisor to account for 6 decimals
@@ -243,8 +242,8 @@ contract("AOLibrary", function(accounts) {
 		 * B% = (percentageDivisor - ((percentageDivisor * temp) / T)) * (Bs-Be) / percentageDivisor
 		 */
 		var _bonusPercentage = percentageDivisor
-			.minus(percentageDivisor.times(temp).div(T))
-			.times(Bs.minus(Be))
+			.sub(percentageDivisor.mul(temp).div(T))
+			.mul(Bs.sub(Be))
 			.div(percentageDivisor);
 		assert.equal(
 			bonusPercentage.toString(),
@@ -254,11 +253,11 @@ contract("AOLibrary", function(accounts) {
 	});
 
 	it("calculateNetworkBonusAmount() - should calculate and return the correct network ion bonus amount on a given lot", async function() {
-		var P = new BigNumber(50);
-		var T = new BigNumber(1000);
-		var M = new BigNumber(300);
-		var Bs = new BigNumber(1000000);
-		var Be = new BigNumber(250000);
+		var P = new BN(50);
+		var T = new BN(1000);
+		var M = new BN(300);
+		var Bs = new BN(1000000);
+		var Be = new BN(250000);
 
 		var bonusPercentage = await library.calculateNetworkBonusPercentage(
 			P.toString(),
@@ -272,23 +271,23 @@ contract("AOLibrary", function(accounts) {
 		// Bonus Amount = B% * P
 		// But since B% is in percentageDivisor, need to divide it with percentageDivisor
 		// Bonus Amount = (B% * P) / percentageDivisor
-		var _bonusAmount = new BigNumber(bonusPercentage).times(P).div(percentageDivisor);
+		var _bonusAmount = new BN(bonusPercentage).mul(P).div(percentageDivisor);
 		assert.equal(bonusAmount.toNumber(), _bonusAmount.toString(), "Library returns incorrect network ion bonus amount for a given lot");
 	});
 
 	it("calculateMaximumBurnAmount() - should calculate and return the correct maximum burn amount", async function() {
-		var P = new BigNumber(70);
-		var M = new BigNumber(40000000);
-		var S = new BigNumber(50000000);
+		var P = new BN(70);
+		var M = new BN(40000000);
+		var S = new BN(50000000);
 
 		var burnAmount = await library.calculateMaximumBurnAmount(P.toString(), M.toString(), S.toString());
-		var _burnAmount = S.times(P)
-			.minus(P.times(M))
+		var _burnAmount = S.mul(P)
+			.sub(P.mul(M))
 			.div(S);
 		assert.equal(burnAmount.toString(), _burnAmount.toString(), "Library returns incorrect maximum burn amount");
 		assert.equal(
-			P.times(M)
-				.div(P.minus(burnAmount))
+			P.mul(M)
+				.div(P.sub(burnAmount))
 				.toString(),
 			S.toString(),
 			"Burning max amount doesn't result in max multiplier"
@@ -296,22 +295,22 @@ contract("AOLibrary", function(accounts) {
 	});
 
 	it("calculateMultiplierAfterBurn() - should calculate and return the correct new multiplier after burning primordial ion", async function() {
-		var P = new BigNumber(70);
-		var M = new BigNumber(40000000);
-		var B = new BigNumber(14);
+		var P = new BN(70);
+		var M = new BN(40000000);
+		var B = new BN(14);
 
 		var newMultiplier = await library.calculateMultiplierAfterBurn(P.toString(), M.toString(), B.toString());
-		var _newMultiplier = P.times(M).div(P.minus(B));
+		var _newMultiplier = P.mul(M).div(P.sub(B));
 		assert.equal(newMultiplier.toString(), _newMultiplier.toString(), "Library returns incorrect new multiplier after burning");
 	});
 
 	it("calculateMultiplierAfterConversion() - should calculate and return the correct new multiplier after converting network ion to primordial ion", async function() {
-		var P = new BigNumber(70);
-		var M = new BigNumber(40000000);
-		var C = new BigNumber(14);
+		var P = new BN(70);
+		var M = new BN(40000000);
+		var C = new BN(14);
 
 		var newMultiplier = await library.calculateMultiplierAfterConversion(P.toString(), M.toString(), C.toString());
-		var _newMultiplier = P.times(M).div(P.plus(C));
+		var _newMultiplier = P.mul(M).div(P.add(C));
 		assert.equal(newMultiplier.toString(), _newMultiplier.toString(), "Library returns incorrect new multiplier after conversion");
 	});
 

@@ -41,7 +41,7 @@ contract("AOSettingAttribute", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId1LocalWriterKey.address,
 			{
 				from: account1
@@ -54,7 +54,7 @@ contract("AOSettingAttribute", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId2LocalWriterKey.address,
 			{
 				from: account2
@@ -67,7 +67,7 @@ contract("AOSettingAttribute", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			nameId3LocalWriterKey.address,
 			{ from: account3 }
 		);
@@ -84,7 +84,7 @@ contract("AOSettingAttribute", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			creatorTAONameId,
 			0,
 			false,
@@ -101,7 +101,7 @@ contract("AOSettingAttribute", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			creatorTAONameId,
 			0,
 			false,
@@ -118,7 +118,7 @@ contract("AOSettingAttribute", function(accounts) {
 			"somedathash",
 			"somedatabase",
 			"somekeyvalue",
-			"somecontentid",
+			web3.utils.toHex("somecontentid"),
 			creatorTAONameId,
 			0,
 			false,
