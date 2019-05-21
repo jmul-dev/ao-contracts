@@ -21,6 +21,7 @@ module.exports = {
 			port: 8545,
 			network_id: "*",
 			gas: 6950000,
+			gasPrice: 10000000000, // 10 Gwei
 			websockets: false
 		},
 		ropsten: {
@@ -39,7 +40,7 @@ module.exports = {
 			gas: 6950000, // Gas limit used for deploys,
 			gasPrice: 20000000000 // 10 Gwei
 		},
-		live: {
+		mainnet: {
 			host: "localhost", // Connect to geth on the specified
 			port: 8545,
 			from: "0x268c85ef559be52f3749791445dfd9a5abc37186", // default address to use for any transaction Truffle makes during migrations
