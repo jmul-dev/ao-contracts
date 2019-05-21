@@ -9,7 +9,9 @@
 	],
 	"dependencies": {
 		"bignumber.js": "^7.2.1",
-		"eth-crypto": "^1.2.3"
+		"bn.js": "^4.11.8",
+		"eth-crypto": "^1.2.3",
+		"web3": "^0.20.7"
 	},
 	"scripts": {
 		"chain": "ganache-cli -p 8545 -m 'stomach six rural battle middle jazz chalk camera grain render feed job' -g 10000000000 -e 1000 -l 6950000 -i 1985",
@@ -19,11 +21,10 @@
 		"test": "truffle test"
 	},
 	"devDependencies": {
-		"ganache-cli": "^6.4.4-beta.0",
+		"ganache-cli": "^6.4.3",
 		"husky": "^1.2.0",
 		"prettier": "1.15.2",
-		"pretty-quick": "^1.8.0",
-		"truffle": "^4.1.13"
+		"pretty-quick": "^1.8.0"
 	},
 	"husky": {
 		"hooks": {
