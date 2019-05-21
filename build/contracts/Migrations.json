@@ -13,8 +13,7 @@
 			],
 			"payable": false,
 			"stateMutability": "view",
-			"type": "function",
-			"signature": "0x445df0ac"
+			"type": "function"
 		},
 		{
 			"constant": true,
@@ -28,15 +27,13 @@
 			],
 			"payable": false,
 			"stateMutability": "view",
-			"type": "function",
-			"signature": "0x8da5cb5b"
+			"type": "function"
 		},
 		{
 			"inputs": [],
 			"payable": false,
 			"stateMutability": "nonpayable",
-			"type": "constructor",
-			"signature": "constructor"
+			"type": "constructor"
 		},
 		{
 			"constant": false,
@@ -50,8 +47,7 @@
 			"outputs": [],
 			"payable": false,
 			"stateMutability": "nonpayable",
-			"type": "function",
-			"signature": "0xfdacd576"
+			"type": "function"
 		},
 		{
 			"constant": false,
@@ -65,10 +61,10 @@
 			"outputs": [],
 			"payable": false,
 			"stateMutability": "nonpayable",
-			"type": "function",
-			"signature": "0x0900f010"
+			"type": "function"
 		}
 	],
+	"metadata": "{\"compiler\":{\"version\":\"0.5.4+commit.9549d8ff\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"name\":\"new_address\",\"type\":\"address\"}],\"name\":\"upgrade\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"last_completed_migration\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"completed\",\"type\":\"uint256\"}],\"name\":\"setCompleted\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/jmulyono/ao-contracts/contracts/Migrations.sol\":\"Migrations\"},\"evmVersion\":\"byzantium\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/jmulyono/ao-contracts/contracts/Migrations.sol\":{\"keccak256\":\"0xfc99c756f2416481cba2f8136508a96822539c0b987a875c2e2a35cb69628101\",\"urls\":[\"bzzr://a5b698123d580f9e92184b2e755de1685bcfa5617302628759ddbef9dbbeb1e5\"]}},\"version\":1}",
 	"bytecode": "0x608060405234801561001057600080fd5b5060008054600160a060020a03191633179055610230806100326000396000f3fe608060405234801561001057600080fd5b5060043610610068577c010000000000000000000000000000000000000000000000000000000060003504630900f010811461006d578063445df0ac146100a25780638da5cb5b146100bc578063fdacd576146100ed575b600080fd5b6100a06004803603602081101561008357600080fd5b503573ffffffffffffffffffffffffffffffffffffffff1661010a565b005b6100aa6101bd565b60408051918252519081900360200190f35b6100c46101c3565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b6100a06004803603602081101561010357600080fd5b50356101df565b60005473ffffffffffffffffffffffffffffffffffffffff163314156101ba5760008190508073ffffffffffffffffffffffffffffffffffffffff1663fdacd5766001546040518263ffffffff167c010000000000000000000000000000000000000000000000000000000002815260040180828152602001915050600060405180830381600087803b1580156101a057600080fd5b505af11580156101b4573d6000803e3d6000fd5b50505050505b50565b60015481565b60005473ffffffffffffffffffffffffffffffffffffffff1681565b60005473ffffffffffffffffffffffffffffffffffffffff163314156101ba5760015556fea165627a7a72305820e26dfd30c77b43b96ed5234bd1797541bbd9e87c1dcaf2ca3de0f519e88bb9490029",
 	"deployedBytecode": "0x608060405234801561001057600080fd5b5060043610610068577c010000000000000000000000000000000000000000000000000000000060003504630900f010811461006d578063445df0ac146100a25780638da5cb5b146100bc578063fdacd576146100ed575b600080fd5b6100a06004803603602081101561008357600080fd5b503573ffffffffffffffffffffffffffffffffffffffff1661010a565b005b6100aa6101bd565b60408051918252519081900360200190f35b6100c46101c3565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b6100a06004803603602081101561010357600080fd5b50356101df565b60005473ffffffffffffffffffffffffffffffffffffffff163314156101ba5760008190508073ffffffffffffffffffffffffffffffffffffffff1663fdacd5766001546040518263ffffffff167c010000000000000000000000000000000000000000000000000000000002815260040180828152602001915050600060405180830381600087803b1580156101a057600080fd5b505af11580156101b4573d6000803e3d6000fd5b50505050505b50565b60015481565b60005473ffffffffffffffffffffffffffffffffffffffff1681565b60005473ffffffffffffffffffffffffffffffffffffffff163314156101ba5760015556fea165627a7a72305820e26dfd30c77b43b96ed5234bd1797541bbd9e87c1dcaf2ca3de0f519e88bb9490029",
 	"sourceMap": "33:460:69:-;;;119:47;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;144:5:69;:18;;-1:-1:-1;;;;;;144:18:69;152:10;144:18;;;33:460;;;;;;",
@@ -1353,12 +1349,12 @@
 		"1985": {
 			"events": {},
 			"links": {},
-			"address": "0x78A51fd7df6Ac88C13C4fD1B156D2329847764e7",
-			"transactionHash": "0xa6b8fbe7b2f6ba42079d042c327878c5ef681a11d92896afcd7414339a7e038d"
+			"address": "0x0e78B124b0289bD2fC15Ad0099375C0E19A2d1F0",
+			"transactionHash": "0xebf3102f78af3b5998976f198757c09c8fa4897af1f6a05175c1813aad3b4fb8"
 		}
 	},
-	"schemaVersion": "3.0.2",
-	"updatedAt": "2019-05-15T08:20:35.202Z",
+	"schemaVersion": "3.0.9",
+	"updatedAt": "2019-05-21T06:22:09.268Z",
 	"devdoc": {
 		"methods": {}
 	},
