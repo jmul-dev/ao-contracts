@@ -1737,11 +1737,6 @@ module.exports = function(deployer, network, accounts) {
 			 * --- START ---
 			 */
 			await aoion.setWhitelist(primordialAccount, true, { from: primordialAccount });
-			await aoion.mint(accounts[1], 10 ** 6, { from: primordialAccount }); // 1,000,000,000 AO Ion
-			// Buy 2 lots so that we can test avg weighted multiplier
-			await aoion.buyPrimordial({ from: accounts[1], value: 50000 * 10 ** 4 });
-			await aoion.buyPrimordial({ from: accounts[1], value: 20000 * 10 ** 4 });
-
 			await logos.setWhitelist(primordialAccount, true, { from: primordialAccount });
 			await ethos.setWhitelist(primordialAccount, true, { from: primordialAccount });
 			await pathos.setWhitelist(primordialAccount, true, { from: primordialAccount });
@@ -1770,6 +1765,11 @@ module.exports = function(deployer, network, accounts) {
 
 			// Test resources
 			if (network === "development") {
+				await aoion.mint(accounts[1], 10 ** 6, { from: primordialAccount }); // 1,000,000,000 AO Ion
+				// Buy 2 lots so that we can test avg weighted multiplier
+				await aoion.buyPrimordial({ from: accounts[1], value: 50000 * 10 ** 4 });
+				await aoion.buyPrimordial({ from: accounts[1], value: 20000 * 10 ** 4 });
+
 				await web3.eth.sendTransaction({ from: accounts[1], to: primordialTAOId, value: web3.utils.toWei("10", "ether") });
 				await aoion.transfer(primordialTAOId, 10 ** 3, { from: accounts[1] });
 				await aoion.transferPrimordial(primordialTAOId, 10 ** 3, { from: accounts[1] });
