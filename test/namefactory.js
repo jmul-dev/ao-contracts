@@ -7,6 +7,9 @@ var NameTAOLookup = artifacts.require("./NameTAOLookup.sol");
 var NamePublicKey = artifacts.require("./NamePublicKey.sol");
 var NameTAOVault = artifacts.require("./NameTAOVault.sol");
 var NameAccountRecovery = artifacts.require("./NameAccountRecovery.sol");
+var AOSetting = artifacts.require("./AOSetting.sol");
+var Pathos = artifacts.require("./Pathos.sol");
+var Ethos = artifacts.require("./Ethos.sol");
 
 var EthCrypto = require("eth-crypto");
 var helper = require("./helpers/truffleTestHelper");
@@ -22,9 +25,16 @@ contract("NameFactory", function(accounts) {
 		namepublickey,
 		nametaovault,
 		nameaccountrecovery,
+		aosetting,
+		pathos,
+		ethos,
+		primordialContributorName,
+		primordialContributorPathos,
+		primordialContributorEthos,
 		nameId1,
 		nameId2,
 		nameId3,
+		contributorName,
 		taoId;
 
 	var theAO = accounts[0];
@@ -32,8 +42,9 @@ contract("NameFactory", function(accounts) {
 	var account2 = accounts[2];
 	var account3 = accounts[3];
 	var account4 = accounts[4];
-	var someAddress = accounts[5];
-	var whitelistedAddress = accounts[6];
+	var account5 = accounts[5];
+	var someAddress = accounts[6];
+	var whitelistedAddress = accounts[7];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 
 	// Retrieve private key from ganache
@@ -43,6 +54,7 @@ contract("NameFactory", function(accounts) {
 	var nameId1LocalWriterKey = EthCrypto.createIdentity();
 	var nameId2LocalWriterKey = EthCrypto.createIdentity();
 	var nameId3LocalWriterKey = EthCrypto.createIdentity();
+	var contributorWriterKey = EthCrypto.createIdentity();
 
 	before(async function() {
 		namefactory = await NameFactory.deployed();
@@ -54,6 +66,20 @@ contract("NameFactory", function(accounts) {
 		namepublickey = await NamePublicKey.deployed();
 		nametaovault = await NameTAOVault.deployed();
 		nameaccountrecovery = await NameAccountRecovery.deployed();
+		aosetting = await AOSetting.deployed();
+		pathos = await Pathos.deployed();
+		ethos = await Ethos.deployed();
+
+		settingTAOId = await namefactory.settingTAOId();
+
+		var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "primordialContributorName");
+		primordialContributorName = settingValues[4];
+
+		settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "primordialContributorPathos");
+		primordialContributorPathos = settingValues[0];
+
+		settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "primordialContributorEthos");
+		primordialContributorEthos = settingValues[0];
 
 		// Create Name
 		var result = await namefactory.createName(
@@ -440,6 +466,78 @@ contract("NameFactory", function(accounts) {
 
 		var nameIds = await namefactory.getNameIds(0, totalNamesCountAfter.toNumber());
 		assert.include(nameIds, nameId2, "getNameIds() is missing a Name ID");
+	});
+
+	it("createName() - should be able to create primordial contributor and assign pathos/ethos", async function() {
+		var totalNamesCountBefore = await namefactory.getTotalNamesCount();
+
+		var canCreateName;
+		try {
+			var result = await namefactory.createName(
+				primordialContributorName,
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				web3.utils.toHex("somecontentid"),
+				contributorWriterKey.address,
+				{
+					from: account5
+				}
+			);
+			canCreateName = true;
+		} catch (e) {
+			canCreateName = false;
+		}
+		assert.equal(canCreateName, true, "Can create primordial contributor Name");
+
+		contributorName = await namefactory.ethAddressToNameId(account5);
+		var ethAddress = await namefactory.nameIdToEthAddress(contributorName);
+		assert.equal(ethAddress, account5, "nameIdToEthAddress() returns incorrect value");
+
+		var isExist = await nametaolookup.isExist(primordialContributorName);
+		assert.equal(isExist, true, "Name creation is missing NameTAOLookup initialization");
+
+		isExist = await nametaoposition.isExist(contributorName);
+		assert.equal(isExist, true, "Name creation is missing NameTAOPosition initialization");
+
+		isExist = await namepublickey.isExist(contributorName);
+		assert.equal(isExist, true, "Name creation is missing NamePublicKey initialization");
+
+		var voiceBalance = await voice.balanceOf(contributorName);
+		var maxSupplyPerName = await voice.MAX_SUPPLY_PER_NAME();
+		assert.equal(voiceBalance.toNumber(), maxSupplyPerName.toNumber(), "Name creation is not minting correct Voice amount to Name");
+
+		var totalNamesCountAfter = await namefactory.getTotalNamesCount();
+		assert.equal(
+			totalNamesCountAfter.toNumber(),
+			totalNamesCountBefore.add(new BN(1)).toNumber(),
+			"getTotalNamesCount() returns incorrect value"
+		);
+
+		var getName = await namefactory.getName(contributorName);
+		assert.equal(getName[0], primordialContributorName, "getName() returns incorrect name");
+		assert.equal(getName[1], account5, "getName() returns incorrect originId");
+		assert.equal(getName[2], "somedathash", "getName() returns incorrect datHash");
+		assert.equal(getName[3], "somedatabase", "getName() returns incorrect database");
+		assert.equal(getName[4], "somekeyvalue", "getName() returns incorrect keyValue");
+		assert.equal(web3.utils.toAscii(getName[5]).replace(/\0/g, ""), "somecontentid", "getName() returns incorrect contentId");
+		assert.equal(getName[6].toNumber(), 1, "getName() returns incorrect typeId");
+
+		var nameIds = await namefactory.getNameIds(0, totalNamesCountAfter.toNumber());
+		assert.include(nameIds, contributorName, "getNameIds() is missing a Name ID");
+
+		var pathosBalance = await pathos.balanceOf(contributorName);
+		var ethosBalance = await ethos.balanceOf(contributorName);
+		assert.equal(
+			pathosBalance.toNumber(),
+			primordialContributorPathos.toNumber(),
+			"Primordial contributor Name has incorrect Pathos after creation"
+		);
+		assert.equal(
+			ethosBalance.toNumber(),
+			primordialContributorEthos.toNumber(),
+			"Primordial contributor Name has incorrect Ethos after creation"
+		);
 	});
 
 	it("validateNameSignature() - should be able to validate a Name's signature", async function() {
