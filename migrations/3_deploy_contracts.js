@@ -435,6 +435,12 @@ module.exports = function(deployer, network, accounts) {
 		.then(async function() {
 			ethos = await Ethos.deployed();
 
+			// Link Ethos to NameFactory
+			await namefactory.setEthosAddress(ethos.address, { from: primordialAccount });
+
+			// Ethos grant access to NameFactory
+			await ethos.setWhitelist(namefactory.address, true, { from: primordialAccount });
+
 			return deployer.deploy(EthosKilo, "Ethos Kilo", "ETHOSKILO", nametaoposition.address);
 		})
 		.then(async function() {
@@ -489,6 +495,12 @@ module.exports = function(deployer, network, accounts) {
 		})
 		.then(async function() {
 			pathos = await Pathos.deployed();
+
+			// Link Pathos to NameFactory
+			await namefactory.setPathosAddress(pathos.address, { from: primordialAccount });
+
+			// Pathos grant access to NameFactory
+			await pathos.setWhitelist(namefactory.address, true, { from: primordialAccount });
 
 			return deployer.deploy(PathosKilo, "Pathos Kilo", "PATHOSKILO", nametaoposition.address);
 		})
@@ -700,6 +712,9 @@ module.exports = function(deployer, network, accounts) {
 		.then(async function() {
 			taopool = await TAOPool.deployed();
 
+			// Link AOSetting to NameFactory
+			await namefactory.setAOSettingAddress(aosetting.address, { from: primordialAccount });
+
 			// Link AOSetting to TAOFactory
 			await taofactory.setAOSettingAddress(aosetting.address, { from: primordialAccount });
 
@@ -820,6 +835,9 @@ module.exports = function(deployer, network, accounts) {
 			} catch (e) {
 				console.log("Primordial Name unable to approve setting TAO");
 			}
+
+			// Set settingTAOId in NameFactory
+			await namefactory.setSettingTAOId(settingTAOId, { from: primordialAccount });
 
 			// Set settingTAOId in TAOFactory
 			await taofactory.setSettingTAOId(settingTAOId, { from: primordialAccount });
@@ -1305,6 +1323,58 @@ module.exports = function(deployer, network, accounts) {
 				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
 			} catch (e) {
 				console.log("Unable to add Default Ethereum Provider for Kovan setting", e);
+			}
+
+			/**
+			 * primordialContributorName = Primordial Contributor
+			 */
+			try {
+				var result = await aosetting.addStringSetting(
+					"primordialContributorName",
+					"Primordial Contributor",
+					primordialTAOId,
+					settingTAOId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add primordialContributorName setting", e);
+			}
+
+			/**
+			 * primordialContributorPathos 10 ** 6 = 1000000
+			 */
+			try {
+				var result = await aosetting.addUintSetting("primordialContributorPathos", 1000000, primordialTAOId, settingTAOId, "", {
+					from: primordialAccount
+				});
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add primordialContributorPathos setting", e);
+			}
+
+			/**
+			 * primordialContributorEthos 10 ** 6 = 1000000
+			 */
+			try {
+				var result = await aosetting.addUintSetting("primordialContributorEthos", 1000000, primordialTAOId, settingTAOId, "", {
+					from: primordialAccount
+				});
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add primordialContributorEthos setting", e);
 			}
 
 			return deployer.deploy(
