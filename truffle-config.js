@@ -24,21 +24,15 @@ module.exports = {
 			gasPrice: 10000000000, // 10 Gwei
 			websockets: false
 		},
-		ropsten: {
-			host: "localhost", // Connect to geth on the specified
-			port: 8545,
-			from: "0x52af6e29eefd251d37028c9f8254724ac54422cd", // default address to use for any transaction Truffle makes during migrations
-			network_id: 3,
-			gas: 6950000, // Gas limit used for deploys,
-			gasPrice: 10000000000 // 10 Gwei
-		},
 		rinkeby: {
 			host: "localhost", // Connect to geth on the specified
-			port: 8545,
+			port: 9545,
 			from: "0xe80a265742e74e8c52d6ca185edf894edebe033f", // default address to use for any transaction Truffle makes during migrations
 			network_id: 4,
 			gas: 6950000, // Gas limit used for deploys,
-			gasPrice: 20000000000 // 10 Gwei
+			gasPrice: 15000000000, // 15 Gwei
+			websockets: false,
+			skipDryRun: true
 		},
 		mainnet: {
 			host: "localhost", // Connect to geth on the specified
@@ -46,7 +40,9 @@ module.exports = {
 			from: "0x268c85ef559be52f3749791445dfd9a5abc37186", // default address to use for any transaction Truffle makes during migrations
 			network_id: 1,
 			gas: 6950000, // Gas limit used for deploys,
-			gasPrice: 10000000000 // 10 Gwei
+			gasPrice: 10000000000, // 10 Gwei
+			websockets: false,
+			skipDryRun: true
 		}
 	},
 	compilers: {
