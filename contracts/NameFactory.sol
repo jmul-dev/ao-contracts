@@ -10,6 +10,9 @@ import './INameTAOLookup.sol';
 import './INameTAOPosition.sol';
 import './INamePublicKey.sol';
 import './INameAccountRecovery.sol';
+import './IAOSetting.sol';
+import './Pathos.sol';
+import './Ethos.sol';
 
 /**
  * @title NameFactory
@@ -24,12 +27,19 @@ contract NameFactory is TheAO, INameFactory {
 	address public nameTAOLookupAddress;
 	address public namePublicKeyAddress;
 	address public nameAccountRecoveryAddress;
+	address public settingTAOId;
+	address public aoSettingAddress;
+	address public pathosAddress;
+	address public ethosAddress;
 
 	Voice internal _voice;
 	INameTAOLookup internal _nameTAOLookup;
 	INameTAOPosition internal _nameTAOPosition;
 	INamePublicKey internal _namePublicKey;
 	INameAccountRecovery internal _nameAccountRecovery;
+	IAOSetting internal _aoSetting;
+	Pathos internal _pathos;
+	Ethos internal _ethos;
 
 	address[] internal names;
 
@@ -150,6 +160,45 @@ contract NameFactory is TheAO, INameFactory {
 	}
 
 	/**
+	 * @dev The AO sets setting TAO ID
+	 * @param _settingTAOId The new setting TAO ID to set
+	 */
+	function setSettingTAOId(address _settingTAOId) public onlyTheAO {
+		require (AOLibrary.isTAO(_settingTAOId));
+		settingTAOId = _settingTAOId;
+	}
+
+	/**
+	 * @dev The AO sets AO Setting address
+	 * @param _aoSettingAddress The address of AOSetting
+	 */
+	function setAOSettingAddress(address _aoSettingAddress) public onlyTheAO {
+		require (_aoSettingAddress != address(0));
+		aoSettingAddress = _aoSettingAddress;
+		_aoSetting = IAOSetting(_aoSettingAddress);
+	}
+
+	/**
+	 * @dev The AO sets Pathos address
+	 * @param _pathosAddress The address of Pathos
+	 */
+	function setPathosAddress(address _pathosAddress) public onlyTheAO {
+		require (_pathosAddress != address(0));
+		pathosAddress = _pathosAddress;
+		_pathos = Pathos(_pathosAddress);
+	}
+
+	/**
+	 * @dev The AO sets Ethos address
+	 * @param _ethosAddress The address of Ethos
+	 */
+	function setEthosAddress(address _ethosAddress) public onlyTheAO {
+		require (_ethosAddress != address(0));
+		ethosAddress = _ethosAddress;
+		_ethos = Ethos(_ethosAddress);
+	}
+
+	/**
 	 * @dev NameAccountRecovery contract replaces eth address associated with a Name
 	 * @param _id The ID of the Name
 	 * @param _newAddress The new eth address
@@ -232,6 +281,9 @@ contract NameFactory is TheAO, INameFactory {
 
 		// Need to mint Voice for this Name
 		require (_voice.mint(nameId));
+
+		// Assign Pathos/Ethos to the Name if it's the primordial contributor name
+		_initializeContributor(nameId, _name);
 
 		emit CreateName(msg.sender, nameId, names.length.sub(1), _name);
 	}
@@ -356,5 +408,20 @@ contract NameFactory is TheAO, INameFactory {
 	function _getValidateSignatureAddress(string memory _data, uint256 _nonce, uint8 _v, bytes32 _r, bytes32 _s) internal view returns (address) {
 		bytes32 _hash = keccak256(abi.encodePacked(address(this), _data, _nonce));
 		return ecrecover(_hash, _v, _r, _s);
+	}
+
+	/**
+	 * @dev Assign primordial contributor with pathos/ethos
+	 */
+	function _initializeContributor(address _nameId, string memory _name) internal {
+		if (settingTAOId != address(0)) {
+			(,,,, string memory primordialContributorName) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'primordialContributorName');
+			(uint256 primordialContributorPathos,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'primordialContributorPathos');
+			(uint256 primordialContributorEthos,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'primordialContributorEthos');
+			if (keccak256(abi.encodePacked(primordialContributorName)) == keccak256(abi.encodePacked(_name))) {
+				_pathos.mint(_nameId, primordialContributorPathos);
+				_ethos.mint(_nameId, primordialContributorEthos);
+			}
+		}
 	}
 }
