@@ -21,7 +21,7 @@ module.exports = {
 			port: 8545,
 			network_id: "*",
 			gas: 6950000,
-			gasPrice: 10000000000, // 10 Gwei
+			gasPrice: 15000000000, // 15 Gwei
 			websockets: false
 		},
 		rinkeby: {
