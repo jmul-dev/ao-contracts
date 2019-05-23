@@ -23,13 +23,14 @@ yarn compile
 Migrate smart contracts:
 
 ```
-yarn migrate
-```
+\\ Local testnet
+yarn migrate:development
 
-Compile and migrate smart contracts:
+\\ Rinkeby
+yarn migrate:rinkeby
 
-```
-yarn deploy
+\\ Mainnet
+yarn migrate:mainnet
 ```
 
 Run test:
