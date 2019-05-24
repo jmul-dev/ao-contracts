@@ -850,12 +850,12 @@ module.exports = function(deployer, network, accounts) {
 
 			/***** Add Settings *****/
 			/**
-			 * startingPrimordialMultiplier 50 * (1000000) = 50
+			 * startingPrimordialMultiplier 25 * (1000000) = 25
 			 */
 			try {
 				var result = await aosetting.addUintSetting(
 					"startingPrimordialMultiplier",
-					50 * 10 ** 6,
+					25 * 10 ** 6,
 					primordialTAOId,
 					settingTAOId,
 					"",
@@ -917,10 +917,10 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			/**
-			 * Inflation Rate 1%
+			 * Inflation Rate 3%
 			 */
 			try {
-				var result = await aosetting.addUintSetting("inflationRate", 10000, primordialTAOId, settingTAOId, "", {
+				var result = await aosetting.addUintSetting("inflationRate", 30000, primordialTAOId, settingTAOId, "", {
 					from: primordialAccount
 				});
 				var settingId = result.logs[0].args.settingId;
@@ -1348,12 +1348,19 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			/**
-			 * primordialContributorPathos 10 ** 6 = 1000000
+			 * primordialContributorPathos 10 * 10 ** 12 = 10 Tera
 			 */
 			try {
-				var result = await aosetting.addUintSetting("primordialContributorPathos", 1000000, primordialTAOId, settingTAOId, "", {
-					from: primordialAccount
-				});
+				var result = await aosetting.addUintSetting(
+					"primordialContributorPathos",
+					10 * 10 ** 12,
+					primordialTAOId,
+					settingTAOId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
 				var settingId = result.logs[0].args.settingId;
 
 				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
@@ -1363,10 +1370,32 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			/**
-			 * primordialContributorEthos 10 ** 6 = 1000000
+			 * primordialContributorEthos 10 * 10 ** 12 = 10 Tera
 			 */
 			try {
-				var result = await aosetting.addUintSetting("primordialContributorEthos", 1000000, primordialTAOId, settingTAOId, "", {
+				var result = await aosetting.addUintSetting(
+					"primordialContributorEthos",
+					10 * 10 ** 12,
+					primordialTAOId,
+					settingTAOId,
+					"",
+					{
+						from: primordialAccount
+					}
+				);
+				var settingId = result.logs[0].args.settingId;
+
+				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
+				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
+			} catch (e) {
+				console.log("Unable to add primordialContributorEthos setting", e);
+			}
+
+			/**
+			 * primordialContributorEarning 10 ** 9 = 1 Giga
+			 */
+			try {
+				var result = await aosetting.addUintSetting("primordialContributorEarning", 10 ** 9, primordialTAOId, settingTAOId, "", {
 					from: primordialAccount
 				});
 				var settingId = result.logs[0].args.settingId;
@@ -1374,7 +1403,7 @@ module.exports = function(deployer, network, accounts) {
 				await aosetting.approveSettingCreation(settingId.toNumber(), true, { from: settingAccount });
 				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
 			} catch (e) {
-				console.log("Unable to add primordialContributorEthos setting", e);
+				console.log("Unable to add primordialContributorEarning setting", e);
 			}
 
 			return deployer.deploy(
