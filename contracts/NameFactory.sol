@@ -55,6 +55,9 @@ contract NameFactory is TheAO, INameFactory {
 	// Event to be broadcasted to public when a Name is created
 	event CreateName(address indexed ethAddress, address nameId, uint256 index, string name);
 
+	// Event to be broadcasted to public when Primordial contributor is rewarded
+	event RewardContributor(address indexed nameId, uint256 pathosAmount, uint256 ethosAmount);
+
 	/**
 	 * @dev Constructor function
 	 */
@@ -282,8 +285,8 @@ contract NameFactory is TheAO, INameFactory {
 		// Need to mint Voice for this Name
 		require (_voice.mint(nameId));
 
-		// Assign Pathos/Ethos to the Name if it's the primordial contributor name
-		_initializeContributor(nameId, _name);
+		// Reward primordial contributor Name with Pathos/Ethos
+		_rewardContributor(nameId);
 
 		emit CreateName(msg.sender, nameId, names.length.sub(1), _name);
 	}
@@ -380,6 +383,7 @@ contract NameFactory is TheAO, INameFactory {
 	) public view returns (bool) {
 		require (_nameTAOLookup.isExist(_name));
 		address _nameId = _nameTAOLookup.getIdByName(_name);
+		require (_nameId != address(0));
 		address _signatureAddress = _getValidateSignatureAddress(_data, _nonce, _signatureV, _signatureR, _signatureS);
 		if (_validateAddress != address(0)) {
 			return (
@@ -411,16 +415,22 @@ contract NameFactory is TheAO, INameFactory {
 	}
 
 	/**
-	 * @dev Assign primordial contributor with pathos/ethos
+	 * @dev Reward primordial contributor Name with pathos/ethos
 	 */
-	function _initializeContributor(address _nameId, string memory _name) internal {
+	function _rewardContributor(address _nameId) internal {
 		if (settingTAOId != address(0)) {
 			(,,,, string memory primordialContributorName) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'primordialContributorName');
 			(uint256 primordialContributorPathos,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'primordialContributorPathos');
 			(uint256 primordialContributorEthos,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'primordialContributorEthos');
-			if (keccak256(abi.encodePacked(primordialContributorName)) == keccak256(abi.encodePacked(_name))) {
+			(uint256 primordialContributorEarning,,,,) = _aoSetting.getSettingValuesByTAOName(settingTAOId, 'primordialContributorEarning');
+			address _primordialContributorNameId = _nameTAOLookup.getIdByName(primordialContributorName);
+			if (_primordialContributorNameId == _nameId) {
 				_pathos.mint(_nameId, primordialContributorPathos);
 				_ethos.mint(_nameId, primordialContributorEthos);
+			} else if (_primordialContributorNameId != address(0)) {
+				_pathos.mint(_primordialContributorNameId, primordialContributorEarning);
+				_ethos.mint(_primordialContributorNameId, primordialContributorEarning);
+				emit RewardContributor(_nameId, primordialContributorEarning, primordialContributorEarning);
 			}
 		}
 	}

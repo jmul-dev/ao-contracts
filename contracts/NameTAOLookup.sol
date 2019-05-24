@@ -209,7 +209,6 @@ contract NameTAOLookup is TheAO, INameTAOLookup {
 	 * @return the nameTAOId of the name
 	 */
 	function getIdByName(string calldata _name) external view returns (address) {
-		require (this.isExist(_name));
 		bytes32 _nameKey = keccak256(abi.encodePacked(_name));
 		return nameToNameTAOIdLookup[_nameKey];
 	}
