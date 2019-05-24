@@ -31,6 +31,7 @@ contract("NameFactory", function(accounts) {
 		primordialContributorName,
 		primordialContributorPathos,
 		primordialContributorEthos,
+		primordialContributorEarning,
 		nameId1,
 		nameId2,
 		nameId3,
@@ -43,8 +44,9 @@ contract("NameFactory", function(accounts) {
 	var account3 = accounts[3];
 	var account4 = accounts[4];
 	var account5 = accounts[5];
-	var someAddress = accounts[6];
-	var whitelistedAddress = accounts[7];
+	var account6 = accounts[6];
+	var someAddress = accounts[7];
+	var whitelistedAddress = accounts[8];
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 
 	// Retrieve private key from ganache
@@ -54,6 +56,7 @@ contract("NameFactory", function(accounts) {
 	var nameId1LocalWriterKey = EthCrypto.createIdentity();
 	var nameId2LocalWriterKey = EthCrypto.createIdentity();
 	var nameId3LocalWriterKey = EthCrypto.createIdentity();
+	var nameId6LocalWriterKey = EthCrypto.createIdentity();
 	var contributorWriterKey = EthCrypto.createIdentity();
 
 	before(async function() {
@@ -80,6 +83,9 @@ contract("NameFactory", function(accounts) {
 
 		settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "primordialContributorEthos");
 		primordialContributorEthos = settingValues[0];
+
+		settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "primordialContributorEarning");
+		primordialContributorEarning = settingValues[0];
 
 		// Create Name
 		var result = await namefactory.createName(
@@ -537,6 +543,44 @@ contract("NameFactory", function(accounts) {
 			ethosBalance.toNumber(),
 			primordialContributorEthos.toNumber(),
 			"Primordial contributor Name has incorrect Ethos after creation"
+		);
+	});
+
+	it("createName() - primordial contributor should earn pathos/ethos when a Name is created", async function() {
+		var pathosBalanceBefore = await pathos.balanceOf(contributorName);
+		var ethosBalanceBefore = await ethos.balanceOf(contributorName);
+
+		var canCreateName;
+		try {
+			var result = await namefactory.createName(
+				"foxtrot",
+				"somedathash",
+				"somedatabase",
+				"somekeyvalue",
+				web3.utils.toHex("somecontentid"),
+				nameId6LocalWriterKey.address,
+				{
+					from: account6
+				}
+			);
+			canCreateName = true;
+		} catch (e) {
+			canCreateName = false;
+		}
+		assert.equal(canCreateName, true, "Can create a Name");
+
+		var pathosBalanceAfter = await pathos.balanceOf(contributorName);
+		var ethosBalanceAfter = await ethos.balanceOf(contributorName);
+
+		assert.equal(
+			pathosBalanceAfter.toNumber(),
+			pathosBalanceBefore.add(primordialContributorEarning).toNumber(),
+			"Primordial contributor Name has incorrect Pathos after Name creation"
+		);
+		assert.equal(
+			ethosBalanceAfter.toNumber(),
+			ethosBalanceBefore.add(primordialContributorEarning).toNumber(),
+			"Primordial contributor Name has incorrect Ethos after Name creation"
 		);
 	});
 

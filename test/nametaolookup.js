@@ -6,6 +6,7 @@ var Logos = artifacts.require("./Logos.sol");
 var NameTAOLookup = artifacts.require("./NameTAOLookup.sol");
 var EthCrypto = require("eth-crypto");
 var BN = require("bn.js");
+var emptyAddress = "0x0000000000000000000000000000000000000000";
 
 contract("NameTAOLookup", function(accounts) {
 	var namefactory, taofactory, nametaoposition, logos, nameId1, nameId2, taoId1, taoId2, taoId3, nametaolookup;
@@ -327,14 +328,8 @@ contract("NameTAOLookup", function(accounts) {
 	});
 
 	it("getIdByName() - should return Name/TAO ID given a name", async function() {
-		var canGetIdByName, getIdByName;
-		try {
-			getIdByName = await nametaolookup.getIdByName("somename");
-			canGetIdByName = true;
-		} catch (e) {
-			canGetIdByName = false;
-		}
-		assert.equal(canGetIdByName, false, "Can getIdByName() of non-existing name");
+		var getIdByName = await nametaolookup.getIdByName("somename");
+		assert.equal(getIdByName, emptyAddress, "getIdByName() should return empty address for invalid name");
 
 		getIdByName = await nametaolookup.getIdByName("delta");
 		assert.equal(getIdByName, nameId2, "getIdByName() returns incorrect Name/TAO ID");
