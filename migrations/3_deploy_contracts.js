@@ -117,9 +117,10 @@ module.exports = function(deployer, network, accounts) {
 		settingAccount = "0xa21238ff54391900d002bb85019285bc08ad1ca5";
 		primordialWriterKey = getWriterKey("primordial");
 		settingWriterKey = getWriterKey("setting");
-	} else if (network === "live") {
-		primordialAccount = "0x268c85ef559be52f3749791445dfd9a5abc37186";
-		settingAccount = "0x5a5ee57f51d412018d6da04e66d97ad0e7f02a04";
+	} else if (network === "mainnet") {
+		primordialAccount = "0x181069807136d36589659ea15a2fec2d66cbef19";
+		settingAccount = "0xa7d38b9772ceb39f8a600ee7da7d384a3dd5025c";
+		// contributorAccount = "0xc967d888967837e551360e808212c872d23a1054";
 		primordialWriterKey = getWriterKey("primordial");
 		settingWriterKey = getWriterKey("setting");
 	} else {
