@@ -466,9 +466,9 @@
 	"sourceMap": "",
 	"deployedSourceMap": "",
 	"source": "pragma solidity >=0.5.4 <0.6.0;\n\ninterface IAOSettingAttribute {\n\tfunction add(uint256 _settingId, address _creatorNameId, string calldata _settingName, address _creatorTAOId, address _associatedTAOId, string calldata _extraData) external returns (bytes32, bytes32);\n\n\tfunction getSettingData(uint256 _settingId) external view returns (uint256, address, address, address, string memory, bool, bool, bool, string memory);\n\n\tfunction approveAdd(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) external returns (bool);\n\n\tfunction finalizeAdd(uint256 _settingId, address _creatorTAOAdvocate) external returns (bool);\n\n\tfunction update(uint256 _settingId, address _associatedTAOAdvocate, address _proposalTAOId, string calldata _extraData) external returns (bool);\n\n\tfunction getSettingState(uint256 _settingId) external view returns (uint256, bool, address, address, address, string memory);\n\n\tfunction approveUpdate(uint256 _settingId, address _proposalTAOAdvocate, bool _approved) external returns (bool);\n\n\tfunction finalizeUpdate(uint256 _settingId, address _associatedTAOAdvocate) external returns (bool);\n\n\tfunction addDeprecation(uint256 _settingId, address _creatorNameId, address _creatorTAOId, address _associatedTAOId, uint256 _newSettingId, address _newSettingContractAddress) external returns (bytes32, bytes32);\n\n\tfunction getSettingDeprecation(uint256 _settingId) external view returns (uint256, address, address, address, bool, bool, bool, bool, uint256, uint256, address, address);\n\n\tfunction approveDeprecation(uint256 _settingId, address _associatedTAOAdvocate, bool _approved) external returns (bool);\n\n\tfunction finalizeDeprecation(uint256 _settingId, address _creatorTAOAdvocate) external returns (bool);\n\n\tfunction settingExist(uint256 _settingId) external view returns (bool);\n\n\tfunction getLatestSettingId(uint256 _settingId) external view returns (uint256);\n}\n",
-	"sourcePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/IAOSettingAttribute.sol",
+	"sourcePath": "/data/jmulyono/ao-contracts/contracts/IAOSettingAttribute.sol",
 	"ast": {
-		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/IAOSettingAttribute.sol",
+		"absolutePath": "/data/jmulyono/ao-contracts/contracts/IAOSettingAttribute.sol",
 		"exportedSymbols": {
 			"IAOSettingAttribute": [22277]
 		},
@@ -2908,7 +2908,7 @@
 		"src": "0:1902:45"
 	},
 	"legacyAST": {
-		"absolutePath": "/Users/johanmulyono/Work/AO/ao-contracts/contracts/IAOSettingAttribute.sol",
+		"absolutePath": "/data/jmulyono/ao-contracts/contracts/IAOSettingAttribute.sol",
 		"exportedSymbols": {
 			"IAOSettingAttribute": [22277]
 		},
@@ -5353,7 +5353,7 @@
 	},
 	"networks": {},
 	"schemaVersion": "3.0.9",
-	"updatedAt": "2019-05-24T07:36:51.306Z",
+	"updatedAt": "2019-05-24T09:15:23.894Z",
 	"devdoc": {
 		"methods": {}
 	},

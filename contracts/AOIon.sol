@@ -20,8 +20,8 @@ contract AOIon is AOIonInterface {
 	address public aoethAddress;
 
 	// AO Dev Team addresses to receive Primordial/Network Ions
-	address public aoDevTeam1 = 0x5C63644D01Ba385eBAc5bcf2DDc1e6dBC1182b52;
-	address public aoDevTeam2 = 0x156C79bf4347D1891da834Ea30662A14177CbF28;
+	address public aoDevTeam1 = 0x146CbD9821e6A42c8ff6DC903fe91CB69625A105;
+	address public aoDevTeam2 = 0x4810aF1dA3aC827259eEa72ef845F4206C703E8D;
 
 	IAOIonLot internal _aoIonLot;
 	IAOSetting internal _aoSetting;
