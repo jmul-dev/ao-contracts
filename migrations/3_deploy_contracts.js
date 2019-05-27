@@ -106,28 +106,29 @@ function getWriterKey(type) {
 module.exports = function(deployer, network, accounts) {
 	var primordialAccount,
 		settingAccount,
+		contributorAccount,
 		primordialNameId,
 		settingNameId,
+		contributorNameId,
 		primordialTAOId,
-		settingTAOId,
-		primordialWriterKey,
-		settingWriterKey;
+		settingTAOId;
+
+	var primordialWriterKey = getWriterKey("primordial");
+	var settingWriterKey = getWriterKey("setting");
+	var contributorWriterKey = getWriterKey("contributor");
+
 	if (network === "rinkeby") {
 		primordialAccount = "0xe80a265742e74e8c52d6ca185edf894edebe033f";
 		settingAccount = "0xa21238ff54391900d002bb85019285bc08ad1ca5";
-		primordialWriterKey = getWriterKey("primordial");
-		settingWriterKey = getWriterKey("setting");
+		contributorAccount = "0x9125c4f45206bc53ad3a199323dda4ff3e9f2bee";
 	} else if (network === "mainnet") {
 		primordialAccount = "0x181069807136d36589659ea15a2fec2d66cbef19";
 		settingAccount = "0xa7d38b9772ceb39f8a600ee7da7d384a3dd5025c";
-		// contributorAccount = "0xc967d888967837e551360e808212c872d23a1054";
-		primordialWriterKey = getWriterKey("primordial");
-		settingWriterKey = getWriterKey("setting");
+		contributorAccount = "0xc967d888967837e551360e808212c872d23a1054";
 	} else {
 		primordialAccount = accounts[0];
 		settingAccount = accounts[9];
-		primordialWriterKey = getWriterKey("primordial");
-		settingWriterKey = getWriterKey("setting");
+		contributorAccount = accounts[8];
 	}
 
 	var epiphany,
@@ -773,7 +774,7 @@ module.exports = function(deployer, network, accounts) {
 			await aosettingvalue.setWhitelist(aosettingupdate.address, true, { from: primordialAccount });
 
 			/**
-			 * Create Primordial Name and Associated Name
+			 * Create Primordial Name and Setting Name
 			 */
 			try {
 				var result = await namefactory.createName("alpha", "", "", "", web3.utils.toHex(""), primordialWriterKey.address, {
@@ -791,12 +792,12 @@ module.exports = function(deployer, network, accounts) {
 				});
 				settingNameId = await namefactory.ethAddressToNameId(settingAccount);
 			} catch (e) {
-				console.log("Unable to create Associated Name", e);
+				console.log("Unable to create Setting Name", e);
 				return;
 			}
 
 			/**
-			 * Create Primordial TAO and Associated TAO that proposes Content Usage Setting creation
+			 * Create Primordial TAO and Setting TAO that proposes Content Usage Setting creation
 			 */
 			try {
 				var result = await taofactory.createTAO(
@@ -827,7 +828,7 @@ module.exports = function(deployer, network, accounts) {
 				var createTAOEvent = result.logs[0];
 				settingTAOId = createTAOEvent.args.taoId;
 			} catch (e) {
-				console.log("Unable to create Associated TAO", e);
+				console.log("Unable to create Setting TAO", e);
 				return;
 			}
 
@@ -1329,10 +1330,11 @@ module.exports = function(deployer, network, accounts) {
 			/**
 			 * primordialContributorName = Primordial Contributor
 			 */
+			var primordialContributorName = "Primordial Contributor";
 			try {
 				var result = await aosetting.addStringSetting(
 					"primordialContributorName",
-					"Primordial Contributor",
+					primordialContributorName,
 					primordialTAOId,
 					settingTAOId,
 					"",
@@ -1405,6 +1407,27 @@ module.exports = function(deployer, network, accounts) {
 				await aosetting.finalizeSettingCreation(settingId.toNumber(), { from: primordialAccount });
 			} catch (e) {
 				console.log("Unable to add primordialContributorEarning setting", e);
+			}
+
+			// If not development, want to create contributor account
+			if (network !== "development") {
+				try {
+					var result = await namefactory.createName(
+						primordialContributorName,
+						"",
+						"",
+						"",
+						web3.utils.toHex(""),
+						contributorWriterKey.address,
+						{
+							from: contributorAccount
+						}
+					);
+					contributorNameId = await namefactory.ethAddressToNameId(contributorAccount);
+				} catch (e) {
+					console.log("Unable to create Associated Name", e);
+					return;
+				}
 			}
 
 			return deployer.deploy(
@@ -1583,62 +1606,65 @@ module.exports = function(deployer, network, accounts) {
 			// Grant access to aopool to transact on behalf of others on base denomination
 			await aoion.setWhitelist(aopool.address, true, { from: primordialAccount });
 
-			// Create test pools for testing exchanges
-			// Pool #1
-			// price: 10000
-			// status: true (active)
-			// sellCapStatus: no
-			// quantityCapStatus: no
-			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, false, "", false, "", false, "0x0000000000000000000000000000000000000000", "", {
-				from: primordialAccount
-			});
+			// Create test pools
+			if (network !== "mainnet") {
+				// Create test pools for testing exchanges
+				// Pool #1
+				// price: 10000
+				// status: true (active)
+				// sellCapStatus: no
+				// quantityCapStatus: no
+				// erc20CounterAsset: false (priced in Eth)
+				await aopool.createPool(10000, true, false, "", false, "", false, "0x0000000000000000000000000000000000000000", "", {
+					from: primordialAccount
+				});
 
-			// Pool #2
-			// price: 10000
-			// status: true (active)
-			// sellCapStatus: yes
-			// sellCapAmount: 10000000
-			// quantityCapStatus: no
-			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, true, 10000000, false, "", false, "0x0000000000000000000000000000000000000000", "", {
-				from: primordialAccount
-			});
+				// Pool #2
+				// price: 10000
+				// status: true (active)
+				// sellCapStatus: yes
+				// sellCapAmount: 10000000
+				// quantityCapStatus: no
+				// erc20CounterAsset: false (priced in Eth)
+				await aopool.createPool(10000, true, true, 10000000, false, "", false, "0x0000000000000000000000000000000000000000", "", {
+					from: primordialAccount
+				});
 
-			// Pool #3
-			// price: 10000
-			// status: true (active)
-			// sellCapStatus: no
-			// quantityCapStatus: yes
-			// quantityCapAmount: 5000
-			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, false, "", true, 5000, false, "0x0000000000000000000000000000000000000000", "", {
-				from: primordialAccount
-			});
+				// Pool #3
+				// price: 10000
+				// status: true (active)
+				// sellCapStatus: no
+				// quantityCapStatus: yes
+				// quantityCapAmount: 5000
+				// erc20CounterAsset: false (priced in Eth)
+				await aopool.createPool(10000, true, false, "", true, 5000, false, "0x0000000000000000000000000000000000000000", "", {
+					from: primordialAccount
+				});
 
-			// Pool #4
-			// price: 10000
-			// status: true (active)
-			// sellCapStatus: yes
-			// sellCapAmount: 10000000
-			// quantityCapStatus: yes
-			// quantityCapAmount: 5000
-			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, true, true, 10000000, true, 5000, false, "0x0000000000000000000000000000000000000000", "", {
-				from: primordialAccount
-			});
+				// Pool #4
+				// price: 10000
+				// status: true (active)
+				// sellCapStatus: yes
+				// sellCapAmount: 10000000
+				// quantityCapStatus: yes
+				// quantityCapAmount: 5000
+				// erc20CounterAsset: false (priced in Eth)
+				await aopool.createPool(10000, true, true, 10000000, true, 5000, false, "0x0000000000000000000000000000000000000000", "", {
+					from: primordialAccount
+				});
 
-			// Pool #5
-			// price: 10000
-			// status: false (inactive)
-			// sellCapStatus: yes
-			// sellCapAmount: 10000000
-			// quantityCapStatus: yes
-			// quantityCapAmount: 5000
-			// erc20CounterAsset: false (priced in Eth)
-			await aopool.createPool(10000, false, true, 10000000, true, 5000, false, "0x0000000000000000000000000000000000000000", "", {
-				from: primordialAccount
-			});
+				// Pool #5
+				// price: 10000
+				// status: false (inactive)
+				// sellCapStatus: yes
+				// sellCapAmount: 10000000
+				// quantityCapStatus: yes
+				// quantityCapAmount: 5000
+				// erc20CounterAsset: false (priced in Eth)
+				await aopool.createPool(10000, false, true, 10000000, true, 5000, false, "0x0000000000000000000000000000000000000000", "", {
+					from: primordialAccount
+				});
+			}
 
 			// Link AOETH to AOIon
 			await aoion.setAOETHAddress(aoeth.address, { from: primordialAccount });
@@ -1832,10 +1858,9 @@ module.exports = function(deployer, network, accounts) {
 			await aocontentfactory.transferOwnership(primordialTAOId, { from: primordialAccount });
 
 			/**
-			 * For testing purposes:
+			 * For testing purposes on rinkeby and testnet
 			 * Remove this later
 			 * --- START ---
-			 */
 			await aoion.setWhitelist(primordialAccount, true, { from: primordialAccount });
 			await logos.setWhitelist(primordialAccount, true, { from: primordialAccount });
 			await ethos.setWhitelist(primordialAccount, true, { from: primordialAccount });
@@ -1863,7 +1888,6 @@ module.exports = function(deployer, network, accounts) {
 
 			await taopool.stakePathos(primordialTAOId, 8 * 10 ** 3, { from: settingAccount });
 
-			// Test resources
 			if (network === "development") {
 				await aoion.mint(accounts[1], 10 ** 6, { from: primordialAccount }); // 1,000,000,000 AO Ion
 				// Buy 2 lots so that we can test avg weighted multiplier
@@ -1875,10 +1899,10 @@ module.exports = function(deployer, network, accounts) {
 				await aoion.transferPrimordial(primordialTAOId, 10 ** 3, { from: accounts[1] });
 				await tokenone.transfer(primordialTAOId, 10 ** 3, { from: primordialAccount });
 			}
-
 			/**
 			 * --- END ---
 			 */
+
 			console.log("Primordial Name ID", primordialNameId);
 			console.log("Setting Name ID", settingNameId);
 			console.log("Primordial TAO ID", primordialTAOId);

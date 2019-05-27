@@ -53,8 +53,8 @@ contract("AOIon & AOIonLot", function(accounts) {
 	var account4 = accounts[4];
 	var whitelistedAddress = accounts[5];
 	var someAddress = accounts[7];
-	var aoDevTeam1 = accounts[8];
-	var aoDevTeam2 = accounts[9];
+	var aoDevTeam1 = "0x146CbD9821e6A42c8ff6DC903fe91CB69625A105";
+	var aoDevTeam2 = "0x4810aF1dA3aC827259eEa72ef845F4206C703E8D";
 	var emptyAddress = "0x0000000000000000000000000000000000000000";
 	var recipient = EthCrypto.createIdentity();
 	var account4PrivateKey = "0xfc164bb116857e2b7e5bafb6f515c61cc2cddae22a052c3988c8ff5de598ede0";
