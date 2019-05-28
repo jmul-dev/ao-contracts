@@ -244,13 +244,13 @@
 	"ast": {
 		"absolutePath": "/data/jmulyono/ao-contracts/contracts/TAOVoice.sol",
 		"exportedSymbols": {
-			"TAOVoice": [35170]
+			"TAOVoice": [35172]
 		},
-		"id": 35171,
+		"id": 35173,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 35058,
+				"id": 35060,
 				"literals": ["solidity", ">=", "0.5", ".4", "<", "0.6", ".0"],
 				"nodeType": "PragmaDirective",
 				"src": "0:31:96"
@@ -258,10 +258,10 @@
 			{
 				"absolutePath": "/data/jmulyono/ao-contracts/contracts/TAOController.sol",
 				"file": "./TAOController.sol",
-				"id": 35059,
+				"id": 35061,
 				"nodeType": "ImportDirective",
-				"scope": 35171,
-				"sourceUnit": 31367,
+				"scope": 35173,
+				"sourceUnit": 31369,
 				"src": "33:29:96",
 				"symbolAliases": [],
 				"unitAlias": ""
@@ -269,10 +269,10 @@
 			{
 				"absolutePath": "/data/jmulyono/ao-contracts/contracts/Voice.sol",
 				"file": "./Voice.sol",
-				"id": 35060,
+				"id": 35062,
 				"nodeType": "ImportDirective",
-				"scope": 35171,
-				"sourceUnit": 36188,
+				"scope": 35173,
+				"sourceUnit": 36190,
 				"src": "63:21:96",
 				"symbolAliases": [],
 				"unitAlias": ""
@@ -283,36 +283,36 @@
 						"arguments": null,
 						"baseName": {
 							"contractScope": null,
-							"id": 35061,
+							"id": 35063,
 							"name": "TAOController",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 31366,
+							"referencedDeclaration": 31368,
 							"src": "213:13:96",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_TAOController_$31366",
+								"typeIdentifier": "t_contract$_TAOController_$31368",
 								"typeString": "contract TAOController"
 							}
 						},
-						"id": 35062,
+						"id": 35064,
 						"nodeType": "InheritanceSpecifier",
 						"src": "213:13:96"
 					}
 				],
-				"contractDependencies": [31366, 35257],
+				"contractDependencies": [31368, 35259],
 				"contractKind": "contract",
 				"documentation": "@title TAOVoice\n * The purpose of this contract is for Name to stake/unstake Voice on a TAO",
 				"fullyImplemented": true,
-				"id": 35170,
-				"linearizedBaseContracts": [35170, 31366, 35257],
+				"id": 35172,
+				"linearizedBaseContracts": [35172, 31368, 35259],
 				"name": "TAOVoice",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
 						"constant": false,
-						"id": 35064,
+						"id": 35066,
 						"name": "voiceAddress",
 						"nodeType": "VariableDeclaration",
-						"scope": 35170,
+						"scope": 35172,
 						"src": "230:27:96",
 						"stateVariable": true,
 						"storageLocation": "default",
@@ -321,7 +321,7 @@
 							"typeString": "address"
 						},
 						"typeName": {
-							"id": 35063,
+							"id": 35065,
 							"name": "address",
 							"nodeType": "ElementaryTypeName",
 							"src": "230:7:96",
@@ -336,26 +336,26 @@
 					},
 					{
 						"constant": false,
-						"id": 35066,
+						"id": 35068,
 						"name": "_voice",
 						"nodeType": "VariableDeclaration",
-						"scope": 35170,
+						"scope": 35172,
 						"src": "261:21:96",
 						"stateVariable": true,
 						"storageLocation": "default",
 						"typeDescriptions": {
-							"typeIdentifier": "t_contract$_Voice_$36187",
+							"typeIdentifier": "t_contract$_Voice_$36189",
 							"typeString": "contract Voice"
 						},
 						"typeName": {
 							"contractScope": null,
-							"id": 35065,
+							"id": 35067,
 							"name": "Voice",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 36187,
+							"referencedDeclaration": 36189,
 							"src": "261:5:96",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_Voice_$36187",
+								"typeIdentifier": "t_contract$_Voice_$36189",
 								"typeString": "contract Voice"
 							}
 						},
@@ -364,7 +364,7 @@
 					},
 					{
 						"body": {
-							"id": 35086,
+							"id": 35088,
 							"nodeType": "Block",
 							"src": "467:92:96",
 							"statements": [
@@ -374,11 +374,11 @@
 										"arguments": [
 											{
 												"argumentTypes": null,
-												"id": 35079,
+												"id": 35081,
 												"name": "_voiceAddress",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 35070,
+												"referencedDeclaration": 35072,
 												"src": "487:13:96",
 												"typeDescriptions": {
 													"typeIdentifier": "t_address",
@@ -393,18 +393,18 @@
 													"typeString": "address"
 												}
 											],
-											"id": 35078,
+											"id": 35080,
 											"name": "setVoiceAddress",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 35113,
+											"referencedDeclaration": 35115,
 											"src": "471:15:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_internal_nonpayable$_t_address_$returns$__$",
 												"typeString": "function (address)"
 											}
 										},
-										"id": 35080,
+										"id": 35082,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -418,7 +418,7 @@
 											"typeString": "tuple()"
 										}
 									},
-									"id": 35081,
+									"id": 35083,
 									"nodeType": "ExpressionStatement",
 									"src": "471:30:96"
 								},
@@ -428,11 +428,11 @@
 										"arguments": [
 											{
 												"argumentTypes": null,
-												"id": 35083,
+												"id": 35085,
 												"name": "_nameTAOPositionAddress",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 35072,
+												"referencedDeclaration": 35074,
 												"src": "531:23:96",
 												"typeDescriptions": {
 													"typeIdentifier": "t_address",
@@ -447,18 +447,18 @@
 													"typeString": "address"
 												}
 											],
-											"id": 35082,
+											"id": 35084,
 											"name": "setNameTAOPositionAddress",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 31339,
+											"referencedDeclaration": 31341,
 											"src": "505:25:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_internal_nonpayable$_t_address_$returns$__$",
 												"typeString": "function (address)"
 											}
 										},
-										"id": 35084,
+										"id": 35086,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -472,14 +472,14 @@
 											"typeString": "tuple()"
 										}
 									},
-									"id": 35085,
+									"id": 35087,
 									"nodeType": "ExpressionStatement",
 									"src": "505:50:96"
 								}
 							]
 						},
 						"documentation": "@dev Constructor function",
-						"id": 35087,
+						"id": 35089,
 						"implemented": true,
 						"kind": "constructor",
 						"modifiers": [
@@ -487,11 +487,11 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 35075,
+										"id": 35077,
 										"name": "_nameFactoryAddress",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 35068,
+										"referencedDeclaration": 35070,
 										"src": "439:19:96",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
@@ -499,17 +499,17 @@
 										}
 									}
 								],
-								"id": 35076,
+								"id": 35078,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35074,
+									"id": 35076,
 									"name": "TAOController",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31366,
+									"referencedDeclaration": 31368,
 									"src": "425:13:96",
 									"typeDescriptions": {
-										"typeIdentifier": "t_type$_t_contract$_TAOController_$31366_$",
+										"typeIdentifier": "t_type$_t_contract$_TAOController_$31368_$",
 										"typeString": "type(contract TAOController)"
 									}
 								},
@@ -520,15 +520,15 @@
 						"name": "",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 35073,
+							"id": 35075,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 35068,
+									"id": 35070,
 									"name": "_nameFactoryAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 35087,
+									"scope": 35089,
 									"src": "338:27:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -537,7 +537,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 35067,
+										"id": 35069,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "338:7:96",
@@ -552,10 +552,10 @@
 								},
 								{
 									"constant": false,
-									"id": 35070,
+									"id": 35072,
 									"name": "_voiceAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 35087,
+									"scope": 35089,
 									"src": "367:21:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -564,7 +564,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 35069,
+										"id": 35071,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "367:7:96",
@@ -579,10 +579,10 @@
 								},
 								{
 									"constant": false,
-									"id": 35072,
+									"id": 35074,
 									"name": "_nameTAOPositionAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 35087,
+									"scope": 35089,
 									"src": "390:31:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -591,7 +591,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 35071,
+										"id": 35073,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "390:7:96",
@@ -608,12 +608,12 @@
 							"src": "337:85:96"
 						},
 						"returnParameters": {
-							"id": 35077,
+							"id": 35079,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "467:0:96"
 						},
-						"scope": 35170,
+						"scope": 35172,
 						"src": "326:233:96",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
@@ -621,7 +621,7 @@
 					},
 					{
 						"body": {
-							"id": 35112,
+							"id": 35114,
 							"nodeType": "Block",
 							"src": "756:110:96",
 							"statements": [
@@ -635,18 +635,18 @@
 													"typeIdentifier": "t_address",
 													"typeString": "address"
 												},
-												"id": 35099,
+												"id": 35101,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
 												"lValueRequested": false,
 												"leftExpression": {
 													"argumentTypes": null,
-													"id": 35095,
+													"id": 35097,
 													"name": "_voiceAddress",
 													"nodeType": "Identifier",
 													"overloadedDeclarations": [],
-													"referencedDeclaration": 35089,
+													"referencedDeclaration": 35091,
 													"src": "769:13:96",
 													"typeDescriptions": {
 														"typeIdentifier": "t_address",
@@ -661,7 +661,7 @@
 														{
 															"argumentTypes": null,
 															"hexValue": "30",
-															"id": 35097,
+															"id": 35099,
 															"isConstant": false,
 															"isLValue": false,
 															"isPure": true,
@@ -684,7 +684,7 @@
 																"typeString": "int_const 0"
 															}
 														],
-														"id": 35096,
+														"id": 35098,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": true,
@@ -697,7 +697,7 @@
 														},
 														"typeName": "address"
 													},
-													"id": 35098,
+													"id": 35100,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": true,
@@ -725,18 +725,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 35094,
+											"id": 35096,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [36219, 36220],
-											"referencedDeclaration": 36219,
+											"overloadedDeclarations": [36221, 36222],
+											"referencedDeclaration": 36221,
 											"src": "760:7:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 35100,
+										"id": 35102,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -750,25 +750,25 @@
 											"typeString": "tuple()"
 										}
 									},
-									"id": 35101,
+									"id": 35103,
 									"nodeType": "ExpressionStatement",
 									"src": "760:37:96"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 35104,
+										"id": 35106,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 35102,
+											"id": 35104,
 											"name": "voiceAddress",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 35064,
+											"referencedDeclaration": 35066,
 											"src": "801:12:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_address",
@@ -779,11 +779,11 @@
 										"operator": "=",
 										"rightHandSide": {
 											"argumentTypes": null,
-											"id": 35103,
+											"id": 35105,
 											"name": "_voiceAddress",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 35089,
+											"referencedDeclaration": 35091,
 											"src": "816:13:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_address",
@@ -796,28 +796,28 @@
 											"typeString": "address"
 										}
 									},
-									"id": 35105,
+									"id": 35107,
 									"nodeType": "ExpressionStatement",
 									"src": "801:28:96"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 35110,
+										"id": 35112,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 35106,
+											"id": 35108,
 											"name": "_voice",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 35066,
+											"referencedDeclaration": 35068,
 											"src": "833:6:96",
 											"typeDescriptions": {
-												"typeIdentifier": "t_contract$_Voice_$36187",
+												"typeIdentifier": "t_contract$_Voice_$36189",
 												"typeString": "contract Voice"
 											}
 										},
@@ -828,11 +828,11 @@
 											"arguments": [
 												{
 													"argumentTypes": null,
-													"id": 35108,
+													"id": 35110,
 													"name": "_voiceAddress",
 													"nodeType": "Identifier",
 													"overloadedDeclarations": [],
-													"referencedDeclaration": 35089,
+													"referencedDeclaration": 35091,
 													"src": "848:13:96",
 													"typeDescriptions": {
 														"typeIdentifier": "t_address",
@@ -847,18 +847,18 @@
 														"typeString": "address"
 													}
 												],
-												"id": 35107,
+												"id": 35109,
 												"name": "Voice",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 36187,
+												"referencedDeclaration": 36189,
 												"src": "842:5:96",
 												"typeDescriptions": {
-													"typeIdentifier": "t_type$_t_contract$_Voice_$36187_$",
+													"typeIdentifier": "t_type$_t_contract$_Voice_$36189_$",
 													"typeString": "type(contract Voice)"
 												}
 											},
-											"id": 35109,
+											"id": 35111,
 											"isConstant": false,
 											"isLValue": false,
 											"isPure": false,
@@ -868,37 +868,37 @@
 											"nodeType": "FunctionCall",
 											"src": "842:20:96",
 											"typeDescriptions": {
-												"typeIdentifier": "t_contract$_Voice_$36187",
+												"typeIdentifier": "t_contract$_Voice_$36189",
 												"typeString": "contract Voice"
 											}
 										},
 										"src": "833:29:96",
 										"typeDescriptions": {
-											"typeIdentifier": "t_contract$_Voice_$36187",
+											"typeIdentifier": "t_contract$_Voice_$36189",
 											"typeString": "contract Voice"
 										}
 									},
-									"id": 35111,
+									"id": 35113,
 									"nodeType": "ExpressionStatement",
 									"src": "833:29:96"
 								}
 							]
 						},
 						"documentation": "@dev The AO set the Voice Address\n@param _voiceAddress The address of Voice",
-						"id": 35113,
+						"id": 35115,
 						"implemented": true,
 						"kind": "function",
 						"modifiers": [
 							{
 								"arguments": null,
-								"id": 35092,
+								"id": 35094,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35091,
+									"id": 35093,
 									"name": "onlyTheAO",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31152,
+									"referencedDeclaration": 31154,
 									"src": "746:9:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
@@ -912,15 +912,15 @@
 						"name": "setVoiceAddress",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 35090,
+							"id": 35092,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 35089,
+									"id": 35091,
 									"name": "_voiceAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 35113,
+									"scope": 35115,
 									"src": "716:21:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -929,7 +929,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 35088,
+										"id": 35090,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "716:7:96",
@@ -946,12 +946,12 @@
 							"src": "715:23:96"
 						},
 						"returnParameters": {
-							"id": 35093,
+							"id": 35095,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "756:0:96"
 						},
-						"scope": 35170,
+						"scope": 35172,
 						"src": "691:175:96",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
@@ -959,7 +959,7 @@
 					},
 					{
 						"body": {
-							"id": 35140,
+							"id": 35142,
 							"nodeType": "Block",
 							"src": "1151:97:96",
 							"statements": [
@@ -977,18 +977,18 @@
 																"argumentTypes": null,
 																"expression": {
 																	"argumentTypes": null,
-																	"id": 35132,
+																	"id": 35134,
 																	"name": "msg",
 																	"nodeType": "Identifier",
 																	"overloadedDeclarations": [],
-																	"referencedDeclaration": 36216,
+																	"referencedDeclaration": 36218,
 																	"src": "1209:3:96",
 																	"typeDescriptions": {
 																		"typeIdentifier": "t_magic_message",
 																		"typeString": "msg"
 																	}
 																},
-																"id": 35133,
+																"id": 35135,
 																"isConstant": false,
 																"isLValue": false,
 																"isPure": false,
@@ -1012,32 +1012,32 @@
 															],
 															"expression": {
 																"argumentTypes": null,
-																"id": 35130,
+																"id": 35132,
 																"name": "_nameFactory",
 																"nodeType": "Identifier",
 																"overloadedDeclarations": [],
-																"referencedDeclaration": 31124,
+																"referencedDeclaration": 31126,
 																"src": "1177:12:96",
 																"typeDescriptions": {
-																	"typeIdentifier": "t_contract$_INameFactory_$22440",
+																	"typeIdentifier": "t_contract$_INameFactory_$22442",
 																	"typeString": "contract INameFactory"
 																}
 															},
-															"id": 35131,
+															"id": 35133,
 															"isConstant": false,
 															"isLValue": false,
 															"isPure": false,
 															"lValueRequested": false,
 															"memberName": "ethAddressToNameId",
 															"nodeType": "MemberAccess",
-															"referencedDeclaration": 22423,
+															"referencedDeclaration": 22425,
 															"src": "1177:31:96",
 															"typeDescriptions": {
 																"typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
 																"typeString": "function (address) view external returns (address)"
 															}
 														},
-														"id": 35134,
+														"id": 35136,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": false,
@@ -1053,11 +1053,11 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 35135,
+														"id": 35137,
 														"name": "_taoId",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 35115,
+														"referencedDeclaration": 35117,
 														"src": "1222:6:96",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
@@ -1066,11 +1066,11 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 35136,
+														"id": 35138,
 														"name": "_voiceAmount",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 35117,
+														"referencedDeclaration": 35119,
 														"src": "1230:12:96",
 														"typeDescriptions": {
 															"typeIdentifier": "t_uint256",
@@ -1095,32 +1095,32 @@
 													],
 													"expression": {
 														"argumentTypes": null,
-														"id": 35128,
+														"id": 35130,
 														"name": "_voice",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 35066,
+														"referencedDeclaration": 35068,
 														"src": "1164:6:96",
 														"typeDescriptions": {
-															"typeIdentifier": "t_contract$_Voice_$36187",
+															"typeIdentifier": "t_contract$_Voice_$36189",
 															"typeString": "contract Voice"
 														}
 													},
-													"id": 35129,
+													"id": 35131,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
 													"lValueRequested": false,
 													"memberName": "stake",
 													"nodeType": "MemberAccess",
-													"referencedDeclaration": 36093,
+													"referencedDeclaration": 36095,
 													"src": "1164:12:96",
 													"typeDescriptions": {
 														"typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
 														"typeString": "function (address,address,uint256) external returns (bool)"
 													}
 												},
-												"id": 35137,
+												"id": 35139,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -1142,18 +1142,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 35127,
+											"id": 35129,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [36219, 36220],
-											"referencedDeclaration": 36219,
+											"overloadedDeclarations": [36221, 36222],
+											"referencedDeclaration": 36221,
 											"src": "1155:7:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 35138,
+										"id": 35140,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -1167,14 +1167,14 @@
 											"typeString": "tuple()"
 										}
 									},
-									"id": 35139,
+									"id": 35141,
 									"nodeType": "ExpressionStatement",
 									"src": "1155:89:96"
 								}
 							]
 						},
 						"documentation": "@dev Name stakes Voice on a TAO\n@param _taoId The ID of the TAO\n@param _voiceAmount The amount of Voice to stake",
-						"id": 35141,
+						"id": 35143,
 						"implemented": true,
 						"kind": "function",
 						"modifiers": [
@@ -1182,11 +1182,11 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 35120,
+										"id": 35122,
 										"name": "_taoId",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 35115,
+										"referencedDeclaration": 35117,
 										"src": "1105:6:96",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
@@ -1194,14 +1194,14 @@
 										}
 									}
 								],
-								"id": 35121,
+								"id": 35123,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35119,
+									"id": 35121,
 									"name": "isTAO",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31165,
+									"referencedDeclaration": 31167,
 									"src": "1099:5:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$_t_address_$",
@@ -1213,14 +1213,14 @@
 							},
 							{
 								"arguments": null,
-								"id": 35123,
+								"id": 35125,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35122,
+									"id": 35124,
 									"name": "senderIsName",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31212,
+									"referencedDeclaration": 31214,
 									"src": "1113:12:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
@@ -1232,14 +1232,14 @@
 							},
 							{
 								"arguments": null,
-								"id": 35125,
+								"id": 35127,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35124,
+									"id": 35126,
 									"name": "senderNameNotCompromised",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31243,
+									"referencedDeclaration": 31245,
 									"src": "1126:24:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
@@ -1253,15 +1253,15 @@
 						"name": "stakeVoice",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 35118,
+							"id": 35120,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 35115,
+									"id": 35117,
 									"name": "_taoId",
 									"nodeType": "VariableDeclaration",
-									"scope": 35141,
+									"scope": 35143,
 									"src": "1054:14:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1270,7 +1270,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 35114,
+										"id": 35116,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "1054:7:96",
@@ -1285,10 +1285,10 @@
 								},
 								{
 									"constant": false,
-									"id": 35117,
+									"id": 35119,
 									"name": "_voiceAmount",
 									"nodeType": "VariableDeclaration",
-									"scope": 35141,
+									"scope": 35143,
 									"src": "1070:20:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1297,7 +1297,7 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 35116,
+										"id": 35118,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
 										"src": "1070:7:96",
@@ -1313,12 +1313,12 @@
 							"src": "1053:38:96"
 						},
 						"returnParameters": {
-							"id": 35126,
+							"id": 35128,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "1151:0:96"
 						},
-						"scope": 35170,
+						"scope": 35172,
 						"src": "1034:214:96",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
@@ -1326,7 +1326,7 @@
 					},
 					{
 						"body": {
-							"id": 35168,
+							"id": 35170,
 							"nodeType": "Block",
 							"src": "1509:99:96",
 							"statements": [
@@ -1344,18 +1344,18 @@
 																"argumentTypes": null,
 																"expression": {
 																	"argumentTypes": null,
-																	"id": 35160,
+																	"id": 35162,
 																	"name": "msg",
 																	"nodeType": "Identifier",
 																	"overloadedDeclarations": [],
-																	"referencedDeclaration": 36216,
+																	"referencedDeclaration": 36218,
 																	"src": "1569:3:96",
 																	"typeDescriptions": {
 																		"typeIdentifier": "t_magic_message",
 																		"typeString": "msg"
 																	}
 																},
-																"id": 35161,
+																"id": 35163,
 																"isConstant": false,
 																"isLValue": false,
 																"isPure": false,
@@ -1379,32 +1379,32 @@
 															],
 															"expression": {
 																"argumentTypes": null,
-																"id": 35158,
+																"id": 35160,
 																"name": "_nameFactory",
 																"nodeType": "Identifier",
 																"overloadedDeclarations": [],
-																"referencedDeclaration": 31124,
+																"referencedDeclaration": 31126,
 																"src": "1537:12:96",
 																"typeDescriptions": {
-																	"typeIdentifier": "t_contract$_INameFactory_$22440",
+																	"typeIdentifier": "t_contract$_INameFactory_$22442",
 																	"typeString": "contract INameFactory"
 																}
 															},
-															"id": 35159,
+															"id": 35161,
 															"isConstant": false,
 															"isLValue": false,
 															"isPure": false,
 															"lValueRequested": false,
 															"memberName": "ethAddressToNameId",
 															"nodeType": "MemberAccess",
-															"referencedDeclaration": 22423,
+															"referencedDeclaration": 22425,
 															"src": "1537:31:96",
 															"typeDescriptions": {
 																"typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
 																"typeString": "function (address) view external returns (address)"
 															}
 														},
-														"id": 35162,
+														"id": 35164,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": false,
@@ -1420,11 +1420,11 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 35163,
+														"id": 35165,
 														"name": "_taoId",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 35143,
+														"referencedDeclaration": 35145,
 														"src": "1582:6:96",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
@@ -1433,11 +1433,11 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 35164,
+														"id": 35166,
 														"name": "_voiceAmount",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 35145,
+														"referencedDeclaration": 35147,
 														"src": "1590:12:96",
 														"typeDescriptions": {
 															"typeIdentifier": "t_uint256",
@@ -1462,32 +1462,32 @@
 													],
 													"expression": {
 														"argumentTypes": null,
-														"id": 35156,
+														"id": 35158,
 														"name": "_voice",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 35066,
+														"referencedDeclaration": 35068,
 														"src": "1522:6:96",
 														"typeDescriptions": {
-															"typeIdentifier": "t_contract$_Voice_$36187",
+															"typeIdentifier": "t_contract$_Voice_$36189",
 															"typeString": "contract Voice"
 														}
 													},
-													"id": 35157,
+													"id": 35159,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
 													"lValueRequested": false,
 													"memberName": "unstake",
 													"nodeType": "MemberAccess",
-													"referencedDeclaration": 36186,
+													"referencedDeclaration": 36188,
 													"src": "1522:14:96",
 													"typeDescriptions": {
 														"typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
 														"typeString": "function (address,address,uint256) external returns (bool)"
 													}
 												},
-												"id": 35165,
+												"id": 35167,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -1509,18 +1509,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 35155,
+											"id": 35157,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [36219, 36220],
-											"referencedDeclaration": 36219,
+											"overloadedDeclarations": [36221, 36222],
+											"referencedDeclaration": 36221,
 											"src": "1513:7:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 35166,
+										"id": 35168,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -1534,14 +1534,14 @@
 											"typeString": "tuple()"
 										}
 									},
-									"id": 35167,
+									"id": 35169,
 									"nodeType": "ExpressionStatement",
 									"src": "1513:91:96"
 								}
 							]
 						},
 						"documentation": "@dev Name unstakes Voice on a TAO\n@param _taoId The ID of the TAO\n@param _voiceAmount The amount of Voice to unstake",
-						"id": 35169,
+						"id": 35171,
 						"implemented": true,
 						"kind": "function",
 						"modifiers": [
@@ -1549,11 +1549,11 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 35148,
+										"id": 35150,
 										"name": "_taoId",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 35143,
+										"referencedDeclaration": 35145,
 										"src": "1463:6:96",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
@@ -1561,14 +1561,14 @@
 										}
 									}
 								],
-								"id": 35149,
+								"id": 35151,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35147,
+									"id": 35149,
 									"name": "isTAO",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31165,
+									"referencedDeclaration": 31167,
 									"src": "1457:5:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$_t_address_$",
@@ -1580,14 +1580,14 @@
 							},
 							{
 								"arguments": null,
-								"id": 35151,
+								"id": 35153,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35150,
+									"id": 35152,
 									"name": "senderIsName",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31212,
+									"referencedDeclaration": 31214,
 									"src": "1471:12:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
@@ -1599,14 +1599,14 @@
 							},
 							{
 								"arguments": null,
-								"id": 35153,
+								"id": 35155,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35152,
+									"id": 35154,
 									"name": "senderNameNotCompromised",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31243,
+									"referencedDeclaration": 31245,
 									"src": "1484:24:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
@@ -1620,15 +1620,15 @@
 						"name": "unstakeVoice",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 35146,
+							"id": 35148,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 35143,
+									"id": 35145,
 									"name": "_taoId",
 									"nodeType": "VariableDeclaration",
-									"scope": 35169,
+									"scope": 35171,
 									"src": "1412:14:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1637,7 +1637,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 35142,
+										"id": 35144,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "1412:7:96",
@@ -1652,10 +1652,10 @@
 								},
 								{
 									"constant": false,
-									"id": 35145,
+									"id": 35147,
 									"name": "_voiceAmount",
 									"nodeType": "VariableDeclaration",
-									"scope": 35169,
+									"scope": 35171,
 									"src": "1428:20:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1664,7 +1664,7 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 35144,
+										"id": 35146,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
 										"src": "1428:7:96",
@@ -1680,19 +1680,19 @@
 							"src": "1411:38:96"
 						},
 						"returnParameters": {
-							"id": 35154,
+							"id": 35156,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "1509:0:96"
 						},
-						"scope": 35170,
+						"scope": 35172,
 						"src": "1390:218:96",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					}
 				],
-				"scope": 35171,
+				"scope": 35173,
 				"src": "192:1418:96"
 			}
 		],
@@ -1701,13 +1701,13 @@
 	"legacyAST": {
 		"absolutePath": "/data/jmulyono/ao-contracts/contracts/TAOVoice.sol",
 		"exportedSymbols": {
-			"TAOVoice": [35170]
+			"TAOVoice": [35172]
 		},
-		"id": 35171,
+		"id": 35173,
 		"nodeType": "SourceUnit",
 		"nodes": [
 			{
-				"id": 35058,
+				"id": 35060,
 				"literals": ["solidity", ">=", "0.5", ".4", "<", "0.6", ".0"],
 				"nodeType": "PragmaDirective",
 				"src": "0:31:96"
@@ -1715,10 +1715,10 @@
 			{
 				"absolutePath": "/data/jmulyono/ao-contracts/contracts/TAOController.sol",
 				"file": "./TAOController.sol",
-				"id": 35059,
+				"id": 35061,
 				"nodeType": "ImportDirective",
-				"scope": 35171,
-				"sourceUnit": 31367,
+				"scope": 35173,
+				"sourceUnit": 31369,
 				"src": "33:29:96",
 				"symbolAliases": [],
 				"unitAlias": ""
@@ -1726,10 +1726,10 @@
 			{
 				"absolutePath": "/data/jmulyono/ao-contracts/contracts/Voice.sol",
 				"file": "./Voice.sol",
-				"id": 35060,
+				"id": 35062,
 				"nodeType": "ImportDirective",
-				"scope": 35171,
-				"sourceUnit": 36188,
+				"scope": 35173,
+				"sourceUnit": 36190,
 				"src": "63:21:96",
 				"symbolAliases": [],
 				"unitAlias": ""
@@ -1740,36 +1740,36 @@
 						"arguments": null,
 						"baseName": {
 							"contractScope": null,
-							"id": 35061,
+							"id": 35063,
 							"name": "TAOController",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 31366,
+							"referencedDeclaration": 31368,
 							"src": "213:13:96",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_TAOController_$31366",
+								"typeIdentifier": "t_contract$_TAOController_$31368",
 								"typeString": "contract TAOController"
 							}
 						},
-						"id": 35062,
+						"id": 35064,
 						"nodeType": "InheritanceSpecifier",
 						"src": "213:13:96"
 					}
 				],
-				"contractDependencies": [31366, 35257],
+				"contractDependencies": [31368, 35259],
 				"contractKind": "contract",
 				"documentation": "@title TAOVoice\n * The purpose of this contract is for Name to stake/unstake Voice on a TAO",
 				"fullyImplemented": true,
-				"id": 35170,
-				"linearizedBaseContracts": [35170, 31366, 35257],
+				"id": 35172,
+				"linearizedBaseContracts": [35172, 31368, 35259],
 				"name": "TAOVoice",
 				"nodeType": "ContractDefinition",
 				"nodes": [
 					{
 						"constant": false,
-						"id": 35064,
+						"id": 35066,
 						"name": "voiceAddress",
 						"nodeType": "VariableDeclaration",
-						"scope": 35170,
+						"scope": 35172,
 						"src": "230:27:96",
 						"stateVariable": true,
 						"storageLocation": "default",
@@ -1778,7 +1778,7 @@
 							"typeString": "address"
 						},
 						"typeName": {
-							"id": 35063,
+							"id": 35065,
 							"name": "address",
 							"nodeType": "ElementaryTypeName",
 							"src": "230:7:96",
@@ -1793,26 +1793,26 @@
 					},
 					{
 						"constant": false,
-						"id": 35066,
+						"id": 35068,
 						"name": "_voice",
 						"nodeType": "VariableDeclaration",
-						"scope": 35170,
+						"scope": 35172,
 						"src": "261:21:96",
 						"stateVariable": true,
 						"storageLocation": "default",
 						"typeDescriptions": {
-							"typeIdentifier": "t_contract$_Voice_$36187",
+							"typeIdentifier": "t_contract$_Voice_$36189",
 							"typeString": "contract Voice"
 						},
 						"typeName": {
 							"contractScope": null,
-							"id": 35065,
+							"id": 35067,
 							"name": "Voice",
 							"nodeType": "UserDefinedTypeName",
-							"referencedDeclaration": 36187,
+							"referencedDeclaration": 36189,
 							"src": "261:5:96",
 							"typeDescriptions": {
-								"typeIdentifier": "t_contract$_Voice_$36187",
+								"typeIdentifier": "t_contract$_Voice_$36189",
 								"typeString": "contract Voice"
 							}
 						},
@@ -1821,7 +1821,7 @@
 					},
 					{
 						"body": {
-							"id": 35086,
+							"id": 35088,
 							"nodeType": "Block",
 							"src": "467:92:96",
 							"statements": [
@@ -1831,11 +1831,11 @@
 										"arguments": [
 											{
 												"argumentTypes": null,
-												"id": 35079,
+												"id": 35081,
 												"name": "_voiceAddress",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 35070,
+												"referencedDeclaration": 35072,
 												"src": "487:13:96",
 												"typeDescriptions": {
 													"typeIdentifier": "t_address",
@@ -1850,18 +1850,18 @@
 													"typeString": "address"
 												}
 											],
-											"id": 35078,
+											"id": 35080,
 											"name": "setVoiceAddress",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 35113,
+											"referencedDeclaration": 35115,
 											"src": "471:15:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_internal_nonpayable$_t_address_$returns$__$",
 												"typeString": "function (address)"
 											}
 										},
-										"id": 35080,
+										"id": 35082,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -1875,7 +1875,7 @@
 											"typeString": "tuple()"
 										}
 									},
-									"id": 35081,
+									"id": 35083,
 									"nodeType": "ExpressionStatement",
 									"src": "471:30:96"
 								},
@@ -1885,11 +1885,11 @@
 										"arguments": [
 											{
 												"argumentTypes": null,
-												"id": 35083,
+												"id": 35085,
 												"name": "_nameTAOPositionAddress",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 35072,
+												"referencedDeclaration": 35074,
 												"src": "531:23:96",
 												"typeDescriptions": {
 													"typeIdentifier": "t_address",
@@ -1904,18 +1904,18 @@
 													"typeString": "address"
 												}
 											],
-											"id": 35082,
+											"id": 35084,
 											"name": "setNameTAOPositionAddress",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 31339,
+											"referencedDeclaration": 31341,
 											"src": "505:25:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_internal_nonpayable$_t_address_$returns$__$",
 												"typeString": "function (address)"
 											}
 										},
-										"id": 35084,
+										"id": 35086,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -1929,14 +1929,14 @@
 											"typeString": "tuple()"
 										}
 									},
-									"id": 35085,
+									"id": 35087,
 									"nodeType": "ExpressionStatement",
 									"src": "505:50:96"
 								}
 							]
 						},
 						"documentation": "@dev Constructor function",
-						"id": 35087,
+						"id": 35089,
 						"implemented": true,
 						"kind": "constructor",
 						"modifiers": [
@@ -1944,11 +1944,11 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 35075,
+										"id": 35077,
 										"name": "_nameFactoryAddress",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 35068,
+										"referencedDeclaration": 35070,
 										"src": "439:19:96",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
@@ -1956,17 +1956,17 @@
 										}
 									}
 								],
-								"id": 35076,
+								"id": 35078,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35074,
+									"id": 35076,
 									"name": "TAOController",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31366,
+									"referencedDeclaration": 31368,
 									"src": "425:13:96",
 									"typeDescriptions": {
-										"typeIdentifier": "t_type$_t_contract$_TAOController_$31366_$",
+										"typeIdentifier": "t_type$_t_contract$_TAOController_$31368_$",
 										"typeString": "type(contract TAOController)"
 									}
 								},
@@ -1977,15 +1977,15 @@
 						"name": "",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 35073,
+							"id": 35075,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 35068,
+									"id": 35070,
 									"name": "_nameFactoryAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 35087,
+									"scope": 35089,
 									"src": "338:27:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -1994,7 +1994,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 35067,
+										"id": 35069,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "338:7:96",
@@ -2009,10 +2009,10 @@
 								},
 								{
 									"constant": false,
-									"id": 35070,
+									"id": 35072,
 									"name": "_voiceAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 35087,
+									"scope": 35089,
 									"src": "367:21:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -2021,7 +2021,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 35069,
+										"id": 35071,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "367:7:96",
@@ -2036,10 +2036,10 @@
 								},
 								{
 									"constant": false,
-									"id": 35072,
+									"id": 35074,
 									"name": "_nameTAOPositionAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 35087,
+									"scope": 35089,
 									"src": "390:31:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -2048,7 +2048,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 35071,
+										"id": 35073,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "390:7:96",
@@ -2065,12 +2065,12 @@
 							"src": "337:85:96"
 						},
 						"returnParameters": {
-							"id": 35077,
+							"id": 35079,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "467:0:96"
 						},
-						"scope": 35170,
+						"scope": 35172,
 						"src": "326:233:96",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
@@ -2078,7 +2078,7 @@
 					},
 					{
 						"body": {
-							"id": 35112,
+							"id": 35114,
 							"nodeType": "Block",
 							"src": "756:110:96",
 							"statements": [
@@ -2092,18 +2092,18 @@
 													"typeIdentifier": "t_address",
 													"typeString": "address"
 												},
-												"id": 35099,
+												"id": 35101,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
 												"lValueRequested": false,
 												"leftExpression": {
 													"argumentTypes": null,
-													"id": 35095,
+													"id": 35097,
 													"name": "_voiceAddress",
 													"nodeType": "Identifier",
 													"overloadedDeclarations": [],
-													"referencedDeclaration": 35089,
+													"referencedDeclaration": 35091,
 													"src": "769:13:96",
 													"typeDescriptions": {
 														"typeIdentifier": "t_address",
@@ -2118,7 +2118,7 @@
 														{
 															"argumentTypes": null,
 															"hexValue": "30",
-															"id": 35097,
+															"id": 35099,
 															"isConstant": false,
 															"isLValue": false,
 															"isPure": true,
@@ -2141,7 +2141,7 @@
 																"typeString": "int_const 0"
 															}
 														],
-														"id": 35096,
+														"id": 35098,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": true,
@@ -2154,7 +2154,7 @@
 														},
 														"typeName": "address"
 													},
-													"id": 35098,
+													"id": 35100,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": true,
@@ -2182,18 +2182,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 35094,
+											"id": 35096,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [36219, 36220],
-											"referencedDeclaration": 36219,
+											"overloadedDeclarations": [36221, 36222],
+											"referencedDeclaration": 36221,
 											"src": "760:7:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 35100,
+										"id": 35102,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -2207,25 +2207,25 @@
 											"typeString": "tuple()"
 										}
 									},
-									"id": 35101,
+									"id": 35103,
 									"nodeType": "ExpressionStatement",
 									"src": "760:37:96"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 35104,
+										"id": 35106,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 35102,
+											"id": 35104,
 											"name": "voiceAddress",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 35064,
+											"referencedDeclaration": 35066,
 											"src": "801:12:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_address",
@@ -2236,11 +2236,11 @@
 										"operator": "=",
 										"rightHandSide": {
 											"argumentTypes": null,
-											"id": 35103,
+											"id": 35105,
 											"name": "_voiceAddress",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 35089,
+											"referencedDeclaration": 35091,
 											"src": "816:13:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_address",
@@ -2253,28 +2253,28 @@
 											"typeString": "address"
 										}
 									},
-									"id": 35105,
+									"id": 35107,
 									"nodeType": "ExpressionStatement",
 									"src": "801:28:96"
 								},
 								{
 									"expression": {
 										"argumentTypes": null,
-										"id": 35110,
+										"id": 35112,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
 										"lValueRequested": false,
 										"leftHandSide": {
 											"argumentTypes": null,
-											"id": 35106,
+											"id": 35108,
 											"name": "_voice",
 											"nodeType": "Identifier",
 											"overloadedDeclarations": [],
-											"referencedDeclaration": 35066,
+											"referencedDeclaration": 35068,
 											"src": "833:6:96",
 											"typeDescriptions": {
-												"typeIdentifier": "t_contract$_Voice_$36187",
+												"typeIdentifier": "t_contract$_Voice_$36189",
 												"typeString": "contract Voice"
 											}
 										},
@@ -2285,11 +2285,11 @@
 											"arguments": [
 												{
 													"argumentTypes": null,
-													"id": 35108,
+													"id": 35110,
 													"name": "_voiceAddress",
 													"nodeType": "Identifier",
 													"overloadedDeclarations": [],
-													"referencedDeclaration": 35089,
+													"referencedDeclaration": 35091,
 													"src": "848:13:96",
 													"typeDescriptions": {
 														"typeIdentifier": "t_address",
@@ -2304,18 +2304,18 @@
 														"typeString": "address"
 													}
 												],
-												"id": 35107,
+												"id": 35109,
 												"name": "Voice",
 												"nodeType": "Identifier",
 												"overloadedDeclarations": [],
-												"referencedDeclaration": 36187,
+												"referencedDeclaration": 36189,
 												"src": "842:5:96",
 												"typeDescriptions": {
-													"typeIdentifier": "t_type$_t_contract$_Voice_$36187_$",
+													"typeIdentifier": "t_type$_t_contract$_Voice_$36189_$",
 													"typeString": "type(contract Voice)"
 												}
 											},
-											"id": 35109,
+											"id": 35111,
 											"isConstant": false,
 											"isLValue": false,
 											"isPure": false,
@@ -2325,37 +2325,37 @@
 											"nodeType": "FunctionCall",
 											"src": "842:20:96",
 											"typeDescriptions": {
-												"typeIdentifier": "t_contract$_Voice_$36187",
+												"typeIdentifier": "t_contract$_Voice_$36189",
 												"typeString": "contract Voice"
 											}
 										},
 										"src": "833:29:96",
 										"typeDescriptions": {
-											"typeIdentifier": "t_contract$_Voice_$36187",
+											"typeIdentifier": "t_contract$_Voice_$36189",
 											"typeString": "contract Voice"
 										}
 									},
-									"id": 35111,
+									"id": 35113,
 									"nodeType": "ExpressionStatement",
 									"src": "833:29:96"
 								}
 							]
 						},
 						"documentation": "@dev The AO set the Voice Address\n@param _voiceAddress The address of Voice",
-						"id": 35113,
+						"id": 35115,
 						"implemented": true,
 						"kind": "function",
 						"modifiers": [
 							{
 								"arguments": null,
-								"id": 35092,
+								"id": 35094,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35091,
+									"id": 35093,
 									"name": "onlyTheAO",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31152,
+									"referencedDeclaration": 31154,
 									"src": "746:9:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
@@ -2369,15 +2369,15 @@
 						"name": "setVoiceAddress",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 35090,
+							"id": 35092,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 35089,
+									"id": 35091,
 									"name": "_voiceAddress",
 									"nodeType": "VariableDeclaration",
-									"scope": 35113,
+									"scope": 35115,
 									"src": "716:21:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -2386,7 +2386,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 35088,
+										"id": 35090,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "716:7:96",
@@ -2403,12 +2403,12 @@
 							"src": "715:23:96"
 						},
 						"returnParameters": {
-							"id": 35093,
+							"id": 35095,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "756:0:96"
 						},
-						"scope": 35170,
+						"scope": 35172,
 						"src": "691:175:96",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
@@ -2416,7 +2416,7 @@
 					},
 					{
 						"body": {
-							"id": 35140,
+							"id": 35142,
 							"nodeType": "Block",
 							"src": "1151:97:96",
 							"statements": [
@@ -2434,18 +2434,18 @@
 																"argumentTypes": null,
 																"expression": {
 																	"argumentTypes": null,
-																	"id": 35132,
+																	"id": 35134,
 																	"name": "msg",
 																	"nodeType": "Identifier",
 																	"overloadedDeclarations": [],
-																	"referencedDeclaration": 36216,
+																	"referencedDeclaration": 36218,
 																	"src": "1209:3:96",
 																	"typeDescriptions": {
 																		"typeIdentifier": "t_magic_message",
 																		"typeString": "msg"
 																	}
 																},
-																"id": 35133,
+																"id": 35135,
 																"isConstant": false,
 																"isLValue": false,
 																"isPure": false,
@@ -2469,32 +2469,32 @@
 															],
 															"expression": {
 																"argumentTypes": null,
-																"id": 35130,
+																"id": 35132,
 																"name": "_nameFactory",
 																"nodeType": "Identifier",
 																"overloadedDeclarations": [],
-																"referencedDeclaration": 31124,
+																"referencedDeclaration": 31126,
 																"src": "1177:12:96",
 																"typeDescriptions": {
-																	"typeIdentifier": "t_contract$_INameFactory_$22440",
+																	"typeIdentifier": "t_contract$_INameFactory_$22442",
 																	"typeString": "contract INameFactory"
 																}
 															},
-															"id": 35131,
+															"id": 35133,
 															"isConstant": false,
 															"isLValue": false,
 															"isPure": false,
 															"lValueRequested": false,
 															"memberName": "ethAddressToNameId",
 															"nodeType": "MemberAccess",
-															"referencedDeclaration": 22423,
+															"referencedDeclaration": 22425,
 															"src": "1177:31:96",
 															"typeDescriptions": {
 																"typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
 																"typeString": "function (address) view external returns (address)"
 															}
 														},
-														"id": 35134,
+														"id": 35136,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": false,
@@ -2510,11 +2510,11 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 35135,
+														"id": 35137,
 														"name": "_taoId",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 35115,
+														"referencedDeclaration": 35117,
 														"src": "1222:6:96",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
@@ -2523,11 +2523,11 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 35136,
+														"id": 35138,
 														"name": "_voiceAmount",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 35117,
+														"referencedDeclaration": 35119,
 														"src": "1230:12:96",
 														"typeDescriptions": {
 															"typeIdentifier": "t_uint256",
@@ -2552,32 +2552,32 @@
 													],
 													"expression": {
 														"argumentTypes": null,
-														"id": 35128,
+														"id": 35130,
 														"name": "_voice",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 35066,
+														"referencedDeclaration": 35068,
 														"src": "1164:6:96",
 														"typeDescriptions": {
-															"typeIdentifier": "t_contract$_Voice_$36187",
+															"typeIdentifier": "t_contract$_Voice_$36189",
 															"typeString": "contract Voice"
 														}
 													},
-													"id": 35129,
+													"id": 35131,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
 													"lValueRequested": false,
 													"memberName": "stake",
 													"nodeType": "MemberAccess",
-													"referencedDeclaration": 36093,
+													"referencedDeclaration": 36095,
 													"src": "1164:12:96",
 													"typeDescriptions": {
 														"typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
 														"typeString": "function (address,address,uint256) external returns (bool)"
 													}
 												},
-												"id": 35137,
+												"id": 35139,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -2599,18 +2599,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 35127,
+											"id": 35129,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [36219, 36220],
-											"referencedDeclaration": 36219,
+											"overloadedDeclarations": [36221, 36222],
+											"referencedDeclaration": 36221,
 											"src": "1155:7:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 35138,
+										"id": 35140,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -2624,14 +2624,14 @@
 											"typeString": "tuple()"
 										}
 									},
-									"id": 35139,
+									"id": 35141,
 									"nodeType": "ExpressionStatement",
 									"src": "1155:89:96"
 								}
 							]
 						},
 						"documentation": "@dev Name stakes Voice on a TAO\n@param _taoId The ID of the TAO\n@param _voiceAmount The amount of Voice to stake",
-						"id": 35141,
+						"id": 35143,
 						"implemented": true,
 						"kind": "function",
 						"modifiers": [
@@ -2639,11 +2639,11 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 35120,
+										"id": 35122,
 										"name": "_taoId",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 35115,
+										"referencedDeclaration": 35117,
 										"src": "1105:6:96",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
@@ -2651,14 +2651,14 @@
 										}
 									}
 								],
-								"id": 35121,
+								"id": 35123,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35119,
+									"id": 35121,
 									"name": "isTAO",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31165,
+									"referencedDeclaration": 31167,
 									"src": "1099:5:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$_t_address_$",
@@ -2670,14 +2670,14 @@
 							},
 							{
 								"arguments": null,
-								"id": 35123,
+								"id": 35125,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35122,
+									"id": 35124,
 									"name": "senderIsName",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31212,
+									"referencedDeclaration": 31214,
 									"src": "1113:12:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
@@ -2689,14 +2689,14 @@
 							},
 							{
 								"arguments": null,
-								"id": 35125,
+								"id": 35127,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35124,
+									"id": 35126,
 									"name": "senderNameNotCompromised",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31243,
+									"referencedDeclaration": 31245,
 									"src": "1126:24:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
@@ -2710,15 +2710,15 @@
 						"name": "stakeVoice",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 35118,
+							"id": 35120,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 35115,
+									"id": 35117,
 									"name": "_taoId",
 									"nodeType": "VariableDeclaration",
-									"scope": 35141,
+									"scope": 35143,
 									"src": "1054:14:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -2727,7 +2727,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 35114,
+										"id": 35116,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "1054:7:96",
@@ -2742,10 +2742,10 @@
 								},
 								{
 									"constant": false,
-									"id": 35117,
+									"id": 35119,
 									"name": "_voiceAmount",
 									"nodeType": "VariableDeclaration",
-									"scope": 35141,
+									"scope": 35143,
 									"src": "1070:20:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -2754,7 +2754,7 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 35116,
+										"id": 35118,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
 										"src": "1070:7:96",
@@ -2770,12 +2770,12 @@
 							"src": "1053:38:96"
 						},
 						"returnParameters": {
-							"id": 35126,
+							"id": 35128,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "1151:0:96"
 						},
-						"scope": 35170,
+						"scope": 35172,
 						"src": "1034:214:96",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
@@ -2783,7 +2783,7 @@
 					},
 					{
 						"body": {
-							"id": 35168,
+							"id": 35170,
 							"nodeType": "Block",
 							"src": "1509:99:96",
 							"statements": [
@@ -2801,18 +2801,18 @@
 																"argumentTypes": null,
 																"expression": {
 																	"argumentTypes": null,
-																	"id": 35160,
+																	"id": 35162,
 																	"name": "msg",
 																	"nodeType": "Identifier",
 																	"overloadedDeclarations": [],
-																	"referencedDeclaration": 36216,
+																	"referencedDeclaration": 36218,
 																	"src": "1569:3:96",
 																	"typeDescriptions": {
 																		"typeIdentifier": "t_magic_message",
 																		"typeString": "msg"
 																	}
 																},
-																"id": 35161,
+																"id": 35163,
 																"isConstant": false,
 																"isLValue": false,
 																"isPure": false,
@@ -2836,32 +2836,32 @@
 															],
 															"expression": {
 																"argumentTypes": null,
-																"id": 35158,
+																"id": 35160,
 																"name": "_nameFactory",
 																"nodeType": "Identifier",
 																"overloadedDeclarations": [],
-																"referencedDeclaration": 31124,
+																"referencedDeclaration": 31126,
 																"src": "1537:12:96",
 																"typeDescriptions": {
-																	"typeIdentifier": "t_contract$_INameFactory_$22440",
+																	"typeIdentifier": "t_contract$_INameFactory_$22442",
 																	"typeString": "contract INameFactory"
 																}
 															},
-															"id": 35159,
+															"id": 35161,
 															"isConstant": false,
 															"isLValue": false,
 															"isPure": false,
 															"lValueRequested": false,
 															"memberName": "ethAddressToNameId",
 															"nodeType": "MemberAccess",
-															"referencedDeclaration": 22423,
+															"referencedDeclaration": 22425,
 															"src": "1537:31:96",
 															"typeDescriptions": {
 																"typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
 																"typeString": "function (address) view external returns (address)"
 															}
 														},
-														"id": 35162,
+														"id": 35164,
 														"isConstant": false,
 														"isLValue": false,
 														"isPure": false,
@@ -2877,11 +2877,11 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 35163,
+														"id": 35165,
 														"name": "_taoId",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 35143,
+														"referencedDeclaration": 35145,
 														"src": "1582:6:96",
 														"typeDescriptions": {
 															"typeIdentifier": "t_address",
@@ -2890,11 +2890,11 @@
 													},
 													{
 														"argumentTypes": null,
-														"id": 35164,
+														"id": 35166,
 														"name": "_voiceAmount",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 35145,
+														"referencedDeclaration": 35147,
 														"src": "1590:12:96",
 														"typeDescriptions": {
 															"typeIdentifier": "t_uint256",
@@ -2919,32 +2919,32 @@
 													],
 													"expression": {
 														"argumentTypes": null,
-														"id": 35156,
+														"id": 35158,
 														"name": "_voice",
 														"nodeType": "Identifier",
 														"overloadedDeclarations": [],
-														"referencedDeclaration": 35066,
+														"referencedDeclaration": 35068,
 														"src": "1522:6:96",
 														"typeDescriptions": {
-															"typeIdentifier": "t_contract$_Voice_$36187",
+															"typeIdentifier": "t_contract$_Voice_$36189",
 															"typeString": "contract Voice"
 														}
 													},
-													"id": 35157,
+													"id": 35159,
 													"isConstant": false,
 													"isLValue": false,
 													"isPure": false,
 													"lValueRequested": false,
 													"memberName": "unstake",
 													"nodeType": "MemberAccess",
-													"referencedDeclaration": 36186,
+													"referencedDeclaration": 36188,
 													"src": "1522:14:96",
 													"typeDescriptions": {
 														"typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
 														"typeString": "function (address,address,uint256) external returns (bool)"
 													}
 												},
-												"id": 35165,
+												"id": 35167,
 												"isConstant": false,
 												"isLValue": false,
 												"isPure": false,
@@ -2966,18 +2966,18 @@
 													"typeString": "bool"
 												}
 											],
-											"id": 35155,
+											"id": 35157,
 											"name": "require",
 											"nodeType": "Identifier",
-											"overloadedDeclarations": [36219, 36220],
-											"referencedDeclaration": 36219,
+											"overloadedDeclarations": [36221, 36222],
+											"referencedDeclaration": 36221,
 											"src": "1513:7:96",
 											"typeDescriptions": {
 												"typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
 												"typeString": "function (bool) pure"
 											}
 										},
-										"id": 35166,
+										"id": 35168,
 										"isConstant": false,
 										"isLValue": false,
 										"isPure": false,
@@ -2991,14 +2991,14 @@
 											"typeString": "tuple()"
 										}
 									},
-									"id": 35167,
+									"id": 35169,
 									"nodeType": "ExpressionStatement",
 									"src": "1513:91:96"
 								}
 							]
 						},
 						"documentation": "@dev Name unstakes Voice on a TAO\n@param _taoId The ID of the TAO\n@param _voiceAmount The amount of Voice to unstake",
-						"id": 35169,
+						"id": 35171,
 						"implemented": true,
 						"kind": "function",
 						"modifiers": [
@@ -3006,11 +3006,11 @@
 								"arguments": [
 									{
 										"argumentTypes": null,
-										"id": 35148,
+										"id": 35150,
 										"name": "_taoId",
 										"nodeType": "Identifier",
 										"overloadedDeclarations": [],
-										"referencedDeclaration": 35143,
+										"referencedDeclaration": 35145,
 										"src": "1463:6:96",
 										"typeDescriptions": {
 											"typeIdentifier": "t_address",
@@ -3018,14 +3018,14 @@
 										}
 									}
 								],
-								"id": 35149,
+								"id": 35151,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35147,
+									"id": 35149,
 									"name": "isTAO",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31165,
+									"referencedDeclaration": 31167,
 									"src": "1457:5:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$_t_address_$",
@@ -3037,14 +3037,14 @@
 							},
 							{
 								"arguments": null,
-								"id": 35151,
+								"id": 35153,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35150,
+									"id": 35152,
 									"name": "senderIsName",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31212,
+									"referencedDeclaration": 31214,
 									"src": "1471:12:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
@@ -3056,14 +3056,14 @@
 							},
 							{
 								"arguments": null,
-								"id": 35153,
+								"id": 35155,
 								"modifierName": {
 									"argumentTypes": null,
-									"id": 35152,
+									"id": 35154,
 									"name": "senderNameNotCompromised",
 									"nodeType": "Identifier",
 									"overloadedDeclarations": [],
-									"referencedDeclaration": 31243,
+									"referencedDeclaration": 31245,
 									"src": "1484:24:96",
 									"typeDescriptions": {
 										"typeIdentifier": "t_modifier$__$",
@@ -3077,15 +3077,15 @@
 						"name": "unstakeVoice",
 						"nodeType": "FunctionDefinition",
 						"parameters": {
-							"id": 35146,
+							"id": 35148,
 							"nodeType": "ParameterList",
 							"parameters": [
 								{
 									"constant": false,
-									"id": 35143,
+									"id": 35145,
 									"name": "_taoId",
 									"nodeType": "VariableDeclaration",
-									"scope": 35169,
+									"scope": 35171,
 									"src": "1412:14:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -3094,7 +3094,7 @@
 										"typeString": "address"
 									},
 									"typeName": {
-										"id": 35142,
+										"id": 35144,
 										"name": "address",
 										"nodeType": "ElementaryTypeName",
 										"src": "1412:7:96",
@@ -3109,10 +3109,10 @@
 								},
 								{
 									"constant": false,
-									"id": 35145,
+									"id": 35147,
 									"name": "_voiceAmount",
 									"nodeType": "VariableDeclaration",
-									"scope": 35169,
+									"scope": 35171,
 									"src": "1428:20:96",
 									"stateVariable": false,
 									"storageLocation": "default",
@@ -3121,7 +3121,7 @@
 										"typeString": "uint256"
 									},
 									"typeName": {
-										"id": 35144,
+										"id": 35146,
 										"name": "uint256",
 										"nodeType": "ElementaryTypeName",
 										"src": "1428:7:96",
@@ -3137,19 +3137,19 @@
 							"src": "1411:38:96"
 						},
 						"returnParameters": {
-							"id": 35154,
+							"id": 35156,
 							"nodeType": "ParameterList",
 							"parameters": [],
 							"src": "1509:0:96"
 						},
-						"scope": 35170,
+						"scope": 35172,
 						"src": "1390:218:96",
 						"stateMutability": "nonpayable",
 						"superFunction": null,
 						"visibility": "public"
 					}
 				],
-				"scope": 35171,
+				"scope": 35173,
 				"src": "192:1418:96"
 			}
 		],
@@ -3163,22 +3163,14 @@
 		"4": {
 			"events": {},
 			"links": {
-				"AOLibrary": "0xd8B7AD117B7B7B9ff505FA3b7E29fE84f7F5B684"
+				"AOLibrary": "0x7e098f47951C80eCbA5d8fb5450f688C05089a97"
 			},
-			"address": "0x5275F014D51B02C940b643a0eb7E9c86E5b4EbA7",
-			"transactionHash": "0xe68f515d71de06ce8ea362585665d79ada89cee855299c55dd02af1c262eddd2"
-		},
-		"1985": {
-			"events": {},
-			"links": {
-				"AOLibrary": "0x9Aa905cd2c62d2078C2048Ba892Ce90ADa4bfe0b"
-			},
-			"address": "0x6114d4FC925DECc84DFb521F39De1bFCA1B85f59",
-			"transactionHash": "0x12f523da2e0ffd195c3bd678e672462890c2a6cef6fc4b1526b04853eb9c73da"
+			"address": "0xc2dBbe9D942681191d691f427cC59ed1171Df49E",
+			"transactionHash": "0x3f20a9b0328dbe13c853ba1a60bc2a1fdfea9ada82c4434acbf5310ab43288e6"
 		}
 	},
 	"schemaVersion": "3.0.9",
-	"updatedAt": "2019-05-24T11:07:51.619Z",
+	"updatedAt": "2019-05-28T07:09:55.504Z",
 	"devdoc": {
 		"methods": {
 			"constructor": {
