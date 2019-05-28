@@ -122,9 +122,9 @@ module.exports = function(deployer, network, accounts) {
 		settingAccount = "0xa21238ff54391900d002bb85019285bc08ad1ca5";
 		contributorAccount = "0x9125c4f45206bc53ad3a199323dda4ff3e9f2bee";
 	} else if (network === "mainnet") {
-		primordialAccount = "0x181069807136d36589659ea15a2fec2d66cbef19";
-		settingAccount = "0xa7d38b9772ceb39f8a600ee7da7d384a3dd5025c";
-		contributorAccount = "0xc967d888967837e551360e808212c872d23a1054";
+		primordialAccount = "0xce54c1ef15fb902ad45ed82c90098d1db26ed40f";
+		settingAccount = "0x70dd3ad53d89c33ddfede93e912738fa6d188f0f";
+		contributorAccount = "0xb00b8666c5bcc76fc63375e968bc5f302bd58dbc";
 	} else {
 		primordialAccount = accounts[0];
 		settingAccount = accounts[9];
@@ -777,7 +777,7 @@ module.exports = function(deployer, network, accounts) {
 			 * Create Primordial Name and Setting Name
 			 */
 			try {
-				var result = await namefactory.createName("alpha", "", "", "", web3.utils.toHex(""), primordialWriterKey.address, {
+				var result = await namefactory.createName("Alpha", "", "", "", web3.utils.toHex(""), primordialWriterKey.address, {
 					from: primordialAccount
 				});
 				primordialNameId = await namefactory.ethAddressToNameId(primordialAccount);
@@ -787,7 +787,7 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			try {
-				var result = await namefactory.createName("beta", "", "", "", web3.utils.toHex(""), settingWriterKey.address, {
+				var result = await namefactory.createName("Beta", "", "", "", web3.utils.toHex(""), settingWriterKey.address, {
 					from: settingAccount
 				});
 				settingNameId = await namefactory.ethAddressToNameId(settingAccount);
@@ -800,20 +800,9 @@ module.exports = function(deployer, network, accounts) {
 			 * Create Primordial TAO and Setting TAO that proposes Content Usage Setting creation
 			 */
 			try {
-				var result = await taofactory.createTAO(
-					"Primordial Thought of AO",
-					"",
-					"",
-					"",
-					web3.utils.toHex(""),
-					primordialNameId,
-					0,
-					false,
-					0,
-					{
-						from: primordialAccount
-					}
-				);
+				var result = await taofactory.createTAO("Primordial TAO", "", "", "", web3.utils.toHex(""), primordialNameId, 0, false, 0, {
+					from: primordialAccount
+				});
 				var createTAOEvent = result.logs[0];
 				primordialTAOId = createTAOEvent.args.taoId;
 			} catch (e) {
@@ -822,9 +811,20 @@ module.exports = function(deployer, network, accounts) {
 			}
 
 			try {
-				var result = await taofactory.createTAO("Settings of AO", "", "", "", web3.utils.toHex(""), primordialTAOId, 0, false, 0, {
-					from: settingAccount
-				});
+				var result = await taofactory.createTAO(
+					"Primordial Settings",
+					"",
+					"",
+					"",
+					web3.utils.toHex(""),
+					primordialTAOId,
+					0,
+					false,
+					0,
+					{
+						from: settingAccount
+					}
+				);
 				var createTAOEvent = result.logs[0];
 				settingTAOId = createTAOEvent.args.taoId;
 			} catch (e) {
@@ -852,12 +852,12 @@ module.exports = function(deployer, network, accounts) {
 
 			/***** Add Settings *****/
 			/**
-			 * startingPrimordialMultiplier 25 * (1000000) = 25
+			 * startingPrimordialMultiplier 50 * (1000000) = 50
 			 */
 			try {
 				var result = await aosetting.addUintSetting(
 					"startingPrimordialMultiplier",
-					25 * 10 ** 6,
+					50 * 10 ** 6,
 					primordialTAOId,
 					settingTAOId,
 					"",

@@ -116,7 +116,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 
 		it("should have total of 2251799813685240 Primordial ions for sale", async function() {
 			totalPrimordialForSale = new BN(await aoion.TOTAL_PRIMORDIAL_FOR_SALE());
-			assert.equal(totalPrimordialForSale.toString(), 2251799813685240, "Contract has incorrect total primordial for sale");
+			assert.equal(totalPrimordialForSale.toString(), 3377699720527872, "Contract has incorrect total primordial for sale");
 		});
 
 		it("should have the correct AO Dev team 1 address", async function() {
@@ -132,7 +132,7 @@ contract("AOIon & AOIonLot", function(accounts) {
 		it("should have the correct starting multiplier for calculating primordial multiplier", async function() {
 			var settingValues = await aosetting.getSettingValuesByTAOName(settingTAOId, "startingPrimordialMultiplier");
 			startingPrimordialMultiplier = new BN(settingValues[0]);
-			assert.equal(startingPrimordialMultiplier.toString(), 25 * 10 ** 6, "Contract has incorrect startingPrimordialMultiplier");
+			assert.equal(startingPrimordialMultiplier.toString(), 50 * 10 ** 6, "Contract has incorrect startingPrimordialMultiplier");
 		});
 
 		it("should have the correct ending multiplier for calculating primordial multiplier", async function() {

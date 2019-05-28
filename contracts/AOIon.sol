@@ -35,8 +35,8 @@ contract AOIon is AOIonInterface {
 	uint256 public totalEthForPrimordial;	// Total ETH sent for Primordial AO+
 	uint256 public totalRedeemedAOETH;		// Total AOETH redeemed for Primordial AO+
 
-	// Total available primordial ion for sale 2,251,799,813,685,240 AO+
-	uint256 constant public TOTAL_PRIMORDIAL_FOR_SALE = 2251799813685240;
+	// Total available primordial ion for sale 3,377,699,720,527,872 AO+
+	uint256 constant public TOTAL_PRIMORDIAL_FOR_SALE = 3377699720527872;
 
 	mapping (address => uint256) public primordialBalanceOf;
 	mapping (address => mapping (address => uint256)) public primordialAllowance;
@@ -75,7 +75,7 @@ contract AOIon is AOIonInterface {
 
 		powerOfTen = 0;
 		decimals = 0;
-		setPrimordialPrices(0, 10000); // Set Primordial buy price to 10000 Wei/ion
+		setPrimordialPrices(0, 10 ** 8); // Set Primordial buy price to 0.1 gwei/ion
 	}
 
 	/**

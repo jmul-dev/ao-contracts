@@ -37,7 +37,7 @@ module.exports = {
 		mainnet: {
 			host: "localhost", // Connect to geth on the specified
 			port: 8545,
-			from: "0x181069807136d36589659ea15a2fec2d66cbef19", // default address to use for any transaction Truffle makes during migrations
+			from: "0xce54c1ef15fb902ad45ed82c90098d1db26ed40f", // default address to use for any transaction Truffle makes during migrations
 			network_id: 1,
 			gas: 6950000, // Gas limit used for deploys,
 			gasPrice: 10000000000, // 10 Gwei

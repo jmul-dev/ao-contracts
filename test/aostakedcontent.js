@@ -166,13 +166,13 @@ contract("AOStakedContent", function(accounts) {
 		await aoion.setWhitelist(theAO, true, { from: theAO });
 		await aoion.mint(account1, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 		// Buy 2 lots so that we can test avg weighted multiplier
-		await aoion.buyPrimordial({ from: account1, value: 500000000000 });
-		await aoion.buyPrimordial({ from: account1, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account1, value: 50000000 * 10 ** 8 });
+		await aoion.buyPrimordial({ from: account1, value: 50000000 * 10 ** 8 });
 
 		await aoion.mint(account2, 10 ** 9, { from: theAO }); // 1,000,000,000 AO Ion
 		// Buy 2 lots so that we can test avg weighted multiplier
-		await aoion.buyPrimordial({ from: account2, value: 500000000000 });
-		await aoion.buyPrimordial({ from: account2, value: 500000000000 });
+		await aoion.buyPrimordial({ from: account2, value: 50000000 * 10 ** 8 });
+		await aoion.buyPrimordial({ from: account2, value: 50000000 * 10 ** 8 });
 	});
 
 	var create = async function(
