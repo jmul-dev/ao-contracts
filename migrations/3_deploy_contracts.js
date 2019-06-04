@@ -1204,7 +1204,6 @@ module.exports = function(deployer, network, accounts) {
 
 			/**
 			 * taoDbKey = b9b874b28cc2792b0becdf2c40c9254f874be3efa1a48cd61903fb62e883f271
-			 */
 			try {
 				var result = await aosetting.addStringSetting(
 					"taoDbKey",
@@ -1223,6 +1222,7 @@ module.exports = function(deployer, network, accounts) {
 			} catch (e) {
 				console.log("Unable to add taoDbKey setting", e);
 			}
+			*/
 
 			/**
 			 * createChildTAOMinLogos 1Giga = 10 ** 9
