@@ -1,0 +1,290 @@
+{
+	"contractName": "AOPurchaseReceipt",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoStakedContentAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameTAOPositionAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoTreasuryAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoContentAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoEarningAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoContentHostAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "whitelist",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "theAO",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameFactoryAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "totalPurchaseReceipts",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }, { "name": "", "type": "bytes32" }],
+			"name": "buyerPurchaseReceipts",
+			"outputs": [{ "name": "", "type": "bytes32" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{ "name": "_aoContentAddress", "type": "address" },
+				{ "name": "_aoStakedContentAddress", "type": "address" },
+				{ "name": "_aoTreasuryAddress", "type": "address" },
+				{ "name": "_aoEarningAddress", "type": "address" },
+				{ "name": "_nameFactoryAddress", "type": "address" },
+				{ "name": "_nameTAOPositionAddress", "type": "address" }
+			],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "buyer", "type": "address" },
+				{ "indexed": true, "name": "purchaseReceiptId", "type": "bytes32" },
+				{ "indexed": true, "name": "contentHostId", "type": "bytes32" },
+				{ "indexed": false, "name": "stakedContentId", "type": "bytes32" },
+				{ "indexed": false, "name": "contentId", "type": "bytes32" },
+				{ "indexed": false, "name": "price", "type": "uint256" },
+				{ "indexed": false, "name": "amountPaidByAO", "type": "uint256" },
+				{ "indexed": false, "name": "amountPaidByBuyer", "type": "uint256" },
+				{ "indexed": false, "name": "publicKey", "type": "string" },
+				{ "indexed": false, "name": "publicAddress", "type": "address" },
+				{ "indexed": false, "name": "createdOnTimestamp", "type": "uint256" }
+			],
+			"name": "BuyContent",
+			"type": "event"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_theAO", "type": "address" }],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_account", "type": "address" }, { "name": "_whitelist", "type": "bool" }],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_aoContentAddress", "type": "address" }],
+			"name": "setAOContentAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_aoStakedContentAddress", "type": "address" }],
+			"name": "setAOStakedContentAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_aoContentHostAddress", "type": "address" }],
+			"name": "setAOContentHostAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_aoTreasuryAddress", "type": "address" }],
+			"name": "setAOTreasuryAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_aoEarningAddress", "type": "address" }],
+			"name": "setAOEarningAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameFactoryAddress", "type": "address" }],
+			"name": "setNameFactoryAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameTAOPositionAddress", "type": "address" }],
+			"name": "setNameTAOPositionAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{ "name": "_contentHostId", "type": "bytes32" },
+				{ "name": "_networkIntegerAmount", "type": "uint256" },
+				{ "name": "_networkFractionAmount", "type": "uint256" },
+				{ "name": "_denomination", "type": "bytes8" },
+				{ "name": "_publicKey", "type": "string" },
+				{ "name": "_publicAddress", "type": "address" }
+			],
+			"name": "buyContent",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_purchaseReceiptId", "type": "bytes32" }],
+			"name": "getById",
+			"outputs": [
+				{ "name": "", "type": "bytes32" },
+				{ "name": "", "type": "bytes32" },
+				{ "name": "", "type": "bytes32" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "uint256" },
+				{ "name": "", "type": "uint256" },
+				{ "name": "", "type": "uint256" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "uint256" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_purchaseReceiptId", "type": "bytes32" }, { "name": "_sender", "type": "address" }],
+			"name": "senderIsBuyer",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_purchaseReceiptId", "type": "bytes32" }],
+			"name": "isExist",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		}
+	],
+	"networks": {
+		"1": {
+			"events": {},
+			"links": { "AOLibrary": "0x1150d53299Abb7DE27464D01B626728f5c840229" },
+			"address": "0xD7dDC00eAA2574efe36f966de97c4B869ca8Dc2D",
+			"transactionHash": "0xb5140ee3f7275493d336b36cad321e96a7cd68cb3c9d4cabf74ec0322a7d5a85"
+		},
+		"4": {
+			"events": {},
+			"links": { "AOLibrary": "0x7e098f47951C80eCbA5d8fb5450f688C05089a97" },
+			"address": "0x34eEC95227BEa5bBd763Fae83479324210d7807E",
+			"transactionHash": "0xa7e6079bba74c75b4732d94b83cd9f6e9774eb01c5a6f9e30748c13d16df1495"
+		},
+		"1985": {
+			"events": {},
+			"links": { "AOLibrary": "0x9Aa905cd2c62d2078C2048Ba892Ce90ADa4bfe0b" },
+			"address": "0x36C93e7D6835E68A2ef285414e9B8cc6cFA93B3a",
+			"transactionHash": "0x7d4f87d676c3ccbc57a9388bdd48336c6f0625cffcb848b1b2b1373e26b7e44e"
+		}
+	}
+}

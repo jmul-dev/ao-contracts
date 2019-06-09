@@ -1,0 +1,395 @@
+{
+	"contractName": "TAOFactory",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoSettingAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameAccountRecoveryAddress", "type": "address" }],
+			"name": "setNameAccountRecoveryAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "taoPoolAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "logosAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameTAOPositionAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_account", "type": "address" }, { "name": "_whitelist", "type": "bool" }],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameTAOPositionAddress", "type": "address" }],
+			"name": "setNameTAOPositionAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameFactoryAddress", "type": "address" }],
+			"name": "setNameFactoryAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "whitelist",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameAccountRecoveryAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "theAO",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "taoAncestryAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameTAOVaultAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameFactoryAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameTAOLookupAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "settingTAOId",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_theAO", "type": "address" }],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [{ "name": "_nameFactoryAddress", "type": "address" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "advocateId", "type": "address" },
+				{ "indexed": false, "name": "taoId", "type": "address" },
+				{ "indexed": false, "name": "index", "type": "uint256" },
+				{ "indexed": false, "name": "name", "type": "string" },
+				{ "indexed": false, "name": "parent", "type": "address" },
+				{ "indexed": false, "name": "parentTypeId", "type": "uint8" }
+			],
+			"name": "CreateTAO",
+			"type": "event"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameTAOLookupAddress", "type": "address" }],
+			"name": "setNameTAOLookupAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_aoSettingAddress", "type": "address" }],
+			"name": "setAOSettingAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_logosAddress", "type": "address" }],
+			"name": "setLogosAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameTAOVaultAddress", "type": "address" }],
+			"name": "setNameTAOVaultAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_taoAncestryAddress", "type": "address" }],
+			"name": "setTAOAncestryAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_settingTAOId", "type": "address" }],
+			"name": "setSettingTAOId",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_taoPoolAddress", "type": "address" }],
+			"name": "setTAOPoolAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_taoId", "type": "address" }],
+			"name": "nonces",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_taoId", "type": "address" }],
+			"name": "incrementNonce",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{ "name": "_name", "type": "string" },
+				{ "name": "_datHash", "type": "string" },
+				{ "name": "_database", "type": "string" },
+				{ "name": "_keyValue", "type": "string" },
+				{ "name": "_contentId", "type": "bytes32" },
+				{ "name": "_parentId", "type": "address" },
+				{ "name": "_childMinLogos", "type": "uint256" },
+				{ "name": "_ethosCapStatus", "type": "bool" },
+				{ "name": "_ethosCapAmount", "type": "uint256" }
+			],
+			"name": "createTAO",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_taoId", "type": "address" }],
+			"name": "getTAO",
+			"outputs": [
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "bytes32" },
+				{ "name": "", "type": "uint8" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "getTotalTAOsCount",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_from", "type": "uint256" }, { "name": "_to", "type": "uint256" }],
+			"name": "getTAOIds",
+			"outputs": [{ "name": "", "type": "address[]" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{ "name": "_data", "type": "string" },
+				{ "name": "_nonce", "type": "uint256" },
+				{ "name": "_validateAddress", "type": "address" },
+				{ "name": "_name", "type": "string" },
+				{ "name": "_signatureV", "type": "uint8" },
+				{ "name": "_signatureR", "type": "bytes32" },
+				{ "name": "_signatureS", "type": "bytes32" }
+			],
+			"name": "validateTAOSignature",
+			"outputs": [{ "name": "", "type": "bool" }, { "name": "", "type": "string" }, { "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		}
+	],
+	"networks": {
+		"1": {
+			"events": {
+				"0xb697896750ac1a99a4124cef2a6414383c846012e3ff18b232ae5d91230a9e32": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "advocateId", "type": "address" },
+						{ "indexed": false, "name": "taoId", "type": "address" },
+						{ "indexed": false, "name": "index", "type": "uint256" },
+						{ "indexed": false, "name": "name", "type": "string" },
+						{ "indexed": false, "name": "parent", "type": "address" },
+						{ "indexed": false, "name": "parentTypeId", "type": "uint8" }
+					],
+					"name": "CreateTAO",
+					"type": "event",
+					"signature": "0xb697896750ac1a99a4124cef2a6414383c846012e3ff18b232ae5d91230a9e32"
+				}
+			},
+			"links": { "AOLibrary": "0x1150d53299Abb7DE27464D01B626728f5c840229" },
+			"address": "0x02a9BB92365B72fB735364aF2af55ebfA9Eb02c2",
+			"transactionHash": "0x751bf46ce63fe3380333feb7f7df9d907526680316517b79a7d81aa827132890"
+		},
+		"4": {
+			"events": {
+				"0xb697896750ac1a99a4124cef2a6414383c846012e3ff18b232ae5d91230a9e32": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "advocateId", "type": "address" },
+						{ "indexed": false, "name": "taoId", "type": "address" },
+						{ "indexed": false, "name": "index", "type": "uint256" },
+						{ "indexed": false, "name": "name", "type": "string" },
+						{ "indexed": false, "name": "parent", "type": "address" },
+						{ "indexed": false, "name": "parentTypeId", "type": "uint8" }
+					],
+					"name": "CreateTAO",
+					"type": "event",
+					"signature": "0xb697896750ac1a99a4124cef2a6414383c846012e3ff18b232ae5d91230a9e32"
+				}
+			},
+			"links": { "AOLibrary": "0x7e098f47951C80eCbA5d8fb5450f688C05089a97" },
+			"address": "0xd09819Fcc3D34E1DEAA6C7E7Bd55972B7cCc4882",
+			"transactionHash": "0x508dab0b747a6c3062f44221a8d0b7e4797a95a48cf2783b18dfe8b67e157004"
+		},
+		"1985": {
+			"events": {
+				"0xb697896750ac1a99a4124cef2a6414383c846012e3ff18b232ae5d91230a9e32": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "advocateId", "type": "address" },
+						{ "indexed": false, "name": "taoId", "type": "address" },
+						{ "indexed": false, "name": "index", "type": "uint256" },
+						{ "indexed": false, "name": "name", "type": "string" },
+						{ "indexed": false, "name": "parent", "type": "address" },
+						{ "indexed": false, "name": "parentTypeId", "type": "uint8" }
+					],
+					"name": "CreateTAO",
+					"type": "event",
+					"signature": "0xb697896750ac1a99a4124cef2a6414383c846012e3ff18b232ae5d91230a9e32"
+				}
+			},
+			"links": { "AOLibrary": "0x9Aa905cd2c62d2078C2048Ba892Ce90ADa4bfe0b" },
+			"address": "0xe49fdb6395a151d71b38De3028D144cc73f85179",
+			"transactionHash": "0x21edc9e96c3464dd8f4fae5db46451ac11c53e3d8e7d5a309c315f0e225139e6"
+		}
+	}
+}

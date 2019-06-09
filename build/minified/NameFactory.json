@@ -1,0 +1,453 @@
+{
+	"contractName": "NameFactory",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoSettingAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "voiceAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "pathosAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameTAOPositionAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "ethosAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "whitelist",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameAccountRecoveryAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "theAO",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameTAOVaultAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "namePublicKeyAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameTAOLookupAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "settingTAOId",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [{ "name": "_voiceAddress", "type": "address" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "ethAddress", "type": "address" },
+				{ "indexed": false, "name": "nameId", "type": "address" },
+				{ "indexed": false, "name": "index", "type": "uint256" },
+				{ "indexed": false, "name": "name", "type": "string" }
+			],
+			"name": "CreateName",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "nameId", "type": "address" },
+				{ "indexed": false, "name": "pathosAmount", "type": "uint256" },
+				{ "indexed": false, "name": "ethosAmount", "type": "uint256" }
+			],
+			"name": "RewardContributor",
+			"type": "event"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_theAO", "type": "address" }],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_account", "type": "address" }, { "name": "_whitelist", "type": "bool" }],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_voiceAddress", "type": "address" }],
+			"name": "setVoiceAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameTAOVaultAddress", "type": "address" }],
+			"name": "setNameTAOVaultAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameTAOLookupAddress", "type": "address" }],
+			"name": "setNameTAOLookupAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameTAOPositionAddress", "type": "address" }],
+			"name": "setNameTAOPositionAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_namePublicKeyAddress", "type": "address" }],
+			"name": "setNamePublicKeyAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameAccountRecoveryAddress", "type": "address" }],
+			"name": "setNameAccountRecoveryAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_settingTAOId", "type": "address" }],
+			"name": "setSettingTAOId",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_aoSettingAddress", "type": "address" }],
+			"name": "setAOSettingAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_pathosAddress", "type": "address" }],
+			"name": "setPathosAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_ethosAddress", "type": "address" }],
+			"name": "setEthosAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_id", "type": "address" }, { "name": "_newAddress", "type": "address" }],
+			"name": "setNameNewAddress",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_nameId", "type": "address" }],
+			"name": "nonces",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameId", "type": "address" }],
+			"name": "incrementNonce",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{ "name": "_name", "type": "string" },
+				{ "name": "_datHash", "type": "string" },
+				{ "name": "_database", "type": "string" },
+				{ "name": "_keyValue", "type": "string" },
+				{ "name": "_contentId", "type": "bytes32" },
+				{ "name": "_writerKey", "type": "address" }
+			],
+			"name": "createName",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_ethAddress", "type": "address" }],
+			"name": "ethAddressToNameId",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_nameId", "type": "address" }],
+			"name": "nameIdToEthAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_nameId", "type": "address" }],
+			"name": "getName",
+			"outputs": [
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "bytes32" },
+				{ "name": "", "type": "uint8" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "getTotalNamesCount",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_from", "type": "uint256" }, { "name": "_to", "type": "uint256" }],
+			"name": "getNameIds",
+			"outputs": [{ "name": "", "type": "address[]" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{ "name": "_data", "type": "string" },
+				{ "name": "_nonce", "type": "uint256" },
+				{ "name": "_validateAddress", "type": "address" },
+				{ "name": "_name", "type": "string" },
+				{ "name": "_signatureV", "type": "uint8" },
+				{ "name": "_signatureR", "type": "bytes32" },
+				{ "name": "_signatureS", "type": "bytes32" }
+			],
+			"name": "validateNameSignature",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		}
+	],
+	"networks": {
+		"1": {
+			"events": {
+				"0xdd445519212181802441b3ea8a0080462d25346f8279d9de28b7a64365d5f2fa": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "ethAddress", "type": "address" },
+						{ "indexed": false, "name": "nameId", "type": "address" },
+						{ "indexed": false, "name": "index", "type": "uint256" },
+						{ "indexed": false, "name": "name", "type": "string" }
+					],
+					"name": "CreateName",
+					"type": "event",
+					"signature": "0xdd445519212181802441b3ea8a0080462d25346f8279d9de28b7a64365d5f2fa"
+				},
+				"0x734610a8df4b989871ed27981447b1532b05e8c8a0cc2df9e8749756b270e8e8": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "nameId", "type": "address" },
+						{ "indexed": false, "name": "pathosAmount", "type": "uint256" },
+						{ "indexed": false, "name": "ethosAmount", "type": "uint256" }
+					],
+					"name": "RewardContributor",
+					"type": "event",
+					"signature": "0x734610a8df4b989871ed27981447b1532b05e8c8a0cc2df9e8749756b270e8e8"
+				}
+			},
+			"links": { "AOLibrary": "0x1150d53299Abb7DE27464D01B626728f5c840229" },
+			"address": "0x10fBF61E4CCE57d72EEd8B5d9728134Ce374BD82",
+			"transactionHash": "0xa70d36528088a48ced057344200353b60f8b41497617043af01eb424107d7d7d"
+		},
+		"4": {
+			"events": {
+				"0xdd445519212181802441b3ea8a0080462d25346f8279d9de28b7a64365d5f2fa": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "ethAddress", "type": "address" },
+						{ "indexed": false, "name": "nameId", "type": "address" },
+						{ "indexed": false, "name": "index", "type": "uint256" },
+						{ "indexed": false, "name": "name", "type": "string" }
+					],
+					"name": "CreateName",
+					"type": "event",
+					"signature": "0xdd445519212181802441b3ea8a0080462d25346f8279d9de28b7a64365d5f2fa"
+				},
+				"0x734610a8df4b989871ed27981447b1532b05e8c8a0cc2df9e8749756b270e8e8": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "nameId", "type": "address" },
+						{ "indexed": false, "name": "pathosAmount", "type": "uint256" },
+						{ "indexed": false, "name": "ethosAmount", "type": "uint256" }
+					],
+					"name": "RewardContributor",
+					"type": "event",
+					"signature": "0x734610a8df4b989871ed27981447b1532b05e8c8a0cc2df9e8749756b270e8e8"
+				}
+			},
+			"links": { "AOLibrary": "0x7e098f47951C80eCbA5d8fb5450f688C05089a97" },
+			"address": "0x15285Fc8c75144F2790FD34505b274e452d00A7C",
+			"transactionHash": "0x6e1352370489fe126451cda7886ed34cf94271c64076931161100d36417b5cca"
+		},
+		"1985": {
+			"events": {
+				"0xdd445519212181802441b3ea8a0080462d25346f8279d9de28b7a64365d5f2fa": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "ethAddress", "type": "address" },
+						{ "indexed": false, "name": "nameId", "type": "address" },
+						{ "indexed": false, "name": "index", "type": "uint256" },
+						{ "indexed": false, "name": "name", "type": "string" }
+					],
+					"name": "CreateName",
+					"type": "event",
+					"signature": "0xdd445519212181802441b3ea8a0080462d25346f8279d9de28b7a64365d5f2fa"
+				},
+				"0x734610a8df4b989871ed27981447b1532b05e8c8a0cc2df9e8749756b270e8e8": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "nameId", "type": "address" },
+						{ "indexed": false, "name": "pathosAmount", "type": "uint256" },
+						{ "indexed": false, "name": "ethosAmount", "type": "uint256" }
+					],
+					"name": "RewardContributor",
+					"type": "event",
+					"signature": "0x734610a8df4b989871ed27981447b1532b05e8c8a0cc2df9e8749756b270e8e8"
+				}
+			},
+			"links": { "AOLibrary": "0x9Aa905cd2c62d2078C2048Ba892Ce90ADa4bfe0b" },
+			"address": "0xe49FdEF5ee715C49454981FC3B057d26B20521da",
+			"transactionHash": "0xea7e85bac25bfd2c15b9308d03223395d567103b655db2e169faec705f0e1e05"
+		}
+	}
+}

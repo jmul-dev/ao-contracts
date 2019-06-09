@@ -1,0 +1,218 @@
+{
+	"contractName": "NameAccountRecovery",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoSettingAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameTAOPositionAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "whitelist",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "theAO",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameFactoryAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "namePublicKeyAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "settingTAOId",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [{ "name": "_nameFactoryAddress", "type": "address" }, { "name": "_nameTAOPositionAddress", "type": "address" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "nameId", "type": "address" },
+				{ "indexed": false, "name": "listenerId", "type": "address" },
+				{ "indexed": false, "name": "compromised", "type": "bool" },
+				{ "indexed": false, "name": "submittedTimestamp", "type": "uint256" },
+				{ "indexed": false, "name": "lockedUntilTimestamp", "type": "uint256" },
+				{ "indexed": false, "name": "nonce", "type": "uint256" }
+			],
+			"name": "SubmitAccountRecovery",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "nameId", "type": "address" },
+				{ "indexed": false, "name": "speakerId", "type": "address" },
+				{ "indexed": false, "name": "newAddress", "type": "address" },
+				{ "indexed": false, "name": "timestamp", "type": "uint256" },
+				{ "indexed": false, "name": "nonce", "type": "uint256" }
+			],
+			"name": "SetNameNewAddress",
+			"type": "event"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_theAO", "type": "address" }],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_account", "type": "address" }, { "name": "_whitelist", "type": "bool" }],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameFactoryAddress", "type": "address" }],
+			"name": "setNameFactoryAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameTAOPositionAddress", "type": "address" }],
+			"name": "setNameTAOPositionAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_namePublicKeyAddress", "type": "address" }],
+			"name": "setNamePublicKeyAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_settingTAOId", "type": "address" }],
+			"name": "setSettingTAOId",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_aoSettingAddress", "type": "address" }],
+			"name": "setAOSettingAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_id", "type": "address" }],
+			"name": "getAccountRecovery",
+			"outputs": [{ "name": "", "type": "bool" }, { "name": "", "type": "uint256" }, { "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_id", "type": "address" }],
+			"name": "submitAccountRecovery",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_id", "type": "address" }],
+			"name": "isCompromised",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_id", "type": "address" }, { "name": "_newAddress", "type": "address" }],
+			"name": "setNameNewAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+	],
+	"networks": {
+		"1": {
+			"events": {},
+			"links": { "AOLibrary": "0x1150d53299Abb7DE27464D01B626728f5c840229" },
+			"address": "0xA829ff6e63c2A2E043B70a614fAF074D8DBE9a8D",
+			"transactionHash": "0x5c66e1b91fa356344d82acd46b3d743b02d3a85684829ac495853b568ed30f85"
+		},
+		"4": {
+			"events": {},
+			"links": { "AOLibrary": "0x7e098f47951C80eCbA5d8fb5450f688C05089a97" },
+			"address": "0x1C3B8FC44DaAD9d4434c56dCe8a4ff215355D30e",
+			"transactionHash": "0x9a0554ca1bcfd4a8581269e6d260e06d13d3aa33f1853490dee547bec1f8dad5"
+		},
+		"1985": {
+			"events": {},
+			"links": { "AOLibrary": "0x9Aa905cd2c62d2078C2048Ba892Ce90ADa4bfe0b" },
+			"address": "0x483af4D1f4Dab68007843206f15Ac86dE361edDb",
+			"transactionHash": "0x36dd0806b810eeb6a1909b11737812e5e350626c901997ee9471dac1b686d0f1"
+		}
+	}
+}

@@ -1,0 +1,375 @@
+{
+	"contractName": "Logos",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "name",
+			"outputs": [{ "name": "", "type": "string" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "powerOfTen",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "totalSupply",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{ "name": "_from", "type": "address" },
+				{ "name": "_to", "type": "address" },
+				{ "name": "_value", "type": "uint256" }
+			],
+			"name": "transferFrom",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "decimals",
+			"outputs": [{ "name": "", "type": "uint8" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "target", "type": "address" }, { "name": "mintedAmount", "type": "uint256" }],
+			"name": "mint",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameTAOPositionAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_account", "type": "address" }, { "name": "_whitelist", "type": "bool" }],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "totalAdvocatedTAOLogos",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "balanceOf",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "totalPositionOnOthers",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "positionFromOthers",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }, { "name": "", "type": "address" }],
+			"name": "positionOnOthers",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }, { "name": "", "type": "address" }],
+			"name": "advocatedTAOLogos",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "symbol",
+			"outputs": [{ "name": "", "type": "string" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "whitelist",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameAccountRecoveryAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "theAO",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_from", "type": "address" }, { "name": "_value", "type": "uint256" }],
+			"name": "whitelistBurnFrom",
+			"outputs": [{ "name": "success", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameFactoryAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_theAO", "type": "address" }],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{ "name": "_name", "type": "string" },
+				{ "name": "_symbol", "type": "string" },
+				{ "name": "_nameFactoryAddress", "type": "address" },
+				{ "name": "_nameTAOPositionAddress", "type": "address" }
+			],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "from", "type": "address" },
+				{ "indexed": true, "name": "to", "type": "address" },
+				{ "indexed": false, "name": "value", "type": "uint256" }
+			],
+			"name": "PositionFrom",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "from", "type": "address" },
+				{ "indexed": true, "name": "to", "type": "address" },
+				{ "indexed": false, "name": "value", "type": "uint256" }
+			],
+			"name": "UnpositionFrom",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "nameId", "type": "address" },
+				{ "indexed": true, "name": "taoId", "type": "address" },
+				{ "indexed": false, "name": "amount", "type": "uint256" }
+			],
+			"name": "AddAdvocatedTAOLogos",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "fromNameId", "type": "address" },
+				{ "indexed": true, "name": "toNameId", "type": "address" },
+				{ "indexed": true, "name": "taoId", "type": "address" },
+				{ "indexed": false, "name": "amount", "type": "uint256" }
+			],
+			"name": "TransferAdvocatedTAOLogos",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "from", "type": "address" },
+				{ "indexed": true, "name": "to", "type": "address" },
+				{ "indexed": false, "name": "value", "type": "uint256" }
+			],
+			"name": "Transfer",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [{ "indexed": true, "name": "from", "type": "address" }, { "indexed": false, "name": "value", "type": "uint256" }],
+			"name": "Burn",
+			"type": "event"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameFactoryAddress", "type": "address" }],
+			"name": "setNameFactoryAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameTAOPositionAddress", "type": "address" }],
+			"name": "setNameTAOPositionAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameAccountRecoveryAddress", "type": "address" }],
+			"name": "setNameAccountRecoveryAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_target", "type": "address" }],
+			"name": "sumBalanceOf",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_sender", "type": "address" }],
+			"name": "availableToPositionAmount",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{ "name": "_from", "type": "address" },
+				{ "name": "_to", "type": "address" },
+				{ "name": "_value", "type": "uint256" }
+			],
+			"name": "positionFrom",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{ "name": "_from", "type": "address" },
+				{ "name": "_to", "type": "address" },
+				{ "name": "_value", "type": "uint256" }
+			],
+			"name": "unpositionFrom",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_taoId", "type": "address" }, { "name": "_amount", "type": "uint256" }],
+			"name": "addAdvocatedTAOLogos",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_fromNameId", "type": "address" }, { "name": "_taoId", "type": "address" }],
+			"name": "transferAdvocatedTAOLogos",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+	],
+	"networks": {
+		"1": {
+			"events": {},
+			"links": { "AOLibrary": "0x1150d53299Abb7DE27464D01B626728f5c840229" },
+			"address": "0x5DD10A41c67a9192b98374419219A18E8E827a30",
+			"transactionHash": "0xfaa9b22b199008f4510f0625ff3dd76f0ae87b855861e9e4771460916c3240d5"
+		},
+		"4": {
+			"events": {},
+			"links": { "AOLibrary": "0x7e098f47951C80eCbA5d8fb5450f688C05089a97" },
+			"address": "0x081E318ae08338421b00ca5F08e55FE2C544424B",
+			"transactionHash": "0xeba00cb19f84e0f7972167af8af8e03b9c0bc29b070eb0c393abd8e66424631d"
+		},
+		"1985": {
+			"events": {},
+			"links": { "AOLibrary": "0x9Aa905cd2c62d2078C2048Ba892Ce90ADa4bfe0b" },
+			"address": "0xb5c6259E2dCe7b6c0ae9A2eb4BEfa47cffdb444A",
+			"transactionHash": "0x4b670a59fa68bffb1ac62a2976698d20bada15b40d6e29adf91e2d3649c00783"
+		}
+	}
+}

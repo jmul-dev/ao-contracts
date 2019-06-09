@@ -1,0 +1,190 @@
+{
+	"contractName": "LogosExa",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "name",
+			"outputs": [{ "name": "", "type": "string" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "powerOfTen",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "totalSupply",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{ "name": "_from", "type": "address" },
+				{ "name": "_to", "type": "address" },
+				{ "name": "_value", "type": "uint256" }
+			],
+			"name": "transferFrom",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "decimals",
+			"outputs": [{ "name": "", "type": "uint8" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "target", "type": "address" }, { "name": "mintedAmount", "type": "uint256" }],
+			"name": "mint",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameTAOPositionAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_account", "type": "address" }, { "name": "_whitelist", "type": "bool" }],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameTAOPositionAddress", "type": "address" }],
+			"name": "setNameTAOPositionAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "balanceOf",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "symbol",
+			"outputs": [{ "name": "", "type": "string" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "whitelist",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "theAO",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_from", "type": "address" }, { "name": "_value", "type": "uint256" }],
+			"name": "whitelistBurnFrom",
+			"outputs": [{ "name": "success", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_theAO", "type": "address" }],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{ "name": "_name", "type": "string" },
+				{ "name": "_symbol", "type": "string" },
+				{ "name": "_nameTAOPositionAddress", "type": "address" }
+			],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "from", "type": "address" },
+				{ "indexed": true, "name": "to", "type": "address" },
+				{ "indexed": false, "name": "value", "type": "uint256" }
+			],
+			"name": "Transfer",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [{ "indexed": true, "name": "from", "type": "address" }, { "indexed": false, "name": "value", "type": "uint256" }],
+			"name": "Burn",
+			"type": "event"
+		}
+	],
+	"networks": {
+		"1": {
+			"events": {},
+			"links": { "AOLibrary": "0x1150d53299Abb7DE27464D01B626728f5c840229" },
+			"address": "0x7a1C0AA1e5bd4cC05Af8c0283fD4AeBEdD7CADCF",
+			"transactionHash": "0x2d63626ee01421843be4c8a13fa3d8116fe919d26e9a79a96ac4c57f561dde9e"
+		},
+		"4": {
+			"events": {},
+			"links": { "AOLibrary": "0x7e098f47951C80eCbA5d8fb5450f688C05089a97" },
+			"address": "0x041a844C16B5C46CA634b414FE474652F021FCa1",
+			"transactionHash": "0x01537d3ff6871b8d3570a42937d193e4ff74c28e07e9e9c3f60d7d405326ea78"
+		},
+		"1985": {
+			"events": {},
+			"links": { "AOLibrary": "0x9Aa905cd2c62d2078C2048Ba892Ce90ADa4bfe0b" },
+			"address": "0xb0AE7C10490478896BFF61da987c9C4A016EbEDe",
+			"transactionHash": "0xd9d33d9d46726d1c1cfdc0c72e82572ce54e6e35ff6f8c3ec5e82f5533b3556a"
+		}
+	}
+}

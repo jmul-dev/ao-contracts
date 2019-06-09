@@ -1,0 +1,261 @@
+{
+	"contractName": "AOTreasury",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameTAOPositionAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "totalDenominations",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "whitelist",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "totalDenominationExchanges",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "theAO",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [{ "name": "_nameTAOPositionAddress", "type": "address" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "account", "type": "address" },
+				{ "indexed": true, "name": "exchangeId", "type": "bytes32" },
+				{ "indexed": false, "name": "amount", "type": "uint256" },
+				{ "indexed": false, "name": "fromDenominationAddress", "type": "address" },
+				{ "indexed": false, "name": "fromDenominationSymbol", "type": "string" },
+				{ "indexed": false, "name": "toDenominationAddress", "type": "address" },
+				{ "indexed": false, "name": "toDenominationSymbol", "type": "string" }
+			],
+			"name": "ExchangeDenomination",
+			"type": "event"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_theAO", "type": "address" }],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_account", "type": "address" }, { "name": "_whitelist", "type": "bool" }],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameTAOPositionAddress", "type": "address" }],
+			"name": "setNameTAOPositionAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "denominationName", "type": "bytes8" }, { "name": "denominationAddress", "type": "address" }],
+			"name": "addDenomination",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "denominationName", "type": "bytes8" }, { "name": "denominationAddress", "type": "address" }],
+			"name": "updateDenomination",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "denominationName", "type": "bytes8" }],
+			"name": "isDenominationExist",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "denominationName", "type": "bytes8" }],
+			"name": "getDenominationByName",
+			"outputs": [
+				{ "name": "", "type": "bytes8" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "uint8" },
+				{ "name": "", "type": "uint256" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "index", "type": "uint256" }],
+			"name": "getDenominationByIndex",
+			"outputs": [
+				{ "name": "", "type": "bytes8" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "uint8" },
+				{ "name": "", "type": "uint256" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "getBaseDenomination",
+			"outputs": [
+				{ "name": "", "type": "bytes8" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "uint8" },
+				{ "name": "", "type": "uint256" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{ "name": "integerAmount", "type": "uint256" },
+				{ "name": "fractionAmount", "type": "uint256" },
+				{ "name": "denominationName", "type": "bytes8" }
+			],
+			"name": "toBase",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "integerAmount", "type": "uint256" }, { "name": "denominationName", "type": "bytes8" }],
+			"name": "fromBase",
+			"outputs": [{ "name": "", "type": "uint256" }, { "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{ "name": "amount", "type": "uint256" },
+				{ "name": "fromDenominationName", "type": "bytes8" },
+				{ "name": "toDenominationName", "type": "bytes8" }
+			],
+			"name": "exchangeDenomination",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_exchangeId", "type": "bytes32" }],
+			"name": "getDenominationExchangeById",
+			"outputs": [
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "uint256" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "amount", "type": "uint256" }],
+			"name": "toHighestDenomination",
+			"outputs": [
+				{ "name": "", "type": "bytes8" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "uint256" },
+				{ "name": "", "type": "uint256" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "uint8" },
+				{ "name": "", "type": "uint256" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		}
+	],
+	"networks": {
+		"1": {
+			"events": {},
+			"links": { "AOLibrary": "0x1150d53299Abb7DE27464D01B626728f5c840229" },
+			"address": "0xCEC7c850458e5B966dF0e7AA6f8Ab374e1CC2C68",
+			"transactionHash": "0xa3b3016779791d1e534444bec73cee8a5b287db5a97af442a4b68b01928db242"
+		},
+		"4": {
+			"events": {},
+			"links": { "AOLibrary": "0x7e098f47951C80eCbA5d8fb5450f688C05089a97" },
+			"address": "0x5eCbA21Ae07f584e6E231c723d1bB6AEa0F521ce",
+			"transactionHash": "0x906b278011e4957d6e0a6348bd5d68ccebe8e63ebc6a1d3a5f333721906eaa47"
+		},
+		"1985": {
+			"events": {},
+			"links": { "AOLibrary": "0x9Aa905cd2c62d2078C2048Ba892Ce90ADa4bfe0b" },
+			"address": "0x2C3eD48c4b847Ab2806D7973Ce218F841dd06e46",
+			"transactionHash": "0x5547649b09c13c93862d853fea6242869ea7e1a30260bc14a46b05d19bc5d361"
+		}
+	}
+}

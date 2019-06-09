@@ -1,0 +1,752 @@
+{
+	"contractName": "AOPool",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "uint256" }],
+			"name": "poolERC20TokenBalance",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "contractTotalQuantity",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "contractTotalBuy",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "contractTotalSell",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "aoIonAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "totalBought",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "uint256" }],
+			"name": "poolTotalQuantity",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameTAOPositionAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "contractTotalLot",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "uint256" }],
+			"name": "poolTotalBuy",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "contractEthereumBalance",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "whitelist",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "theAO",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "uint256" }],
+			"name": "pools",
+			"outputs": [
+				{ "name": "price", "type": "uint256" },
+				{ "name": "status", "type": "bool" },
+				{ "name": "sellCapStatus", "type": "bool" },
+				{ "name": "sellCapAmount", "type": "uint256" },
+				{ "name": "quantityCapStatus", "type": "bool" },
+				{ "name": "quantityCapAmount", "type": "uint256" },
+				{ "name": "erc20CounterAsset", "type": "bool" },
+				{ "name": "erc20TokenAddress", "type": "address" },
+				{ "name": "erc20TokenMultiplier", "type": "uint256" },
+				{ "name": "adminAddress", "type": "address" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "uint256" }],
+			"name": "poolEthereumBalance",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "totalPutOnSale",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "uint256" }],
+			"name": "poolTotalLot",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "uint256" }],
+			"name": "poolTotalEthereumWithdrawn",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "uint256" }],
+			"name": "poolTotalWithdrawn",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "contractTotalWithdrawn",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "totalEthereumWithdrawn",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "contractTotalEthereumWithdrawn",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "uint256" }],
+			"name": "poolTotalSell",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "bytes32" }],
+			"name": "lots",
+			"outputs": [
+				{ "name": "lotId", "type": "bytes32" },
+				{ "name": "seller", "type": "address" },
+				{ "name": "lotQuantity", "type": "uint256" },
+				{ "name": "poolId", "type": "uint256" },
+				{ "name": "poolPreSellSnapshot", "type": "uint256" },
+				{ "name": "poolSellLotSnapshot", "type": "uint256" },
+				{ "name": "lotValueInCounterAsset", "type": "uint256" },
+				{ "name": "counterAssetWithdrawn", "type": "uint256" },
+				{ "name": "ionWithdrawn", "type": "uint256" },
+				{ "name": "timestamp", "type": "uint256" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "totalSold",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "totalPool",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [{ "name": "_aoIonAddress", "type": "address" }, { "name": "_nameTAOPositionAddress", "type": "address" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "poolId", "type": "uint256" },
+				{ "indexed": true, "name": "adminAddress", "type": "address" },
+				{ "indexed": false, "name": "price", "type": "uint256" },
+				{ "indexed": false, "name": "status", "type": "bool" },
+				{ "indexed": false, "name": "sellCapStatus", "type": "bool" },
+				{ "indexed": false, "name": "sellCapAmount", "type": "uint256" },
+				{ "indexed": false, "name": "quantityCapStatus", "type": "bool" },
+				{ "indexed": false, "name": "quantityCapAmount", "type": "uint256" },
+				{ "indexed": false, "name": "erc20CounterAsset", "type": "bool" },
+				{ "indexed": false, "name": "erc20TokenAddress", "type": "address" },
+				{ "indexed": false, "name": "erc20TokenMultiplier", "type": "uint256" }
+			],
+			"name": "CreatePool",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [{ "indexed": true, "name": "poolId", "type": "uint256" }, { "indexed": false, "name": "status", "type": "bool" }],
+			"name": "UpdatePoolStatus",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "poolId", "type": "uint256" },
+				{ "indexed": false, "name": "newAdminAddress", "type": "address" }
+			],
+			"name": "ChangeAdminAddress",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "poolId", "type": "uint256" },
+				{ "indexed": true, "name": "lotId", "type": "bytes32" },
+				{ "indexed": true, "name": "seller", "type": "address" },
+				{ "indexed": false, "name": "lotQuantity", "type": "uint256" },
+				{ "indexed": false, "name": "price", "type": "uint256" },
+				{ "indexed": false, "name": "poolPreSellSnapshot", "type": "uint256" },
+				{ "indexed": false, "name": "poolSellLotSnapshot", "type": "uint256" },
+				{ "indexed": false, "name": "lotValueInCounterAsset", "type": "uint256" },
+				{ "indexed": false, "name": "erc20CounterAsset", "type": "bool" },
+				{ "indexed": false, "name": "timestamp", "type": "uint256" }
+			],
+			"name": "LotCreation",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "poolId", "type": "uint256" },
+				{ "indexed": true, "name": "buyer", "type": "address" },
+				{ "indexed": false, "name": "buyQuantity", "type": "uint256" },
+				{ "indexed": false, "name": "price", "type": "uint256" },
+				{ "indexed": false, "name": "currentPoolTotalBuy", "type": "uint256" }
+			],
+			"name": "BuyWithEth",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "seller", "type": "address" },
+				{ "indexed": true, "name": "lotId", "type": "bytes32" },
+				{ "indexed": true, "name": "poolId", "type": "uint256" },
+				{ "indexed": false, "name": "withdrawnAmount", "type": "uint256" },
+				{ "indexed": false, "name": "currentLotValueInCounterAsset", "type": "uint256" },
+				{ "indexed": false, "name": "currentLotCounterAssetWithdrawn", "type": "uint256" }
+			],
+			"name": "WithdrawEth",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "seller", "type": "address" },
+				{ "indexed": true, "name": "lotId", "type": "bytes32" },
+				{ "indexed": true, "name": "poolId", "type": "uint256" },
+				{ "indexed": false, "name": "withdrawnAmount", "type": "uint256" },
+				{ "indexed": false, "name": "currentlotValueInCounterAsset", "type": "uint256" },
+				{ "indexed": false, "name": "currentLotIonWithdrawn", "type": "uint256" }
+			],
+			"name": "WithdrawIon",
+			"type": "event"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_theAO", "type": "address" }],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_account", "type": "address" }, { "name": "_whitelist", "type": "bool" }],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_aoIonAddress", "type": "address" }],
+			"name": "setAOIonAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameTAOPositionAddress", "type": "address" }],
+			"name": "setNameTAOPositionAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_recipient", "type": "address" }, { "name": "_amount", "type": "uint256" }],
+			"name": "transferEth",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{ "name": "_erc20TokenAddress", "type": "address" },
+				{ "name": "_recipient", "type": "address" },
+				{ "name": "_amount", "type": "uint256" }
+			],
+			"name": "transferERC20",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{ "name": "_price", "type": "uint256" },
+				{ "name": "_status", "type": "bool" },
+				{ "name": "_sellCapStatus", "type": "bool" },
+				{ "name": "_sellCapAmount", "type": "uint256" },
+				{ "name": "_quantityCapStatus", "type": "bool" },
+				{ "name": "_quantityCapAmount", "type": "uint256" },
+				{ "name": "_erc20CounterAsset", "type": "bool" },
+				{ "name": "_erc20TokenAddress", "type": "address" },
+				{ "name": "_erc20TokenMultiplier", "type": "uint256" }
+			],
+			"name": "createPool",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_poolId", "type": "uint256" }, { "name": "_status", "type": "bool" }],
+			"name": "updatePoolStatus",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_poolId", "type": "uint256" }, { "name": "_adminAddress", "type": "address" }],
+			"name": "changeAdminAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{ "name": "_poolId", "type": "uint256" },
+				{ "name": "_quantity", "type": "uint256" },
+				{ "name": "_price", "type": "uint256" }
+			],
+			"name": "sell",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_account", "type": "address" }],
+			"name": "ownerTotalLot",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [
+				{ "name": "_account", "type": "address" },
+				{ "name": "_from", "type": "uint256" },
+				{ "name": "_to", "type": "uint256" }
+			],
+			"name": "ownerLotIds",
+			"outputs": [{ "name": "", "type": "bytes32[]" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{ "name": "_poolId", "type": "uint256" },
+				{ "name": "_quantity", "type": "uint256" },
+				{ "name": "_price", "type": "uint256" }
+			],
+			"name": "buyWithEth",
+			"outputs": [],
+			"payable": true,
+			"stateMutability": "payable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_lotId", "type": "bytes32" }],
+			"name": "withdrawEth",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_lotId", "type": "bytes32" }],
+			"name": "lotEthAvailableToWithdraw",
+			"outputs": [{ "name": "", "type": "uint256" }, { "name": "", "type": "uint256" }, { "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_lotId", "type": "bytes32" }, { "name": "_quantity", "type": "uint256" }],
+			"name": "withdrawIon",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_lotId", "type": "bytes32" }],
+			"name": "totalIonWithdrawnBeforeLot",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		}
+	],
+	"networks": {
+		"1": {
+			"events": {},
+			"links": { "AOLibrary": "0x1150d53299Abb7DE27464D01B626728f5c840229" },
+			"address": "0x1cef816bb65AD8FcF61593Ee302E10aEe7177Add",
+			"transactionHash": "0x0180b84624a6a6320a37c07fe0d0fec3c0077b72c3ef534fddcfe856d580bf08"
+		},
+		"4": {
+			"events": {
+				"0xed37974fd8fdac3b384e60b31da7bc35d93b916f5ceacdff9a326476c982bdd3": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": true, "name": "adminAddress", "type": "address" },
+						{ "indexed": false, "name": "price", "type": "uint256" },
+						{ "indexed": false, "name": "status", "type": "bool" },
+						{ "indexed": false, "name": "sellCapStatus", "type": "bool" },
+						{ "indexed": false, "name": "sellCapAmount", "type": "uint256" },
+						{ "indexed": false, "name": "quantityCapStatus", "type": "bool" },
+						{ "indexed": false, "name": "quantityCapAmount", "type": "uint256" },
+						{ "indexed": false, "name": "erc20CounterAsset", "type": "bool" },
+						{ "indexed": false, "name": "erc20TokenAddress", "type": "address" },
+						{ "indexed": false, "name": "erc20TokenMultiplier", "type": "uint256" }
+					],
+					"name": "CreatePool",
+					"type": "event",
+					"signature": "0xed37974fd8fdac3b384e60b31da7bc35d93b916f5ceacdff9a326476c982bdd3"
+				},
+				"0xc30934c85ea89d18c5f239d5ff07fbce315e46d5487f59c32330c42712c66037": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": false, "name": "status", "type": "bool" }
+					],
+					"name": "UpdatePoolStatus",
+					"type": "event",
+					"signature": "0xc30934c85ea89d18c5f239d5ff07fbce315e46d5487f59c32330c42712c66037"
+				},
+				"0xb0ea0475d8f544ed781f7384574790a84d3534ae55c4dcfb7c498d583501849c": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": false, "name": "newAdminAddress", "type": "address" }
+					],
+					"name": "ChangeAdminAddress",
+					"type": "event",
+					"signature": "0xb0ea0475d8f544ed781f7384574790a84d3534ae55c4dcfb7c498d583501849c"
+				},
+				"0x981d21149cf54101805c055a2b600bbecb86e0ef13056dc7ee5c12f7fa0c5f4f": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": true, "name": "lotId", "type": "bytes32" },
+						{ "indexed": true, "name": "seller", "type": "address" },
+						{ "indexed": false, "name": "lotQuantity", "type": "uint256" },
+						{ "indexed": false, "name": "price", "type": "uint256" },
+						{ "indexed": false, "name": "poolPreSellSnapshot", "type": "uint256" },
+						{ "indexed": false, "name": "poolSellLotSnapshot", "type": "uint256" },
+						{ "indexed": false, "name": "lotValueInCounterAsset", "type": "uint256" },
+						{ "indexed": false, "name": "erc20CounterAsset", "type": "bool" },
+						{ "indexed": false, "name": "timestamp", "type": "uint256" }
+					],
+					"name": "LotCreation",
+					"type": "event",
+					"signature": "0x981d21149cf54101805c055a2b600bbecb86e0ef13056dc7ee5c12f7fa0c5f4f"
+				},
+				"0xee2630dc019d6651a8610d35864d3742dabc15df4f306e69d97c350145dc2a83": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": true, "name": "buyer", "type": "address" },
+						{ "indexed": false, "name": "buyQuantity", "type": "uint256" },
+						{ "indexed": false, "name": "price", "type": "uint256" },
+						{ "indexed": false, "name": "currentPoolTotalBuy", "type": "uint256" }
+					],
+					"name": "BuyWithEth",
+					"type": "event",
+					"signature": "0xee2630dc019d6651a8610d35864d3742dabc15df4f306e69d97c350145dc2a83"
+				},
+				"0x98eae951670f4cb129c5a751fb8b222b287681953d38f006efdd31ae1a0ebccf": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "seller", "type": "address" },
+						{ "indexed": true, "name": "lotId", "type": "bytes32" },
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": false, "name": "withdrawnAmount", "type": "uint256" },
+						{ "indexed": false, "name": "currentLotValueInCounterAsset", "type": "uint256" },
+						{ "indexed": false, "name": "currentLotCounterAssetWithdrawn", "type": "uint256" }
+					],
+					"name": "WithdrawEth",
+					"type": "event",
+					"signature": "0x98eae951670f4cb129c5a751fb8b222b287681953d38f006efdd31ae1a0ebccf"
+				},
+				"0x557ba6d0a83ceff8ce596997e713fda0bd447c8d165edad2bba68a42a35d1fc9": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "seller", "type": "address" },
+						{ "indexed": true, "name": "lotId", "type": "bytes32" },
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": false, "name": "withdrawnAmount", "type": "uint256" },
+						{ "indexed": false, "name": "currentlotValueInCounterAsset", "type": "uint256" },
+						{ "indexed": false, "name": "currentLotIonWithdrawn", "type": "uint256" }
+					],
+					"name": "WithdrawIon",
+					"type": "event",
+					"signature": "0x557ba6d0a83ceff8ce596997e713fda0bd447c8d165edad2bba68a42a35d1fc9"
+				}
+			},
+			"links": { "AOLibrary": "0x7e098f47951C80eCbA5d8fb5450f688C05089a97" },
+			"address": "0xeB9258884231AC32Aa5B1583608905eFb367F82E",
+			"transactionHash": "0x193b3dde76d2defe9ddd928161219a588b1007182caeb02ae4cfb4381cddf68d"
+		},
+		"1985": {
+			"events": {
+				"0xed37974fd8fdac3b384e60b31da7bc35d93b916f5ceacdff9a326476c982bdd3": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": true, "name": "adminAddress", "type": "address" },
+						{ "indexed": false, "name": "price", "type": "uint256" },
+						{ "indexed": false, "name": "status", "type": "bool" },
+						{ "indexed": false, "name": "sellCapStatus", "type": "bool" },
+						{ "indexed": false, "name": "sellCapAmount", "type": "uint256" },
+						{ "indexed": false, "name": "quantityCapStatus", "type": "bool" },
+						{ "indexed": false, "name": "quantityCapAmount", "type": "uint256" },
+						{ "indexed": false, "name": "erc20CounterAsset", "type": "bool" },
+						{ "indexed": false, "name": "erc20TokenAddress", "type": "address" },
+						{ "indexed": false, "name": "erc20TokenMultiplier", "type": "uint256" }
+					],
+					"name": "CreatePool",
+					"type": "event",
+					"signature": "0xed37974fd8fdac3b384e60b31da7bc35d93b916f5ceacdff9a326476c982bdd3"
+				},
+				"0xc30934c85ea89d18c5f239d5ff07fbce315e46d5487f59c32330c42712c66037": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": false, "name": "status", "type": "bool" }
+					],
+					"name": "UpdatePoolStatus",
+					"type": "event",
+					"signature": "0xc30934c85ea89d18c5f239d5ff07fbce315e46d5487f59c32330c42712c66037"
+				},
+				"0xb0ea0475d8f544ed781f7384574790a84d3534ae55c4dcfb7c498d583501849c": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": false, "name": "newAdminAddress", "type": "address" }
+					],
+					"name": "ChangeAdminAddress",
+					"type": "event",
+					"signature": "0xb0ea0475d8f544ed781f7384574790a84d3534ae55c4dcfb7c498d583501849c"
+				},
+				"0x981d21149cf54101805c055a2b600bbecb86e0ef13056dc7ee5c12f7fa0c5f4f": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": true, "name": "lotId", "type": "bytes32" },
+						{ "indexed": true, "name": "seller", "type": "address" },
+						{ "indexed": false, "name": "lotQuantity", "type": "uint256" },
+						{ "indexed": false, "name": "price", "type": "uint256" },
+						{ "indexed": false, "name": "poolPreSellSnapshot", "type": "uint256" },
+						{ "indexed": false, "name": "poolSellLotSnapshot", "type": "uint256" },
+						{ "indexed": false, "name": "lotValueInCounterAsset", "type": "uint256" },
+						{ "indexed": false, "name": "erc20CounterAsset", "type": "bool" },
+						{ "indexed": false, "name": "timestamp", "type": "uint256" }
+					],
+					"name": "LotCreation",
+					"type": "event",
+					"signature": "0x981d21149cf54101805c055a2b600bbecb86e0ef13056dc7ee5c12f7fa0c5f4f"
+				},
+				"0xee2630dc019d6651a8610d35864d3742dabc15df4f306e69d97c350145dc2a83": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": true, "name": "buyer", "type": "address" },
+						{ "indexed": false, "name": "buyQuantity", "type": "uint256" },
+						{ "indexed": false, "name": "price", "type": "uint256" },
+						{ "indexed": false, "name": "currentPoolTotalBuy", "type": "uint256" }
+					],
+					"name": "BuyWithEth",
+					"type": "event",
+					"signature": "0xee2630dc019d6651a8610d35864d3742dabc15df4f306e69d97c350145dc2a83"
+				},
+				"0x98eae951670f4cb129c5a751fb8b222b287681953d38f006efdd31ae1a0ebccf": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "seller", "type": "address" },
+						{ "indexed": true, "name": "lotId", "type": "bytes32" },
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": false, "name": "withdrawnAmount", "type": "uint256" },
+						{ "indexed": false, "name": "currentLotValueInCounterAsset", "type": "uint256" },
+						{ "indexed": false, "name": "currentLotCounterAssetWithdrawn", "type": "uint256" }
+					],
+					"name": "WithdrawEth",
+					"type": "event",
+					"signature": "0x98eae951670f4cb129c5a751fb8b222b287681953d38f006efdd31ae1a0ebccf"
+				},
+				"0x557ba6d0a83ceff8ce596997e713fda0bd447c8d165edad2bba68a42a35d1fc9": {
+					"anonymous": false,
+					"inputs": [
+						{ "indexed": true, "name": "seller", "type": "address" },
+						{ "indexed": true, "name": "lotId", "type": "bytes32" },
+						{ "indexed": true, "name": "poolId", "type": "uint256" },
+						{ "indexed": false, "name": "withdrawnAmount", "type": "uint256" },
+						{ "indexed": false, "name": "currentlotValueInCounterAsset", "type": "uint256" },
+						{ "indexed": false, "name": "currentLotIonWithdrawn", "type": "uint256" }
+					],
+					"name": "WithdrawIon",
+					"type": "event",
+					"signature": "0x557ba6d0a83ceff8ce596997e713fda0bd447c8d165edad2bba68a42a35d1fc9"
+				}
+			},
+			"links": { "AOLibrary": "0x9Aa905cd2c62d2078C2048Ba892Ce90ADa4bfe0b" },
+			"address": "0xe24a1f67aa62bF5190cD181876431e07583EbE0f",
+			"transactionHash": "0x9cf73a39bc46c4be1cf8a4ac36254676893f23f9301c7e3b5a22bf78f4167813"
+		}
+	}
+}

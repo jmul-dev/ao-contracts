@@ -10,7 +10,9 @@
 	"dependencies": {
 		"bignumber.js": "^7.2.1",
 		"bn.js": "^4.11.8",
+		"debug": "^4.1.1",
 		"eth-crypto": "^1.2.3",
+		"fs-extra": "^8.0.1",
 		"web3": "^0.20.7"
 	},
 	"scripts": {
@@ -19,7 +21,8 @@
 		"migrate:development": "truffle migrate --network development",
 		"migrate:rinkeby": "truffle migrate --network rinkeby",
 		"migrate:mainnet": "truffle migrate --network mainnet",
-		"test": "truffle test"
+		"test": "truffle test",
+		"minify": "DEBUG=ao* node minifyBuild.js"
 	},
 	"devDependencies": {
 		"ganache-cli": "^6.4.3",

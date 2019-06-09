@@ -1,0 +1,24 @@
+{
+	"contractName": "ITAOFactory",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [{ "name": "_taoId", "type": "address" }],
+			"name": "nonces",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_taoId", "type": "address" }],
+			"name": "incrementNonce",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+	],
+	"networks": {}
+}

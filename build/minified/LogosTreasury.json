@@ -1,0 +1,279 @@
+{
+	"contractName": "LogosTreasury",
+	"abi": [
+		{
+			"constant": true,
+			"inputs": [
+				{ "name": "integerAmount", "type": "uint256" },
+				{ "name": "fractionAmount", "type": "uint256" },
+				{ "name": "denominationName", "type": "bytes8" }
+			],
+			"name": "toBase",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "denominationName", "type": "bytes8" }, { "name": "denominationAddress", "type": "address" }],
+			"name": "updateDenomination",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "_exchangeId", "type": "bytes32" }],
+			"name": "getDenominationExchangeById",
+			"outputs": [
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "uint256" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameTAOPositionAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_account", "type": "address" }, { "name": "_whitelist", "type": "bool" }],
+			"name": "setWhitelist",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "totalDenominations",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameTAOPositionAddress", "type": "address" }],
+			"name": "setNameTAOPositionAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "index", "type": "uint256" }],
+			"name": "getDenominationByIndex",
+			"outputs": [
+				{ "name": "", "type": "bytes8" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "uint8" },
+				{ "name": "", "type": "uint256" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [
+				{ "name": "amount", "type": "uint256" },
+				{ "name": "fromDenominationName", "type": "bytes8" },
+				{ "name": "toDenominationName", "type": "bytes8" }
+			],
+			"name": "exchangeDenomination",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_nameFactoryAddress", "type": "address" }],
+			"name": "setNameFactoryAddress",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "denominationName", "type": "bytes8" }],
+			"name": "isDenominationExist",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "amount", "type": "uint256" }],
+			"name": "toHighestDenomination",
+			"outputs": [
+				{ "name": "", "type": "bytes8" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "uint256" },
+				{ "name": "", "type": "uint256" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "uint8" },
+				{ "name": "", "type": "uint256" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "", "type": "address" }],
+			"name": "whitelist",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "totalDenominationExchanges",
+			"outputs": [{ "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "integerAmount", "type": "uint256" }, { "name": "denominationName", "type": "bytes8" }],
+			"name": "fromBase",
+			"outputs": [{ "name": "", "type": "uint256" }, { "name": "", "type": "uint256" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "theAO",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [{ "name": "denominationName", "type": "bytes8" }],
+			"name": "getDenominationByName",
+			"outputs": [
+				{ "name": "", "type": "bytes8" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "uint8" },
+				{ "name": "", "type": "uint256" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "nameFactoryAddress",
+			"outputs": [{ "name": "", "type": "address" }],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "denominationName", "type": "bytes8" }, { "name": "denominationAddress", "type": "address" }],
+			"name": "addDenomination",
+			"outputs": [{ "name": "", "type": "bool" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": true,
+			"inputs": [],
+			"name": "getBaseDenomination",
+			"outputs": [
+				{ "name": "", "type": "bytes8" },
+				{ "name": "", "type": "address" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "string" },
+				{ "name": "", "type": "uint8" },
+				{ "name": "", "type": "uint256" }
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [{ "name": "_theAO", "type": "address" }],
+			"name": "transferOwnership",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [{ "name": "_nameFactoryAddress", "type": "address" }, { "name": "_nameTAOPositionAddress", "type": "address" }],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{ "indexed": true, "name": "nameId", "type": "address" },
+				{ "indexed": true, "name": "exchangeId", "type": "bytes32" },
+				{ "indexed": false, "name": "amount", "type": "uint256" },
+				{ "indexed": false, "name": "fromDenominationAddress", "type": "address" },
+				{ "indexed": false, "name": "fromDenominationSymbol", "type": "string" },
+				{ "indexed": false, "name": "toDenominationAddress", "type": "address" },
+				{ "indexed": false, "name": "toDenominationSymbol", "type": "string" }
+			],
+			"name": "ExchangeDenomination",
+			"type": "event"
+		}
+	],
+	"networks": {
+		"1": {
+			"events": {},
+			"links": { "AOLibrary": "0x1150d53299Abb7DE27464D01B626728f5c840229" },
+			"address": "0xBbE40982d356187eF8DBE785BEE9D43f16aC9ddD",
+			"transactionHash": "0xf7218da7ea1d6b9559622fdfb6c9e6f4153a37b919b5259d3672581be07bdd84"
+		},
+		"4": {
+			"events": {},
+			"links": { "AOLibrary": "0x7e098f47951C80eCbA5d8fb5450f688C05089a97" },
+			"address": "0xe84a5DA4f66861Ec2BE86F723238040577150B0b",
+			"transactionHash": "0xb1156800d9a50cb5fb8d87edd7cf1960d3ab0e85c0f558446fe7c7c6582729ed"
+		},
+		"1985": {
+			"events": {},
+			"links": { "AOLibrary": "0x9Aa905cd2c62d2078C2048Ba892Ce90ADa4bfe0b" },
+			"address": "0x82C68D025e6B62d70dbaa9a8cAeC889b21E8e7bC",
+			"transactionHash": "0xfa4942130502571074834febbf41c3740569d2bfdd4bbb82c695e31cc8de1bf5"
+		}
+	}
+}
